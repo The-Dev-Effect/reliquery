@@ -6,14 +6,14 @@ Science's Artifact Antiformat
 from reliquery import Relic
 import numpy as np
 
-r = Relic(name="reliquery_tutorial", reliquery_type="basic")
+r = Relic(name="tutorial", relic_type="basic")
 ones_array = np.ones((10, 10))
 r.add_array("ones", ones_array)
 np.testing.assert_array_equal(r.get_array("ones"), ones_array)
 ```
 
 ### Config
-A json text file named config located in {home_dir}/elements
+A json text file named config located in {home_dir}/reliquery
 <br />
 Looks like...
 ```json
