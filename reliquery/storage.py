@@ -146,13 +146,13 @@ class S3Storage(Storage):
 
 
 def get_default_storage(home_dir=os.path.expanduser("~")) -> Storage:
-    relics_dir = os.path.join(home_dir, "relics")
-    config = settings.get_config(relics_dir)
+    reliquery_dir = os.path.join(home_dir, "reliquery")
+    config = settings.get_config(reliquery_dir)
     storage_type = config["storage"]["type"]
     if storage_type == "S3":
         # return S3Storage("de-relic", "v0")
         return S3Storage(**config["storage"]["args"])
     elif storage_type == "File":
-        return FileStorage(relics_dir)
+        return FileStorage(reliquery_dir)
     else:
         raise ValueError("Config storage type is not supported. Use S3 or File.")

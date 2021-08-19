@@ -18,9 +18,9 @@ raw_config = """
     }"""
 
 def test_use_s3_when_getting_default_storage_with_config_having_s3_type(tmpdir):
-    relics_dir = os.path.join(tmpdir, "relics")
-    os.makedirs(relics_dir)
-    config_path = os.path.join(relics_dir, "config")
+    reliquery_dir = os.path.join(tmpdir, "reliquery")
+    os.makedirs(reliquery_dir)
+    config_path = os.path.join(reliquery_dir, "config")
     with open(config_path, mode="w+") as config_file:
         config = {
             "storage": {
@@ -43,9 +43,9 @@ def test_use_file_storage_when_getting_default_storage_without_config(tmpdir):
 def test_use_file_storage_when_getting_default_storage_with_config_having_file_type(
     tmpdir,
 ):
-    relics_dir = os.path.join(tmpdir, "relics")
-    os.makedirs(relics_dir)
-    config_path = os.path.join(relics_dir, "config")
+    reliquery_dir = os.path.join(tmpdir, "reliquery")
+    os.makedirs(reliquery_dir)
+    config_path = os.path.join(reliquery_dir, "config")
     with open(config_path, mode="w+") as config_file:
         config = {"storage": {"type": "File"}}
         config_file.write(json.dumps(config, indent=4))
@@ -62,9 +62,9 @@ def test_use_s3_storage_when_passing_s3_config_in_environment_as_variable(
 
 
 def test_error_when_getting_default_storage_with_config_having_unknown_type(tmpdir):
-    relics_dir = os.path.join(tmpdir, "relics")
-    os.makedirs(relics_dir)
-    config_path = os.path.join(relics_dir, "config")
+    reliquery_dir = os.path.join(tmpdir, "reliquery")
+    os.makedirs(reliquery_dir)
+    config_path = os.path.join(reliquery_dir, "config")
     with open(config_path, mode="w+") as config_file:
         config = {"storage": {"type": "None"}}
         config_file.write(json.dumps(config, indent=4))
