@@ -1,0 +1,5 @@
+numpy
+pytest
+black
+uvicorn
+boto3
