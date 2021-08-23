@@ -11,7 +11,7 @@ def get_config(reliquery_dir):
     config_path = os.path.join(reliquery_dir, "config")
     
     if not os.path.exists(config_path):
-        os.makedirs(reliquery_dir)
+        os.makedirs(reliquery_dir, exist_ok=True)
         config_path = os.path.join(reliquery_dir, "config")
         with open(config_path, mode="w+") as config_file:
             config = {"storage": {"type": "File"}}
