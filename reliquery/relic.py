@@ -73,3 +73,24 @@ class Relic:
 
     def list_arrays(self) -> List[np.ndarray]:
         return self.storage.list_keys([self.relic_type, self.name, "arrays"])
+        
+    def add_html(self, name: str, html_path: str):
+        self.assert_valid_id(name)
+
+        self.storage.put_file(
+            [self.relic_type, self.name, "html", name], html_path
+        )
+
+    def list_html(self) -> List[str]:
+        return self.storage.list_keys([self.relic_type, self.name, "html"])
+
+    def get_html(self, name: str):
+        self.assert_valid_id(name)
+        
+        with self.storage.get_binary_obj(
+            [self.relic_type, self.name, "html", name]
+        ) as f:
+            return f.read().decode('utf-8')
+
+
+
