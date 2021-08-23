@@ -1,50 +1,50 @@
-import os
+import pytest
 import reliquery.relic as relic
+from reliquery.storage import FileStorage
 
 
-def test_list_html_file_when_add_html(tmpdir):
-    reliquery_dir = os.path.join(tmpdir, "reliquery")
-    os.makedirs(reliquery_dir)
 
-    rq = relic.Relic(name="element-bucket", relic_type="test")
+@pytest.fixture
+def test_storage(tmp_path):
+    return FileStorage(str(tmp_path))
+
+def test_list_html_file_when_add_html(test_storage):
+
+    rq = relic.Relic(name="test", relic_type="test", storage=test_storage)
 
     rq.add_html(
-        "test html",
-        "/home/welsh/Workspace/projects/reliquery/reliquery/tests/test.html",
+        "test html.html",
+        "reliquery/tests/test.html",
     )
     html_list = rq.list_html()
     assert len(html_list) > 0
 
 
-def test_html_file_given_file_name(tmpdir):
-    reliquery_dir = os.path.join(tmpdir, "reliquery")
-    os.makedirs(reliquery_dir)
+def test_html_file_given_file_name(test_storage):
 
-    rq = relic.Relic(name="element-bucket", relic_type="test")
+    rq = relic.Relic(name="test", relic_type="test", storage=test_storage)
 
     rq.add_html(
-        "test html",
-        "/home/welsh/Workspace/projects/reliquery/reliquery/tests/test.html",
+        "test html.html",
+        "reliquery/tests/test.html",
     )
 
-    html = rq.get_html("test html")
+    html = rq.get_html("test html.html")
     assert html != None
     assert html.startswith("<div>")
 
 
-def test_list_html_files(tmpdir):
-    reliquery_dir = os.path.join(tmpdir, "reliquery")
-    os.makedirs(reliquery_dir)
+def test_list_html_files(test_storage):
 
-    rq = relic.Relic(name="element-bucket", relic_type="test")
+    rq = relic.Relic(name="element-bucket", relic_type="test", storage=test_storage)
 
     rq.add_html(
-        "test html",
-        "/home/welsh/Workspace/projects/reliquery/reliquery/tests/test.html",
+        "test html.html",
+        "reliquery/tests/test.html",
     )
     rq.add_html(
-        "test-html",
-        "/home/welsh/Workspace/projects/reliquery/reliquery/tests/test.html",
+        "test-html.html",
+        "reliquery/tests/test.html",
     )
     html_list = rq.list_html()
     assert len(html_list) == 2
