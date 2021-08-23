@@ -1,6 +1,7 @@
 import os
 from io import BytesIO, BufferedIOBase
 from typing import Any, List
+from shutil import copyfile
 
 import boto3
 
@@ -15,6 +16,9 @@ class StorageItemDoesNotExist(Exception):
 
 
 class Storage:
+    def put_file(self, path: StoragePath, file_path: str) -> None:
+        raise NotImplementedError
+
     def put_binary_obj(self, path: StoragePath, buffer: BytesIO):
         raise NotImplementedError
 
@@ -44,6 +48,10 @@ class FileStorage:
 
     def _join_path(self, path: StoragePath) -> str:
         return os.path.join(*[self.root] + path)
+
+    def put_file(self, path: StoragePath, file_path: str) -> None:
+        self._ensure_path(path)
+        copyfile(file_path, self._join_path(path))
 
     def put_binary_obj(self, path: StoragePath, buffer: BytesIO) -> None:
         self._ensure_path(path)
@@ -93,6 +101,9 @@ class S3Storage(Storage):
 
     def _join_path(self, path: StoragePath) -> str:
         return "/".join([self.prefix] + path)
+
+    def put_file(self, path: StoragePath, file_path: str) -> None:
+        self.s3.upload_file(file_path, self.s3_bucket, self._join_path(path))
 
     def put_binary_obj(self, path: StoragePath, buffer: BufferedIOBase) -> None:
         print(buffer)
