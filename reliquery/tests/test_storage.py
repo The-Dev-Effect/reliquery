@@ -17,6 +17,7 @@ raw_config = """
         }
     }"""
 
+
 def test_use_s3_when_getting_default_storage_with_config_having_s3_type(tmpdir):
     reliquery_dir = os.path.join(tmpdir, "reliquery")
     os.makedirs(reliquery_dir)
@@ -51,12 +52,10 @@ def test_use_file_storage_when_getting_default_storage_with_config_having_file_t
         config_file.write(json.dumps(config, indent=4))
     storage = get_default_storage(tmpdir)
     assert type(storage) == FileStorage
-    
 
-@mock.patch.dict(os.environ, {"ELEMENT_CONFIG": raw_config})
-def test_use_s3_storage_when_passing_s3_config_in_environment_as_variable(
-    tmpdir,
-):
+
+@mock.patch.dict(os.environ, {"RELIQUERY_CONFIG": raw_config})
+def test_use_s3_storage_when_passing_s3_config_in_environment_as_variable(tmpdir):
     storage = get_default_storage(tmpdir)
     assert type(storage) == S3Storage
 

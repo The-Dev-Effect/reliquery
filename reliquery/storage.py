@@ -16,7 +16,7 @@ class StorageItemDoesNotExist(Exception):
 
 
 class Storage:
-    def put_file(self, path: StoragePath, file_path: str):
+    def put_file(self, path: StoragePath, file_path: str) -> None:
         raise NotImplementedError
 
     def put_binary_obj(self, path: StoragePath, buffer: BytesIO):
@@ -101,9 +101,9 @@ class S3Storage(Storage):
 
     def _join_path(self, path: StoragePath) -> str:
         return "/".join([self.prefix] + path)
-    
+
     def put_file(self, path: StoragePath, file_path: str) -> None:
-        self.s3.upload_file(file_path, self.s3_bucket,  self._join_path(path))
+        self.s3.upload_file(file_path, self.s3_bucket, self._join_path(path))
 
     def put_binary_obj(self, path: StoragePath, buffer: BufferedIOBase) -> None:
         print(buffer)
