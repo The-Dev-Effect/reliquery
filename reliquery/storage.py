@@ -102,7 +102,7 @@ class S3Storage(Storage):
         self.s3_bucket = s3_bucket
         self.prefix = prefix
         self.signed = s3_signed
-    
+
         self.s3 = _get_s3_client(self.signed)
 
     def _join_path(self, path: StoragePath) -> str:
@@ -165,7 +165,7 @@ class S3Storage(Storage):
 def get_default_storage(home_dir=os.path.expanduser("~")) -> Storage:
     reliquery_dir = os.path.join(home_dir, "reliquery")
     config = settings.get_config(reliquery_dir)
-    storage_type = config["storage"]["type"] 
+    storage_type = config["storage"]["type"]
     if storage_type == "S3":
         # return S3Storage("de-relic", "v0")
         return S3Storage(**config["storage"]["args"])
