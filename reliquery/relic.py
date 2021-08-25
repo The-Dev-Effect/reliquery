@@ -19,7 +19,9 @@ class Relic:
     relic_type: str
     storage: Storage
 
-    def __init__(self, name: str, relic_type: str, storage: Storage = None, check_exists=True):
+    def __init__(
+        self, name: str, relic_type: str, storage: Storage = None, check_exists=True
+    ):
         self.name = name
         self.relic_type = relic_type
 
