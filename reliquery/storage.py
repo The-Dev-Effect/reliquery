@@ -4,6 +4,8 @@ from typing import Any, List
 from shutil import copyfile
 
 import boto3
+from botocore import UNSIGNED
+from botocore.client import Config
 
 
 from . import settings
@@ -88,16 +90,20 @@ class FileStorage:
 S3Client = Any
 
 
-def _get_s3_client() -> S3Client:
-    return boto3.client("s3")
+def _get_s3_client(signed) -> S3Client:
+    if signed:
+        return boto3.client("s3")
+    else:
+        return boto3.client("s3", config=Config(signature_version=UNSIGNED))
 
 
 class S3Storage(Storage):
-    def __init__(self, s3_bucket: str, prefix: str):
+    def __init__(self, s3_bucket: str, prefix: str, *, s3_signed: bool = True):
         self.s3_bucket = s3_bucket
         self.prefix = prefix
-
-        self.s3 = _get_s3_client()
+        self.signed = s3_signed
+    
+        self.s3 = _get_s3_client(self.signed)
 
     def _join_path(self, path: StoragePath) -> str:
         return "/".join([self.prefix] + path)
@@ -159,11 +165,13 @@ class S3Storage(Storage):
 def get_default_storage(home_dir=os.path.expanduser("~")) -> Storage:
     reliquery_dir = os.path.join(home_dir, "reliquery")
     config = settings.get_config(reliquery_dir)
-    storage_type = config["storage"]["type"]
+    storage_type = config["storage"]["type"] 
     if storage_type == "S3":
         # return S3Storage("de-relic", "v0")
         return S3Storage(**config["storage"]["args"])
     elif storage_type == "File":
         return FileStorage(reliquery_dir)
+    elif storage_type == "Demo":
+        return S3Storage(**config["storage"]["args"], s3_signed=False)
     else:
         raise ValueError("Config storage type is not supported. Use S3 or File.")
