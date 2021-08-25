@@ -19,7 +19,7 @@ class Relic:
     relic_type: str
     storage: Storage
 
-    def __init__(self, name: str, relic_type: str, storage: Storage = None):
+    def __init__(self, name: str, relic_type: str, storage: Storage = None, check_exists=True):
         self.name = name
         self.relic_type = relic_type
 
@@ -28,7 +28,8 @@ class Relic:
         else:
             self.storage = storage
 
-        self._ensure_exists()
+        if check_exists:
+            self._ensure_exists()
 
     @classmethod
     def assert_valid_id(cls, id: str):
