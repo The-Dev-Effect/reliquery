@@ -62,7 +62,9 @@ def test_use_demo_s3_storage_when_getting_default_storage_without_config(tmpdir)
     assert storage.signed == False
 
 
-def test_use_file_storage_when_getting_storage_with_config_having_file_type(tmpdir,):
+def test_use_file_storage_when_getting_storage_with_config_having_file_type(
+    tmpdir,
+):
     reliquery_dir = os.path.join(tmpdir, "reliquery")
     os.makedirs(reliquery_dir)
     config_path = os.path.join(reliquery_dir, "config")
