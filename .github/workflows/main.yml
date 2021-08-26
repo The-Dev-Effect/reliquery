@@ -20,7 +20,7 @@ jobs:
           pip install -r requirements.txt
       - name: Lint
         run: |
-          black --check .
+          black --diff --check .
       - name: Test with pytest
         run: |
           pytest
