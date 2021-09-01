@@ -90,3 +90,16 @@ class Relic:
             [self.relic_type, self.name, "html", name]
         ) as f:
             return f.read().decode("utf-8")
+
+    def add_text(self, name: str, text: str) -> None:
+        self.assert_valid_id(name)
+
+        self.storage.put_text([self.relic_type, self.name, "text", name], text)
+
+    def list_text(self) -> List[str]:
+        return self.storage.list_keys([self.relic_type, self.name, "text"])
+
+    def get_text(self, name: str) -> str:
+        self.assert_valid_id(name)
+
+        return self.storage.get_text([self.relic_type, self.name, "text", name])

@@ -81,7 +81,7 @@ def test_use_s3_storage_when_passing_s3_config_in_environment_as_variable(tmpdir
     assert type(storage) == S3Storage
 
 
-def test_error_when_getting_storage_with_config_having_unknown_type(tmpdir):
+def test_error_when_getting_default_storage_with_config_having_unknown_type(tmpdir):
     reliquery_dir = os.path.join(tmpdir, "reliquery")
     os.makedirs(reliquery_dir)
     config_path = os.path.join(reliquery_dir, "config")
