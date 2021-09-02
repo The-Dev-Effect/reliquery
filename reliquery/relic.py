@@ -94,7 +94,11 @@ class Relic:
     def add_text(self, name: str, text: str) -> None:
         self.assert_valid_id(name)
 
+        size = getsizeof(text) * 1e-6
+        metadata = {"name": name, "data_type": "text", "size": size, "shape": len(text)}
+
         self.storage.put_text([self.relic_type, self.name, "text", name], text)
+        self.add_metadata(metadata, "text", name)
 
     def list_text(self) -> List[str]:
         return self.storage.list_keys([self.relic_type, self.name, "text"])
@@ -103,3 +107,15 @@ class Relic:
         self.assert_valid_id(name)
 
         return self.storage.get_text([self.relic_type, self.name, "text", name])
+
+    def add_metadata(self, metadata: Dict, data_type: str, name: str) -> None:
+        self.assert_valid_id(name)
+
+        self.storage.put_metadata(
+            [self.relic_type, self.name, "metadata", data_type, name], metadata
+        )
+
+        self.metadata_db.add_metadata(metadata, self.relic_type)
+
+    def list_metadata(self):
+        return self.storage.list_metadata([self.relic_type, self.name, "metadata"])

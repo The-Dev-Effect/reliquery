@@ -39,6 +39,12 @@ class Storage:
     def list_keys(self, path: StoragePath) -> List[str]:
         raise NotImplementedError
 
+    def put_metadata(self, path: StoragePath, metadata: Dict):
+        raise NotImplementedError
+
+    def list_metadata(self, path: StoragePath) -> List[str]:
+        raise NotImplementedError
+
 
 class FileStorage:
     def __init__(self, root: str):
@@ -85,6 +91,20 @@ class FileStorage:
             return []
 
         return os.listdir(joined_path)
+
+
+    def list_metadata(self, path: StoragePath) -> List[str]:
+        joined_path = self._join_path(path)
+        if not os.path.exists(joined_path):
+            return []
+
+        if not os.path.isdir(joined_path):
+            return []
+        f = []
+        for root, dirs, files in os.walk(joined_path):
+            [f.append(i) for i in files]
+
+        return f
 
 
 S3Client = Any
@@ -160,6 +180,14 @@ class S3Storage(Storage):
 
         # we want to remove the prefx
         return keys
+
+    def put_metadata(self, path: Storage, metadata: Dict):
+        self.s3.put_object(
+            Key=self._join_path(path), Bucket=self.s3_bucket, Body=json.dumps(metadata)
+        )
+
+    def list_metadata(self, path: StoragePath) -> List[str]:
+        raise Exception
 
 
 def get_default_storage(home_dir=os.path.expanduser("~")) -> Storage:
