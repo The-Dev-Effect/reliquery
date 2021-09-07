@@ -16,7 +16,7 @@ class MetadataDB:
         size_mb real NOT NULL,
         shape text,
         last_updated text NOT NULL
-    );
+    )
     """
 
     def __init__(self, sqlite_file: str) -> None:
@@ -32,6 +32,7 @@ class MetadataDB:
                 try:
                     cur = conn.cursor()
                     cur.execute(self.metadata_table)
+                    conn.commit()
                 except Error as e:
                     print(e)
                 finally:
@@ -131,4 +132,4 @@ class MetadataDB:
 
     @classmethod
     def parse_metadata_dict(self, dict: Dict) -> Tuple[str, int, str]:
-        return dict["name"], dict["data_type"], dict["size"], dict["shape"]
+        return dict["name"], dict["data_type"], dict["size_mb"], dict["shape"]

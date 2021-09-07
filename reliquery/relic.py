@@ -1,10 +1,15 @@
-from typing import List
-
+import json
+from reliquery.metadata import MetadataDB
+from typing import List, Dict
+from sys import getsizeof
+import os
 from io import BytesIO
 
 import numpy as np
 
 from .storage import StorageItemDoesNotExist, get_default_storage, Storage
+
+import pprint
 
 
 StoragePath = List[str]
@@ -20,10 +25,22 @@ class Relic:
     storage: Storage
 
     def __init__(
-        self, name: str, relic_type: str, storage: Storage = None, check_exists=True
+        self,
+        name: str,
+        relic_type: str,
+        storage: Storage = None,
+        check_exists: bool = True,
+        meta_in_memory: bool = False,
     ):
         self.name = name
         self.relic_type = relic_type
+        self.reliquery_dir = os.path.join(os.path.expanduser("~"), "reliquery")
+        if meta_in_memory:
+            self.metadata_db = MetadataDB(":memory:")
+        else:
+            self.metadata_db = MetadataDB(
+                os.path.join(self.reliquery_dir, "metadata.db")
+            )
 
         if storage is None:
             self.storage = get_default_storage()
@@ -56,6 +73,15 @@ class Relic:
     def add_array(self, name: str, array: np.ndarray):
         self.assert_valid_id(name)
 
+        size = getsizeof(array) * 1e-6
+        shape = str(np.array(array).shape)
+        metadata = {
+            "name": name,
+            "data_type": "arrays",
+            "size_mb": size,
+            "shape": shape,
+        }
+
         buffer = BytesIO()
         np.save(buffer, array, allow_pickle=False)
         buffer.seek(0)
@@ -63,6 +89,7 @@ class Relic:
         self.storage.put_binary_obj(
             [self.relic_type, self.name, "arrays", name], buffer
         )
+        self._add_metadata(metadata, "arrays", name)
 
     def get_array(self, name: str) -> np.ndarray:
         self.assert_valid_id(name)
@@ -78,7 +105,13 @@ class Relic:
     def add_html(self, name: str, html_path: str) -> None:
         self.assert_valid_id(name)
 
+        metadata = {
+            "name": name,
+            "data_type": "html",
+        }
+
         self.storage.put_file([self.relic_type, self.name, "html", name], html_path)
+        self._add_metadata(metadata=metadata, data_type="html", name=name)
 
     def list_html(self) -> List[str]:
         return self.storage.list_keys([self.relic_type, self.name, "html"])
@@ -95,10 +128,15 @@ class Relic:
         self.assert_valid_id(name)
 
         size = getsizeof(text) * 1e-6
-        metadata = {"name": name, "data_type": "text", "size": size, "shape": len(text)}
+        metadata = {
+            "name": name,
+            "data_type": "text",
+            "size_mb": size,
+            "shape": len(text),
+        }
 
         self.storage.put_text([self.relic_type, self.name, "text", name], text)
-        self.add_metadata(metadata, "text", name)
+        self._add_metadata(metadata, "text", name)
 
     def list_text(self) -> List[str]:
         return self.storage.list_keys([self.relic_type, self.name, "text"])
@@ -108,14 +146,19 @@ class Relic:
 
         return self.storage.get_text([self.relic_type, self.name, "text", name])
 
-    def add_metadata(self, metadata: Dict, data_type: str, name: str) -> None:
+    def _add_metadata(
+        self, metadata: Dict, data_type: str, name: str, save_local: bool = True
+    ) -> None:
         self.assert_valid_id(name)
 
         self.storage.put_metadata(
             [self.relic_type, self.name, "metadata", data_type, name], metadata
         )
 
-        self.metadata_db.add_metadata(metadata, self.relic_type)
+        if save_local:
+            self.metadata_db.add_metadata(metadata, self.relic_type)
 
-    def list_metadata(self):
-        return self.storage.list_metadata([self.relic_type, self.name, "metadata"])
+    def describe(self) -> Dict:
+        return self.storage.get_metadata(
+            [self.relic_type, self.name, "metadata"], self.name
+        )

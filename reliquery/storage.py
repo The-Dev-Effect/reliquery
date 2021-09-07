@@ -6,6 +6,7 @@ from shutil import copyfile
 import boto3
 from botocore import UNSIGNED
 from botocore.client import Config
+from numpy.lib.function_base import append
 
 
 from . import settings
@@ -42,7 +43,7 @@ class Storage:
     def put_metadata(self, path: StoragePath, metadata: Dict):
         raise NotImplementedError
 
-    def list_metadata(self, path: StoragePath) -> List[str]:
+    def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
         raise NotImplementedError
 
 
@@ -93,18 +94,26 @@ class FileStorage:
         return os.listdir(joined_path)
 
 
-    def list_metadata(self, path: StoragePath) -> List[str]:
-        joined_path = self._join_path(path)
-        if not os.path.exists(joined_path):
-            return []
+    def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
+        data = {root_key: {"arrays": [], "text": [], "html": []}}
 
-        if not os.path.isdir(joined_path):
-            return []
-        f = []
-        for root, dirs, files in os.walk(joined_path):
-            [f.append(i) for i in files]
+        dirs = ["arrays", "html", "text"]
 
-        return f
+        def dict_from_path(path: StoragePath, dirname: str):
+            dirpath = path.copy()
+            dirpath.append(dirname)
+            if os.path.exists(self._join_path(dirpath)):
+                entries = os.listdir(self._join_path(dirpath))
+                for i in entries:
+                    entry_path = dirpath.copy()
+                    entry_path.append(i)
+                    with open(self._join_path(entry_path), "r") as f:
+                        data[root_key][dirname].append(json.loads(f.read()))
+
+        for d in dirs:
+            dict_from_path(path, d)
+
+        return data
 
 
 S3Client = Any
@@ -176,7 +185,10 @@ class S3Storage(Storage):
             if is_truncated:
                 kwargs = dict(ContinuationToken=response["NextContinuationToken"])
 
-            keys.extend([process_key(c["Key"]) for c in response["Contents"]])
+            try:
+                keys.extend([process_key(c["Key"]) for c in response["Contents"]])
+            except KeyError as e:
+                print(f"No files found in directory {prefix}")
 
         # we want to remove the prefx
         return keys
@@ -186,8 +198,36 @@ class S3Storage(Storage):
             Key=self._join_path(path), Bucket=self.s3_bucket, Body=json.dumps(metadata)
         )
 
-    def list_metadata(self, path: StoragePath) -> List[str]:
-        raise Exception
+    def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
+        dirs = ["arrays", "html", "text"]
+
+        data = {root_key: {"arrays": [], "text": [], "html": []}}
+
+        def dict_from_path(path: StoragePath, dirname: str) -> None:
+            dirpath = path.copy()
+            dirpath.append(dirname)
+            dir_keys = self.list_keys(dirpath.copy())
+
+            for key in dir_keys:
+                key_path = dirpath.copy()
+                key_path.append(key)
+
+                try:
+                    obj = self.s3.get_object(
+                        Key=self._join_path(key_path),
+                        Bucket=self.s3_bucket,
+                    )
+                except self.s3.exceptions.NoSuchKey:
+                    raise StorageItemDoesNotExist
+
+                data[root_key][dirname].append(
+                    json.loads(obj["Body"].read().decode("utf-8"))
+                )
+
+        for d in dirs:
+            dict_from_path(path, d)
+
+        return data
 
 
 def get_default_storage(home_dir=os.path.expanduser("~")) -> Storage:
