@@ -1,10 +1,8 @@
-from numpy.core.fromnumeric import shape
-from reliquery import relic
-from numpy.lib.shape_base import put_along_axis
 import pytest
 import os
 from .. import Relic
-from ..storage import FileStorage, S3Storage, Storage
+from ..metadata import Metadata
+from ..storage import FileStorage
 from unittest.mock import patch
 import datetime as dt
 
@@ -100,3 +98,35 @@ def test_relic_s3_storage_syncs_on_init(storage):
     rq = Relic(name="test", relic_type="test")
 
     assert len(rq.describe()["test"]["arrays"]) == 1
+
+
+@patch.dict(os.environ, {"RELIQUERY_CONFIG": raw_config})
+@patch("reliquery.storage.S3Storage.put_text")
+@patch("reliquery.storage.S3Storage.list_keys")
+@patch("reliquery.storage.S3Storage.get_metadata")
+def test_db_connection(put_text, list_keys, get_metadata):
+    put_text.return_value = "exists"
+    list_keys.return_value = []
+    get_metadata.return_value = {}
+
+    rq = Relic(name="test", relic_type="test")
+
+    db = rq.storage.metadata_db
+
+    assert len(list(iter(db.get_all_metadata()))) == 0
+
+    db.add_metadata(
+        Metadata(
+            "name",
+            "data type",
+            "relic type",
+            last_modified=dt.datetime.utcnow().strftime("%m/%d/%Y %H:%M:%S"),
+        )
+    )
+
+    assert len(list(iter(db.get_all_metadata()))) == 1
+    meta = [i for i in db.get_all_metadata()]
+    assert meta[0].name == "name"
+    assert meta[0].data_type == "data type"
+    assert meta[0].relic_type == "relic type"
+    assert meta[0].last_modified is not None

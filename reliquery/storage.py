@@ -1,6 +1,6 @@
 import os
 from io import BytesIO, BufferedIOBase
-from typing import Any, List
+from typing import Any, List, Dict
 from shutil import copyfile
 import json
 
@@ -95,6 +95,11 @@ class FileStorage:
 
         return os.listdir(joined_path)
 
+    def put_metadata(self, path: StoragePath, metadata: Dict):
+        self._ensure_path(path)
+
+        with open(self._join_path(path), "w") as f:
+            return f.write(json.dumps(metadata))
 
     def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
         data = {root_key: {"arrays": [], "text": [], "html": []}}
@@ -228,22 +233,23 @@ class S3Storage(Storage):
             dirpath.append(dirname)
             dir_keys = self.list_keys(dirpath.copy())
 
-            for key in dir_keys:
-                key_path = dirpath.copy()
-                key_path.append(key)
+            if len(dir_keys) > 0:
+                for key in dir_keys:
+                    key_path = dirpath.copy()
+                    key_path.append(key)
 
-                try:
-                    obj = self.s3.get_object(
-                        Key=self._join_path(key_path),
-                        Bucket=self.s3_bucket,
+                    try:
+                        obj = self.s3.get_object(
+                            Key=self._join_path(key_path),
+                            Bucket=self.s3_bucket,
+                        )
+                    except self.s3.exceptions.NoSuchKey:
+                        raise StorageItemDoesNotExist
+
+                    data[root_key][dirname].append(
+                        json.loads(obj["Body"].read().decode("utf-8"))
                     )
-                except self.s3.exceptions.NoSuchKey:
-                    raise StorageItemDoesNotExist
-
-                data[root_key][dirname].append(
-                    json.loads(obj["Body"].read().decode("utf-8"))
-                )
-
+            
         for d in dirs:
             dict_from_path(path, d)
 
@@ -257,12 +263,12 @@ class S3Storage(Storage):
         types = ["arrays", "text", "html"]
 
         for type in types:
-            for data in metadata[self.relic_name][type]:
-                self.metadata_db.sync(Metadata.parse_dict(data))
+            if type in metadata:
+                for data in metadata[self.relic_name][type]:
+                    self.metadata_db.sync(Metadata.parse_dict(data))
 
 
-def get_default_storage(home_dir=os.path.expanduser("~")) -> Storage:
-    reliquery_dir = os.path.join(home_dir, "reliquery")
+def get_default_storage(reliquery_dir: str) -> Storage:
     config = settings.get_config(reliquery_dir)
     storage_type = config["storage"]["type"]
     if storage_type == "S3":

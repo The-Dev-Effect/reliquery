@@ -61,7 +61,6 @@ class Relic:
     def relic_exists(cls, name: str, relic_type: str, storage: Storage = None) -> bool:
         if storage is None:
             storage = get_default_storage()
-
         try:
             storage.get_text([relic_type, name, "exists"])
         except StorageItemDoesNotExist:
