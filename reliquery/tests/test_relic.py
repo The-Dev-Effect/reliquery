@@ -12,12 +12,12 @@ def test_storage(tmp_path):
 
 
 def test_relic(test_storage):
-    e = Relic("test", "test", storage=test_storage, meta_in_memory=True)
+    e = Relic("test", "test", storage=test_storage)
     assert Relic.relic_exists("test", "test", storage=test_storage)
 
 
 def test_array(test_storage):
-    e = Relic("test", "test", storage=test_storage, meta_in_memory=True)
+    e = Relic("test", "test", storage=test_storage)
 
     orig = np.ones((10, 10))
 
