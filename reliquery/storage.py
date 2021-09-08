@@ -2,6 +2,7 @@ import os
 from io import BytesIO, BufferedIOBase
 from typing import Any, List
 from shutil import copyfile
+import json
 
 import boto3
 from botocore import UNSIGNED
@@ -10,6 +11,7 @@ from numpy.lib.function_base import append
 
 
 from . import settings
+from reliquery.metadata import Metadata, MetadataDB
 
 StoragePath = List[str]
 
@@ -127,17 +129,31 @@ def _get_s3_client(signed) -> S3Client:
 
 
 class S3Storage(Storage):
-    def __init__(self, s3_bucket: str, prefix: str, *, s3_signed: bool = True):
+    def __init__(
+        self,
+        s3_bucket: str,
+        prefix: str,
+        *,
+        relic_type: str = None,
+        relic_name: str = None,
+        s3_signed: bool = True,
+    ):
         self.s3_bucket = s3_bucket
         self.prefix = prefix
         self.signed = s3_signed
+        self.relic_type = relic_type
+        self.relic_name = relic_name
 
         self.s3 = _get_s3_client(self.signed)
+
+        self.metadata_db = MetadataDB()
 
     def _join_path(self, path: StoragePath) -> str:
         return "/".join([self.prefix] + path)
 
     def put_file(self, path: StoragePath, file_path: str) -> None:
+        self.sync_relic_metadata()
+
         self.s3.upload_file(file_path, self.s3_bucket, self._join_path(path))
 
     def put_binary_obj(self, path: StoragePath, buffer: BufferedIOBase) -> None:
@@ -146,6 +162,7 @@ class S3Storage(Storage):
         self.s3.upload_fileobj(buffer, self.s3_bucket, self._join_path(path))
 
     def get_binary_obj(self, path: StoragePath) -> BufferedIOBase:
+        self.sync_relic_metadata()
         buffer = BytesIO()
 
         self.s3.download_fileobj(self.s3_bucket, self._join_path(path), buffer)
@@ -155,6 +172,8 @@ class S3Storage(Storage):
         return buffer
 
     def put_text(self, path: StoragePath, text: str, encoding: str = "utf-8") -> None:
+        self.sync_relic_metadata()
+
         self.s3.put_object(
             Key=self._join_path(path), Bucket=self.s3_bucket, Body=text.encode(encoding)
         )
@@ -197,6 +216,7 @@ class S3Storage(Storage):
         self.s3.put_object(
             Key=self._join_path(path), Bucket=self.s3_bucket, Body=json.dumps(metadata)
         )
+        self.metadata_db.add_metadata(Metadata.parse_dict(metadata))
 
     def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
         dirs = ["arrays", "html", "text"]
@@ -228,6 +248,17 @@ class S3Storage(Storage):
             dict_from_path(path, d)
 
         return data
+
+    def sync_relic_metadata(self) -> None:
+        metadata = self.get_metadata(
+            [self.relic_type, self.relic_name, "metadata"], self.relic_name
+        )
+
+        types = ["arrays", "text", "html"]
+
+        for type in types:
+            for data in metadata[self.relic_name][type]:
+                self.metadata_db.sync(Metadata.parse_dict(data))
 
 
 def get_default_storage(home_dir=os.path.expanduser("~")) -> Storage:
