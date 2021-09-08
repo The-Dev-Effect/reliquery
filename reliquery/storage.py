@@ -249,7 +249,7 @@ class S3Storage(Storage):
                     data[root_key][dirname].append(
                         json.loads(obj["Body"].read().decode("utf-8"))
                     )
-            
+
         for d in dirs:
             dict_from_path(path, d)
 
