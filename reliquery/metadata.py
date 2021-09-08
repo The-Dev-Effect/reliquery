@@ -75,18 +75,18 @@ class MetadataDB:
     """
 
     def __init__(self) -> None:
-        conn = None
+        self.conn = None
 
         try:
-            conn = self.connect_db()
+            self.conn = self.connect_db()
         except Error as e:
             print(e)
         finally:
-            if conn:
+            if self.conn:
                 try:
-                    cur = conn.cursor()
+                    cur = self.conn.cursor()
                     cur.execute(self.metadata_table)
-                    conn.commit()
+                    self.conn.commit()
                 except Error as e:
                     print(e)
 
@@ -107,10 +107,8 @@ class MetadataDB:
         return self.file_loc
 
     def add_metadata(self, metadata: Metadata) -> None:
-        conn = None
         try:
-            conn = self.connect_db()
-            cur = conn.cursor()
+            cur = self.conn.cursor()
 
             cur.execute(
                 """
@@ -128,7 +126,6 @@ class MetadataDB:
 
             if len(rows) > 0:
                 self.update_metadata(metadata)
-                conn.close()
                 return
             # metadata.last_modified = str(dt.datetime.utcnow())
             cur.execute(
@@ -144,7 +141,7 @@ class MetadataDB:
                 ),
             )
 
-            conn.commit()
+            self.conn.commit()
 
         except Error as e:
             print(e)
@@ -153,8 +150,7 @@ class MetadataDB:
         self, name: str, data_type: str, relic_type: str
     ) -> Metadata:
         try:
-            conn = self.connect_db()
-            cur = conn.cursor()
+            cur = self.conn.cursor()
 
             cur.execute(
                 """
@@ -171,7 +167,6 @@ class MetadataDB:
             rows = cur.fetchall()
 
             if len(rows) > 0:
-                print(rows)
                 return Metadata(
                     name=rows[0][1],
                     data_type=rows[0][2],
@@ -188,14 +183,32 @@ class MetadataDB:
             print(e)
 
     def get_all_metadata(self) -> List:
-        raise Exception
+        try:
+            cur = self.conn.cursor()
+
+            cur.execute("""SELECT * FROM metadata """)
+            rows = cur.fetchall()
+
+            if len(rows) > 0:
+                for row in rows:
+                    yield Metadata(
+                        name=row[1],
+                        data_type=row[2],
+                        relic_type=row[3],
+                        size=row[4],
+                        last_modified=row[6],
+                        shape=row[5],
+                        id=row[0],
+                    )
+            else:
+                return []
+
+        except Error as e:
+            print(e)
 
     def update_metadata(self, metadata: Metadata) -> None:
-
-        conn = None
         try:
-            conn = self.connect_db()
-            cur = conn.cursor()
+            cur = self.conn.cursor()
 
             # metadata.last_modified = str(dt.datetime.utcnow())
             cur.execute(
@@ -215,7 +228,7 @@ class MetadataDB:
                 ),
             )
 
-            conn.commit()
+            self.conn.commit()
 
         except Error as e:
             print(e)
