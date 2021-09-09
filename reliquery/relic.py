@@ -35,21 +35,10 @@ class Relic:
     ):
         self.name = name
         self.relic_type = relic_type
-<<<<<<< HEAD
-
-        if storage is None:
-            self.storage = get_default_storage()
-            if type(self.storage) == S3Storage:
-                self.storage.relic_type = self.relic_type
-                self.storage.relic_name = self.name
-
-                self.storage.sync_relic_metadata()
-=======
         self.storage_type = storage_type
 
         if storage is None:
             self.storage = get_default_storage(self.storage_type)
->>>>>>> 96e43b5 (checkout commit)
         else:
             self.storage = storage
 
@@ -92,7 +81,7 @@ class Relic:
             name=name,
             data_type="arrays",
             relic_type=self.relic_type,
-            storage_type=self.storage_type,
+            # storage_type=self.storage_type,
             size=size,
             shape=shape,
         )
@@ -125,7 +114,7 @@ class Relic:
             name=name,
             data_type="html",
             relic_type=self.relic_type,
-            storage_type=self.storage_type,
+            # storage_type=self.storage_type,
         )
 
         self.storage.put_file([self.relic_type, self.name, "html", name], html_path)
@@ -151,7 +140,7 @@ class Relic:
             name=name,
             data_type="text",
             relic_type=self.relic_type,
-            storage_type=self.storage_type,
+            # storage_type=self.storage_type,
             size=size,
             shape=len(text),
         )
@@ -180,27 +169,16 @@ class Relic:
             [self.relic_type, self.name, "metadata"], self.name
         )
 
-    def query(self):  # , statement: str) -> List[List]:
+    """
+    Query metadata over all relics
+
+    pass SQL expression as a string
+    """
+
+    def query(self, statement: str) -> List[List]:
         metadata = self.storage.get_all_relic_metadata()
-        if len(metadata) > 0:
-            for data in metadata:
-                self.metadata_db.sync(Metadata.parse_dict(data))
 
-        return self.metadata_db.query("SELECT * FROM metadata;")
+        for data in metadata:
+            self.metadata_db.sync(Metadata.parse_dict(data))
 
-    """
-    Syncs metadata of all relics on reliquery. Called only before querying
-    relics and their components
-    """
-
-    def _sync_reliquery_metadata(self) -> Dict:
-        metadata = self.storage.get_metadata(
-            [self.relic_type, self.name, "metadata"], self.name
-        )
-
-        types = ["arrays", "text", "html"]
-
-        for type in types:
-            if type in metadata:
-                for data in metadata[self.relic_name][type]:
-                    self.metadata_db.sync(Metadata.parse_dict(data))
+        return self.metadata_db.query(statement)

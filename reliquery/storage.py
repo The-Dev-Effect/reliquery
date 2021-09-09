@@ -50,7 +50,7 @@ class Storage:
     def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
         raise NotImplementedError
 
-    def get_all_relic_metadata(self) -> Dict:
+    def get_all_relic_metadata(self) -> List[Dict]:
         raise NotImplementedError
 
 
@@ -127,7 +127,7 @@ class FileStorage:
 
         return data
 
-    def get_all_relic_metadata(self) -> Dict:
+    def get_all_relic_metadata(self) -> List[Dict]:
         raise RuntimeError
 
 
@@ -217,7 +217,6 @@ class S3Storage(Storage):
         self.s3.put_object(
             Key=self._join_path(path), Bucket=self.s3_bucket, Body=json.dumps(metadata)
         )
-        self.metadata_db.add_metadata(Metadata.parse_dict(metadata))
 
     def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
         dirs = ["arrays", "html", "text"]
@@ -258,17 +257,20 @@ class S3Storage(Storage):
 
         if len(meta_keys) > 0:
             for key in meta_keys:
-                yield self.s3.get_object(
-                    Key=self._join_path(key.split("/")),
-                    Bucket=self.s3_bucket,
-                )["Body"].read().decode(encoding)
+                yield json.loads(
+                    self.s3.get_object(
+                        Key=self._join_path(key.split("/")),
+                        Bucket=self.s3_bucket,
+                    )["Body"]
+                    .read()
+                    .decode(encoding)
+                )
 
     def list_key_paths(self, path: StoragePath) -> List[str]:
         prefix = self._join_path(path)
 
         def process_key(k):
             return k[len(prefix) :]
-            # NOTE: this was stripping the first letter of keys returned
 
         is_truncated = True
         keys = []
@@ -290,13 +292,8 @@ class S3Storage(Storage):
         return keys
 
 
-<<<<<<< HEAD
-def get_default_storage(root: str = os.path.expanduser("~")) -> Storage:
+def get_default_storage(key: str, root: str = os.path.expanduser("~")) -> Storage:
     reliquery_dir = os.path.join(root, "reliquery")
-=======
-def get_default_storage(key: str, root_dir: str = os.path.expanduser("~")) -> Storage:
-    reliquery_dir = os.path.join(root_dir, "reliquery")
->>>>>>> 96e43b5 (checkout commit)
     config = settings.get_config(reliquery_dir)
 
     if key == "default" or key == "file":
