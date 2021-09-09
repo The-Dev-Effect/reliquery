@@ -316,17 +316,20 @@ class S3Storage(Storage):
 
         if len(meta_keys) > 0:
             for key in meta_keys:
-                yield self.s3.get_object(
-                    Key=self._join_path(key.split("/")),
-                    Bucket=self.s3_bucket,
-                )["Body"].read().decode(encoding)
+                yield json.loads(
+                    self.s3.get_object(
+                        Key=self._join_path(key.split("/")),
+                        Bucket=self.s3_bucket,
+                    )["Body"]
+                    .read()
+                    .decode(encoding)
+                )
 
     def list_key_paths(self, path: StoragePath) -> List[str]:
         prefix = self._join_path(path)
 
         def process_key(k):
             return k[len(prefix) :]
-            # NOTE: this was stripping the first letter of keys returned
 
         is_truncated = True
         keys = []

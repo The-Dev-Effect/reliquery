@@ -107,7 +107,6 @@ class Metadata(Data):
 
     @classmethod
     def parse_dict(self, dict: Dict):
-        print(dict)
         metadata = Metadata(
             name=dict["name"],
             data_type=dict["data_type"],
@@ -218,7 +217,7 @@ class MetadataDB:
                 return
 
             cur.execute(
-                "INSERT into metadata VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT into metadata VALUES (?, ?, ?, ?, ?, ?, ?)",
                 (
                     None,
                     metadata.name,
