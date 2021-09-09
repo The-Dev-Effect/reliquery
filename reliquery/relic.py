@@ -34,10 +34,9 @@ class Relic:
     ):
         self.name = name
         self.relic_type = relic_type
-        self.reliquery_dir = os.path.join(os.path.expanduser("~"), "reliquery")
 
         if storage is None:
-            self.storage = get_default_storage(self.reliquery_dir)
+            self.storage = get_default_storage()
             if type(self.storage) == S3Storage:
                 self.storage.relic_type = self.relic_type
                 self.storage.relic_name = self.name
@@ -57,6 +56,7 @@ class Relic:
     def _ensure_exists(self):
         self.storage.put_text([self.relic_type, self.name, "exists"], "exists")
 
+    #TODO: needs test coverage
     @classmethod
     def relic_exists(cls, name: str, relic_type: str, storage: Storage = None) -> bool:
         if storage is None:

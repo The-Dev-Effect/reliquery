@@ -13,6 +13,8 @@ from numpy.lib.function_base import append
 from . import settings
 from reliquery.metadata import Metadata, MetadataDB
 
+import reliquery
+
 StoragePath = List[str]
 
 
@@ -268,7 +270,8 @@ class S3Storage(Storage):
                     self.metadata_db.sync(Metadata.parse_dict(data))
 
 
-def get_default_storage(reliquery_dir: str) -> Storage:
+def get_default_storage(root: str = os.path.expanduser("~")) -> Storage:
+    reliquery_dir = os.path.join(root, "reliquery")
     config = settings.get_config(reliquery_dir)
     storage_type = config["storage"]["type"]
     if storage_type == "S3":
