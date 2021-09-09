@@ -51,6 +51,10 @@ class Relic:
 
         if storage is None:
             self.storage = get_storage_by_name(self.storage_name)
+
+        if storage is None:
+            self.storage = get_storage_by_name(self.storage_type)
+
         else:
             self.storage = storage
 
