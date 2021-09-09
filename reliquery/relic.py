@@ -1,6 +1,6 @@
 from genericpath import samefile
 import json
-from reliquery.metadata import Metadata
+from reliquery.metadata import Metadata, MetadataDB
 from typing import List, Dict
 from sys import getsizeof
 import os
@@ -30,10 +30,12 @@ class Relic:
         name: str,
         relic_type: str,
         storage: Storage = None,
+        storage_type: str = "default",
         check_exists: bool = True,
     ):
         self.name = name
         self.relic_type = relic_type
+<<<<<<< HEAD
 
         if storage is None:
             self.storage = get_default_storage()
@@ -42,11 +44,19 @@ class Relic:
                 self.storage.relic_name = self.name
 
                 self.storage.sync_relic_metadata()
+=======
+        self.storage_type = storage_type
+
+        if storage is None:
+            self.storage = get_default_storage(self.storage_type)
+>>>>>>> 96e43b5 (checkout commit)
         else:
             self.storage = storage
 
         if check_exists:
             self._ensure_exists()
+
+        self.metadata_db = MetadataDB()
 
     @classmethod
     def assert_valid_id(cls, id: str):
@@ -54,7 +64,11 @@ class Relic:
             raise InvalidRelicId()
 
     def _ensure_exists(self):
-        self.storage.put_text([self.relic_type, self.name, "exists"], "exists")
+        try:
+            self.storage.get_text([self.relic_type, self.name, "exists"])
+        except StorageItemDoesNotExist as e:
+            print("Creating a Relic")
+            self.storage.put_text([self.relic_type, self.name, "exists"], "exists")
 
     # TODO: needs test coverage
     @classmethod
@@ -69,6 +83,7 @@ class Relic:
         return True
 
     def add_array(self, name: str, array: np.ndarray):
+
         self.assert_valid_id(name)
 
         size = getsizeof(array)
@@ -77,6 +92,7 @@ class Relic:
             name=name,
             data_type="arrays",
             relic_type=self.relic_type,
+            storage_type=self.storage_type,
             size=size,
             shape=shape,
         )
@@ -102,10 +118,14 @@ class Relic:
         return self.storage.list_keys([self.relic_type, self.name, "arrays"])
 
     def add_html(self, name: str, html_path: str) -> None:
+
         self.assert_valid_id(name)
 
         metadata = metadata = Metadata(
-            name=name, data_type="html", relic_type=self.relic_type
+            name=name,
+            data_type="html",
+            relic_type=self.relic_type,
+            storage_type=self.storage_type,
         )
 
         self.storage.put_file([self.relic_type, self.name, "html", name], html_path)
@@ -123,6 +143,7 @@ class Relic:
             return f.read().decode("utf-8")
 
     def add_text(self, name: str, text: str) -> None:
+
         self.assert_valid_id(name)
 
         size = getsizeof(text)
@@ -130,6 +151,7 @@ class Relic:
             name=name,
             data_type="text",
             relic_type=self.relic_type,
+            storage_type=self.storage_type,
             size=size,
             shape=len(text),
         )
@@ -157,3 +179,28 @@ class Relic:
         return self.storage.get_metadata(
             [self.relic_type, self.name, "metadata"], self.name
         )
+
+    def query(self):  # , statement: str) -> List[List]:
+        metadata = self.storage.get_all_relic_metadata()
+        if len(metadata) > 0:
+            for data in metadata:
+                self.metadata_db.sync(Metadata.parse_dict(data))
+
+        return self.metadata_db.query("SELECT * FROM metadata;")
+
+    """
+    Syncs metadata of all relics on reliquery. Called only before querying
+    relics and their components
+    """
+
+    def _sync_reliquery_metadata(self) -> Dict:
+        metadata = self.storage.get_metadata(
+            [self.relic_type, self.name, "metadata"], self.name
+        )
+
+        types = ["arrays", "text", "html"]
+
+        for type in types:
+            if type in metadata:
+                for data in metadata[self.relic_name][type]:
+                    self.metadata_db.sync(Metadata.parse_dict(data))

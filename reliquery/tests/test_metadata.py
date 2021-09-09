@@ -8,24 +8,16 @@ import datetime as dt
 
 import numpy as np
 
-"""
-NOTE:
-Tests metadata created implicitly and as a product of creating other 
-relics of differing types
-
-Pass meta_in_memory=True into any relics to create a sqlite database 
-in memory. This is needed in tests to clean up after test that dirty 
-the database.
-"""
-
 raw_config = """
     {
-        "storage": {
-          "type": "S3",
-          "args": {
-            "s3_bucket": "Scratch-bucket",
-            "prefix": "scratch"
-          }
+        "s3": {
+            "storage": {
+            "type": "S3",
+                "args": {
+                    "s3_bucket": "Scratch-bucket",
+                    "prefix": "scratch"
+                }
+            }
         }
     }"""
 
@@ -95,7 +87,7 @@ def test_relic_s3_storage_syncs_on_init(storage):
     }
     storage().list_keys.return_value = ["test-array"]
 
-    rq = Relic(name="test", relic_type="test")
+    rq = Relic(name="test", relic_type="test", storage_type="s3")
 
     assert len(rq.describe()["test"]["arrays"]) == 1
 
@@ -109,9 +101,9 @@ def test_db_connection(put_text, list_keys, get_metadata):
     list_keys.return_value = []
     get_metadata.return_value = {}
 
-    rq = Relic(name="test", relic_type="test")
+    rq = Relic(name="test", relic_type="test", storage_type="s3", check_exists=False)
 
-    db = rq.storage.metadata_db
+    db = rq.metadata_db
 
     assert len(list(iter(db.get_all_metadata()))) == 0
 
@@ -120,6 +112,7 @@ def test_db_connection(put_text, list_keys, get_metadata):
             "name",
             "data type",
             "relic type",
+            "storage type",
             last_modified=dt.datetime.utcnow().strftime("%m/%d/%Y %H:%M:%S"),
         )
     )
@@ -129,4 +122,5 @@ def test_db_connection(put_text, list_keys, get_metadata):
     assert meta[0].name == "name"
     assert meta[0].data_type == "data type"
     assert meta[0].relic_type == "relic type"
+    assert meta[0].storage_type == "storage type"
     assert meta[0].last_modified is not None
