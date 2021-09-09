@@ -50,6 +50,9 @@ class Storage:
     def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
         raise NotImplementedError
 
+    def get_all_relic_metadata(self) -> Dict:
+        raise NotImplementedError
+
 
 class FileStorage:
     def __init__(self, root: str):
@@ -124,6 +127,9 @@ class FileStorage:
 
         return data
 
+    def get_all_relic_metadata(self) -> Dict:
+        raise RuntimeError
+
 
 S3Client = Any
 
@@ -141,26 +147,18 @@ class S3Storage(Storage):
         s3_bucket: str,
         prefix: str,
         *,
-        relic_type: str = None,
-        relic_name: str = None,
         s3_signed: bool = True,
     ):
         self.s3_bucket = s3_bucket
         self.prefix = prefix
         self.signed = s3_signed
-        self.relic_type = relic_type
-        self.relic_name = relic_name
 
         self.s3 = _get_s3_client(self.signed)
-
-        self.metadata_db = MetadataDB()
 
     def _join_path(self, path: StoragePath) -> str:
         return "/".join([self.prefix] + path)
 
     def put_file(self, path: StoragePath, file_path: str) -> None:
-        self.sync_relic_metadata()
-
         self.s3.upload_file(file_path, self.s3_bucket, self._join_path(path))
 
     def put_binary_obj(self, path: StoragePath, buffer: BufferedIOBase) -> None:
@@ -169,7 +167,6 @@ class S3Storage(Storage):
         self.s3.upload_fileobj(buffer, self.s3_bucket, self._join_path(path))
 
     def get_binary_obj(self, path: StoragePath) -> BufferedIOBase:
-        self.sync_relic_metadata()
         buffer = BytesIO()
 
         self.s3.download_fileobj(self.s3_bucket, self._join_path(path), buffer)
@@ -179,8 +176,6 @@ class S3Storage(Storage):
         return buffer
 
     def put_text(self, path: StoragePath, text: str, encoding: str = "utf-8") -> None:
-        self.sync_relic_metadata()
-
         self.s3.put_object(
             Key=self._join_path(path), Bucket=self.s3_bucket, Body=text.encode(encoding)
         )
@@ -215,7 +210,6 @@ class S3Storage(Storage):
                 keys.extend([process_key(c["Key"]) for c in response["Contents"]])
             except KeyError as e:
                 print(f"No files found in directory {prefix}")
-
         # we want to remove the prefx
         return keys
 
@@ -257,29 +251,59 @@ class S3Storage(Storage):
 
         return data
 
-    def sync_relic_metadata(self) -> None:
-        metadata = self.get_metadata(
-            [self.relic_type, self.relic_name, "metadata"], self.relic_name
-        )
+    def get_all_relic_metadata(self, encoding: str = "utf-8") -> List[Dict]:
+        meta_keys = [
+            key for key in self.list_key_paths([""]) if "metadata" in key.split("/")
+        ]
 
-        types = ["arrays", "text", "html"]
+        if len(meta_keys) > 0:
+            for key in meta_keys:
+                yield self.s3.get_object(
+                    Key=self._join_path(key.split("/")),
+                    Bucket=self.s3_bucket,
+                )["Body"].read().decode(encoding)
 
-        for type in types:
-            if type in metadata:
-                for data in metadata[self.relic_name][type]:
-                    self.metadata_db.sync(Metadata.parse_dict(data))
+    def list_key_paths(self, path: StoragePath) -> List[str]:
+        prefix = self._join_path(path)
+
+        def process_key(k):
+            return k[len(prefix) :]
+            # NOTE: this was stripping the first letter of keys returned
+
+        is_truncated = True
+        keys = []
+        kwargs = {}
+        while is_truncated:
+            response = self.s3.list_objects_v2(
+                Bucket=self.s3_bucket, Prefix=prefix, **kwargs
+            )
+
+            is_truncated = response["IsTruncated"]
+            if is_truncated:
+                kwargs = dict(ContinuationToken=response["NextContinuationToken"])
+
+            try:
+                keys.extend([process_key(c["Key"]) for c in response["Contents"]])
+            except KeyError as e:
+                print(f"No files found in directory {prefix}")
+        # we want to remove the prefx
+        return keys
 
 
+<<<<<<< HEAD
 def get_default_storage(root: str = os.path.expanduser("~")) -> Storage:
     reliquery_dir = os.path.join(root, "reliquery")
+=======
+def get_default_storage(key: str, root_dir: str = os.path.expanduser("~")) -> Storage:
+    reliquery_dir = os.path.join(root_dir, "reliquery")
+>>>>>>> 96e43b5 (checkout commit)
     config = settings.get_config(reliquery_dir)
-    storage_type = config["storage"]["type"]
-    if storage_type == "S3":
-        # return S3Storage("de-relic", "v0")
-        return S3Storage(**config["storage"]["args"])
-    elif storage_type == "File":
+
+    if key == "default" or key == "file":
         return FileStorage(reliquery_dir)
-    elif storage_type == "Demo":
-        return S3Storage(**config["storage"]["args"], s3_signed=False)
+    elif key == "s3":
+        return S3Storage(**config["s3"]["storage"]["args"])
+    elif key == "demo":
+        return S3Storage(**config["demo"]["storage"]["args"], s3_signed=False)
     else:
         raise ValueError("Config storage type is not supported. Use S3 or File.")
