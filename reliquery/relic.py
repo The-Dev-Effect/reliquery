@@ -56,7 +56,7 @@ class Relic:
     def _ensure_exists(self):
         self.storage.put_text([self.relic_type, self.name, "exists"], "exists")
 
-    #TODO: needs test coverage
+    # TODO: needs test coverage
     @classmethod
     def relic_exists(cls, name: str, relic_type: str, storage: Storage = None) -> bool:
         if storage is None:
