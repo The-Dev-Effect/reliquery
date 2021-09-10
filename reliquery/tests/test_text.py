@@ -10,7 +10,9 @@ def test_storage(tmp_path):
 
 
 def test_list_text_file_when_add_text(test_storage):
-    rq = Relic(name="test", relic_type="test", storage=test_storage)
+    rq = Relic(
+        name="test", relic_type="test", storage_name="tests", storage=test_storage
+    )
 
     rq.add_text("test-text", "Test String!!!\n\tWhat do you think?")
     text_list = rq.list_text()
@@ -19,7 +21,9 @@ def test_list_text_file_when_add_text(test_storage):
 
 def test_text_file_given_file_name(test_storage):
 
-    rq = Relic(name="test", relic_type="test", storage=test_storage)
+    rq = Relic(
+        name="test", relic_type="test", storage_name="tests", storage=test_storage
+    )
 
     rq.add_text("test-text", "Test String!!!\n\tWhat do you think?")
 
@@ -30,7 +34,9 @@ def test_text_file_given_file_name(test_storage):
 
 def test_list_text_files(test_storage):
 
-    rq = Relic(name="test", relic_type="test", storage=test_storage)
+    rq = Relic(
+        name="test", relic_type="test", storage_name="tests", storage=test_storage
+    )
 
     rq.add_text("test-text", "Test String!!!\n\tWhat do you think?")
     rq.add_text("test-text2", "Another String!!!\n\tWant More of them?")
