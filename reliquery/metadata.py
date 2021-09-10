@@ -13,6 +13,7 @@ class Metadata:
         name: str,
         data_type: str,
         relic_type: str,
+        storage_name: str,
         size: float = None,
         shape: str = None,
         id: int = None,
@@ -22,6 +23,7 @@ class Metadata:
         self.name = name
         self.data_type = data_type
         self.relic_type = relic_type
+        self.storage_name = storage_name
         self.size = size
         self.shape = shape
         self.last_modified = (
@@ -36,6 +38,7 @@ class Metadata:
             "name": self.name,
             "data_type": self.data_type,
             "relic_type": self.relic_type,
+            "storage_name": self.storage_name,
             "size": self.size,
             "shape": self.shape,
             "last_modified": self.last_modified,
@@ -47,6 +50,9 @@ class Metadata:
             name=dict["name"],
             data_type=dict["data_type"],
             relic_type=dict["relic_type"],
+            storage_name=dict["storage_name"]
+            if "storage_name" in dict
+            else "None",  # FIXME
             last_modified=dict["last_modified"],
         )
 
@@ -68,9 +74,18 @@ class MetadataDB:
         name text NOT NULL,
         data_type text NOT NULL,
         relic_type text NOT NULL,
+        storage_name text NOT NULL,
         size real,
         shape text,
         last_modified text NOT NULL
+    )
+    """
+
+    relic_tag_table = """
+    CREATE TABLE IF NOT EXISTS relic_tags (
+        id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+        relic text NOT NULL,
+        tag blob NOT NULL,
     )
     """
 
@@ -118,12 +133,15 @@ class MetadataDB:
                 data_type = ?
                 AND
                 relic_type = ?
+                AND
+                storage_name = ?
                 LIMIT 1
                 """,
                 (
                     metadata.name,
                     metadata.data_type,
                     metadata.relic_type,
+                    metadata.storage_name,
                 ),
             )
             rows = cur.fetchall()
@@ -133,12 +151,13 @@ class MetadataDB:
                 return
 
             cur.execute(
-                "INSERT into metadata VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "INSERT into metadata VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     None,
                     metadata.name,
                     metadata.data_type,
                     metadata.relic_type,
+                    metadata.storage_name,
                     metadata.size,
                     metadata.shape,
                     metadata.last_modified,
@@ -151,7 +170,7 @@ class MetadataDB:
             print(e)
 
     def get_metadata_by_name(
-        self, name: str, data_type: str, relic_type: str
+        self, name: str, data_type: str, relic_type: str, storage_name: str
     ) -> Metadata:
         try:
             cur = self.conn.cursor()
@@ -164,9 +183,11 @@ class MetadataDB:
                 data_type = ?
                 AND
                 relic_type = ?
+                AND
+                storage_name = ?
                 LIMIT 1
                 """,
-                (name, data_type, relic_type),
+                (name, data_type, relic_type, storage_name),
             )
             rows = cur.fetchall()
 
@@ -175,9 +196,10 @@ class MetadataDB:
                     name=rows[0][1],
                     data_type=rows[0][2],
                     relic_type=rows[0][3],
-                    size=rows[0][4],
-                    last_modified=rows[0][6],
-                    shape=rows[0][5],
+                    storage_name=rows[0][4],
+                    size=rows[0][5],
+                    last_modified=rows[0][7],
+                    shape=rows[0][6],
                     id=rows[0][0],
                 )
             else:
@@ -192,16 +214,17 @@ class MetadataDB:
 
             cur.execute("""SELECT * FROM metadata """)
             rows = cur.fetchall()
-
+            print(rows)
             if len(rows) > 0:
                 for row in rows:
                     yield Metadata(
                         name=row[1],
                         data_type=row[2],
                         relic_type=row[3],
-                        size=row[4],
-                        last_modified=row[6],
-                        shape=row[5],
+                        storage_name=row[4],
+                        size=row[5],
+                        last_modified=row[7],
+                        shape=row[6],
                         id=row[0],
                     )
             else:
@@ -217,13 +240,14 @@ class MetadataDB:
             cur.execute(
                 """
                 UPDATE metadata 
-                SET name=?, data_type=?, relic_type=?, size=?, shape=?, last_modified=?
+                SET name=?, data_type=?, relic_type=?, storage_name=?, size=?, shape=?, last_modified=?
                 WHERE id=?
                 """,
                 (
                     metadata.name,
                     metadata.data_type,
                     metadata.relic_type,
+                    metadata.storage_name,
                     metadata.size,
                     metadata.shape,
                     metadata.last_modified,
@@ -254,7 +278,9 @@ class MetadataDB:
         return results
 
     def sync(self, ext: Metadata) -> Metadata:
-        int = self.get_metadata_by_name(ext.name, ext.data_type, ext.relic_type)
+        int = self.get_metadata_by_name(
+            ext.name, ext.data_type, ext.relic_type, ext.storage_name
+        )
 
         if int is not None:
             if dt.datetime.strptime(

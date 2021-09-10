@@ -11,7 +11,9 @@ def test_storage(tmp_path):
 
 def test_list_html_file_when_add_html(test_storage):
 
-    rq = relic.Relic(name="test", relic_type="test", storage=test_storage)
+    rq = relic.Relic(
+        name="test", relic_type="test", storage_name="test", storage=test_storage
+    )
 
     rq.add_html("test-html.html", os.path.join(os.path.dirname(__file__), "test.html"))
     html_list = rq.list_html()
@@ -20,7 +22,9 @@ def test_list_html_file_when_add_html(test_storage):
 
 def test_html_file_given_file_name(test_storage):
 
-    rq = relic.Relic(name="test", relic_type="test", storage=test_storage)
+    rq = relic.Relic(
+        name="test", relic_type="test", storage_name="test", storage=test_storage
+    )
 
     rq.add_html("test-html.html", os.path.join(os.path.dirname(__file__), "test.html"))
 
@@ -34,6 +38,7 @@ def test_list_html_files(test_storage):
     rq = relic.Relic(
         name="element-bucket",
         relic_type="test",
+        storage_name="test",
         storage=test_storage,
     )
 

@@ -28,7 +28,9 @@ def test_storage(tmp_path):
 
 
 def test_metadata_when_adding_arrays(test_storage):
-    rq = Relic(name="test", relic_type="test", storage=test_storage)
+    rq = Relic(
+        name="test", relic_type="test", storage_name="tests", storage=test_storage
+    )
 
     rq.add_array("test-array", np.zeros((100, 128, 128)))
 
@@ -41,7 +43,9 @@ def test_metadata_when_adding_arrays(test_storage):
 
 
 def test_metadata_when_adding_text(test_storage):
-    rq = Relic(name="test", relic_type="test", storage=test_storage)
+    rq = Relic(
+        name="test", relic_type="test", storage_name="tests", storage=test_storage
+    )
     test_text = "This is the test arena"
     rq.add_text("test-text", test_text)
 
@@ -54,7 +58,9 @@ def test_metadata_when_adding_text(test_storage):
 
 
 def test_metadata_when_adding_html(test_storage):
-    rq = Relic(name="test", relic_type="test", storage=test_storage)
+    rq = Relic(
+        name="test", relic_type="test", storage_name="tests", storage=test_storage
+    )
 
     rq.add_html("test-html.html", os.path.join(os.path.dirname(__file__), "test.html"))
 
@@ -87,7 +93,7 @@ def test_relic_s3_storage_syncs_on_init(storage):
     }
     storage().list_keys.return_value = ["test-array"]
 
-    rq = Relic(name="test", relic_type="test", storage_type="s3")
+    rq = Relic(name="test", relic_type="test", storage_name="test", storage_type="s3")
 
     assert len(rq.describe()["test"]["arrays"]) == 1
 
@@ -101,7 +107,13 @@ def test_db_connection(put_text, list_keys, get_metadata):
     list_keys.return_value = []
     get_metadata.return_value = {}
 
-    rq = Relic(name="test", relic_type="test", storage_type="s3", check_exists=False)
+    rq = Relic(
+        name="test",
+        relic_type="test",
+        storage_type="s3",
+        storage_name="tests",
+        check_exists=False,
+    )
 
     db = rq.metadata_db
 
@@ -112,15 +124,17 @@ def test_db_connection(put_text, list_keys, get_metadata):
             "name",
             "data type",
             "relic type",
-            "storage type",
+            "storage1",
             last_modified=dt.datetime.utcnow().strftime("%m/%d/%Y %H:%M:%S"),
         )
     )
 
-    assert len(list(iter(db.get_all_metadata()))) == 1
+    meta = [i for i in db.get_all_metadata()]
+
+    assert len(meta) == 1
     meta = [i for i in db.get_all_metadata()]
     assert meta[0].name == "name"
     assert meta[0].data_type == "data type"
     assert meta[0].relic_type == "relic type"
-    # assert meta[0].storage_type == "storage type"
+    assert meta[0].storage_name == "storage1"
     assert meta[0].last_modified is not None
