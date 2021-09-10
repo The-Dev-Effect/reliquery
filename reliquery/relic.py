@@ -41,6 +41,7 @@ class Relic:
         self,
         name: str,
         relic_type: str,
+        storage_name: str,
         storage: Storage = None,
         storage_name: str = "default",
         check_exists: bool = True,

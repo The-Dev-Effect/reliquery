@@ -217,7 +217,7 @@ class MetadataDB:
                 return
 
             cur.execute(
-                "INSERT into metadata VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "INSERT into metadata VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     None,
                     metadata.name,
@@ -280,7 +280,7 @@ class MetadataDB:
 
             cur.execute("""SELECT * FROM metadata """)
             rows = cur.fetchall()
-
+            print(rows)
             if len(rows) > 0:
                 for row in rows:
                     yield Metadata(
