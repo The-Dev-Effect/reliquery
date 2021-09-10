@@ -29,6 +29,7 @@ class Relic:
         self,
         name: str,
         relic_type: str,
+        storage_name: str,
         storage: Storage = None,
         storage_type: str = "default",
         check_exists: bool = True,
@@ -36,6 +37,7 @@ class Relic:
         self.name = name
         self.relic_type = relic_type
         self.storage_type = storage_type
+        self.storage_name = storage_name
 
         if storage is None:
             self.storage = get_default_storage(self.storage_type)
@@ -81,7 +83,7 @@ class Relic:
             name=name,
             data_type="arrays",
             relic_type=self.relic_type,
-            # storage_type=self.storage_type,
+            storage_name=self.storage_name,
             size=size,
             shape=shape,
         )
@@ -114,7 +116,7 @@ class Relic:
             name=name,
             data_type="html",
             relic_type=self.relic_type,
-            # storage_type=self.storage_type,
+            storage_name=self.storage_name,
         )
 
         self.storage.put_file([self.relic_type, self.name, "html", name], html_path)
@@ -140,7 +142,7 @@ class Relic:
             name=name,
             data_type="text",
             relic_type=self.relic_type,
-            # storage_type=self.storage_type,
+            storage_name=self.storage_name,
             size=size,
             shape=len(text),
         )
