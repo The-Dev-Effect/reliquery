@@ -41,7 +41,6 @@ class Relic:
         self,
         name: str,
         relic_type: str,
-        storage_name: str,
         storage: Storage = None,
         storage_name: str = "default",
         check_exists: bool = True,
@@ -258,14 +257,37 @@ class Reliquery:
 
         return self.metadata_db.query(statement)
 
+
+class Reliquery:
+    """
+    Class used to query over available and accessible storage locations and Relics
+
+    Attributes
+    ----------
+    storages : List[Storage]
+        list of availably accessible storages
+
+    metadata_db : MetadataDB
+        in memory sqlite db used for querying Relics
+
+    """
+
+    def __init__(self, storages: List[Storage] = []) -> None:
+        if len(storages) > 0:
+            self.storages = storages
+        else:
+            self.storages = get_available_storages()
+        self.metadata_db = MetadataDB()
+
+    def query(self, statement: str) -> List:
+        if self.storages:
+            self._sync_relics()
+
+        return self.metadata_db.query(statement)
+
     def _sync_relics(self) -> None:
         for stor in self.storages:
             metadata = stor.get_all_relic_metadata()
-            tags = stor.get_all_relic_tags()
 
             for data in metadata:
-                self.metadata_db.sync_metadata(Metadata.parse_dict(data))
-
-            for tag in tags:
-
-                self.metadata_db.sync_tags(RelicTag.parse_dict(tag))
+                self.metadata_db.sync(Metadata.parse_dict(data))
