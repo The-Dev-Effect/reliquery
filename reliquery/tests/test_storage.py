@@ -19,7 +19,16 @@ raw_config = """
                 "args": {
                     "s3_signed": true,
                     "s3_bucket": "Scratch-bucket",
-                    "prefix": "scratch"
+                    "prefix": "scratch",
+                    "name": "test-s3"
+                }
+            }
+        },
+        "file": {
+            "storage": {
+                "type": "File",
+                "args": {
+                    "name": "test-file"
                 }
             }
         },
