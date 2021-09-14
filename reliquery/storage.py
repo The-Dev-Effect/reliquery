@@ -1,5 +1,6 @@
 import os
 from io import BytesIO, BufferedIOBase
+from posixpath import join
 from typing import Any, List, Dict
 from shutil import copyfile
 import json
@@ -55,8 +56,9 @@ class Storage:
 
 
 class FileStorage:
-    def __init__(self, root: str):
+    def __init__(self, root: str, name: str = ""):
         self.root = root
+        self.name = name
 
     def _ensure_path(self, path: StoragePath):
         if not os.path.exists(self._join_path(path[:-1])):
@@ -127,8 +129,33 @@ class FileStorage:
 
         return data
 
-    def get_all_relic_metadata(self) -> List[Dict]:
-        raise RuntimeError
+    # TODO Test coverage needed
+    def get_all_relic_metadata(self, encoding: str = "utf-8") -> List[Dict]:
+        meta_keys = [
+            key for key in self.list_key_paths([""]) if "metadata" in key.split("/")
+        ]
+
+        if len(meta_keys) > 0:
+            for key in meta_keys:
+                with open(key, "r") as f:
+                    yield json.loads(f.read())
+
+    def list_key_paths(self, path: StoragePath) -> List[str]:
+        paths = []
+        joined_path = self._join_path(path)
+        subs = os.listdir(joined_path)
+
+        if subs:
+            for sub in subs:
+                copy = path.copy()
+                copy.append(sub)
+                sub_path = self._join_path(copy)
+                if os.path.isdir(sub_path):
+                    paths.extend(self.list_key_paths(copy))
+                else:
+                    paths.append(sub_path)
+
+        return paths
 
 
 S3Client = Any
@@ -146,11 +173,13 @@ class S3Storage(Storage):
         self,
         s3_bucket: str,
         prefix: str,
+        name: str = "",
         *,
         s3_signed: bool = True,
     ):
         self.s3_bucket = s3_bucket
         self.prefix = prefix
+        self.name = name if len(name) > 0 else s3_bucket
         self.signed = s3_signed
 
         self.s3 = _get_s3_client(self.signed)
@@ -296,11 +325,42 @@ def get_default_storage(key: str, root: str = os.path.expanduser("~")) -> Storag
     reliquery_dir = os.path.join(root, "reliquery")
     config = settings.get_config(reliquery_dir)
 
-    if key == "default" or key == "file":
-        return FileStorage(reliquery_dir)
+    if key == "default":
+        return FileStorage(reliquery_dir, "default")
+    elif key == "file":
+        return FileStorage(
+            reliquery_dir, name=config["file"]["storage"]["args"]["name"]
+        )
     elif key == "s3":
         return S3Storage(**config["s3"]["storage"]["args"])
     elif key == "demo":
         return S3Storage(**config["demo"]["storage"]["args"], s3_signed=False)
     else:
         raise ValueError("Config storage type is not supported. Use S3 or File.")
+
+
+def get_available_storages(root: str = os.path.expanduser("~")) -> List[Storage]:
+    reliquery_dir = os.path.join(root, "reliquery")
+    config = settings.get_config(reliquery_dir)
+
+    storages = []
+
+    for key in config.keys():
+        if key == "default":
+            storages.append(FileStorage(reliquery_dir, "default"))
+        elif key == "file":
+            storages.append(
+                FileStorage(
+                    reliquery_dir, name=config["file"]["storage"]["args"]["name"]
+                )
+            )
+        elif key == "s3":
+            storages.append(S3Storage(**config["s3"]["storage"]["args"]))
+        elif key == "demo":
+            storages.append(
+                S3Storage(**config["demo"]["storage"]["args"], s3_signed=False)
+            )
+        else:
+            raise ValueError("Config storage type is not supported.")
+
+    return storages

@@ -4,7 +4,12 @@ import os
 import pytest
 from unittest import mock
 
-from reliquery.storage import S3Storage, get_default_storage, FileStorage
+from reliquery.storage import (
+    S3Storage,
+    get_default_storage,
+    FileStorage,
+    get_available_storages,
+)
 
 raw_config = """
     {
@@ -13,7 +18,16 @@ raw_config = """
                 "type": "S3",
                 "args": {
                     "s3_bucket": "Scratch-bucket",
-                    "prefix": "scratch"
+                    "prefix": "scratch",
+                    "name": "test-s3"
+                }
+            }
+        },
+        "file": {
+            "storage": {
+                "type": "File",
+                "args": {
+                    "name": "test-file"
                 }
             }
         }
@@ -29,7 +43,11 @@ def test_use_s3_when_getting_storage_with_config_having_s3_type(tmpdir):
             "s3": {
                 "storage": {
                     "type": "S3",
-                    "args": {"s3_bucket": "somewhere", "prefix": "rel"},
+                    "args": {
+                        "s3_bucket": "somewhere",
+                        "prefix": "rel",
+                        "name": "test-s3",
+                    },
                 }
             }
         }
@@ -50,7 +68,11 @@ def test_use_demo_s3_storage_when_getting_storage_with_config_having_demo_type(t
             "demo": {
                 "storage": {
                     "type": "S3",
-                    "args": {"s3_bucket": "somewhere", "prefix": "rel"},
+                    "args": {
+                        "s3_bucket": "somewhere",
+                        "prefix": "rel",
+                        "name": "test-demo",
+                    },
                 }
             }
         }
@@ -75,7 +97,7 @@ def test_use_file_storage_when_getting_storage_with_config_having_file_type(
     os.makedirs(reliquery_dir)
     config_path = os.path.join(reliquery_dir, "config")
     with open(config_path, mode="w+") as config_file:
-        config = {"file": {"storage": {"type": "File"}}}
+        config = {"file": {"storage": {"type": "File", "args": {"name": "test-file"}}}}
         config_file.write(json.dumps(config, indent=4))
     storage = get_default_storage("file", tmpdir)
     assert type(storage) == FileStorage
@@ -97,3 +119,26 @@ def test_error_when_getting_default_storage_with_config_having_unknown_type(tmpd
         config_file.write(json.dumps(config, indent=4))
     with pytest.raises(ValueError):
         get_default_storage("none", tmpdir)
+
+
+def test_availible_storages_returns_default_storage(tmpdir):
+    storage = get_available_storages(tmpdir)
+
+    assert len(storage) == 2
+    for stor in storage:
+        if type(stor) == FileStorage:
+            assert stor.name == "default"
+        elif type(stor) == S3Storage:
+            assert stor.name == "demo"
+
+
+@mock.patch.dict(os.environ, {"RELIQUERY_CONFIG": raw_config})
+def test_different_storage_types_given_env_config(tmpdir):
+    storages = get_available_storages(tmpdir)
+
+    assert len(storages) == 2
+    for stor in storages:
+        if type(stor) == FileStorage:
+            assert stor.name == "test-file"
+        elif type(stor) == S3Storage:
+            assert stor.name == "test-s3"
