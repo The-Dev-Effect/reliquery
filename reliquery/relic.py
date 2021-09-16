@@ -52,9 +52,6 @@ class Relic:
         if storage is None:
             self.storage = get_storage_by_name(self.storage_name)
 
-        if storage is None:
-            self.storage = get_storage_by_name(self.storage_type)
-
         else:
             self.storage = storage
 
@@ -276,7 +273,7 @@ class Reliquery:
         if len(storages) > 0:
             self.storages = storages
         else:
-            self.storages = get_available_storages()
+            self.storages = get_all_available_storages()
         self.metadata_db = MetadataDB()
 
     def query(self, statement: str) -> List:
@@ -288,6 +285,11 @@ class Reliquery:
     def _sync_relics(self) -> None:
         for stor in self.storages:
             metadata = stor.get_all_relic_metadata()
+            tags = stor.get_all_relic_tags()
 
             for data in metadata:
-                self.metadata_db.sync(Metadata.parse_dict(data))
+                self.metadata_db.sync_metadata(Metadata.parse_dict(data))
+
+            for tag in tags:
+
+                self.metadata_db.sync_tags(RelicTag.parse_dict(tag))

@@ -28,7 +28,9 @@ def test_storage(tmp_path):
 
 
 def test_metadata_when_adding_arrays(test_storage):
-    rq = Relic(name="test", relic_type="test", storage=test_storage)
+    rq = Relic(
+        name="test", relic_type="test", storage_name="tests", storage=test_storage
+    )
 
     rq.add_array("test-array", np.zeros((100, 128, 128)))
 
@@ -41,7 +43,9 @@ def test_metadata_when_adding_arrays(test_storage):
 
 
 def test_metadata_when_adding_text(test_storage):
-    rq = Relic(name="test", relic_type="test", storage=test_storage)
+    rq = Relic(
+        name="test", relic_type="test", storage_name="tests", storage=test_storage
+    )
     test_text = "This is the test arena"
     rq.add_text("test-text", test_text)
 
@@ -54,7 +58,9 @@ def test_metadata_when_adding_text(test_storage):
 
 
 def test_metadata_when_adding_html(test_storage):
-    rq = Relic(name="test", relic_type="test", storage=test_storage)
+    rq = Relic(
+        name="test", relic_type="test", storage_name="tests", storage=test_storage
+    )
 
     rq.add_html("test-html.html", os.path.join(os.path.dirname(__file__), "test.html"))
 
@@ -87,15 +93,7 @@ def test_relic_s3_storage_syncs_on_init(storage):
     }
     storage().list_keys.return_value = ["test-array"]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     rq = Relic(name="test", relic_type="test", storage_name="s3")
-=======
-    rq = Relic(name="test", relic_type="test", storage_name="test", storage_type="s3")
->>>>>>> d6dd635 (added storage name to relic)
-=======
-    rq = Relic(name="test", relic_type="test", storage_type="s3")
->>>>>>> e04cd20 (query accross available storages)
 
     assert len(rq.describe()["test"]["arrays"]) == 1
 
@@ -112,15 +110,7 @@ def test_db_connection(put_text, list_keys, get_metadata):
     rq = Relic(
         name="test",
         relic_type="test",
-<<<<<<< HEAD
         storage_name="s3",
-=======
-        storage_type="s3",
-<<<<<<< HEAD
-        storage_name="tests",
->>>>>>> d6dd635 (added storage name to relic)
-=======
->>>>>>> e04cd20 (query accross available storages)
         check_exists=False,
     )
 
