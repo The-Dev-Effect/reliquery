@@ -28,7 +28,7 @@ def get_config(reliquery_dir):
             "storage": {
                 "type": "S3",
                 "args": {
-                    "s3_signed": True,
+                    "s3_signed": False,
                     "s3_bucket": "reliquery",
                     "prefix": "relics",
                 },

@@ -1,41 +1,66 @@
 # Reliquery
 Science's Artifact Antiformat
 
-### Example Usage
+### Quick Example Usage
 ```python
 from reliquery import Relic
 import numpy as np
-
-r = Relic(name="tutorial", relic_type="basic")
+from IPython.display import HTML
+ 
+r = Relic(name="quick", relic_type="tutorial")
 ones_array = np.ones((10, 10))
 r.add_array("ones", ones_array)
 np.testing.assert_array_equal(r.get_array("ones"), ones_array)
+r.add_text("long_form", "Some long form text. This is something we can do NLP on later")
+r.add_tag({"pass": "yes"})
+print(r.describe())
+
+# Read only S3 demo
+r_demo = Relic(name="intro", relic_type="tutorial", storage_name="demo")
+print(r_demo.list_html())
+display(HTML(r_demo.get_html('nnmf2 resnet34.html')))
 ```
 
 ### Config
-A json text file named config located in {home_dir}/reliquery
+A json text file named config located in ~/reliquery
 <br />
-Looks like...
+Default looks like...
 ```json
 {
-  "storage": {
-    "type": "S3",
-    "args": {
-      "s3_bucket": "123qwe123ad",
-      "prefix": "rel"
+  "default": {
+    "storage": {
+      "type": "File",
+      "args": {
+        "root": "/home/user/reliquery"
+      }
+    }
+  },
+  "demo": {
+    "storage": {
+      "type": "S3",
+      "args": {
+        "s3_signed": false,
+        "s3_bucket": "reliquery",
+        "prefix": "relics"
+      }
     }
   }
 }
 ```
-### Local Storage
-The relic will be persisted to:
+### File Storage
+With this configuration, the relic will be persisted to:
 <br />
-{home_dir}/reliquery/relic_type/relic_name/data_type/data_name
+/home/user/reliquery/relic_type/relic_name/data_type/data_name
 <br />
-In this example that will be:
+In the quick example that will be:
 <br />
-{home_dir}/reliquery/basic/relic_tutorial/arrays/ones
+/home/user/reliquery/reliquery/basic/relic_tutorial/arrays/ones
 <br />
+
+### S3 Storage
+s3_signed
+* true = uses current aws_cli configuration
+* false = uses the anonymous IAM role
 
 ## License
 
