@@ -364,7 +364,7 @@ class S3Storage(Storage):
         ]
         tags = []
         for key in tag_keys:
-            tags.append(self.get_tags(key.split("/")))
+            tags.extend(self.get_tags(key.split("/")))
 
         return tags
 
@@ -396,11 +396,6 @@ def get_storage(name: str, root: str, config: Dict) -> Storage:
         )
 
     elif config["storage"]["type"] == "File":
-        file_root = (
-            config["storage"]["args"]["root"]
-            if "root" in config["storage"]["args"]
-            else root
-        )
         if "root" in config["storage"]["args"]:
             return FileStorage(**config["storage"]["args"], name=name)
         else:
