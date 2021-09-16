@@ -88,7 +88,7 @@ class Metadata(Data):
         self.shape = shape
         self.last_modified = (
             last_modified
-            if last_modified is not Nonescientist_A_rq = Relic(name="nuero-demo", relic_type="science")
+            if last_modified is not None
             else dt.datetime.utcnow().strftime(dt_format)
         )
 
