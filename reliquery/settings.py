@@ -16,11 +16,22 @@ def get_config(reliquery_dir):
         return config
 
     return {
-        "default": {"storage": {"type": "File", "args": {"name": "default"}}},
+        "default": {
+            "storage": {
+                "type": "File",
+                "args": {
+                    "root": "~",
+                },
+            }
+        },
         "demo": {
             "storage": {
-                "type": "demo",
-                "args": {"s3_bucket": "reliquery", "prefix": "relics", "name": "demo"},
+                "type": "S3",
+                "args": {
+                    "s3_signed": True,
+                    "s3_bucket": "reliquery",
+                    "prefix": "relics",
+                },
             }
         },
     }

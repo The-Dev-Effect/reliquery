@@ -66,7 +66,7 @@ class Storage:
 
 
 class FileStorage:
-    def __init__(self, root: str, name: str = ""):
+    def __init__(self, root: str, name: str):
         self.root = root
         self.name = name
 
@@ -186,7 +186,7 @@ class FileStorage:
         ]
 
         for key in tag_keys:
-            return self.get_tags(key.split("/")[4:])
+            return self.get_tags(key.split("/")[-3:])
 
 
 S3Client = Any
@@ -204,8 +204,7 @@ class S3Storage(Storage):
         self,
         s3_bucket: str,
         prefix: str,
-        name: str = "",
-        *,
+        name: str,
         s3_signed: bool = True,
     ):
         self.s3_bucket = s3_bucket
@@ -370,46 +369,42 @@ class S3Storage(Storage):
         return tags
 
 
-def get_default_storage(key: str, root: str = os.path.expanduser("~")) -> Storage:
+def get_storage_by_name(name: str, root: str = os.path.expanduser("~")) -> Storage:
     reliquery_dir = os.path.join(root, "reliquery")
     config = settings.get_config(reliquery_dir)
 
-    if key == "default":
-        return FileStorage(reliquery_dir, "default")
-    elif key == "file":
-        return FileStorage(
-            reliquery_dir, name=config["file"]["storage"]["args"]["name"]
-        )
-    elif key == "s3":
-        return S3Storage(**config["s3"]["storage"]["args"])
-    elif key == "demo":
-        return S3Storage(**config["demo"]["storage"]["args"], s3_signed=False)
-    else:
-        raise ValueError("Config storage type is not supported. Use S3 or File.")
+    return get_storage(name, reliquery_dir, config[name])
 
 
-def get_available_storages(root: str = os.path.expanduser("~")) -> List[Storage]:
+def get_all_available_storages(root: str = os.path.expanduser("~")) -> List[Storage]:
     reliquery_dir = os.path.join(root, "reliquery")
     config = settings.get_config(reliquery_dir)
 
     storages = []
 
     for key in config.keys():
-        if key == "default":
-            storages.append(FileStorage(reliquery_dir, "default"))
-        elif key == "file":
-            storages.append(
-                FileStorage(
-                    reliquery_dir, name=config["file"]["storage"]["args"]["name"]
-                )
-            )
-        elif key == "s3":
-            storages.append(S3Storage(**config["s3"]["storage"]["args"]))
-        elif key == "demo":
-            storages.append(
-                S3Storage(**config["demo"]["storage"]["args"], s3_signed=False)
-            )
-        else:
-            raise ValueError("Config storage type is not supported.")
+        storages.append(get_storage(key, reliquery_dir, config[key]))
 
     return storages
+
+
+def get_storage(name: str, root: str, config: Dict) -> Storage:
+    if config["storage"]["type"] == "S3":
+        return S3Storage(
+            **config["storage"]["args"],
+            name=name,
+        )
+
+    elif config["storage"]["type"] == "File":
+        file_root = (
+            config["storage"]["args"]["root"]
+            if "root" in config["storage"]["args"]
+            else root
+        )
+        if "root" in config["storage"]["args"]:
+            return FileStorage(**config["storage"]["args"], name=name)
+        else:
+            return FileStorage(**config["storage"]["args"], root=root, name=name)
+
+    else:
+        raise ValueError(f"No storage found by name : {name}")

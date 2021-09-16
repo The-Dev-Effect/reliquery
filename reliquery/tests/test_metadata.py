@@ -24,7 +24,7 @@ raw_config = """
 
 @pytest.fixture
 def test_storage(tmp_path):
-    return FileStorage(str(tmp_path))
+    return FileStorage(str(tmp_path), "test-metadata")
 
 
 def test_metadata_when_adding_arrays(test_storage):
@@ -87,7 +87,7 @@ def test_relic_s3_storage_syncs_on_init(storage):
     }
     storage().list_keys.return_value = ["test-array"]
 
-    rq = Relic(name="test", relic_type="test", storage_type="s3")
+    rq = Relic(name="test", relic_type="test", storage_name="s3")
 
     assert len(rq.describe()["test"]["arrays"]) == 1
 
@@ -104,7 +104,7 @@ def test_db_connection(put_text, list_keys, get_metadata):
     rq = Relic(
         name="test",
         relic_type="test",
-        storage_type="s3",
+        storage_name="s3",
         check_exists=False,
     )
 

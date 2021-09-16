@@ -8,7 +8,7 @@ import numpy as np
 
 @pytest.fixture
 def test_storage(tmp_path):
-    return FileStorage(str(tmp_path))
+    return FileStorage(str(tmp_path), "test-relic")
 
 
 def test_relic(test_storage):

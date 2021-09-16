@@ -12,9 +12,9 @@ import datetime as dt
 
 
 from .storage import (
-    get_available_storages,
+    get_all_available_storages,
     StorageItemDoesNotExist,
-    get_default_storage,
+    get_storage_by_name,
     Storage,
 )
 
@@ -42,15 +42,15 @@ class Relic:
         name: str,
         relic_type: str,
         storage: Storage = None,
-        storage_type: str = "default",
+        storage_name: str = "default",
         check_exists: bool = True,
     ):
         self.name = name
         self.relic_type = relic_type
-        self.storage_type = storage_type
+        self.storage_name = storage_name
 
         if storage is None:
-            self.storage = get_default_storage(self.storage_type)
+            self.storage = get_storage_by_name(self.storage_name)
         else:
             self.storage = storage
 
@@ -73,9 +73,15 @@ class Relic:
 
     # TODO: needs test coverage
     @classmethod
-    def relic_exists(cls, name: str, relic_type: str, storage: Storage = None) -> bool:
+    def relic_exists(
+        cls,
+        name: str,
+        relic_type: str,
+        storage: Storage = None,
+        storage_name: str = "default",
+    ) -> bool:
         if storage is None:
-            storage = get_default_storage()
+            storage = get_storage_by_name(storage_name)
         try:
             storage.get_text([relic_type, name, "exists"])
         except StorageItemDoesNotExist:
@@ -202,13 +208,14 @@ class Relic:
         tag.date_created = dt.datetime.utcnow().strftime(dt_format)
 
         try:
-            saved = self.metadata_db.add_relic_tag(tag)
-
             all_tags = self.metadata_db.get_all_tags_from_relic(
                 self.name, self.relic_type, self.storage.name
             )
 
+            saved = self.metadata_db.add_relic_tag(tag)
+
             all_tags.extend(saved)
+
             self.storage.put_tags([self.relic_type, self.name, "tags"], all_tags)
 
             return saved
@@ -237,7 +244,7 @@ class Reliquery:
         if len(storages) > 0:
             self.storages = storages
         else:
-            self.storages = get_available_storages()
+            self.storages = get_all_available_storages()
         self.metadata_db = MetadataDB()
 
     def query(self, statement: str) -> List:
@@ -250,10 +257,10 @@ class Reliquery:
         for stor in self.storages:
             metadata = stor.get_all_relic_metadata()
             tags = stor.get_all_relic_tags()
-            print(f"tags: {tags}")
 
             for data in metadata:
                 self.metadata_db.sync_metadata(Metadata.parse_dict(data))
 
             for tag in tags:
+
                 self.metadata_db.sync_tags(RelicTag.parse_dict(tag))
