@@ -346,13 +346,38 @@ class S3Storage(Storage):
             try:
                 keys.extend([process_key(c["Key"]) for c in response["Contents"]])
             except KeyError as e:
-                print(f"No files found in directory {prefix}")
+                logging.warning(f"No files found in directory {prefix}")
         # we want to remove the prefx
         return keys
 
+    def put_tags(self, path: StoragePath, tags: List[Dict]) -> None:
+        jsons = [json.dumps(tag) for tag in tags]
 
-def get_default_storage(key: str, root_dir: str = os.path.expanduser("~")) -> Storage:
-    reliquery_dir = os.path.join(root_dir, "reliquery")
+        self.put_text(path, ";".join(jsons))
+
+    def get_tags(self, path: StoragePath) -> List[Dict]:
+        return list(map(json.loads, self.get_text(path).split(";")))
+
+    def get_all_relic_tags(self) -> List[Dict]:
+        tag_keys = [
+            key for key in self.list_key_paths([""]) if "tags" in key.split("/")
+        ]
+        tags = []
+        for key in tag_keys:
+            tags.append(self.get_tags(key.split("/")))
+
+        return tags
+
+
+def get_storage_by_name(name: str, root: str = os.path.expanduser("~")) -> Storage:
+    reliquery_dir = os.path.join(root, "reliquery")
+    config = settings.get_config(reliquery_dir)
+
+    return get_storage(name, reliquery_dir, config[name])
+
+
+def get_all_available_storages(root: str = os.path.expanduser("~")) -> List[Storage]:
+    reliquery_dir = os.path.join(root, "reliquery")
     config = settings.get_config(reliquery_dir)
 
     storages = []
