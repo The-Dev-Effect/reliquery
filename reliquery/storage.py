@@ -221,7 +221,7 @@ class S3Storage(Storage):
         self.s3.upload_file(file_path, self.s3_bucket, self._join_path(path))
 
     def put_binary_obj(self, path: StoragePath, buffer: BufferedIOBase) -> None:
-        logging.INFO(buffer)
+        print(buffer)
 
         self.s3.upload_fileobj(buffer, self.s3_bucket, self._join_path(path))
 
