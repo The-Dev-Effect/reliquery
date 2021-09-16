@@ -25,6 +25,7 @@ def test_list_text_files(test_storage):
     rq = Relic(name="test", relic_type="test", storage=test_storage)
 
     rq.add_tag({"color": "red", "day": "monday"})
+    assert len(rq.list_tags()) == 2
     rq.add_tag({"reseacher": "newton"})
     assert (
         len(rq.metadata_db.get_all_tags_from_relic("test", "test", test_storage.name))

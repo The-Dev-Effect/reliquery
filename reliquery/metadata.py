@@ -8,6 +8,7 @@ import logging
 
 dt_format = "%m/%d/%Y %H:%M:%S"
 
+
 class Data:
     def get_dict(self) -> Dict:
         raise NotImplementedError
@@ -25,7 +26,7 @@ class RelicTag(Data):
         storage_name: str,
         tags: Dict,
         id: int = None,
-        date_created: str = None
+        date_created: str = None,
     ) -> None:
         self.id = id
         self.relic_name = relic_name
@@ -52,7 +53,7 @@ class RelicTag(Data):
             storage_name=dict["storage_name"],
             tags=dict["tags"],
             id=dict["id"] if "id" in dict else None,
-            date_created=dict["date_created"]
+            date_created=dict["date_created"],
         )
 
     @classmethod
@@ -68,8 +69,6 @@ class RelicTag(Data):
 
 
 class Metadata(Data):
-    
-
     def __init__(
         self,
         name: str,
@@ -359,7 +358,9 @@ class MetadataDB:
 
     def sync_tags(self, ext: RelicTag) -> None:
         if len(self.get_by_relic_tag(ext)) == 0:
-            self.add_relic_tag(ext)#FIXME something here is breaking querying reliquery
+            self.add_relic_tag(
+                ext
+            )  # FIXME something here is breaking querying reliquery
 
     def add_relic_tag(self, relic_tag: RelicTag) -> List[RelicTag]:
         try:

@@ -6,7 +6,7 @@ from reliquery.storage import FileStorage
 
 @pytest.fixture
 def test_storage(tmp_path):
-    return FileStorage(str(tmp_path))
+    return FileStorage(str(tmp_path), "test-text")
 
 
 def test_list_text_file_when_add_text(test_storage):
