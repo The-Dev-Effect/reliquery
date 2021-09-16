@@ -1,12 +1,15 @@
 from genericpath import samefile
 import json
-from reliquery.metadata import Metadata, MetadataDB
+import logging
+from reliquery.metadata import Metadata, MetadataDB, RelicTag
 from typing import List, Dict
 from sys import getsizeof
 import os
 from io import BytesIO
 
 import numpy as np
+import datetime as dt
+
 
 from .storage import (
     get_available_storages,
@@ -15,13 +18,17 @@ from .storage import (
     Storage,
 )
 
-import pprint
-
 
 StoragePath = List[str]
 
+dt_format = "%m/%d/%Y %H:%M:%S"
+
 
 class InvalidRelicId(Exception):
+    pass
+
+
+class EmptyTagDict(Exception):
     pass
 
 
@@ -61,7 +68,7 @@ class Relic:
         try:
             self.storage.get_text([self.relic_type, self.name, "exists"])
         except StorageItemDoesNotExist as e:
-            print("Creating a Relic")
+            logging.info("Creating a Relic")
             self.storage.put_text([self.relic_type, self.name, "exists"], "exists")
 
     # TODO: needs test coverage
@@ -166,7 +173,7 @@ class Relic:
 
         self.storage.put_metadata(
             [self.relic_type, self.name, "metadata", metadata.data_type, metadata.name],
-            metadata.get_metadata(),
+            metadata.get_dict(),
         )
 
     def describe(self) -> Dict:
@@ -184,9 +191,32 @@ class Relic:
         metadata = self.storage.get_all_relic_metadata()
 
         for data in metadata:
-            self.metadata_db.sync(Metadata.parse_dict(data))
+            self.metadata_db.sync_metadata(Metadata.parse_dict(data))
 
         return self.metadata_db.query(statement)
+
+    def add_tag(self, tags: Dict) -> List[Dict]:
+        # sync tags
+
+        tag = RelicTag(self.name, self.relic_type, self.storage.name, tags=tags)
+        tag.date_created = dt.datetime.utcnow().strftime(dt_format)
+
+        try:
+            saved = self.metadata_db.add_relic_tag(tag)
+
+            all_tags = self.metadata_db.get_all_tags_from_relic(
+                self.name, self.relic_type, self.storage.name
+            )
+
+            all_tags.extend(saved)
+            self.storage.put_tags([self.relic_type, self.name, "tags"], all_tags)
+
+            return saved
+        except Exception as e:
+            logging.warning(f"Error adding tags: {tags} | {e} ")
+
+    def list_tags(self) -> List[str]:
+        return self.storage.get_tags([self.relic_type, self.name, "tags"])
 
 
 class Reliquery:
@@ -219,6 +249,11 @@ class Reliquery:
     def _sync_relics(self) -> None:
         for stor in self.storages:
             metadata = stor.get_all_relic_metadata()
+            tags = stor.get_all_relic_tags()
+            print(f"tags: {tags}")
 
             for data in metadata:
-                self.metadata_db.sync(Metadata.parse_dict(data))
+                self.metadata_db.sync_metadata(Metadata.parse_dict(data))
+
+            for tag in tags:
+                self.metadata_db.sync_tags(RelicTag.parse_dict(tag))

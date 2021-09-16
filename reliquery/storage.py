@@ -1,3 +1,4 @@
+import logging
 import os
 from io import BytesIO, BufferedIOBase
 from posixpath import join
@@ -52,6 +53,15 @@ class Storage:
         raise NotImplementedError
 
     def get_all_relic_metadata(self) -> List[Dict]:
+        raise NotImplementedError
+
+    def put_tags(self, path: StoragePath, tags: List[Dict]) -> None:
+        raise NotImplementedError
+
+    def get_tags(self, path: StoragePath) -> List[Dict]:
+        raise NotImplementedError
+
+    def get_all_relic_tags(self) -> List[Dict]:
         raise NotImplementedError
 
 
@@ -157,6 +167,27 @@ class FileStorage:
 
         return paths
 
+    def put_tags(self, path: StoragePath, tags: List[Dict]) -> None:
+        self._ensure_path(path)
+        jsons = [json.dumps(tag) for tag in tags]
+
+        with open(self._join_path(path), "w") as f:
+            return f.write(";".join(jsons))
+
+    def get_tags(self, path: StoragePath) -> List[Dict]:
+        self._ensure_path(path)
+
+        with open(self._join_path(path), "r") as f:
+            return list(map(json.loads, f.read().split(";")))
+
+    def get_all_relic_tags(self) -> List[Dict]:
+        tag_keys = [
+            key for key in self.list_key_paths([""]) if "tags" in key.split("/")
+        ]
+
+        for key in tag_keys:
+            return self.get_tags(key.split("/")[4:])
+
 
 S3Client = Any
 
@@ -191,7 +222,7 @@ class S3Storage(Storage):
         self.s3.upload_file(file_path, self.s3_bucket, self._join_path(path))
 
     def put_binary_obj(self, path: StoragePath, buffer: BufferedIOBase) -> None:
-        print(buffer)
+        logging.INFO(buffer)
 
         self.s3.upload_fileobj(buffer, self.s3_bucket, self._join_path(path))
 
@@ -238,7 +269,7 @@ class S3Storage(Storage):
             try:
                 keys.extend([process_key(c["Key"]) for c in response["Contents"]])
             except KeyError as e:
-                print(f"No files found in directory {prefix}")
+                logging.warning(f"No files found in directory {prefix}")
         # we want to remove the prefx
         return keys
 
@@ -316,9 +347,27 @@ class S3Storage(Storage):
             try:
                 keys.extend([process_key(c["Key"]) for c in response["Contents"]])
             except KeyError as e:
-                print(f"No files found in directory {prefix}")
+                logging.warning(f"No files found in directory {prefix}")
         # we want to remove the prefx
         return keys
+
+    def put_tags(self, path: StoragePath, tags: List[Dict]) -> None:
+        jsons = [json.dumps(tag) for tag in tags]
+
+        self.put_text(path, ";".join(jsons))
+
+    def get_tags(self, path: StoragePath) -> List[Dict]:
+        return list(map(json.loads, self.get_text(path).split(";")))
+
+    def get_all_relic_tags(self) -> List[Dict]:
+        tag_keys = [
+            key for key in self.list_key_paths([""]) if "tags" in key.split("/")
+        ]
+        tags = []
+        for key in tag_keys:
+            tags.append(self.get_tags(key.split("/")))
+
+        return tags
 
 
 def get_default_storage(key: str, root: str = os.path.expanduser("~")) -> Storage:
