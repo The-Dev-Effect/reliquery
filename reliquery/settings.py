@@ -20,7 +20,7 @@ def get_config(reliquery_dir):
             "storage": {
                 "type": "File",
                 "args": {
-                    "root": "~",
+                    "root": reliquery_dir,
                 },
             }
         },

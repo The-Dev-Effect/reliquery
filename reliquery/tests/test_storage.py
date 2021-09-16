@@ -34,7 +34,6 @@ raw_config = """
 
 
 def test_use_s3_when_getting_storage_with_config_having_s3_type(tmpdir):
-
     reliquery_dir = os.path.join(tmpdir, "reliquery")
     os.makedirs(reliquery_dir)
     config_path = os.path.join(reliquery_dir, "config")
@@ -117,6 +116,13 @@ def test_use_file_storage_when_getting_default_storage_without_config(tmpdir):
     reliquery_dir = os.path.join(tmpdir, "reliquery")
     storage = get_storage_by_name("default", tmpdir)
     assert type(storage) == FileStorage
+
+
+def test_correct_file_location_with_default_storage(tmpdir):
+    reliquery_dir = os.path.join(tmpdir, "reliquery")
+    storage = get_storage_by_name("default", tmpdir)
+    assert type(storage) == FileStorage
+    assert storage.root == reliquery_dir
 
 
 def test_use_file_storage_when_getting_storage_with_config_having_file_type(
