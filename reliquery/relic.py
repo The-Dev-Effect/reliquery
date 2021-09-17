@@ -203,13 +203,12 @@ class Relic:
             [self.relic_type, self.name, "metadata"], self.name
         )
 
-    """
-    Query metadata over all relics
-
-    pass SQL expression as a string
-    """
-
     def query(self, statement: str) -> List:
+        """
+        Query metadata over all relics
+
+        pass SQL expression as a string
+        """
         metadata = self.storage.get_all_relic_metadata()
 
         for data in metadata:
@@ -239,6 +238,34 @@ class Relic:
 
     def list_tags(self) -> List[str]:
         return self.storage.get_tags([self.relic_type, self.name, "tags"])
+
+    def add_image(self, name: str, image_bin: bytes):
+        self.assert_valid_id(name)
+
+        buffer = BytesIO(image_bin)
+        size = getsizeof(buffer.getbuffer())
+        buffer.seek(0)
+
+        metadata = Metadata(
+            name=name,
+            data_type="images",
+            relic_type=self.relic_type,
+            storage_name=self.storage.name,
+            size=size,
+        )
+
+        self.storage.put_binary_obj(
+            [self.relic_type, self.name, "images", name], buffer
+        )
+        self._add_metadata(metadata)
+
+    def get_image(self, name: str) -> BytesIO:
+        self.assert_valid_id(name)
+
+        return self.storage.get_binary_obj([self.relic_type, self.name, "images", name])
+
+    def list_images(self) -> List[str]:
+        return self.storage.list_keys([self.relic_type, self.name, "images"])
 
 
 class Reliquery:
