@@ -62,7 +62,9 @@ def test_metadata_when_adding_html(test_storage):
         name="test", relic_type="test", storage_name="tests", storage=test_storage
     )
 
-    rq.add_html("test-html.html", os.path.join(os.path.dirname(__file__), "test.html"))
+    rq.add_html_from_path(
+        "test-html.html", os.path.join(os.path.dirname(__file__), "test.html")
+    )
 
     metadata = rq.describe()
 
