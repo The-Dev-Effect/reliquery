@@ -125,7 +125,7 @@ class Relic:
     def list_arrays(self) -> List[np.ndarray]:
         return self.storage.list_keys([self.relic_type, self.name, "arrays"])
 
-    def add_html(self, name: str, html_path: str) -> None:
+    def add_html_from_path(self, name: str, html_path: str) -> None:
 
         self.assert_valid_id(name)
 
@@ -137,6 +137,21 @@ class Relic:
         )
 
         self.storage.put_file([self.relic_type, self.name, "html", name], html_path)
+        self._add_metadata(metadata)
+
+    # TODO needs test coverage
+    def add_html_string(self, name: str, html_str: str):
+        self.assert_valid_id(name)
+
+        metadata = Metadata(
+            name=name,
+            data_type="html",
+            relic_type=self.relic_type,
+            storage_name=self.storage.name,
+        )
+
+        self.storage.put_text([self.relic_type, self.name, "html", name], html_str)
+
         self._add_metadata(metadata)
 
     def list_html(self) -> List[str]:
@@ -203,7 +218,6 @@ class Relic:
         return self.metadata_db.query(statement)
 
     def add_tag(self, tags: Dict) -> List[Dict]:
-        # sync tags
 
         tag = RelicTag(self.name, self.relic_type, self.storage.name, tags=tags)
         tag.date_created = dt.datetime.utcnow().strftime(dt_format)
@@ -225,34 +239,6 @@ class Relic:
 
     def list_tags(self) -> List[str]:
         return self.storage.get_tags([self.relic_type, self.name, "tags"])
-
-
-class Reliquery:
-    """
-    Class used to query over available and accessible storage locations and Relics
-
-    Attributes
-    ----------
-    storages : List[Storage]
-        list of availably accessible storages
-
-    metadata_db : MetadataDB
-        in memory sqlite db used for querying Relics
-
-    """
-
-    def __init__(self, storages: List[Storage] = []) -> None:
-        if len(storages) > 0:
-            self.storages = storages
-        else:
-            self.storages = get_all_available_storages()
-        self.metadata_db = MetadataDB()
-
-    def query(self, statement: str) -> List:
-        if self.storages:
-            self._sync_relics()
-
-        return self.metadata_db.query(statement)
 
 
 class Reliquery:
