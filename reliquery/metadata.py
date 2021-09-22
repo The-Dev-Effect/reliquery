@@ -16,23 +16,25 @@ class Data:
     def parse_dict(self, dict: Dict):
         raise NotImplementedError
 
+    @classmethod
+    def parse_sql_result(self, result: List):
+        raise NotImplementedError
 
-class RelicTag(Data):
+
+class RelicData(Data):
     def __init__(
         self,
         relic_name: str,
         relic_type: str,
         storage_name: str,
-        tags: Dict,
         id: int = None,
-        date_created: str = None,
+        last_modified: str = None,
     ) -> None:
-        self.id = id
         self.relic_name = relic_name
         self.relic_type = relic_type
         self.storage_name = storage_name
-        self.tags = tags
-        self.date_created = date_created
+        self.id = id
+        self.last_modified = last_modified
 
     def get_dict(self) -> Dict:
         return {
@@ -40,30 +42,70 @@ class RelicTag(Data):
             "relic_name": self.relic_name,
             "relic_type": self.relic_type,
             "storage_name": self.storage_name,
+            "last_modified": self.last_modified,
+        }
+
+    @classmethod
+    def parse_dict(self, dict: Dict) -> Data:
+        return RelicData(
+            relic_name=dict["relic_name"],
+            relic_type=dict["relic_type"],
+            storage_name=dict["storage_name"],
+            id=dict["id"] if "id" in dict else None,
+            last_modified=dict["last_modified"] if "last_modified" in dict else None,
+        )
+
+    def parse_sql_result(self, result: List):
+        return {
+            "id":result[0],
+            "relic_name": result[1],
+            "relic_type": result[2],
+            "storage_name": result[3],
+            "last_modified": result[4]
+        }
+
+
+class RelicTag(Data):
+    def __init__(
+        self,
+        relic: RelicData,
+        tags: Dict,
+        id: int = None,
+        date_created: str = None,
+    ) -> None:
+        self.id = id
+        self.relic = relic
+        self.tags = tags
+        self.date_created = date_created
+
+    def get_dict(self) -> Dict:
+        return {
+            "id": self.id,
+            "relic_name": self.relic.relic_name,
+            "relic_type": self.relic.relic_type,
+            "storage_name": self.relic.storage_name,
             "tags": self.tags,
             "date_created": self.date_created,
         }
 
     @classmethod
-    def parse_dict(self, dict: Dict):
+    def parse_dict(self, dict: Dict, relic: RelicData) -> Data:
         return RelicTag(
-            relic_name=dict["relic_name"],
-            relic_type=dict["relic_type"],
-            storage_name=dict["storage_name"],
+            relic=relic,
             tags=dict["tags"],
             id=dict["id"] if "id" in dict else None,
             date_created=dict["date_created"],
         )
 
     @classmethod
-    def parse_sql_result(self, tag: List):
+    def parse_sql_result(self, result: List, relic: RelicData):
         return {
-            "id": tag[0],
-            "relic_name": tag[1],
-            "relic_type": tag[2],
-            "storage_name": tag[3],
-            "tags": {tag[4]: tag[5]},
-            "date_created": tag[6],
+            "id": result[0],
+            "relic_name": relic.relic_name,
+            "relic_type": relic.relic_type,
+            "storage_name": relic.storage_name,
+            "tags": {result[4]: result[5]},
+            "date_created": result[6],
         }
 
 
@@ -72,8 +114,7 @@ class Metadata(Data):
         self,
         name: str,
         data_type: str,
-        relic_type: str,
-        storage_name: str,
+        relic: RelicData,
         size: float = None,
         shape: str = None,
         id: int = None,
@@ -82,8 +123,7 @@ class Metadata(Data):
         self.id = id
         self.name = name
         self.data_type = data_type
-        self.relic_type = relic_type
-        self.storage_name = storage_name
+        self.relic = relic
         self.size = size
         self.shape = shape
         self.last_modified = (
@@ -97,22 +137,20 @@ class Metadata(Data):
             "id": self.id,
             "name": self.name,
             "data_type": self.data_type,
-            "relic_type": self.relic_type,
-            "storage_name": self.storage_name,
+            "relic_name": self.relic.relic_name,
+            "relic_type": self.relic.relic_type,
+            "storage_name": self.relic.storage_name,
             "size": self.size,
             "shape": self.shape,
             "last_modified": self.last_modified,
         }
 
     @classmethod
-    def parse_dict(self, dict: Dict):
+    def parse_dict(self, dict: Dict, relic: RelicData) -> Data:
         metadata = Metadata(
             name=dict["name"],
             data_type=dict["data_type"],
-            relic_type=dict["relic_type"],
-            storage_name=dict["storage_name"]
-            if "storage_name" in dict
-            else "None",  # FIXME
+            relic=relic,
             last_modified=dict["last_modified"],
         )
 
@@ -124,15 +162,18 @@ class Metadata(Data):
 
         return metadata
 
-    @classmethod  # FIXME need correct keys and value indexs
-    def parse_sql_results(self, data: List):
+    @classmethod
+    def parse_sql_result(self, result: List, relic: RelicData) -> Dict:
         return {
-            "id": data[0],
-            "relic_name": data[1],
-            "relic_type": data[2],
-            "storage_name": data[3],
-            "tags": data[4],
-            "date_created": data[5],
+            "id": result[0],
+            "name": result[1],
+            "data_type": result[2],
+            "relic_name": relic.relic_name,
+            "relic_type": relic.relic_type,
+            "storage_name": relic.storage_name,
+            "size": result[4],
+            "shape": result[5],
+            "last_modified": result[6]
         }
 
 
@@ -143,8 +184,7 @@ class MetadataDB:
         id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
         name text NOT NULL,
         data_type text NOT NULL,
-        relic_type text NOT NULL,
-        storage_name text NOT NULL,
+        relic_id, integer NOT NULL,
         size real,
         shape text,
         last_modified text NOT NULL
@@ -154,12 +194,20 @@ class MetadataDB:
     relic_tag_table = """
     CREATE TABLE IF NOT EXISTS relic_tags (
         id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-        relic_name text NOT NULL,
-        relic_type text NOT NULL,
-        storage_name text NOT NULL,
+        relic_id, integer NOT NULL, 
         key text NOT NULL,
         value text NOT NULL,
         date_created text NOT NULL
+    )
+    """
+
+    relic_table = """
+    CREATE TABLE IF NOT EXISTS relics (
+        id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+        relic_name text NOT NULL,
+        relic_type text NOT NULL,
+        storage_name text NOT NULL,
+        last_modified text NOT NULL
     )
     """
 
@@ -176,6 +224,7 @@ class MetadataDB:
                     cur = self.conn.cursor()
                     cur.execute(self.metadata_table)
                     cur.execute(self.relic_tag_table)
+                    cur.execute(self.relic_table)
                     self.conn.commit()
                 except Error as e:
                     logging.warning(f"Error creating database tables: {e}")
@@ -197,16 +246,13 @@ class MetadataDB:
                 AND
                 data_type = ?
                 AND
-                relic_type = ?
-                AND
-                storage_name = ?
+                relic_id = ?
                 LIMIT 1
                 """,
                 (
                     metadata.name,
                     metadata.data_type,
-                    metadata.relic_type,
-                    metadata.storage_name,
+                    metadata.relic.id
                 ),
             )
             rows = cur.fetchall()
@@ -221,8 +267,7 @@ class MetadataDB:
                     None,
                     metadata.name,
                     metadata.data_type,
-                    metadata.relic_type,
-                    metadata.storage_name,
+                    metadata.relic.relic_id,
                     metadata.size,
                     metadata.shape,
                     metadata.last_modified,
@@ -235,8 +280,9 @@ class MetadataDB:
             print(e)
 
     def get_metadata_by_name(
-        self, name: str, data_type: str, relic_type: str, storage_name: str
-    ) -> Metadata:
+        self, name: str, data_type: str, relic: RelicData
+    ):
+
         try:
             cur = self.conn.cursor()
 
@@ -247,12 +293,10 @@ class MetadataDB:
                 AND
                 data_type = ?
                 AND
-                relic_type = ?
-                AND
-                storage_name = ?
+                relic_id = ?
                 LIMIT 1
                 """,
-                (name, data_type, relic_type, storage_name),
+                (name, data_type, relic.id),
             )
             rows = cur.fetchall()
 
@@ -260,8 +304,7 @@ class MetadataDB:
                 return Metadata(
                     name=rows[0][1],
                     data_type=rows[0][2],
-                    relic_type=rows[0][3],
-                    storage_name=rows[0][4],
+                    relic=relic,
                     size=rows[0][5],
                     last_modified=rows[0][7],
                     shape=rows[0][6],
@@ -277,16 +320,18 @@ class MetadataDB:
         try:
             cur = self.conn.cursor()
 
+            self.get_relic_by_id()
+
             cur.execute("""SELECT * FROM metadata """)
             rows = cur.fetchall()
             print(rows)
             if len(rows) > 0:
                 for row in rows:
+                    relic = self.get_relic_by_id(row[3])
                     yield Metadata(
                         name=row[1],
                         data_type=row[2],
-                        relic_type=row[3],
-                        storage_name=row[4],
+                        relic=relic,
                         size=row[5],
                         last_modified=row[7],
                         shape=row[6],
@@ -304,6 +349,7 @@ class MetadataDB:
 
             cur.execute(
                 """
+<<<<<<< HEAD
                 UPDATE metadata
                 SET
                     name=?,
@@ -315,12 +361,16 @@ class MetadataDB:
                     last_modified=?
                 WHERE
                     id=?
+=======
+                UPDATE metadata 
+                SET name=?, data_type=?, relic_id=?, size=?, shape=?, last_modified=?
+                WHERE id=?
+>>>>>>> ecd4432 (changes to add better relationships with relics and relic data)
                 """,
                 (
                     metadata.name,
                     metadata.data_type,
-                    metadata.relic_type,
-                    metadata.storage_name,
+                    metadata.relic.id,
                     metadata.size,
                     metadata.shape,
                     metadata.last_modified,
@@ -367,7 +417,7 @@ class MetadataDB:
         if len(self.get_by_relic_tag(ext)) == 0:
             self.add_relic_tag(
                 ext
-            )  # FIXME something here is breaking querying reliquery
+            )
 
     def add_relic_tag(self, relic_tag: RelicTag) -> List[RelicTag]:
         try:
@@ -376,13 +426,11 @@ class MetadataDB:
             for key, value in relic_tag.tags.items():
                 cur.execute(
                     """
-                    INSERT INTO relic_tags VALUES (?,?,?,?,?,?,?)
+                    INSERT INTO relic_tags VALUES (?,?,?,?,?)
                     """,
                     (
                         relic_tag.id,
-                        relic_tag.relic_name,
-                        relic_tag.relic_type,
-                        relic_tag.storage_name,
+                        relic_tag.relic.id,
                         key,
                         value,
                         relic_tag.date_created,
@@ -403,16 +451,12 @@ class MetadataDB:
                 cur.execute(
                     """
                     DELETE FROM relic_tags
-                    WHERE relic_name=?
-                    AND relic_type=?
-                    AND storage_type=?
+                    WHERE relic_id = ?
                     AND key=?
                     AND value=?
                     """,
                     (
-                        relic_tag.relic_name,
-                        relic_tag.relic_type,
-                        relic_tag.storage_name,
+                        relic_tag.relic.id,
                         key,
                         value,
                     ),
@@ -443,7 +487,7 @@ class MetadataDB:
         return tags
 
     def get_all_tags_from_relic(
-        self, relic_name: str, relic_type: str, storage_name: str
+        self, relic: RelicData
     ) -> List:
         tags = []
 
@@ -453,11 +497,9 @@ class MetadataDB:
             cur.execute(
                 """
                 SELECT * FROM relic_tags
-                WHERE relic_name=?
-                AND relic_type=?
-                AND storage_name=?
+                WHERE relic_id = ?
                 """,
-                (relic_name, relic_type, storage_name),
+                (relic.id),
             )
 
             queries = cur.fetchall()
@@ -482,11 +524,9 @@ class MetadataDB:
                     SELECT * FROM relic_tags
                     WHERE key=?
                     AND value=?
-                    AND relic_name=?
-                    AND relic_type=?
-                    AND storage_name=?
+                    AND relic_id = ?
                     """,
-                    (key, value, tag.relic_name, tag.relic_type, tag.storage_name),
+                    (key, value, tag.relic.id),
                 )
                 tags.extend(cur.fetchall())
 
@@ -496,3 +536,53 @@ class MetadataDB:
             logging.warning(f"Error getting relic tag: {e}")
 
         return list(map(RelicTag.parse_sql_result, tags))
+
+    def sync_relic(self, relic_name: str, relic_type: str, storage_name: str) -> RelicData:
+        relic = self.get_relic_data_by_name(relic_name, relic_type, storage_name)
+
+        if relic:
+            return relic
+        else:
+            self._create_relic_data(relic_name, relic_type, storage_name)
+            return self.get_relic_data_by_name(relic_name, relic_type, storage_name)
+        
+    def get_relic_data_by_name(self, relic_name: str, relic_type: str, storage_name: str) -> RelicData:
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute("""
+                SELECT * FROM relics
+                WHERE relic_name = ?
+                AND relic_type = ?
+                AND storage_name =?
+                LIMIT 1
+                """,
+                (relic_name, relic_type, storage_name)
+            )
+            rows = cur.fetchall()
+
+            if rows:
+                return RelicData.parse_dict(RelicData.parse_sql_result(rows[0]))
+            else:
+                return None
+
+        except Error as e:
+            logging.warning(f"Error getting Relic data by name: {relic_name, relic_type, storage_name} | {e}")
+
+    def _create_relic_data(self, relic_name: str, relic_type: str, storage_name: str) -> None:
+        try:
+            cur = self.conn.cursor()
+            cur.execute("""
+            INSERT INTO relics VALUES(?,?,?,?,?)
+            """,
+            (None, relic_name, relic_type, storage_name, dt.datetime.utcnow().strftime(dt_format))
+            )
+
+            self.conn.commit()
+
+        except Error as e:
+            logging.warning(f"Error creating Relic data: {e}")
+    
+    
+
+            
