@@ -58,6 +58,11 @@ class Relic:
             self._ensure_exists()
 
         self.metadata_db = MetadataDB()
+        self.relic = self.metadata_db.sync_relic(
+            self.name, self.relic_type, self.storage_name
+        )
+        if not self.relic:
+            raise Exception("Relic data was not created")
 
     @classmethod
     def assert_valid_id(cls, id: str):
@@ -98,8 +103,7 @@ class Relic:
         metadata = Metadata(
             name=name,
             data_type="arrays",
-            relic_type=self.relic_type,
-            storage_name=self.storage.name,
+            relic=self.relic,
             size=size,
             shape=shape,
         )
@@ -131,8 +135,7 @@ class Relic:
         metadata = metadata = Metadata(
             name=name,
             data_type="html",
-            relic_type=self.relic_type,
-            storage_name=self.storage.name,
+            relic=self.relic
         )
 
         self.storage.put_file([self.relic_type, self.name, "html", name], html_path)
@@ -145,8 +148,7 @@ class Relic:
         metadata = Metadata(
             name=name,
             data_type="html",
-            relic_type=self.relic_type,
-            storage_name=self.storage.name,
+            relic=self.relic
         )
 
         self.storage.put_text([self.relic_type, self.name, "html", name], html_str)
@@ -172,8 +174,7 @@ class Relic:
         metadata = Metadata(
             name=name,
             data_type="text",
-            relic_type=self.relic_type,
-            storage_name=self.storage.name,
+            relic=self.relic,
             size=size,
             shape=len(text),
         )
@@ -217,7 +218,7 @@ class Relic:
 
     def add_tag(self, tags: Dict) -> List[Dict]:
 
-        tag = RelicTag(self.name, self.relic_type, self.storage.name, tags=tags)
+        tag = RelicTag(self.relic, tags=tags)
         tag.date_created = dt.datetime.utcnow().strftime(dt_format)
 
         try:
@@ -248,8 +249,7 @@ class Relic:
         metadata = Metadata(
             name=name,
             data_type="images",
-            relic_type=self.relic_type,
-            storage_name=self.storage.name,
+            relic=self.relic,
             size=size,
         )
 
