@@ -5,7 +5,7 @@ Science's Artifact Antiformat
 ```python
 from reliquery import Relic
 import numpy as np
-from IPython.display import HTML
+from IPython.display import HTML, Image
  
 r = Relic(name="quick", relic_type="tutorial")
 ones_array = np.ones((10, 10))
@@ -19,6 +19,9 @@ print(r.describe())
 r_demo = Relic(name="intro", relic_type="tutorial", storage_name="demo")
 print(r_demo.list_html())
 display(HTML(r_demo.get_html('nnmf2 resnet34.html')))
+
+print(r_demo.list_images())
+display(Image(r_demo.get_image("reliquery")))
 ```
 
 ### Config
