@@ -243,7 +243,7 @@ class Relic:
         self.assert_valid_id(name)
 
         buffer = BytesIO(image_bin)
-        size = getsizeof(buffer.getbuffer())
+        size = buffer.getbuffer().nbytes
         buffer.seek(0)
 
         metadata = Metadata(
