@@ -21,7 +21,7 @@ print(r_demo.list_html())
 display(HTML(r_demo.get_html('nnmf2 resnet34.html')))
 
 print(r_demo.list_images())
-display(Image(r_demo.get_image("reliquery")))
+display(Image(r_demo.get_image("reliquery").read()))
 ```
 
 ### Config
