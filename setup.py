@@ -4,7 +4,7 @@ install_requires = ["numpy >= 1.16", "boto3 >= 1.17", "black>=21.4b", "pytest"]
 
 setup(
     name="reliquery",
-    version="0.2.3",
+    version="0.2.4",
     description="Science's Artifact Antiformat",
     url="https://github.com/The-Dev-Effect/reliquery",
     author="The Dev Effect",
