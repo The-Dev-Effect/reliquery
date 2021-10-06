@@ -1,5 +1,1 @@
 blank_issues_enabled: false
-contact_links:
-  - name:
-    url: https://github.com/The-Dev-Effect/reliquery/blob/22945c20ef5e4b35c3270dbe550d8970b3de3384/.github/PULL_REQUEST_TEMPLATE/pull_request_template.md
-    about: Template for PR
