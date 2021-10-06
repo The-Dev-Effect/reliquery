@@ -14,15 +14,51 @@ np.testing.assert_array_equal(r.get_array("ones"), ones_array)
 r.add_text("long_form", "Some long form text. This is something we can do NLP on later")
 r.add_tag({"pass": "yes"})
 print(r.describe())
-
+```
+### HTML supported 
+Add HTML as a string:
+```python
+# Example
+r.add_html_string("welcome", "<div><p>Hello, World</p></div>")
+```
+Add HTML from a file path:
+```python
+# Example
+r.add_html_from_path("figures", <path to html file>)
+```
+Get and display HTML using Reliquery:
+```python
 # Read only S3 demo
 r_demo = Relic(name="intro", relic_type="tutorial", storage_name="demo")
 print(r_demo.list_html())
 display(HTML(r_demo.get_html('nnmf2 resnet34.html')))
-
+```
+### Images supported
+Add images by passing images as bytes:
+```python
+# Example
+with open("image.png", "rb") as f:
+    r.add_image("image-0.png", f.read())
+```
+Get and display images:
+```pyton
 print(r_demo.list_images())
 display(Image(r_demo.get_image("reliquery").read()))
 ```
+
+### Query Relics
+Query over a relic using Relic.query(sql_statement) use:
+```python
+r_demo.query("SELECT * FROM metadata WHERE data_type='arrays' AND shape='(5,)'")
+```
+this will query over data on a certain Relic
+
+Querying over all relics you have access to:
+```python
+req = Reliquery()
+req.query("SELECT * FROM metadata WHERE data_type='text'")
+```
+
 
 ### Config
 A json text file named config located in ~/reliquery
