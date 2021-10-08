@@ -54,8 +54,8 @@ def test_use_s3_when_getting_storage_with_config_having_s3_type(tmpdir):
         config_file.write(json.dumps(config, indent=4))
 
     storage = get_storage_by_name("s3", tmpdir)
-    assert type(storage) == S3Storage
-    assert storage.signed is True
+    assert isinstance(storage, S3Storage)
+    assert storage.signed
     assert "somewhere" == storage.s3_bucket
     assert "rel" == storage.prefix
 
@@ -81,8 +81,8 @@ def test_use_s3_when_getting_storage_with_config_missing_s3_signed(tmpdir):
         config_file.write(json.dumps(config, indent=4))
 
     storage = get_storage_by_name("s3", tmpdir)
-    assert type(storage) == S3Storage
-    assert storage.signed is True
+    assert isinstance(storage, S3Storage)
+    assert storage.signed
     assert "somewhere" == storage.s3_bucket
     assert "rel" == storage.prefix
 
@@ -106,21 +106,21 @@ def test_use_demo_s3_storage_when_getting_storage_with_config_having_demo_name(t
         }
         config_file.write(json.dumps(config, indent=4))
     storage = get_storage_by_name("demo", tmpdir)
-    assert type(storage) == S3Storage
-    assert storage.signed is False
+    assert isinstance(storage, S3Storage)
+    assert not storage.signed
     assert "somewhere" == storage.s3_bucket
     assert "rel" == storage.prefix
 
 
 def test_use_file_storage_when_getting_default_storage_without_config(tmpdir):
     storage = get_storage_by_name("default", tmpdir)
-    assert type(storage) == FileStorage
+    assert isinstance(storage, FileStorage)
 
 
 def test_correct_file_location_with_default_storage(tmpdir):
     reliquery_dir = os.path.join(tmpdir, "reliquery")
     storage = get_storage_by_name("default", tmpdir)
-    assert type(storage) == FileStorage
+    assert isinstance(storage, FileStorage)
     assert storage.root == reliquery_dir
 
 
@@ -135,7 +135,7 @@ def test_use_file_storage_when_getting_storage_with_config_having_file_type(
         config = {"file": {"storage": {"type": "File", "args": {}}}}
         config_file.write(json.dumps(config, indent=4))
     storage = get_storage_by_name("file", tmpdir)
-    assert type(storage) == FileStorage
+    assert isinstance(storage, FileStorage)
 
 
 @mock.patch.dict(os.environ, {"RELIQUERY_CONFIG": raw_config})
@@ -143,7 +143,7 @@ def test_use_s3_storage_when_passing_s3_config_in_environment_as_variable(tmpdir
 
     storage = get_storage_by_name("s3", tmpdir)
 
-    assert type(storage) == S3Storage
+    assert isinstance(storage, S3Storage)
 
 
 def test_error_when_getting_default_storage_with_config_having_unknown_type(tmpdir):
