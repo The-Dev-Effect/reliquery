@@ -1,6 +1,12 @@
 from setuptools import setup
 
-install_requires = ["numpy >= 1.16", "boto3 >= 1.17", "black>=21.4b", "pytest"]
+install_requires = [
+    "numpy >= 1.16",
+    "boto3 >= 1.17",
+    "black>=21.4b",
+    "pytest",
+    "flake8",
+]
 
 setup(
     name="reliquery",

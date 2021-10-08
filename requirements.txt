@@ -3,3 +3,4 @@ pytest
 black
 uvicorn
 boto3
+flake8

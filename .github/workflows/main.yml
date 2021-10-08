@@ -21,6 +21,9 @@ jobs:
       - name: Lint
         run: |
           black --diff --check .
+      - name: Code quality check
+        run: |
+          flake8
       - name: Test with pytest
         run: |
           pytest
