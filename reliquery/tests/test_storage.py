@@ -55,7 +55,7 @@ def test_use_s3_when_getting_storage_with_config_having_s3_type(tmpdir):
 
     storage = get_storage_by_name("s3", tmpdir)
     assert type(storage) == S3Storage
-    assert storage.signed == True
+    assert storage.signed is True
     assert "somewhere" == storage.s3_bucket
     assert "rel" == storage.prefix
 
@@ -82,7 +82,7 @@ def test_use_s3_when_getting_storage_with_config_missing_s3_signed(tmpdir):
 
     storage = get_storage_by_name("s3", tmpdir)
     assert type(storage) == S3Storage
-    assert storage.signed == True
+    assert storage.signed is True
     assert "somewhere" == storage.s3_bucket
     assert "rel" == storage.prefix
 
@@ -107,13 +107,12 @@ def test_use_demo_s3_storage_when_getting_storage_with_config_having_demo_name(t
         config_file.write(json.dumps(config, indent=4))
     storage = get_storage_by_name("demo", tmpdir)
     assert type(storage) == S3Storage
-    assert storage.signed == False
+    assert storage.signed is False
     assert "somewhere" == storage.s3_bucket
     assert "rel" == storage.prefix
 
 
 def test_use_file_storage_when_getting_default_storage_without_config(tmpdir):
-    reliquery_dir = os.path.join(tmpdir, "reliquery")
     storage = get_storage_by_name("default", tmpdir)
     assert type(storage) == FileStorage
 

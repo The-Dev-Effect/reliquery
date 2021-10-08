@@ -1,10 +1,7 @@
-from genericpath import samefile
-import json
 import logging
 from reliquery.metadata import Metadata, MetadataDB, RelicTag
 from typing import List, Dict
 from sys import getsizeof
-import os
 from io import BytesIO
 
 import numpy as np
@@ -68,7 +65,7 @@ class Relic:
     def _ensure_exists(self):
         try:
             self.storage.get_text([self.relic_type, self.name, "exists"])
-        except StorageItemDoesNotExist as e:
+        except StorageItemDoesNotExist:
             logging.info("Creating a Relic")
             self.storage.put_text([self.relic_type, self.name, "exists"], "exists")
 

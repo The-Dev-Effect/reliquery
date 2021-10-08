@@ -29,7 +29,7 @@ def test_html_file_given_file_name(test_storage):
     )
 
     html = rq.get_html("test-html.html")
-    assert html != None
+    assert html is not None
     assert html.startswith("<div>")
 
 

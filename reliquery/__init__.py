@@ -1,4 +1,3 @@
 from .relic import Relic, Reliquery
 
-__all__ = "Relic"
-__all__ = "Reliquery"
+__all__ = ["Relic", "Reliquery"]

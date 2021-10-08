@@ -1,5 +1,4 @@
 import pytest
-import os
 from .. import Relic
 from reliquery.storage import FileStorage
 
@@ -24,7 +23,7 @@ def test_text_file_given_file_name(test_storage):
     rq.add_text("test-text", "Test String!!!\n\tWhat do you think?")
 
     text = rq.get_text("test-text")
-    assert text != None
+    assert text is not None
     assert text == ("Test String!!!\n\tWhat do you think?")
 
 
