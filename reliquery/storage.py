@@ -1,7 +1,6 @@
 import logging
 import os
 from io import BytesIO, BufferedIOBase
-from posixpath import join
 from typing import Any, List, Dict
 from shutil import copyfile
 import json
@@ -9,13 +8,10 @@ import json
 import boto3
 from botocore import UNSIGNED
 from botocore.client import Config
-from numpy.lib.function_base import append
 
 
 from . import settings
-from reliquery.metadata import Metadata, MetadataDB
 
-import reliquery
 
 StoragePath = List[str]
 
@@ -26,9 +22,6 @@ class StorageItemDoesNotExist(Exception):
 
 class Storage:
     def put_file(self, path: StoragePath, file_path: str) -> None:
-        raise NotImplementedError
-
-    def put_binary_obj(self, path: StoragePath, buffer: BytesIO):
         raise NotImplementedError
 
     def put_binary_obj(self, path: StoragePath, buffer: BytesIO):
@@ -267,7 +260,7 @@ class S3Storage(Storage):
 
             try:
                 keys.extend([process_key(c["Key"]) for c in response["Contents"]])
-            except KeyError as e:
+            except KeyError:
                 logging.warning(f"No files found in directory {prefix}")
         # we want to remove the prefx
         return keys
@@ -345,7 +338,7 @@ class S3Storage(Storage):
 
             try:
                 keys.extend([process_key(c["Key"]) for c in response["Contents"]])
-            except KeyError as e:
+            except KeyError:
                 logging.warning(f"No files found in directory {prefix}")
         # we want to remove the prefx
         return keys

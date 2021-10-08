@@ -7,7 +7,7 @@ try:
     import numpy as np
 
     has_numpy = True
-except:
+except Exception:
     has_numpy = False
 
 if has_numpy:
@@ -17,7 +17,7 @@ if has_numpy:
 
         def serialize(self, item: np.ndarray):
             buffer = BytesIO()
-            raw_data = np.save(buffer, item, allow_pickle=False)
+            # raw_data = np.save(buffer, item, allow_pickle=False)
 
             buffer.seek(0)
 
@@ -29,7 +29,7 @@ if has_numpy:
         def __setitem__(self, key: str, item: np.ndarray):
             # Serialize the data.
             buffer = BytesIO()
-            raw_data = np.save(buffer, item, allow_pickle=False)
+            # raw_data = np.save(buffer, item, allow_pickle=False)
 
             buffer.seek(0)
 

@@ -192,7 +192,7 @@ class MetadataDB:
 
             cur.execute(
                 """
-                SELECT * FROM metadata 
+                SELECT * FROM metadata
                 WHERE name = ?
                 AND
                 data_type = ?
@@ -242,7 +242,7 @@ class MetadataDB:
 
             cur.execute(
                 """
-                SELECT * FROM metadata 
+                SELECT * FROM metadata
                 WHERE name = ?
                 AND
                 data_type = ?
@@ -304,9 +304,17 @@ class MetadataDB:
 
             cur.execute(
                 """
-                UPDATE metadata 
-                SET name=?, data_type=?, relic_type=?, storage_name=?, size=?, shape=?, last_modified=?
-                WHERE id=?
+                UPDATE metadata
+                SET
+                    name=?,
+                    data_type=?,
+                    relic_type=?,
+                    storage_name=?,
+                    size=?,
+                    shape=?,
+                    last_modified=?
+                WHERE
+                    id=?
                 """,
                 (
                     metadata.name,

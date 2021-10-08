@@ -12,7 +12,7 @@ def test_storage(tmp_path):
 
 
 def test_relic(test_storage):
-    e = Relic("test", "test", storage=test_storage)
+    Relic("test", "test", storage=test_storage)
     assert Relic.relic_exists("test", "test", storage=test_storage)
 
 

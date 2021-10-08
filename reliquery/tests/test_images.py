@@ -1,8 +1,6 @@
-from io import BytesIO
 from .. import Relic
 import pytest
 from ..storage import FileStorage
-import numpy as np
 import os
 
 

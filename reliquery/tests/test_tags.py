@@ -1,5 +1,4 @@
 import pytest
-import os
 from .. import Relic
 from reliquery.storage import FileStorage
 
