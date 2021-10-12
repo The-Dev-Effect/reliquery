@@ -124,8 +124,7 @@ def test_db_connection(put_text, list_keys, get_metadata):
         Metadata(
             "name",
             "data type",
-            "relic type",
-            "storage1",
+            rq._relic_data(),
             last_modified=dt.datetime.utcnow().strftime("%m/%d/%Y %H:%M:%S"),
         )
     )
@@ -136,6 +135,5 @@ def test_db_connection(put_text, list_keys, get_metadata):
     meta = [i for i in db.get_all_metadata()]
     assert meta[0].name == "name"
     assert meta[0].data_type == "data type"
-    assert meta[0].relic_type == "relic type"
-    assert meta[0].storage_name == "storage1"
+    assert meta[0].relic.storage_name == "s3"
     assert meta[0].last_modified is not None
