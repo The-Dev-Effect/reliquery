@@ -55,14 +55,19 @@ class RelicData(Data):
             last_modified=dict["last_modified"] if "last_modified" in dict else None,
         )
 
+    @classmethod
     def parse_sql_result(self, result: List):
         return {
-            "id":result[0],
+            "id": result[0],
             "relic_name": result[1],
             "relic_type": result[2],
             "storage_name": result[3],
-            "last_modified": result[4]
+            "last_modified": result[4],
         }
+
+    @classmethod
+    def relic_data(self, relic_name: str, relic_type: str, storage_name: str):
+        return RelicData(relic_name, relic_type, storage_name)
 
 
 class RelicTag(Data):
@@ -104,8 +109,8 @@ class RelicTag(Data):
             "relic_name": relic.relic_name,
             "relic_type": relic.relic_type,
             "storage_name": relic.storage_name,
-            "tags": {result[4]: result[5]},
-            "date_created": result[6],
+            "tags": {result[2]: result[3]},
+            "date_created": result[4],
         }
 
 
@@ -173,7 +178,7 @@ class Metadata(Data):
             "storage_name": relic.storage_name,
             "size": result[4],
             "shape": result[5],
-            "last_modified": result[6]
+            "last_modified": result[6],
         }
 
 
@@ -184,7 +189,7 @@ class MetadataDB:
         id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
         name text NOT NULL,
         data_type text NOT NULL,
-        relic_id, integer NOT NULL,
+        relic_id integer NOT NULL,
         size real,
         shape text,
         last_modified text NOT NULL
@@ -194,7 +199,7 @@ class MetadataDB:
     relic_tag_table = """
     CREATE TABLE IF NOT EXISTS relic_tags (
         id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-        relic_id, integer NOT NULL, 
+        relic_id integer NOT NULL,
         key text NOT NULL,
         value text NOT NULL,
         date_created text NOT NULL
@@ -232,9 +237,6 @@ class MetadataDB:
     def connect_db(self) -> Connection:
         return sqlite3.connect(":memory:")
 
-    def get_db_filename(self) -> str:
-        return self.file_loc
-
     def add_metadata(self, metadata: Metadata) -> None:
         try:
             cur = self.conn.cursor()
@@ -249,11 +251,7 @@ class MetadataDB:
                 relic_id = ?
                 LIMIT 1
                 """,
-                (
-                    metadata.name,
-                    metadata.data_type,
-                    metadata.relic.id
-                ),
+                (metadata.name, metadata.data_type, metadata.relic.id),
             )
             rows = cur.fetchall()
 
@@ -262,12 +260,12 @@ class MetadataDB:
                 return
 
             cur.execute(
-                "INSERT into metadata VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT into metadata VALUES (?, ?, ?, ?, ?, ?, ?)",
                 (
                     None,
                     metadata.name,
                     metadata.data_type,
-                    metadata.relic.relic_id,
+                    metadata.relic.id,
                     metadata.size,
                     metadata.shape,
                     metadata.last_modified,
@@ -277,11 +275,9 @@ class MetadataDB:
             self.conn.commit()
 
         except Error as e:
-            print(e)
+            logging.warning(f"Error adding metadata: {metadata} | {e.__class__}: {e}")
 
-    def get_metadata_by_name(
-        self, name: str, data_type: str, relic: RelicData
-    ):
+    def get_metadata_by_name(self, name: str, data_type: str, relic: RelicData):
 
         try:
             cur = self.conn.cursor()
@@ -314,34 +310,36 @@ class MetadataDB:
                 return None
 
         except Error as e:
-            print(e)
+            logging.warning(
+                "Error getting metadata by name: "
+                + f"name={name}, type={data_type} | {e.__class__()}: {e}"
+            )
 
     def get_all_metadata(self) -> List:
         try:
             cur = self.conn.cursor()
 
-            self.get_relic_by_id()
-
             cur.execute("""SELECT * FROM metadata """)
             rows = cur.fetchall()
-            print(rows)
+
             if len(rows) > 0:
                 for row in rows:
-                    relic = self.get_relic_by_id(row[3])
+                    relic = self.get_relic_data_by_id(row[3])
+                    print(row)
                     yield Metadata(
                         name=row[1],
                         data_type=row[2],
                         relic=relic,
-                        size=row[5],
-                        last_modified=row[7],
-                        shape=row[6],
+                        size=row[4],
+                        last_modified=row[6],
+                        shape=row[5],
                         id=row[0],
                     )
             else:
                 return []
 
         except Error as e:
-            print(e)
+            logging.warning("Error getting all metadata | " + f"{e.__class__()}: {e}")
 
     def update_metadata(self, metadata: Metadata) -> None:
         try:
@@ -349,23 +347,9 @@ class MetadataDB:
 
             cur.execute(
                 """
-<<<<<<< HEAD
                 UPDATE metadata
-                SET
-                    name=?,
-                    data_type=?,
-                    relic_type=?,
-                    storage_name=?,
-                    size=?,
-                    shape=?,
-                    last_modified=?
-                WHERE
-                    id=?
-=======
-                UPDATE metadata 
                 SET name=?, data_type=?, relic_id=?, size=?, shape=?, last_modified=?
                 WHERE id=?
->>>>>>> ecd4432 (changes to add better relationships with relics and relic data)
                 """,
                 (
                     metadata.name,
@@ -415,12 +399,12 @@ class MetadataDB:
 
     def sync_tags(self, ext: RelicTag) -> None:
         if len(self.get_by_relic_tag(ext)) == 0:
-            self.add_relic_tag(
-                ext
-            )
+            self.add_relic_tag(ext)
 
     def add_relic_tag(self, relic_tag: RelicTag) -> List[RelicTag]:
+
         try:
+
             cur = self.conn.cursor()
 
             for key, value in relic_tag.tags.items():
@@ -439,7 +423,9 @@ class MetadataDB:
 
             self.conn.commit()
         except Error as e:
-            logging.warning(f"Error creating relic tag: {relic_tag.get_dict()} | {e}")
+            logging.warning(
+                f"Error creating relic tag: {relic_tag.get_dict()} | {e.__class__}: {e}"
+            )
 
         return self.get_by_relic_tag(relic_tag)
 
@@ -486,9 +472,7 @@ class MetadataDB:
 
         return tags
 
-    def get_all_tags_from_relic(
-        self, relic: RelicData
-    ) -> List:
+    def get_all_tags_from_relic(self, relic: RelicData) -> List:
         tags = []
 
         try:
@@ -499,14 +483,14 @@ class MetadataDB:
                 SELECT * FROM relic_tags
                 WHERE relic_id = ?
                 """,
-                (relic.id),
+                (str(relic.id)),
             )
 
             queries = cur.fetchall()
 
             if queries:
                 for tag in queries:
-                    tags.append(RelicTag.parse_sql_result(tag))
+                    tags.append(RelicTag.parse_sql_result(tag, relic))
 
         except Error as e:
             logging.warning(f"Error getting all tags: {e}")
@@ -535,9 +519,11 @@ class MetadataDB:
         except Error as e:
             logging.warning(f"Error getting relic tag: {e}")
 
-        return list(map(RelicTag.parse_sql_result, tags))
+        return [RelicTag.parse_sql_result(i, tag.relic) for i in tags]
 
-    def sync_relic(self, relic_name: str, relic_type: str, storage_name: str) -> RelicData:
+    def sync_relic(
+        self, relic_name: str, relic_type: str, storage_name: str
+    ) -> RelicData:
         relic = self.get_relic_data_by_name(relic_name, relic_type, storage_name)
 
         if relic:
@@ -545,20 +531,68 @@ class MetadataDB:
         else:
             self._create_relic_data(relic_name, relic_type, storage_name)
             return self.get_relic_data_by_name(relic_name, relic_type, storage_name)
-        
-    def get_relic_data_by_name(self, relic_name: str, relic_type: str, storage_name: str) -> RelicData:
+
+    def get_relic_data_by_name(
+        self, relic_name: str, relic_type: str, storage_name: str
+    ) -> RelicData:
 
         try:
             cur = self.conn.cursor()
-            cur.execute("""
+            cur.execute(
+                """
                 SELECT * FROM relics
                 WHERE relic_name = ?
                 AND relic_type = ?
                 AND storage_name =?
                 LIMIT 1
                 """,
-                (relic_name, relic_type, storage_name)
+                (relic_name, relic_type, storage_name),
             )
+            rows = cur.fetchall()
+            if rows:
+                return RelicData.parse_dict(RelicData.parse_sql_result(rows[0]))
+            else:
+                return None
+
+        except Error as e:
+            logging.warning(
+                "Error getting Relic data by name: "
+                + f"{relic_name, relic_type, storage_name} | {e.__class__()}: {e}"
+            )
+
+    def _create_relic_data(
+        self, relic_name: str, relic_type: str, storage_name: str
+    ) -> None:
+        try:
+            cur = self.conn.cursor()
+            cur.execute(
+                """
+            INSERT INTO relics VALUES(?,?,?,?,?)
+            """,
+                (
+                    None,
+                    relic_name,
+                    relic_type,
+                    storage_name,
+                    dt.datetime.utcnow().strftime(dt_format),
+                ),
+            )
+
+            self.conn.commit()
+
+        except Error as e:
+            logging.warning(f"Error creating Relic data: {e}")
+
+    def get_relic_data_by_id(self, relic_id: int) -> RelicData:
+        try:
+            cur = self.conn.cursor()
+            cur.execute(
+                """
+                SELECT * FROM relics WHERE id=? LIMIT 1;
+                """,
+                (str(relic_id)),
+            )
+
             rows = cur.fetchall()
 
             if rows:
@@ -567,22 +601,6 @@ class MetadataDB:
                 return None
 
         except Error as e:
-            logging.warning(f"Error getting Relic data by name: {relic_name, relic_type, storage_name} | {e}")
-
-    def _create_relic_data(self, relic_name: str, relic_type: str, storage_name: str) -> None:
-        try:
-            cur = self.conn.cursor()
-            cur.execute("""
-            INSERT INTO relics VALUES(?,?,?,?,?)
-            """,
-            (None, relic_name, relic_type, storage_name, dt.datetime.utcnow().strftime(dt_format))
+            logging.warning(
+                "Error getting RelicData by id: " + f"{relic_id} | {e.__class__()}: {e}"
             )
-
-            self.conn.commit()
-
-        except Error as e:
-            logging.warning(f"Error creating Relic data: {e}")
-    
-    
-
-            

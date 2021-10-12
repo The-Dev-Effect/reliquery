@@ -94,6 +94,11 @@ class Relic:
 
         return True
 
+    def _relic_data(self):
+        return self.metadata_db.get_relic_data_by_name(
+            self.name, self.relic_type, self.storage_name
+        )
+
     def add_array(self, name: str, array: np.ndarray):
 
         self.assert_valid_id(name)
@@ -132,11 +137,7 @@ class Relic:
 
         self.assert_valid_id(name)
 
-        metadata = metadata = Metadata(
-            name=name,
-            data_type="html",
-            relic=self.relic
-        )
+        metadata = metadata = Metadata(name=name, data_type="html", relic=self.relic)
 
         self.storage.put_file([self.relic_type, self.name, "html", name], html_path)
         self._add_metadata(metadata)
@@ -145,11 +146,7 @@ class Relic:
     def add_html_string(self, name: str, html_str: str):
         self.assert_valid_id(name)
 
-        metadata = Metadata(
-            name=name,
-            data_type="html",
-            relic=self.relic
-        )
+        metadata = Metadata(name=name, data_type="html", relic=self.relic)
 
         self.storage.put_text([self.relic_type, self.name, "html", name], html_str)
 
@@ -221,10 +218,11 @@ class Relic:
         tag = RelicTag(self.relic, tags=tags)
         tag.date_created = dt.datetime.utcnow().strftime(dt_format)
 
+        tag.relic = self._relic_data()
+        print(tag.relic.relic_name)
+
         try:
-            all_tags = self.metadata_db.get_all_tags_from_relic(
-                self.name, self.relic_type, self.storage.name
-            )
+            all_tags = self.metadata_db.get_all_tags_from_relic(tag.relic)
 
             saved = self.metadata_db.add_relic_tag(tag)
 
@@ -234,7 +232,7 @@ class Relic:
 
             return saved
         except Exception as e:
-            logging.warning(f"Error adding tags: {tags} | {e} ")
+            logging.warning(f"Error adding tags: {tags} | {e.__class__}: {e} ")
 
     def list_tags(self) -> List[str]:
         return self.storage.get_tags([self.relic_type, self.name, "tags"])
