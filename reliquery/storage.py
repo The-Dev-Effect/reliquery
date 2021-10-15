@@ -57,6 +57,9 @@ class Storage:
     def get_all_relic_tags(self) -> List[Dict]:
         raise NotImplementedError
 
+    def get_all_relic_data(self) -> List[Dict]:
+        raise NotImplementedError
+
 
 class FileStorage:
     def __init__(self, root: str, name: str):
@@ -182,6 +185,24 @@ class FileStorage:
 
         for key in tag_keys:
             return self.get_tags(key.split("/")[-3:])
+
+    def get_all_relic_data(self) -> List[Dict]:
+        relic_types = os.listdir(self._join_path([""]))
+
+        if relic_types:
+            for relic_type in relic_types:
+                if os.path.isdir(self._join_path([relic_type])):
+                    names = os.listdir(self._join_path([relic_type]))
+
+                    if names:
+                        for name in names:
+                            yield {
+                                "relic_name": name,
+                                "relic_type": relic_type,
+                                "storage_name": self.name,
+                            }
+        else:
+            return []
 
 
 S3Client = Any
