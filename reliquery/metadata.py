@@ -385,9 +385,7 @@ class MetadataDB:
         return results
 
     def sync_metadata(self, ext: Metadata) -> None:
-        int = self.get_metadata_by_name(
-            ext.name, ext.data_type, ext.relic_type, ext.storage_name
-        )
+        int = self.get_metadata_by_name(ext.name, ext.data_type, ext.relic)
 
         if int is not None:
             if dt.datetime.strptime(
@@ -521,16 +519,20 @@ class MetadataDB:
 
         return [RelicTag.parse_sql_result(i, tag.relic) for i in tags]
 
-    def sync_relic(
-        self, relic_name: str, relic_type: str, storage_name: str
-    ) -> RelicData:
-        relic = self.get_relic_data_by_name(relic_name, relic_type, storage_name)
+    def sync_relic_data(self, relic_data: RelicData) -> RelicData:
+        relic = self.get_relic_data_by_name(
+            relic_data.relic_name, relic_data.relic_type, relic_data.storage_name
+        )
 
         if relic:
             return relic
         else:
-            self._create_relic_data(relic_name, relic_type, storage_name)
-            return self.get_relic_data_by_name(relic_name, relic_type, storage_name)
+            self._create_relic_data(
+                relic_data.relic_name, relic_data.relic_type, relic_data.storage_name
+            )
+            return self.get_relic_data_by_name(
+                relic_data.relic_name, relic_data.relic_type, relic_data.storage_name
+            )
 
     def get_relic_data_by_name(
         self, relic_name: str, relic_type: str, storage_name: str
@@ -604,3 +606,24 @@ class MetadataDB:
             logging.warning(
                 "Error getting RelicData by id: " + f"{relic_id} | {e.__class__()}: {e}"
             )
+
+    def get_relics_by_tag(self, tag: Dict) -> RelicData:
+        # TODO add ability to query using multiple tags
+        for k,v in tag.items():
+            cur = self.conn.cursor()
+            cur.execute(
+                """
+                SELECT relic_id FROM relic_tags WHERE key=? AND value=?;
+                """,
+                (k, v),
+            )
+
+            rows = cur.fetchall()
+
+            if rows:
+                return [
+                    RelicData.parse_dict(
+                        [RelicData.parse_sql_result(row) for row in rows]
+                    )
+                ]
+            

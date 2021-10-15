@@ -1,5 +1,5 @@
 import logging
-from reliquery.metadata import Metadata, MetadataDB, RelicTag
+from reliquery.metadata import Metadata, MetadataDB, RelicData, RelicTag
 from typing import List, Dict
 from sys import getsizeof
 from io import BytesIO
@@ -58,8 +58,8 @@ class Relic:
             self._ensure_exists()
 
         self.metadata_db = MetadataDB()
-        self.relic = self.metadata_db.sync_relic(
-            self.name, self.relic_type, self.storage_name
+        self.relic = self.metadata_db.sync_relic_data(
+            RelicData(self.name, self.relic_type, self.storage_name)
         )
         if not self.relic:
             raise Exception("Relic data was not created")
@@ -318,14 +318,73 @@ class Reliquery:
 
         return self.metadata_db.query(statement)
 
+    def get_relics_by_tag(self, tag: Dict) -> List[Relic]:
+        """
+        Query relics for user defined tags added to Relics.
+
+        Parameters
+        ----------
+
+        tags : Dictionary of tags in a key, value form
+
+        Returns
+        -------
+        List of Relic objects
+            Reclics associated with the key, values given
+        """
+        if self.storages:
+            self._sync_relics()
+
+        relics = self.metadata_db.get_relics_by_tag(tag)
+
+        return map(self._parse_relic_data, relics)
+
     def _sync_relics(self) -> None:
+        """
+        Syncs Relics from all available storages with the in-memory database.
+        This is done on the initial creation of a Reliquery object and prior
+        to any queries over Relics.
+        """
         for stor in self.storages:
-            metadata = stor.get_all_relic_metadata()
-            tags = stor.get_all_relic_tags()
+            print(stor)
+            relic_datas = [
+                self.metadata_db.sync_relic_data(RelicData.parse_dict(data))
+                for data in stor.get_all_relic_data()
+            ]
 
-            for data in metadata:
-                self.metadata_db.sync_metadata(Metadata.parse_dict(data))
+            if relic_datas:
+                for relic_data in relic_datas:
 
-            for tag in tags:
+                    metadata = stor.get_all_relic_metadata()
 
-                self.metadata_db.sync_tags(RelicTag.parse_dict(tag))
+                    if metadata:
+                        for meta in metadata:
+                            self.metadata_db.sync_metadata(
+                                Metadata.parse_dict(meta, relic_data)
+                            )
+
+                    tags = stor.get_all_relic_tags()
+
+                    if tags:
+                        for tag in tags:
+                            self.metadata_db.sync_tags(
+                                RelicTag.parse_dict(tag, relic_data)
+                            )
+
+    def _parse_relic_data(self, relic_data: RelicData) -> Relic:
+        """
+        Creates a Relic from relic data
+
+        Parameters
+        ----------
+        relic_data : RelicData object
+
+        Returns
+        -------
+        Relic : Relic object
+        """
+        return Relic(
+            name=relic_data.relic_name,
+            relic_type=relic_data.relic_name,
+            storage_name=relic_data.storage_name,
+        )
