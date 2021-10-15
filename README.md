@@ -1,6 +1,19 @@
 # Reliquery
 Science's Artifact Antiformat
 
+## For production
+```
+pip install reliquery
+```
+
+## For development
+
+
+### Local Install
+```
+cd reliquery
+pip install -e .
+```
 ### Quick Example Usage
 ```python
 from reliquery import Relic
