@@ -288,9 +288,9 @@ class Relic:
     def get_json(self, name: str) -> dict:
         self.assert_valid_id(name)
 
-        jsonText = self.storage.get_text([self.relic_type, self.name, "json", name])
-        myJson = json.loads(jsonText)
-        return myJson
+        json_text = self.storage.get_text([self.relic_type, self.name, "json", name])
+        my_json = json.loads(json_text)
+        return my_json
 
 
 class Reliquery:
