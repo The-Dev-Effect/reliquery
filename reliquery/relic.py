@@ -266,11 +266,11 @@ class Relic:
     def list_images(self) -> List[str]:
         return self.storage.list_keys([self.relic_type, self.name, "images"])
 
-    def add_json(self, name: str, jsonData: dict) -> None:
+    def add_json(self, name: str, json_data: Dict) -> None:
         self.assert_valid_id(name)
 
-        json_text = json.dumps(jsonData)
-        size = getsizeof(jsonData)
+        json_text = json.dumps(json_data)
+        size = getsizeof(json_data)
         metadata = Metadata(
             name=name,
             data_type="json",
