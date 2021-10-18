@@ -386,6 +386,9 @@ class S3Storage(Storage):
 
         return tags
 
+    def get_all_relic_data(self) -> List[Dict]:
+        raise RuntimeError
+
 
 def get_storage_by_name(name: str, root: str = os.path.expanduser("~")) -> Storage:
     reliquery_dir = os.path.join(root, "reliquery")

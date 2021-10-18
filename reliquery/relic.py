@@ -184,7 +184,7 @@ class Relic:
 
     def get_text(self, name: str) -> str:
         self.assert_valid_id(name)
-
+        
         return self.storage.get_text([self.relic_type, self.name, "text", name])
 
     def _add_metadata(self, metadata: Metadata) -> None:
@@ -219,20 +219,16 @@ class Relic:
         tag.date_created = dt.datetime.utcnow().strftime(dt_format)
 
         tag.relic = self._relic_data()
-        print(tag.relic.relic_name)
 
-        try:
-            all_tags = self.metadata_db.get_all_tags_from_relic(tag.relic)
+        all_tags = self.metadata_db.get_all_tags_from_relic(tag.relic)
 
-            saved = self.metadata_db.add_relic_tag(tag)
+        saved = self.metadata_db.add_relic_tag(tag)
 
-            all_tags.extend(saved)
+        all_tags.extend(saved)
 
-            self.storage.put_tags([self.relic_type, self.name, "tags"], all_tags)
+        self.storage.put_tags([self.relic_type, self.name, "tags"], all_tags)
 
-            return saved
-        except Exception as e:
-            logging.warning(f"Error adding tags: {tags} | {e.__class__}: {e} ")
+        return saved
 
     def list_tags(self) -> List[str]:
         return self.storage.get_tags([self.relic_type, self.name, "tags"])
@@ -310,6 +306,8 @@ class Reliquery:
             self.storages = storages
         else:
             self.storages = get_all_available_storages()
+
+        self.storage_map = {s.name: s for s in self.storages}
         self.metadata_db = MetadataDB()
 
     def query(self, statement: str) -> List:
@@ -337,7 +335,7 @@ class Reliquery:
 
         relics = self.metadata_db.get_relics_by_tag(tag)
 
-        return map(self._parse_relic_data, relics)
+        return list(map(self._parse_relic_data, relics))
 
     def _sync_relics(self) -> None:
         """
@@ -346,7 +344,6 @@ class Reliquery:
         to any queries over Relics.
         """
         for stor in self.storages:
-            print(stor)
             relic_datas = [
                 self.metadata_db.sync_relic_data(RelicData.parse_dict(data))
                 for data in stor.get_all_relic_data()
@@ -385,6 +382,6 @@ class Reliquery:
         """
         return Relic(
             name=relic_data.relic_name,
-            relic_type=relic_data.relic_name,
-            storage_name=relic_data.storage_name,
+            relic_type=relic_data.relic_type,
+            storage=self.storage_map[relic_data.storage_name],
         )
