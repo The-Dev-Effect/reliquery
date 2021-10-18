@@ -387,7 +387,16 @@ class S3Storage(Storage):
         return tags
 
     def get_all_relic_data(self) -> List[Dict]:
-        raise RuntimeError
+        relic_types = {path.split("/")[0] for path in self.list_key_paths([""])}
+        
+        for relic_type in relic_types:
+            names = {path.split("/")[1] for path in self.list_key_paths([relic_type])}
+            for name in names:
+                yield {
+                    "relic_name": name,
+                    "relic_type": relic_type,
+                    "storage_name": self.name,
+                }
 
 
 def get_storage_by_name(name: str, root: str = os.path.expanduser("~")) -> Storage:
