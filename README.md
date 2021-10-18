@@ -26,6 +26,7 @@ r.add_array("ones", ones_array)
 np.testing.assert_array_equal(r.get_array("ones"), ones_array)
 r.add_text("long_form", "Some long form text. This is something we can do NLP on later")
 r.add_tag({"pass": "yes"})
+r.add_json("json", {"One":1, "Two": 2, "Three": 3})
 print(r.describe())
 ```
 ### HTML supported 
@@ -57,6 +58,23 @@ Get and display images:
 ```pyton
 print(r_demo.list_images())
 display(Image(r_demo.get_image("reliquery").read()))
+```
+
+### JSON supported
+Add json by passing it in as a dictionary:
+```python
+# Example
+r.add_json("json", {"First": 1, "Second": 2, "Third":3})
+```
+
+List json 
+```python
+r.list_json()
+```
+
+Get json by taking the name and returning the dictionary
+```python 
+r.get_json("json")
 ```
 
 ### Query Relics
