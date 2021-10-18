@@ -277,6 +277,7 @@ class MetadataDB:
         except Error as e:
             logging.warning(f"Error adding metadata: {metadata} | {e.__class__}: {e}")
 
+    # TODO add test coverage
     def get_metadata_by_name(self, name: str, data_type: str, relic: RelicData):
 
         try:
@@ -296,14 +297,14 @@ class MetadataDB:
             )
             rows = cur.fetchall()
 
-            if len(rows) > 0:
+            if rows:
                 return Metadata(
                     name=rows[0][1],
                     data_type=rows[0][2],
                     relic=relic,
-                    size=rows[0][5],
-                    last_modified=rows[0][7],
-                    shape=rows[0][6],
+                    size=rows[0][4],
+                    last_modified=rows[0][6],
+                    shape=rows[0][5],
                     id=rows[0][0],
                 )
             else:
@@ -325,7 +326,6 @@ class MetadataDB:
             if len(rows) > 0:
                 for row in rows:
                     relic = self.get_relic_data_by_id(row[3])
-                    print(row)
                     yield Metadata(
                         name=row[1],
                         data_type=row[2],
@@ -401,29 +401,23 @@ class MetadataDB:
 
     def add_relic_tag(self, relic_tag: RelicTag) -> List[RelicTag]:
 
-        try:
+        cur = self.conn.cursor()
 
-            cur = self.conn.cursor()
-
-            for key, value in relic_tag.tags.items():
-                cur.execute(
-                    """
-                    INSERT INTO relic_tags VALUES (?,?,?,?,?)
-                    """,
-                    (
-                        relic_tag.id,
-                        relic_tag.relic.id,
-                        key,
-                        value,
-                        relic_tag.date_created,
-                    ),
-                )
-
-            self.conn.commit()
-        except Error as e:
-            logging.warning(
-                f"Error creating relic tag: {relic_tag.get_dict()} | {e.__class__}: {e}"
+        for key, value in relic_tag.tags.items():
+            cur.execute(
+                """
+                INSERT INTO relic_tags VALUES (?,?,?,?,?)
+                """,
+                (
+                    None,
+                    relic_tag.relic.id,
+                    key,
+                    value,
+                    relic_tag.date_created,
+                ),
             )
+
+        self.conn.commit()
 
         return self.get_by_relic_tag(relic_tag)
 
@@ -609,11 +603,11 @@ class MetadataDB:
 
     def get_relics_by_tag(self, tag: Dict) -> RelicData:
         # TODO add ability to query using multiple tags
-        for k,v in tag.items():
+        for k, v in tag.items():
             cur = self.conn.cursor()
             cur.execute(
                 """
-                SELECT relic_id FROM relic_tags WHERE key=? AND value=?;
+                SELECT * FROM relic_tags WHERE key=? AND value=?;
                 """,
                 (k, v),
             )
@@ -621,9 +615,5 @@ class MetadataDB:
             rows = cur.fetchall()
 
             if rows:
-                return [
-                    RelicData.parse_dict(
-                        [RelicData.parse_sql_result(row) for row in rows]
-                    )
-                ]
-            
+                for row in rows:
+                    yield self.get_relic_data_by_id(row[1])
