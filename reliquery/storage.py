@@ -112,9 +112,9 @@ class FileStorage:
             return f.write(json.dumps(metadata))
 
     def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
-        data = {root_key: {"arrays": [], "text": [], "html": [], "images": []}}
+        data = {root_key: {"arrays": [], "text": [], "html": [], "images": [], "json": []}}
 
-        dirs = ["arrays", "html", "text", "images"]
+        dirs = ["arrays", "html", "text", "images", "json"]
 
         def dict_from_path(path: StoragePath, dirname: str):
             dirpath = path.copy()
@@ -271,9 +271,9 @@ class S3Storage(Storage):
         )
 
     def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
-        dirs = ["arrays", "html", "text", "images"]
+        dirs = ["arrays", "html", "text", "images", "json"]
 
-        data = {root_key: {"arrays": [], "text": [], "html": [], "images": []}}
+        data = {root_key: {"arrays": [], "text": [], "html": [], "images": [], "json" : []}}
 
         def dict_from_path(path: StoragePath, dirname: str) -> None:
             dirpath = path.copy()

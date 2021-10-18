@@ -7,6 +7,8 @@ from io import BytesIO
 import numpy as np
 import datetime as dt
 
+import json
+
 
 from .storage import (
     get_all_available_storages,
@@ -263,6 +265,32 @@ class Relic:
 
     def list_images(self) -> List[str]:
         return self.storage.list_keys([self.relic_type, self.name, "images"])
+
+    def add_json(self, name: str, jsonData: dict) -> None:
+        self.assert_valid_id(name)
+
+        json_text = json.dumps(jsonData)
+        size = getsizeof(jsonData)
+        metadata = Metadata(
+            name=name,
+            data_type="json",
+            relic_type=self.relic_type,
+            storage_name=self.storage.name,
+            size=size,
+        )
+
+        self.storage.put_text([self.relic_type, self.name, "json", name], json_text)
+        self._add_metadata(metadata)
+
+    def list_json(self) -> List[str]:
+        return self.storage.list_keys([self.relic_type, self.name, "json"])
+
+    def get_json(self, name: str) -> dict:
+        self.assert_valid_id(name)
+
+        jsonText = self.storage.get_text([self.relic_type, self.name, "json", name])
+        myJson = json.loads(jsonText)
+        return myJson
 
 
 class Reliquery:
