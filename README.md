@@ -78,16 +78,14 @@ r.get_json("json")
 ```
 
 ### Query Relics
-Query over a relic using Relic.query(sql_statement) use:
 ```python
-r_demo.query("SELECT * FROM metadata WHERE data_type='arrays' AND shape='(5,)'")
-```
-this will query over data on a certain Relic
+from reliquery import Reliquery
 
-Querying over all relics you have access to:
-```python
-req = Reliquery()
-req.query("SELECT * FROM metadata WHERE data_type='text'")
+rel = Reliquery()
+
+relics = rel.get_relics_by_tag("pass", "yes")
+
+relics[0].describe()
 ```
 
 
