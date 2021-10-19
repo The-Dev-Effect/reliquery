@@ -19,7 +19,7 @@ def test_query_relics_by_tag(tmp_path):
 
     rel = Reliquery(storages=storages)
 
-    r = rel.get_relics_by_tag({"go-no-go": "go"})
+    r = rel.get_relics_by_tag("go-no-go", "go")
     assert len(r) == 1
 
     rq = r[0]

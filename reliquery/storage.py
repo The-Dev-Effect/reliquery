@@ -48,10 +48,10 @@ class Storage:
     def get_all_relic_metadata(self) -> List[Dict]:
         raise NotImplementedError
 
-    def put_tags(self, path: StoragePath, tags: List[Dict]) -> None:
+    def put_tags(self, path: StoragePath, tags: Dict) -> None:
         raise NotImplementedError
 
-    def get_tags(self, path: StoragePath) -> List[Dict]:
+    def get_tags(self, path: StoragePath) -> Dict:
         raise NotImplementedError
 
     def get_all_relic_tags(self) -> List[Dict]:
@@ -165,18 +165,18 @@ class FileStorage:
 
         return paths
 
-    def put_tags(self, path: StoragePath, tags: List[Dict]) -> None:
+    def put_tags(self, path: StoragePath, tags: Dict) -> None:
         self._ensure_path(path)
-        jsons = [json.dumps(tag) for tag in tags]
 
         with open(self._join_path(path), "w") as f:
-            return f.write(";".join(jsons))
+            return f.write(json.dumps(tags))
 
-    def get_tags(self, path: StoragePath) -> List[Dict]:
-        self._ensure_path(path)
-
-        with open(self._join_path(path), "r") as f:
-            return list(map(json.loads, f.read().split(";")))
+    def get_tags(self, path: StoragePath) -> Dict:
+        try:
+            with open(self._join_path(path), "r") as f:
+                return json.loads(f.read())
+        except FileNotFoundError:
+            return {}
 
     def get_all_relic_tags(self) -> List[Dict]:
         tag_keys = [
@@ -368,13 +368,14 @@ class S3Storage(Storage):
         # we want to remove the prefx
         return keys
 
-    def put_tags(self, path: StoragePath, tags: List[Dict]) -> None:
-        jsons = [json.dumps(tag) for tag in tags]
+    def put_tags(self, path: StoragePath, tags: Dict) -> None:
+        self.put_text(path, json.dumps(tags))
 
-        self.put_text(path, ";".join(jsons))
-
-    def get_tags(self, path: StoragePath) -> List[Dict]:
-        return list(map(json.loads, self.get_text(path).split(";")))
+    def get_tags(self, path: StoragePath) -> Dict:
+        try:
+            return json.loads(self.get_text(path))
+        except StorageItemDoesNotExist:
+            return {}
 
     def get_all_relic_tags(self) -> List[Dict]:
         tag_keys = [
@@ -388,7 +389,7 @@ class S3Storage(Storage):
 
     def get_all_relic_data(self) -> List[Dict]:
         relic_types = {path.split("/")[0] for path in self.list_key_paths([""])}
-        
+
         for relic_type in relic_types:
             names = {path.split("/")[1] for path in self.list_key_paths([relic_type])}
             for name in names:

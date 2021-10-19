@@ -6,6 +6,7 @@ install_requires = [
     "black>=21.4b",
     "pytest",
     "flake8",
+    "sphinx",
 ]
 
 setup(
