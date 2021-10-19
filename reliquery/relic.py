@@ -5,8 +5,6 @@ from sys import getsizeof
 from io import BytesIO
 
 import numpy as np
-import datetime as dt
-
 import json
 
 
@@ -184,7 +182,7 @@ class Relic:
 
     def get_text(self, name: str) -> str:
         self.assert_valid_id(name)
-        
+
         return self.storage.get_text([self.relic_type, self.name, "text", name])
 
     def _add_metadata(self, metadata: Metadata) -> None:
@@ -200,37 +198,15 @@ class Relic:
             [self.relic_type, self.name, "metadata"], self.name
         )
 
-    def query(self, statement: str) -> List:
-        """
-        Query metadata over all relics
+    def add_tag(self, tags: Dict) -> None:
+        tags_path = [self.relic_type, self.name, "tags"]
 
-        pass SQL expression as a string
-        """
-        metadata = self.storage.get_all_relic_metadata()
+        curr_tags = self.storage.get_tags(tags_path)
+        curr_tags.update(tags)
 
-        for data in metadata:
-            self.metadata_db.sync_metadata(Metadata.parse_dict(data))
+        self.storage.put_tags(tags_path, curr_tags)
 
-        return self.metadata_db.query(statement)
-
-    def add_tag(self, tags: Dict) -> List[Dict]:
-
-        tag = RelicTag(self.relic, tags=tags)
-        tag.date_created = dt.datetime.utcnow().strftime(dt_format)
-
-        tag.relic = self._relic_data()
-
-        all_tags = self.metadata_db.get_all_tags_from_relic(tag.relic)
-
-        saved = self.metadata_db.add_relic_tag(tag)
-
-        all_tags.extend(saved)
-
-        self.storage.put_tags([self.relic_type, self.name, "tags"], all_tags)
-
-        return saved
-
-    def list_tags(self) -> List[str]:
+    def list_tags(self) -> Dict:
         return self.storage.get_tags([self.relic_type, self.name, "tags"])
 
     def add_image(self, name: str, image_bin: bytes):
@@ -268,8 +244,7 @@ class Relic:
         metadata = Metadata(
             name=name,
             data_type="json",
-            relic_type=self.relic_type,
-            storage_name=self.storage.name,
+            relic=self._relic_data(),
             size=size,
         )
 
@@ -309,33 +284,30 @@ class Reliquery:
 
         self.storage_map = {s.name: s for s in self.storages}
         self.metadata_db = MetadataDB()
+        self._sync_relics()
 
     def query(self, statement: str) -> List:
-        if self.storages:
-            self._sync_relics()
-
         return self.metadata_db.query(statement)
 
-    def get_relics_by_tag(self, tag: Dict) -> List[Relic]:
+    def get_relics_by_tag(self, key: str, value: str) -> List[Relic]:
         """
         Query relics for user defined tags added to Relics.
 
         Parameters
         ----------
 
-        tags : Dictionary of tags in a key, value form
+        key : string
+        value : string
 
         Returns
         -------
         List of Relic objects
             Reclics associated with the key, values given
         """
-        if self.storages:
-            self._sync_relics()
-
-        relics = self.metadata_db.get_relics_by_tag(tag)
-
-        return list(map(self._parse_relic_data, relics))
+        return [
+            Relic(name=data[0], relic_type=data[1], storage=self.storage_map[data[2]])
+            for data in self.metadata_db.get_relics_by_tag(key, value)
+        ]
 
     def _sync_relics(self) -> None:
         """
@@ -351,37 +323,11 @@ class Reliquery:
 
             if relic_datas:
                 for relic_data in relic_datas:
-
-                    metadata = stor.get_all_relic_metadata()
-
-                    if metadata:
-                        for meta in metadata:
-                            self.metadata_db.sync_metadata(
-                                Metadata.parse_dict(meta, relic_data)
-                            )
-
-                    tags = stor.get_all_relic_tags()
-
-                    if tags:
-                        for tag in tags:
-                            self.metadata_db.sync_tags(
-                                RelicTag.parse_dict(tag, relic_data)
-                            )
-
-    def _parse_relic_data(self, relic_data: RelicData) -> Relic:
-        """
-        Creates a Relic from relic data
-
-        Parameters
-        ----------
-        relic_data : RelicData object
-
-        Returns
-        -------
-        Relic : Relic object
-        """
-        return Relic(
-            name=relic_data.relic_name,
-            relic_type=relic_data.relic_type,
-            storage=self.storage_map[relic_data.storage_name],
-        )
+                    self.metadata_db.sync_tags(
+                        RelicTag.parse_dict(
+                            stor.get_tags(
+                                [relic_data.relic_type, relic_data.relic_name, "tags"]
+                            ),
+                            relic_data,
+                        )
+                    )

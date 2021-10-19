@@ -1,9 +1,10 @@
 import sqlite3
 from sqlite3 import Error
 from sqlite3.dbapi2 import Connection
-from typing import Dict, List
+from typing import Dict, List, Tuple
 import datetime as dt
 import logging
+
 
 dt_format = "%m/%d/%Y %H:%M:%S"
 
@@ -90,17 +91,11 @@ class RelicTag(Data):
             "relic_type": self.relic.relic_type,
             "storage_name": self.relic.storage_name,
             "tags": self.tags,
-            "date_created": self.date_created,
         }
 
     @classmethod
-    def parse_dict(self, dict: Dict, relic: RelicData) -> Data:
-        return RelicTag(
-            relic=relic,
-            tags=dict["tags"],
-            id=dict["id"] if "id" in dict else None,
-            date_created=dict["date_created"],
-        )
+    def parse_dict(self, tags: Dict, relic: RelicData) -> Data:
+        return RelicTag(relic=relic, tags=tags)
 
     @classmethod
     def parse_sql_result(self, result: List, relic: RelicData):
@@ -110,7 +105,6 @@ class RelicTag(Data):
             "relic_type": relic.relic_type,
             "storage_name": relic.storage_name,
             "tags": {result[2]: result[3]},
-            "date_created": result[4],
         }
 
 
@@ -201,8 +195,7 @@ class MetadataDB:
         id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
         relic_id integer NOT NULL,
         key text NOT NULL,
-        value text NOT NULL,
-        date_created text NOT NULL
+        value text NOT NULL
     )
     """
 
@@ -402,18 +395,18 @@ class MetadataDB:
     def add_relic_tag(self, relic_tag: RelicTag) -> List[RelicTag]:
 
         cur = self.conn.cursor()
-
+        if "tags" in relic_tag.tags:
+            relic_tag.tags = relic_tag.tags["tags"]
         for key, value in relic_tag.tags.items():
             cur.execute(
                 """
-                INSERT INTO relic_tags VALUES (?,?,?,?,?)
+                INSERT INTO relic_tags VALUES (?,?,?,?)
                 """,
                 (
                     None,
                     relic_tag.relic.id,
                     key,
                     value,
-                    relic_tag.date_created,
                 ),
             )
 
@@ -580,40 +573,36 @@ class MetadataDB:
             logging.warning(f"Error creating Relic data: {e}")
 
     def get_relic_data_by_id(self, relic_id: int) -> RelicData:
-        try:
-            cur = self.conn.cursor()
-            cur.execute(
-                """
-                SELECT * FROM relics WHERE id=? LIMIT 1;
-                """,
-                (str(relic_id)),
-            )
+        cur = self.conn.cursor()
+        cur.execute(
+            """
+            SELECT * FROM relics WHERE id=? LIMIT 1;
+            """,
+            (relic_id,),
+        )
 
-            rows = cur.fetchall()
+        rows = cur.fetchall()
 
-            if rows:
-                return RelicData.parse_dict(RelicData.parse_sql_result(rows[0]))
-            else:
-                return None
+        if rows:
+            return RelicData.parse_dict(RelicData.parse_sql_result(rows[0]))
+        else:
+            return None
 
-        except Error as e:
-            logging.warning(
-                "Error getting RelicData by id: " + f"{relic_id} | {e.__class__()}: {e}"
-            )
-
-    def get_relics_by_tag(self, tag: Dict) -> RelicData:
+    def get_relics_by_tag(self, key: str, value: str) -> List[Tuple]:
         # TODO add ability to query using multiple tags
-        for k, v in tag.items():
-            cur = self.conn.cursor()
-            cur.execute(
-                """
-                SELECT * FROM relic_tags WHERE key=? AND value=?;
-                """,
-                (k, v),
-            )
 
-            rows = cur.fetchall()
+        cur = self.conn.cursor()
+        cur.execute(
+            """
+            SELECT rl.relic_name, rl.relic_type, rl.storage_name
+            FROM relic_tags rt
+            JOIN relics rl ON rl.id=rt.relic_id
+            WHERE key=? AND value=?;
+            """,
+            (key, value),
+        )
 
-            if rows:
-                for row in rows:
-                    yield self.get_relic_data_by_id(row[1])
+        rows = cur.fetchall()
+
+        if rows:
+            return rows
