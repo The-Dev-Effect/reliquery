@@ -1,7 +1,7 @@
 import sqlite3
 from sqlite3 import Error
 from sqlite3.dbapi2 import Connection
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 import datetime as dt
 import logging
 
@@ -572,7 +572,7 @@ class MetadataDB:
         except Error as e:
             logging.warning(f"Error creating Relic data: {e}")
 
-    def get_relic_data_by_id(self, relic_id: int) -> RelicData:
+    def get_relic_data_by_id(self, relic_id: int) -> Optional[RelicData]:
         cur = self.conn.cursor()
         cur.execute(
             """
@@ -585,8 +585,6 @@ class MetadataDB:
 
         if rows:
             return RelicData.parse_dict(RelicData.parse_sql_result(rows[0]))
-        else:
-            return None
 
     def get_relics_by_tag(self, key: str, value: str) -> List[Tuple]:
         # TODO add ability to query using multiple tags
@@ -602,7 +600,4 @@ class MetadataDB:
             (key, value),
         )
 
-        rows = cur.fetchall()
-
-        if rows:
-            return rows
+        return cur.fetchall()

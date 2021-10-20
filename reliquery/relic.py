@@ -56,11 +56,9 @@ class Relic:
             self._ensure_exists()
 
         self.metadata_db = MetadataDB()
-        self.relic = self.metadata_db.sync_relic_data(
+        self.data = self.metadata_db.sync_relic_data(
             RelicData(self.name, self.relic_type, self.storage_name)
         )
-        if not self.relic:
-            raise Exception("Relic data was not created")
 
     @classmethod
     def assert_valid_id(cls, id: str):
@@ -106,7 +104,7 @@ class Relic:
         metadata = Metadata(
             name=name,
             data_type="arrays",
-            relic=self.relic,
+            relic=self.data,
             size=size,
             shape=shape,
         )
@@ -135,7 +133,7 @@ class Relic:
 
         self.assert_valid_id(name)
 
-        metadata = metadata = Metadata(name=name, data_type="html", relic=self.relic)
+        metadata = Metadata(name=name, data_type="html", relic=self.data)
 
         self.storage.put_file([self.relic_type, self.name, "html", name], html_path)
         self._add_metadata(metadata)
@@ -144,7 +142,7 @@ class Relic:
     def add_html_string(self, name: str, html_str: str):
         self.assert_valid_id(name)
 
-        metadata = Metadata(name=name, data_type="html", relic=self.relic)
+        metadata = Metadata(name=name, data_type="html", relic=self.data)
 
         self.storage.put_text([self.relic_type, self.name, "html", name], html_str)
 
@@ -169,7 +167,7 @@ class Relic:
         metadata = Metadata(
             name=name,
             data_type="text",
-            relic=self.relic,
+            relic=self.data,
             size=size,
             shape=len(text),
         )
@@ -219,7 +217,7 @@ class Relic:
         metadata = Metadata(
             name=name,
             data_type="images",
-            relic=self.relic,
+            relic=self.data,
             size=size,
         )
 
