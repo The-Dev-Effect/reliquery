@@ -2,6 +2,7 @@
 Science's Artifact Antiformat
 
 ## For production
+latest version 0.2.6
 ```
 pip install reliquery
 ```
