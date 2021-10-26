@@ -609,12 +609,7 @@ class MetadataDB:
             (storage,),
         )
 
-        rows = cur.fetchall()
-
-        if not rows:
-            return []
-        else:
-            return [type[0] for type in rows]
+        return [type[0] for type in cur.fetchall()]
 
     def get_relic_names_by_storage_and_type(
         self, storage: str, relic_type: str
@@ -633,9 +628,4 @@ class MetadataDB:
             ),
         )
 
-        rows = cur.fetchall()
-
-        if not rows:
-            return []
-        else:
-            return [type[0] for type in rows]
+        return [name[0] for name in cur.fetchall()]
