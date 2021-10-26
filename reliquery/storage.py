@@ -63,7 +63,7 @@ class Storage:
 
 class FileStorage:
     def __init__(self, root: str, name: str):
-        self.root = root
+        self.root = os.path.expanduser(root)
         self.name = name
 
     def _ensure_path(self, path: StoragePath):
