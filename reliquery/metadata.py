@@ -89,7 +89,6 @@ class RelicTag(Data):
             "id": self.id,
             "relic_name": self.relic.relic_name,
             "relic_type": self.relic.relic_type,
-            "storage_name": self.relic.storage_name,
             "tags": self.tags,
         }
 
@@ -103,7 +102,6 @@ class RelicTag(Data):
             "id": result[0],
             "relic_name": relic.relic_name,
             "relic_type": relic.relic_type,
-            "storage_name": relic.storage_name,
             "tags": {result[2]: result[3]},
         }
 
@@ -138,7 +136,6 @@ class Metadata(Data):
             "data_type": self.data_type,
             "relic_name": self.relic.relic_name,
             "relic_type": self.relic.relic_type,
-            "storage_name": self.relic.storage_name,
             "size": self.size,
             "shape": self.shape,
             "last_modified": self.last_modified,
@@ -169,7 +166,6 @@ class Metadata(Data):
             "data_type": result[2],
             "relic_name": relic.relic_name,
             "relic_type": relic.relic_type,
-            "storage_name": relic.storage_name,
             "size": result[4],
             "shape": result[5],
             "last_modified": result[6],
@@ -601,3 +597,45 @@ class MetadataDB:
         )
 
         return cur.fetchall()
+
+    def get_relic_types_by_storage(self, storage: str) -> List[str]:
+        cur = self.conn.cursor()
+        cur.execute(
+            """
+            SELECT DISTINCT relic_type
+            FROM relics
+            WHERE storage_name=?;
+            """,
+            (storage,),
+        )
+
+        rows = cur.fetchall()
+
+        if not rows:
+            return []
+        else:
+            return [type[0] for type in rows]
+
+    def get_relic_names_by_storage_and_type(
+        self, storage: str, relic_type: str
+    ) -> List[str]:
+        cur = self.conn.cursor()
+        cur.execute(
+            """
+            SELECT DISTINCT relic_name
+            FROM relics
+            WHERE storage_name=?
+            AND relic_type=?;
+            """,
+            (
+                storage,
+                relic_type,
+            ),
+        )
+
+        rows = cur.fetchall()
+
+        if not rows:
+            return []
+        else:
+            return [type[0] for type in rows]

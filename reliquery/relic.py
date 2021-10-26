@@ -329,3 +329,9 @@ class Reliquery:
                             relic_data,
                         )
                     )
+
+    def get_relic_types(self, storage: str) -> List[str]:
+        return self.metadata_db.get_relic_types_by_storage(storage)
+
+    def get_relic_names(self, storage: str, relic_type: str) -> List[str]:
+        return self.metadata_db.get_relic_names_by_storage_and_type(storage, relic_type)
