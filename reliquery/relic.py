@@ -263,7 +263,7 @@ class Relic:
     def add_pandasdf(self, name: str, pandas_data: pd.DataFrame) -> None:
         self.assert_valid_id(name)
 
-        json_pandasdf =  pandas_data.to_json()
+        json_pandasdf = pandas_data.to_json()
         pandasdf_size = getsizeof(pandas_data)
 
         metadata = Metadata(
@@ -273,18 +273,23 @@ class Relic:
             size=pandasdf_size,
         )
 
-        self.storage.put_text([self.relic_type, self.name, "pandasdf", name], json_pandasdf)
+        self.storage.put_text(
+            [self.relic_type, self.name, "pandasdf", name], json_pandasdf
+        )
         self._add_metadata(metadata)
 
     def list_pandasdf(self):
         return self.storage.list_keys([self.relic_type, self.name, "pandasdf"])
 
-    def get_pandasdf(self,name: str):
+    def get_pandasdf(self, name: str):
         self.assert_valid_id(name)
 
-        pandas_json = self.storage.get_text([self.relic_type, self.name, "pandasdf", name])
+        pandas_json = self.storage.get_text(
+            [self.relic_type, self.name, "pandasdf", name]
+        )
         pandas_dataframe = pd.read_json(pandas_json)
         return pandas_dataframe
+
 
 class Reliquery:
     """
