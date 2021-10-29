@@ -78,6 +78,24 @@ Get json by taking the name and returning the dictionary
 r.get_json("json")
 ```
 
+### Pandas DataFrame supported
+Note that json is used to serialize which comes with other caveats that can be found here: https://pandas.pydata.org/pandas-docs/version/0.23/generated/pandas.DataFrame.to_json.html
+```python
+#Example
+d = {
+    "one": pd.Series([1.0, 2.0, 3.0], index=["a", "b", "c"]),
+    "two": pd.Series([1.0, 2.0, 3.0, 4.0], index=["a", "b", "c", "d"]),
+}
+df = pd.DataFrame(d)
+r.add_pandasdf("pandasdf", df)
+```
+List pandasdf
+r.list_pandasdf()
+
+Get pandas dataframe by taking the name 
+r.get_pandasdf("pandasdf")
+```
+
 ### Query Relics
 ```python
 from reliquery import Reliquery

@@ -6,6 +6,7 @@ from io import BytesIO
 
 import numpy as np
 import json
+import pandas as pd
 
 
 from .storage import (
@@ -252,13 +253,38 @@ class Relic:
     def list_json(self) -> List[str]:
         return self.storage.list_keys([self.relic_type, self.name, "json"])
 
-    def get_json(self, name: str) -> dict:
+    def get_json(self, name: str) -> Dict:
         self.assert_valid_id(name)
 
         json_text = self.storage.get_text([self.relic_type, self.name, "json", name])
         my_json = json.loads(json_text)
         return my_json
 
+    def add_pandasdf(self, name: str, pandas_data: pd.DataFrame) -> None:
+        self.assert_valid_id(name)
+
+        json_pandasdf =  pandas_data.to_json()
+        pandasdf_size = getsizeof(pandas_data)
+
+        metadata = Metadata(
+            name=name,
+            data_type="pandasdf",
+            relic=self._relic_data(),
+            size=pandasdf_size,
+        )
+
+        self.storage.put_text([self.relic_type, self.name, "pandasdf", name], json_pandasdf)
+        self._add_metadata(metadata)
+
+    def list_pandasdf(self):
+        return self.storage.list_keys([self.relic_type, self.name, "pandasdf"])
+
+    def get_pandasdf(self,name: str):
+        self.assert_valid_id(name)
+
+        pandas_json = self.storage.get_text([self.relic_type, self.name, "pandasdf", name])
+        pandas_dataframe = pd.read_json(pandas_json)
+        return pandas_dataframe
 
 class Reliquery:
     """
