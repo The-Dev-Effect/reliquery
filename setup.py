@@ -7,6 +7,7 @@ install_requires = [
     "pytest",
     "flake8",
     "sphinx",
+    "pandas",
 ]
 
 setup(

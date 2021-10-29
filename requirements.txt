@@ -4,3 +4,4 @@ black
 uvicorn
 boto3
 flake8
+pandas
