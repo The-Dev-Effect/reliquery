@@ -262,7 +262,8 @@ class Relic:
 
     def add_pandasdf(self, name: str, pandas_data: pd.DataFrame) -> None:
         """
-        Note that json is used to serialize which comes with other caveats that can be found here: 
+        Note that json is used to serialize which
+        comes with other caveats that can be found here:
         https://pandas.pydata.org/pandas-docs/version/0.23/generated/pandas.DataFrame.to_json.html
         """
         self.assert_valid_id(name)
