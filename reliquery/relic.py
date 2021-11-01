@@ -261,6 +261,10 @@ class Relic:
         return my_json
 
     def add_pandasdf(self, name: str, pandas_data: pd.DataFrame) -> None:
+        """
+        Note that json is used to serialize which comes with other caveats that can be found here: 
+        https://pandas.pydata.org/pandas-docs/version/0.23/generated/pandas.DataFrame.to_json.html
+        """
         self.assert_valid_id(name)
 
         json_pandasdf = pandas_data.to_json()
@@ -278,10 +282,10 @@ class Relic:
         )
         self._add_metadata(metadata)
 
-    def list_pandasdf(self):
+    def list_pandasdf(self) -> List[str]:
         return self.storage.list_keys([self.relic_type, self.name, "pandasdf"])
 
-    def get_pandasdf(self, name: str):
+    def get_pandasdf(self, name: str) -> pd.DataFrame:
         self.assert_valid_id(name)
 
         pandas_json = self.storage.get_text(
