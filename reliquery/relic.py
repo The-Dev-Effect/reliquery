@@ -316,22 +316,21 @@ class Relic:
             )
             self._add_metadata(metadata)
 
-
     def save_file_to_path(self,name: str, path:str) -> None:
         buffer = self.storage.get_binary_obj([self.relic_type, self.name, "file", name])
         content = buffer.read()
         with open(path, "wb") as new_file:
             new_file.write(content)
 
+    #TODO Add file like object
+
     def list_files(self) -> List[str]:
         return self.storage.list_keys([self.relic_type, self.name, "file"])
 
     def get_file(self,name:str):
-        buffer = self.storage.get_binary_obj([self.relic_type, self.name, "file", name])
-        content = buffer.read()
-        return content
+        self.assert_valid_id(name)
 
-
+        return self.storage.get_binary_obj([self.relic_type, self.name, "file", name])
 
 class Reliquery:
     """
