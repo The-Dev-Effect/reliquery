@@ -386,6 +386,7 @@ class Relic:
             [self.relic_type, self.name, "notebooks-html", name]
         )
 
+        return self.storage.get_binary_obj([self.relic_type, self.name, "file", name])
 
 class Reliquery:
     """
