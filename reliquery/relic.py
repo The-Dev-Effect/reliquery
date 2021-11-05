@@ -382,11 +382,7 @@ class Relic:
     def get_notebook_html(self, name: str) -> str:
         self.assert_valid_id(name)
 
-        return self.storage.get_text(
-            [self.relic_type, self.name, "notebooks-html", name]
-        )
-
-        return self.storage.get_binary_obj([self.relic_type, self.name, "file", name])
+        return self.storage.get_binary_obj([self.relic_type, self.name, "files", name])
 
 class Reliquery:
     """
