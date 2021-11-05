@@ -5,3 +5,4 @@ uvicorn
 boto3
 flake8
 pandas
+starlette

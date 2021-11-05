@@ -3,11 +3,13 @@ from reliquery.metadata import Metadata, MetadataDB, RelicData, RelicTag
 from typing import List, Dict
 from sys import getsizeof
 from io import BytesIO
+from starlette.applications import Starlette
+from starlette.responses import FileResponse
 
 import numpy as np
 import json
 import pandas as pd
-
+import os
 
 from .storage import (
     get_all_available_storages,
@@ -294,6 +296,41 @@ class Relic:
         )
         pandas_dataframe = pd.read_json(pandas_json)
         return pandas_dataframe
+
+    def add_file_from_path(self,name: str, path:str) -> None:
+        self.assert_valid_id(name)
+
+        with open(path, 'rb') as input_file:
+  
+
+            fileSize = getsizeof(input_file)
+            buffer = BytesIO(input_file.read())
+            metadata = Metadata(
+                name=name,
+                data_type="file",
+                relic=self._relic_data(),
+                size=fileSize,
+            )
+            self.storage.put_binary_obj(
+                [self.relic_type, self.name, "file", name], buffer
+            )
+            self._add_metadata(metadata)
+
+
+    def save_file_to_path(self,name: str, path:str) -> None:
+        buffer = self.storage.get_binary_obj([self.relic_type, self.name, "file", name])
+        content = buffer.read()
+        with open(path, "wb") as new_file:
+            new_file.write(content)
+
+    def list_files(self) -> List[str]:
+        return self.storage.list_keys([self.relic_type, self.name, "file"])
+
+    def get_file(self,name:str):
+        buffer = self.storage.get_binary_obj([self.relic_type, self.name, "file", name])
+        content = buffer.read()
+        return content
+
 
 
 class Reliquery:
