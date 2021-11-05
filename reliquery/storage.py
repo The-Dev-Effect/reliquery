@@ -123,7 +123,7 @@ class FileStorage:
                 "images": [],
                 "json": [],
                 "pandasdf": [],
-                "file": [],
+                "files": [],
             }
         }
 
@@ -134,7 +134,7 @@ class FileStorage:
             "images",
             "json",
             "pandasdf",
-            "file"
+            "files"
         ]
 
         def dict_from_path(path: StoragePath, dirname: str):
@@ -320,7 +320,7 @@ class S3Storage(Storage):
                 "images": [],
                 "json": [],
                 "pandasdf": [],
-                "file": []
+                "files": []
             }
         }
 
