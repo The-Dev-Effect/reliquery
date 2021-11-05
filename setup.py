@@ -8,6 +8,7 @@ install_requires = [
     "flake8",
     "sphinx",
     "pandas",
+    "starlette",
 ]
 
 setup(
