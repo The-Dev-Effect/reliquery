@@ -127,15 +127,7 @@ class FileStorage:
             }
         }
 
-        dirs = [
-            "arrays",
-            "html",
-            "text",
-            "images",
-            "json",
-            "pandasdf",
-            "files"
-        ]
+        dirs = ["arrays", "html", "text", "images", "json", "pandasdf", "files"]
 
         def dict_from_path(path: StoragePath, dirname: str):
             dirpath = path.copy()
@@ -320,7 +312,7 @@ class S3Storage(Storage):
                 "images": [],
                 "json": [],
                 "pandasdf": [],
-                "files": []
+                "files": [],
             }
         }
 

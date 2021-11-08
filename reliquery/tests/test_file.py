@@ -8,6 +8,7 @@ import os
 def test_storage(tmp_path):
     return FileStorage(str(tmp_path), "test_file")
 
+
 def test_list_file_when_add_file(test_storage):
     rq = Relic(name="test", relic_type="test", storage=test_storage)
 
@@ -18,6 +19,7 @@ def test_list_file_when_add_file(test_storage):
     file_list = rq.list_files()
     assert len(file_list) == 1
 
+
 def test_save_file_to_path(test_storage, tmp_path):
     rq = Relic(name="test", relic_type="test", storage=test_storage)
 
@@ -25,10 +27,11 @@ def test_save_file_to_path(test_storage, tmp_path):
     rq.add_file_from_path("Image", test_file)
     path_to_save = os.path.join(tmp_path, "testsaved.png")
 
-    assert(os.path.exists(path_to_save) == False)
+    assert os.path.exists(path_to_save) == False
     rq.save_file_to_path("Image", path_to_save)
 
-    assert(os.path.exists(path_to_save))
+    assert os.path.exists(path_to_save)
+
 
 def test_get_file_given_file_name(test_storage):
     rq = Relic(name="test", relic_type="test", storage=test_storage)
@@ -39,5 +42,3 @@ def test_get_file_given_file_name(test_storage):
     stream = rq.get_file("TestFile")
     assert len(stream.read()) > 0
     assert stream.name.split("/")[-1] == "TestFile"
-
-
