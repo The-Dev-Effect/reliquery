@@ -3,8 +3,6 @@ from reliquery.metadata import Metadata, MetadataDB, RelicData, RelicTag
 from typing import List, Dict
 from sys import getsizeof
 from io import BytesIO
-from starlette.applications import Starlette
-from starlette.responses import FileResponse
 
 import numpy as np
 import json
@@ -383,6 +381,7 @@ class Relic:
         self.assert_valid_id(name)
 
         return self.storage.get_binary_obj([self.relic_type, self.name, "files", name])
+
 
 class Reliquery:
     """
