@@ -27,7 +27,7 @@ def test_save_file_to_path(test_storage, tmp_path):
     rq.add_file_from_path("Image", test_file)
     path_to_save = os.path.join(tmp_path, "testsaved.png")
 
-    assert os.path.exists(path_to_save) == False
+    assert os.path.exists(path_to_save) is False
     rq.save_file_to_path("Image", path_to_save)
 
     assert os.path.exists(path_to_save)
