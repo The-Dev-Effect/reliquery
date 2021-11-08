@@ -8,6 +8,7 @@ import os
 def test_storage(tmp_path):
     return FileStorage(str(tmp_path), "test_file")
 
+
 def test_list_file_when_add_file(test_storage):
     rq = Relic(name="test", relic_type="test", storage=test_storage)
 
