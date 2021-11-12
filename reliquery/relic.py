@@ -298,9 +298,8 @@ class Relic:
         self.assert_valid_id(name)
 
         with open(path, "rb") as input_file:
-
-            fileSize = getsizeof(input_file)
             buffer = BytesIO(input_file.read())
+            fileSize = buffer.getbuffer().nbytes
             metadata = Metadata(
                 name=name,
                 data_type="files",
