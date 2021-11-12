@@ -296,7 +296,7 @@ class Relic:
 
     def add_files_from_path(self, name: str, path: str) -> None:
         self.assert_valid_id(name)
-
+        #TODO: Make use of stream like capabilities instead of full read()s
         with open(path, "rb") as input_file:
             buffer = BytesIO(input_file.read())
             fileSize = buffer.getbuffer().nbytes
@@ -324,11 +324,43 @@ class Relic:
     def list_files(self) -> List[str]:
         return self.storage.list_keys([self.relic_type, self.name, "files"])
 
-    def get_file(self, name: str) -> BytesIO:
+    def get_files(self, name: str) -> BytesIO:
         self.assert_valid_id(name)
 
         return self.storage.get_binary_obj([self.relic_type, self.name, "files", name])
 
+    def add_notebooks_from_path(self, name:str, path:str) -> None:
+        self.assert_valid_id(name)
+        #TODO: Make use of stream like capabilities instead of full read()s
+        with open(path, "rb") as input_file:
+            buffer = BytesIO(input_file.read())
+            fileSize = buffer.getbuffer().nbytes
+            metadata = Metadata(
+                name=name,
+                data_type="notebooks",
+                relic=self._relic_data(),
+                size=fileSize,
+            )
+            self.storage.put_binary_obj(
+                [self.relic_type, self.name, "notebooks", name], buffer
+            )
+            self._add_metadata(metadata)
+
+    def list_notebooks(self) -> List[str]:
+        return self.storage.list_keys([self.relic_type, self.name, "notebooks"])
+
+    def get_notebooks(self, name: str) -> BytesIO:
+        self.assert_valid_id(name)
+
+        return self.storage.get_binary_obj([self.relic_type, self.name, "notebooks", name])
+
+    def save_notebooks_to_path(self, name: str, path: str) -> None:
+        buffer = self.storage.get_binary_obj(
+            [self.relic_type, self.name, "notebooks", name]
+        )
+        content = buffer.read()
+        with open(path, "wb") as new_file:
+            new_file.write(content)
 
 class Reliquery:
     """
