@@ -327,7 +327,7 @@ class Relic:
     def list_files(self) -> List[str]:
         return self.storage.list_keys([self.relic_type, self.name, "files"])
 
-    def get_file(self, name: str) -> BytesIO:
+    def get_files(self, name: str) -> BytesIO:
         self.assert_valid_id(name)
 
         return self.storage.get_binary_obj([self.relic_type, self.name, "files", name])

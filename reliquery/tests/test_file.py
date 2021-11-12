@@ -39,6 +39,6 @@ def test_get_files_given_file_name(test_storage):
     test_file = os.path.join(os.path.dirname(__file__), "ideal-engineer.png")
     rq.add_files_from_path("TestFile", test_file)
 
-    stream = rq.get_file("TestFile")
+    stream = rq.get_files("TestFile")
     assert len(stream.read()) > 0
     assert stream.name.split("/")[-1] == "TestFile"
