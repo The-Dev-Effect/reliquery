@@ -12,7 +12,7 @@ def test_list_json_file_when_add_json(test_storage):
     rq = Relic(name="test", relic_type="test", storage=test_storage)
 
     rq.add_json("test-json", {"One": 1, "Two": 2, "Three": 3})
-    json_text_list = rq.list_json()
+    json_text_list = rq.list_jsons()
     assert len(json_text_list) > 0
 
 

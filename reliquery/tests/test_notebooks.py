@@ -18,7 +18,9 @@ def test_list_noteboks_when_add_notebooks(test_storage):
 
     notebook_list = rq.list_notebooks()
     assert len(notebook_list) == 1
-
+    assert rq.get_notebooks_html(test_notebook) is not None
+    print(rq.get_notebooks_html(test_notebook))
+    assert False
 
 def test_save_notebooks_to_path(test_storage, tmp_path):
     rq = Relic(name="test", relic_type="test", storage=test_storage)
