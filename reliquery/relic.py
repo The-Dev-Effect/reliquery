@@ -298,7 +298,7 @@ class Relic:
         pandas_dataframe = pd.read_json(pandas_json)
         return pandas_dataframe
 
-    def add_files_from_path(self, name: str, path: str) -> None:
+    def add_file_from_path(self, name: str, path: str) -> None:
         self.assert_valid_id(name)
         #TODO: Make use of stream like capabilities instead of full read()s
         with open(path, "rb") as input_file:
@@ -315,7 +315,7 @@ class Relic:
             )
             self._add_metadata(metadata)
 
-    def save_files_to_path(self, name: str, path: str) -> None:
+    def save_file_to_path(self, name: str, path: str) -> None:
         buffer = self.storage.get_binary_obj(
             [self.relic_type, self.name, "files", name]
         )
@@ -328,12 +328,12 @@ class Relic:
     def list_files(self) -> List[str]:
         return self.storage.list_keys([self.relic_type, self.name, "files"])
 
-    def get_files(self, name: str) -> BytesIO:
+    def get_file(self, name: str) -> BytesIO:
         self.assert_valid_id(name)
 
         return self.storage.get_binary_obj([self.relic_type, self.name, "files", name])
 
-    def add_notebooks_from_path(self, name:str, path:str) -> None:
+    def add_notebook_from_path(self, name:str, path:str) -> None:
         self.assert_valid_id(name)
         #TODO: Make use of stream like capabilities instead of full read()s
         with open(path, "rb") as input_file:
@@ -361,12 +361,12 @@ class Relic:
     def list_notebooks(self) -> List[str]:
         return self.storage.list_keys([self.relic_type, self.name, "notebooks"])
 
-    def get_notebooks(self, name: str) -> BytesIO:
+    def get_notebook(self, name: str) -> BytesIO:
         self.assert_valid_id(name)
 
         return self.storage.get_binary_obj([self.relic_type, self.name, "notebooks", name])
 
-    def save_notebooks_to_path(self, name: str, path: str) -> None:
+    def save_notebook_to_path(self, name: str, path: str) -> None:
         buffer = self.storage.get_binary_obj(
             [self.relic_type, self.name, "notebooks", name]
         )
@@ -374,7 +374,7 @@ class Relic:
         with open(path, "wb") as new_file:
             new_file.write(content)
 
-    def get_notebooks_html(self, name:str)-> str:
+    def get_notebook_html(self, name:str)-> str:
         self.assert_valid_id(name)
 
         return self.storage.get_text([self.relic_type, self.name, "notebooks-html", name])
