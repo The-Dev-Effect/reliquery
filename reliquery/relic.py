@@ -8,6 +8,10 @@ import numpy as np
 import json
 import pandas as pd
 
+import nbconvert 
+import nbformat
+import os
+
 from .storage import (
     get_all_available_storages,
     StorageItemDoesNotExist,
@@ -241,7 +245,7 @@ class Relic:
         size = getsizeof(json_data)
         metadata = Metadata(
             name=name,
-            data_type="json",
+            data_type="jsons",
             relic=self._relic_data(),
             size=size,
         )
@@ -249,7 +253,7 @@ class Relic:
         self.storage.put_text([self.relic_type, self.name, "json", name], json_text)
         self._add_metadata(metadata)
 
-    def list_json(self) -> List[str]:
+    def list_jsons(self) -> List[str]:
         return self.storage.list_keys([self.relic_type, self.name, "json"])
 
     def get_json(self, name: str) -> Dict:
@@ -333,7 +337,8 @@ class Relic:
         self.assert_valid_id(name)
         #TODO: Make use of stream like capabilities instead of full read()s
         with open(path, "rb") as input_file:
-            buffer = BytesIO(input_file.read())
+            fileString = input_file.read()
+            buffer = BytesIO(fileString)
             fileSize = buffer.getbuffer().nbytes
             metadata = Metadata(
                 name=name,
@@ -345,6 +350,13 @@ class Relic:
                 [self.relic_type, self.name, "notebooks", name], buffer
             )
             self._add_metadata(metadata)
+
+            exporter = nbconvert.HTMLExporter()
+            exporter.template_name = "classic"
+            note = nbformat.reads(fileString, as_version=4)
+            (body, resources) = exporter.from_notebook_node(note)
+            print(body)
+            self.storage.put_text([self.relic_type, self.name, "notebooks-html", name],body)
 
     def list_notebooks(self) -> List[str]:
         return self.storage.list_keys([self.relic_type, self.name, "notebooks"])
@@ -361,6 +373,11 @@ class Relic:
         content = buffer.read()
         with open(path, "wb") as new_file:
             new_file.write(content)
+
+    def get_notebooks_html(self, name:str)-> str:
+        self.assert_valid_id(name)
+
+        return self.storage.get_text([self.relic_type, self.name, "notebooks-html", name])
 
 class Reliquery:
     """
