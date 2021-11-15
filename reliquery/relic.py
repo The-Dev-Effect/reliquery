@@ -8,7 +8,6 @@ import numpy as np
 import json
 import pandas as pd
 
-
 from .storage import (
     get_all_available_storages,
     StorageItemDoesNotExist,
@@ -294,6 +293,41 @@ class Relic:
         )
         pandas_dataframe = pd.read_json(pandas_json)
         return pandas_dataframe
+
+    def add_files_from_path(self, name: str, path: str) -> None:
+        self.assert_valid_id(name)
+
+        with open(path, "rb") as input_file:
+            buffer = BytesIO(input_file.read())
+            fileSize = buffer.getbuffer().nbytes
+            metadata = Metadata(
+                name=name,
+                data_type="files",
+                relic=self._relic_data(),
+                size=fileSize,
+            )
+            self.storage.put_binary_obj(
+                [self.relic_type, self.name, "files", name], buffer
+            )
+            self._add_metadata(metadata)
+
+    def save_files_to_path(self, name: str, path: str) -> None:
+        buffer = self.storage.get_binary_obj(
+            [self.relic_type, self.name, "files", name]
+        )
+        content = buffer.read()
+        with open(path, "wb") as new_file:
+            new_file.write(content)
+
+    # TODO Add file like object
+
+    def list_files(self) -> List[str]:
+        return self.storage.list_keys([self.relic_type, self.name, "files"])
+
+    def get_file(self, name: str) -> BytesIO:
+        self.assert_valid_id(name)
+
+        return self.storage.get_binary_obj([self.relic_type, self.name, "files", name])
 
 
 class Reliquery:
