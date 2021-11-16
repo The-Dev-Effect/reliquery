@@ -629,3 +629,17 @@ class MetadataDB:
         )
 
         return [name[0] for name in cur.fetchall()]
+
+    def get_all_relic_names(self) -> List[Dict]:
+        cur = self.conn.cursor()
+        cur.execute(
+            """
+            SELECT relic_name, relic_type, storage_name
+            FROM relics
+            """
+        )
+
+        return [
+            {"storage": relic[2], "type": relic[1], "name": relic[0]}
+            for relic in cur.fetchall()
+        ]
