@@ -5,3 +5,5 @@ uvicorn
 boto3
 flake8
 pandas
+nbconvert
+nbformat 
