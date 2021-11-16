@@ -354,7 +354,6 @@ class Relic:
             exporter.template_name = "classic"
             note = nbformat.reads(fileString, as_version=4)
             (body, resources) = exporter.from_notebook_node(note)
-            print(body)
             self.storage.put_text(
                 [self.relic_type, self.name, "notebooks-html", name], body
             )
