@@ -244,7 +244,7 @@ class Relic:
         size = getsizeof(json_data)
         metadata = Metadata(
             name=name,
-            data_type="jsons",
+            data_type="json",
             relic=self._relic_data(),
             size=size,
         )
@@ -252,7 +252,7 @@ class Relic:
         self.storage.put_text([self.relic_type, self.name, "json", name], json_text)
         self._add_metadata(metadata)
 
-    def list_jsons(self) -> List[str]:
+    def list_json(self) -> List[str]:
         return self.storage.list_keys([self.relic_type, self.name, "json"])
 
     def get_json(self, name: str) -> Dict:
@@ -297,7 +297,7 @@ class Relic:
         pandas_dataframe = pd.read_json(pandas_json)
         return pandas_dataframe
 
-    def add_file_from_path(self, name: str, path: str) -> None:
+    def add_files_from_path(self, name: str, path: str) -> None:
         self.assert_valid_id(name)
         # TODO: Make use of stream like capabilities instead of full read()s
         with open(path, "rb") as input_file:
@@ -314,7 +314,7 @@ class Relic:
             )
             self._add_metadata(metadata)
 
-    def save_file_to_path(self, name: str, path: str) -> None:
+    def save_files_to_path(self, name: str, path: str) -> None:
         buffer = self.storage.get_binary_obj(
             [self.relic_type, self.name, "files", name]
         )
