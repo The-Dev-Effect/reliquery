@@ -8,6 +8,8 @@ install_requires = [
     "flake8",
     "sphinx",
     "pandas",
+    "nbconvert",
+    "nbformat",
 ]
 
 setup(

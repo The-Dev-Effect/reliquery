@@ -629,4 +629,3 @@ class MetadataDB:
         )
 
         return [name[0] for name in cur.fetchall()]
-
