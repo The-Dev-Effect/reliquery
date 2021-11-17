@@ -43,10 +43,13 @@ def test_get_notebook_given_notebook_name(test_storage):
     assert len(stream.read()) > 0
     assert stream.name.split("/")[-1] == "TestNotebook"
 
+
 def test_get_notebook_html(test_storage):
     rq = Relic(name="test", relic_type="test", storage=test_storage)
 
     test_notebook = os.path.join(os.path.dirname(__file__), "notebook_test.ipynb")
     rq.add_notebook_from_path("TestNotebook.ipynb", test_notebook)
-    
-    assert rq.get_notebook_html("TestNotebook.ipynb").lower().startswith("<!doctype html>")
+
+    assert (
+        rq.get_notebook_html("TestNotebook.ipynb").lower().startswith("<!doctype html>")
+    )
