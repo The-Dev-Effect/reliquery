@@ -13,11 +13,12 @@ An anti-format storage tool aimed towards supporting scientists. Giving them the
 5. [Images](#img)
 6. [JSON](#json)
 7. [Pandas DataFrame](#pd)
-8. [Query Relics](#query)
-9. [Config](#config)
-10. [File Storage](#file)
-11. [S3 Storage](#s3)
-12. [License](#lic)
+8. [Jupyter Notebooks](#notebooks)
+9. [Query Relics](#query)
+10. [Config](#config)
+11. [File Storage](#file)
+12. [S3 Storage](#s3)
+13. [License](#lic)
 
 ## For production<a name="prod"></a>
 latest version 0.2.6
@@ -111,6 +112,44 @@ r.list_pandasdf()
 
 Get pandas dataframe by taking the name 
 r.get_pandasdf("pandasdf")
+```
+
+### Files <a name="files"></a>
+```python
+#Example
+Add file from path
+test_file = os.path.join(os.path.dirname(__file__), "ideal-engineer.png")
+r.add_files_from_path("TestFile", test_file)
+
+List files
+r.list_files()
+
+Get file 
+r.get_file("TestFile")
+
+Save file to path
+path_to_save = os.path.join(tmp_path, "testsaved.png")
+r.save_files_to_path("TestFile", path_to_save)
+```
+
+### Jupyter Notebooks<a name="notebooks"></a>
+```python
+#Example
+test_notebook = os.path.join(os.path.dirname(__file__), "notebook_test.ipynb")
+r.add_notebook_from_path("TestNotebook", test_notebook)
+
+List Notebooks
+notebook_list = r.list_notebooks()
+
+Get Notebook
+r.get_notebook("TestNotebook")
+
+Save Notebook to path
+path_to_save = os.path.join(tmp_path, "testnotebook.ipynb")
+r.save_notebook_to_path("TestNotebook", path_to_save)
+
+View Notebooka via HTML
+r.get_notebook_html(TestNotebook)
 ```
 
 ### Query Relics<a name="query"></a>
