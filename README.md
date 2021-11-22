@@ -13,12 +13,13 @@ An anti-format storage tool aimed towards supporting scientists. Giving them the
 5. [Images](#img)
 6. [JSON](#json)
 7. [Pandas DataFrame](#pd)
-8. [Jupyter Notebooks](#notebooks)
-9. [Query Relics](#query)
-10. [Config](#config)
-11. [File Storage](#file)
-12. [S3 Storage](#s3)
-13. [License](#lic)
+8. [Files](#files)
+9. [Jupyter Notebooks](#notebooks)
+10. [Query Relics](#query)
+11. [Config](#config)
+12. [File Storage](#file)
+13. [S3 Storage](#s3)
+14. [License](#lic)
 
 ## For production<a name="prod"></a>
 latest version 0.2.6
@@ -117,18 +118,15 @@ r.get_pandasdf("pandasdf")
 ### Files <a name="files"></a>
 ```python
 #Example
-Add file from path
-test_file = os.path.join(os.path.dirname(__file__), "ideal-engineer.png")
-r.add_files_from_path("TestFile", test_file)
+r.add_files_from_path("TestFileName", test_file_path)
 
 List files
 r.list_files()
 
 Get file 
-r.get_file("TestFile")
+r.get_file("TestFileName")
 
-Save file to path
-path_to_save = os.path.join(tmp_path, "testsaved.png")
+Save file 
 r.save_files_to_path("TestFile", path_to_save)
 ```
 
