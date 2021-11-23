@@ -61,7 +61,7 @@ class Storage:
         raise NotImplementedError
 
 
-class FileStorage:
+class FileStorage(Storage):
     def __init__(self, root: str, name: str):
         self.root = os.path.expanduser(root)
         self.name = name
