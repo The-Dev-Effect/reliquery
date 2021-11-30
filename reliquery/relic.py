@@ -460,8 +460,17 @@ class Reliquery:
 
     def get_relic_names_by_storage_and_type(
         self, storage: str, relic_type: str
-    ) -> List[str]:
+    ) -> List[Dict]:
         return self.metadata_db.get_relic_names_by_storage_and_type(storage, relic_type)
 
     def get_relic_names(self) -> List[Dict]:
         return self.metadata_db.get_all_relic_names()
+
+    def get_unique_relic_types_and_storages(self) -> List[Dict]:
+        return self.metadata_db.get_unique_relic_types_and_storages()
+
+    def get_relic_names_by_storage(self, storage: str) -> List[Dict]:
+        return self.metadata_db.get_relic_names_by_storage(storage)
+
+    def sync_reliquery(self) -> None:
+        self._sync_relics()
