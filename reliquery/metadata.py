@@ -613,11 +613,11 @@ class MetadataDB:
 
     def get_relic_names_by_storage_and_type(
         self, storage: str, relic_type: str
-    ) -> List[str]:
+    ) -> List[Dict]:
         cur = self.conn.cursor()
         cur.execute(
             """
-            SELECT DISTINCT relic_name
+            SELECT DISTINCT relic_name, relic_type, storage_name
             FROM relics
             WHERE storage_name=?
             AND relic_type=?;
@@ -628,7 +628,10 @@ class MetadataDB:
             ),
         )
 
-        return [name[0] for name in cur.fetchall()]
+        return [
+            {"storage": relic[2], "type": relic[1], "name": relic[0]}
+            for relic in cur.fetchall()
+        ]
 
     def get_all_relic_names(self) -> List[Dict]:
         cur = self.conn.cursor()
@@ -637,6 +640,33 @@ class MetadataDB:
             SELECT relic_name, relic_type, storage_name
             FROM relics
             """
+        )
+
+        return [
+            {"storage": relic[2], "type": relic[1], "name": relic[0]}
+            for relic in cur.fetchall()
+        ]
+
+    def get_unique_relic_types_and_storages(self) -> List[Dict]:
+        cur = self.conn.cursor()
+        cur.execute(
+            """
+            SELECT DISTINCT relic_type, storage_name
+            FROM relics
+            """
+        )
+
+        return [{"storage": relic[1], "type": relic[0]} for relic in cur.fetchall()]
+
+    def get_relic_names_by_storage(self, storage_name: str) -> List[Dict]:
+        cur = self.conn.cursor()
+        cur.execute(
+            """
+            SELECT DISTINCT relic_name, relic_type, storage_name
+            FROM relics
+            WHERE storage_name=?
+            """,
+            (storage_name,),
         )
 
         return [
