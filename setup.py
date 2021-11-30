@@ -14,7 +14,7 @@ install_requires = [
 
 setup(
     name="reliquery",
-    version="0.3.0",
+    version="0.3.1",
     description="Science's Artifact Antiformat",
     url="https://github.com/The-Dev-Effect/reliquery",
     author="The Dev Effect",
