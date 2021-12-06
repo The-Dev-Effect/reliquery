@@ -97,12 +97,22 @@ class Relic:
         return self.metadata_db.get_relic_data_by_name(
             self.name, self.relic_type, self.storage_name
         )
-
+    
+    def _format_file_size(self, size_bytes: int) -> str:
+        sizes = {
+            "BYTES": 1, "KB": 1024, "MB": 1024**2,"GB": 1024**3, "TB": 1024**4
+        }
+        
+        for k,v in sizes.items():
+            if size_bytes / v < 1024:
+                return "{size} {factor}".format(size=size_bytes / v, factor=k)
+        
+        
     def add_array(self, name: str, array: np.ndarray):
 
         self.assert_valid_id(name)
 
-        size = getsizeof(array)
+        size = self._format_file_size(getsizeof(array))
         shape = str(np.array(array).shape)
         metadata = Metadata(
             name=name,
@@ -166,7 +176,7 @@ class Relic:
 
         self.assert_valid_id(name)
 
-        size = getsizeof(text)
+        size = self._format_file_size(getsizeof(text))
         metadata = Metadata(
             name=name,
             data_type="text",
@@ -241,7 +251,7 @@ class Relic:
         self.assert_valid_id(name)
 
         json_text = json.dumps(json_data)
-        size = getsizeof(json_data)
+        size = self._format_file_size(getsizeof(json_data))
         metadata = Metadata(
             name=name,
             data_type="json",
@@ -271,7 +281,7 @@ class Relic:
         self.assert_valid_id(name)
 
         json_pandasdf = pandas_data.to_json()
-        pandasdf_size = getsizeof(pandas_data)
+        pandasdf_size = self._format_file_size(getsizeof(pandas_data))
 
         metadata = Metadata(
             name=name,
