@@ -180,7 +180,7 @@ class MetadataDB:
         name text NOT NULL,
         data_type text NOT NULL,
         relic_id integer NOT NULL,
-        size real,
+        size text,
         shape text,
         last_modified text NOT NULL
     )
