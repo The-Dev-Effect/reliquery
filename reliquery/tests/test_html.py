@@ -1,7 +1,7 @@
 import pytest
 import os
 import reliquery.relic as relic
-from reliquery.storage import FileStorage
+from reliquery.storage import FileStorage, StorageItemDoesNotExist
 
 
 @pytest.fixture
@@ -49,3 +49,17 @@ def test_list_html_files(test_storage):
     )
     html_list = rq.list_html()
     assert len(html_list) == 2
+
+
+def test_remove_html_given_name(test_storage):
+    rq = relic.Relic(name="test", relic_type="test", storage=test_storage)
+
+    rq.add_html_from_path(
+        "test-html.html", os.path.join(os.path.dirname(__file__), "test.html")
+    )
+    assert len(rq.list_html()) == 1
+
+    rq.remove_html("test-html.html")
+    assert len(rq.list_html()) == 0
+    with pytest.raises(StorageItemDoesNotExist):
+        rq.get_html("test-html.html")

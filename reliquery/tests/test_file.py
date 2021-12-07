@@ -1,6 +1,6 @@
 import pytest
 from .. import Relic
-from reliquery.storage import FileStorage
+from reliquery.storage import FileStorage, StorageItemDoesNotExist
 import os
 
 
@@ -42,3 +42,16 @@ def test_get_files_given_file_name(test_storage):
     stream = rq.get_file("TestFile")
     assert len(stream.read()) > 0
     assert stream.name.split("/")[-1] == "TestFile"
+
+
+def test_remove_file_given_name(test_storage):
+    rq = Relic(name="test", relic_type="test", storage=test_storage)
+
+    test_file = os.path.join(os.path.dirname(__file__), "ideal-engineer.png")
+    rq.add_files_from_path("TestFile", test_file)
+    assert len(rq.list_files()) == 1
+
+    rq.remove_file("TestFile")
+    assert len(rq.list_files()) == 0
+    with pytest.raises(StorageItemDoesNotExist):
+        rq.get_file("TestFile")
