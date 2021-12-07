@@ -38,7 +38,7 @@ def test_metadata_when_adding_arrays(test_storage):
 
     assert metadata["test"]["arrays"][0]["name"] == "test-array"
     assert metadata["test"]["arrays"][0]["data_type"] == "arrays"
-    assert metadata["test"]["arrays"][0]["size"] > 0
+    assert metadata["test"]["arrays"][0]["size"] is not None
     assert metadata["test"]["arrays"][0]["shape"] == "(100, 128, 128)"
 
 
@@ -53,7 +53,7 @@ def test_metadata_when_adding_text(test_storage):
 
     assert metadata["test"]["text"][0]["name"] == "test-text"
     assert metadata["test"]["text"][0]["data_type"] == "text"
-    assert metadata["test"]["text"][0]["size"] > 0
+    assert metadata["test"]["text"][0]["size"] is not None
     assert metadata["test"]["text"][0]["shape"] == len(test_text)
 
 

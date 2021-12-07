@@ -97,17 +97,20 @@ class Relic:
         return self.metadata_db.get_relic_data_by_name(
             self.name, self.relic_type, self.storage_name
         )
-    
+
     def _format_file_size(self, size_bytes: int) -> str:
         sizes = {
-            "BYTES": 1, "KB": 1024, "MB": 1024**2,"GB": 1024**3, "TB": 1024**4
+            "BYTES": 1,
+            "KB": 1024,
+            "MB": 1024 ** 2,
+            "GB": 1024 ** 3,
+            "TB": 1024 ** 4,
         }
-        
-        for k,v in sizes.items():
+
+        for k, v in sizes.items():
             if size_bytes / v < 1024:
                 return "{size} {factor}".format(size=size_bytes / v, factor=k)
-        
-        
+
     def add_array(self, name: str, array: np.ndarray):
 
         self.assert_valid_id(name)
