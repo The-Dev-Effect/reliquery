@@ -21,8 +21,10 @@ from .storage import (
 
 StoragePath = List[str]
 
+
 class InvalidRelicId(Exception):
     pass
+
 
 class Relic:
     name: str
