@@ -1,6 +1,6 @@
 import pytest
 from .. import Relic
-from reliquery.storage import FileStorage
+from reliquery.storage import FileStorage, StorageItemDoesNotExist
 import pandas as pd
 from pandas._testing import assert_frame_equal
 
@@ -35,3 +35,15 @@ def test_pandasdf_given_name(test_storage):
     assert isinstance(pandasdf_data, pd.DataFrame)
     assert pandasdf_data is not None
     assert_frame_equal(pandasdf_data, comparison, check_dtype=False)
+
+
+def test_remove_pandasdf_given_name(test_storage):
+    rq = Relic(name="test", relic_type="test", storage=test_storage)
+
+    rq.add_pandasdf("dataframe1", pd.DataFrame(d))
+    assert len(rq.list_pandasdf()) == 1
+
+    rq.remove_pandasdf("dataframe1")
+    assert len(rq.list_pandasdf()) == 0
+    with pytest.raises(StorageItemDoesNotExist):
+        rq.get_pandasdf("dataframe1")

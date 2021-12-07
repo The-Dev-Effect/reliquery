@@ -139,6 +139,11 @@ class Relic:
     def list_arrays(self) -> List[np.ndarray]:
         return self.storage.list_keys([self.relic_type, self.name, "arrays"])
 
+    def remove_array(self, name: str) -> None:
+        self.assert_valid_id(name)
+
+        self.storage.remove_obj([self.relic_type, self.name, "arrays", name])
+
     def add_html_from_path(self, name: str, html_path: str) -> None:
 
         self.assert_valid_id(name)
@@ -169,6 +174,11 @@ class Relic:
         ) as f:
             return f.read().decode("utf-8")
 
+    def remove_html(self, name: str) -> None:
+        self.assert_valid_id(name)
+
+        self.storage.remove_obj([self.relic_type, self.name, "html", name])
+
     def add_text(self, name: str, text: str) -> None:
 
         self.assert_valid_id(name)
@@ -192,6 +202,11 @@ class Relic:
         self.assert_valid_id(name)
 
         return self.storage.get_text([self.relic_type, self.name, "text", name])
+
+    def remove_text(self, name: str) -> None:
+        self.assert_valid_id(name)
+
+        self.storage.remove_obj([self.relic_type, self.name, "text", name])
 
     def _add_metadata(self, metadata: Metadata) -> None:
         self.assert_valid_id(metadata.name)
@@ -244,6 +259,11 @@ class Relic:
     def list_images(self) -> List[str]:
         return self.storage.list_keys([self.relic_type, self.name, "images"])
 
+    def remove_image(self, name: str) -> None:
+        self.assert_valid_id(name)
+
+        self.storage.remove_obj([self.relic_type, self.name, "images", name])
+
     def add_json(self, name: str, json_data: Dict) -> None:
         self.assert_valid_id(name)
 
@@ -268,6 +288,11 @@ class Relic:
         json_text = self.storage.get_text([self.relic_type, self.name, "json", name])
         my_json = json.loads(json_text)
         return my_json
+
+    def remove_json(self, name: str) -> None:
+        self.assert_valid_id(name)
+
+        self.storage.remove_obj([self.relic_type, self.name, "json", name])
 
     def add_pandasdf(self, name: str, pandas_data: pd.DataFrame) -> None:
         """
@@ -304,6 +329,11 @@ class Relic:
         pandas_dataframe = pd.read_json(pandas_json)
         return pandas_dataframe
 
+    def remove_pandasdf(self, name: str) -> None:
+        self.assert_valid_id(name)
+
+        self.storage.remove_obj([self.relic_type, self.name, "pandasdf", name])
+
     def add_files_from_path(self, name: str, path: str) -> None:
         self.assert_valid_id(name)
         # TODO: Make use of stream like capabilities instead of full read()s
@@ -338,6 +368,11 @@ class Relic:
         self.assert_valid_id(name)
 
         return self.storage.get_binary_obj([self.relic_type, self.name, "files", name])
+
+    def remove_file(self, name: str) -> None:
+        self.assert_valid_id(name)
+
+        self.storage.remove_obj([self.relic_type, self.name, "files", name])
 
     def add_notebook_from_path(self, name: str, path: str) -> None:
         self.assert_valid_id(name)
@@ -390,6 +425,13 @@ class Relic:
         return self.storage.get_text(
             [self.relic_type, self.name, "notebooks-html", name]
         )
+
+    def remove_notebook(self, name: str) -> None:
+        self.assert_valid_id(name)
+
+        self.storage.remove_obj([self.relic_type, self.name, "notebooks", name])
+
+        self.storage.remove_obj([self.relic_type, self.name, "notebooks-html", name])
 
 
 class Reliquery:
