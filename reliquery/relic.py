@@ -23,8 +23,10 @@ from PIL import Image
 
 StoragePath = List[str]
 
+
 class InvalidRelicId(Exception):
     pass
+
 
 class Relic:
     name: str
