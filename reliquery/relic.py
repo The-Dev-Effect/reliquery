@@ -23,16 +23,8 @@ from PIL import Image
 
 StoragePath = List[str]
 
-dt_format = "%m/%d/%Y %H:%M:%S"
-
-
 class InvalidRelicId(Exception):
     pass
-
-
-class EmptyTagDict(Exception):
-    pass
-
 
 class Relic:
     name: str
@@ -103,10 +95,10 @@ class Relic:
     def _format_file_size(self, size_bytes: int) -> str:
         sizes = {
             "BYTES": 1,
-            "KB": 1024,
-            "MB": 1024 ** 2,
-            "GB": 1024 ** 3,
-            "TB": 1024 ** 4,
+            "KB": 1000,
+            "MB": 1000 ** 2,
+            "GB": 1000 ** 3,
+            "TB": 1000 ** 4,
         }
 
         for k, v in sizes.items():
