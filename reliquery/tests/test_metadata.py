@@ -137,3 +137,16 @@ def test_db_connection(put_text, list_keys, get_metadata):
     assert meta[0].data_type == "data type"
     assert meta[0].relic.storage_name == "s3"
     assert meta[0].last_modified is not None
+
+
+def test_no_array_metadata_when_removing_arrays(test_storage):
+    rq = Relic(
+        name="test", relic_type="test", storage_name="tests", storage=test_storage
+    )
+
+    rq.add_array("test-array", np.zeros((100, 128, 128)))
+
+    assert rq.describe()["test"]["arrays"][0]["name"] == "test-array"
+
+    rq.remove_array("test-array")
+    assert len(rq.describe()["test"]["arrays"]) == 0

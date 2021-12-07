@@ -100,6 +100,9 @@ class Storage:
     def get_all_relic_data(self) -> List[Dict]:
         raise NotImplementedError
 
+    def remove_obj(self, path: StoragePath) -> None:
+        raise NotImplementedError
+
 
 class FileStorage(Storage):
     def __init__(self, root: str, name: str):
@@ -123,7 +126,10 @@ class FileStorage(Storage):
             f.write(buffer.getbuffer())
 
     def get_binary_obj(self, path: StoragePath) -> BytesIO:
-        return open(self._join_path(path), "rb")
+        try:
+            return open(self._join_path(path), "rb")
+        except FileNotFoundError:
+            raise StorageItemDoesNotExist
 
     def put_text(self, path: StoragePath, text: str) -> None:
         self._ensure_path(path)
@@ -229,6 +235,20 @@ class FileStorage(Storage):
                         )
         return relic_data
 
+    def remove_obj(self, path: StoragePath) -> None:
+        try:
+            os.remove(self._join_path(path))
+        except FileNotFoundError:
+            raise StorageItemDoesNotExist
+
+        if "notebooks-html" not in path:
+            metadata_path = path.copy()
+            metadata_path.insert(2, "metadata")
+            try:
+                os.remove(self._join_path(metadata_path))
+            except FileNotFoundError:
+                raise StorageItemDoesNotExist
+
 
 S3Client = Any
 
@@ -266,11 +286,12 @@ class S3Storage(Storage):
 
     def get_binary_obj(self, path: StoragePath) -> BufferedIOBase:
         buffer = BytesIO()
-
-        self.s3.download_fileobj(self.s3_bucket, self._join_path(path), buffer)
+        try:
+            self.s3.download_fileobj(self.s3_bucket, self._join_path(path), buffer)
+        except self.s3.exceptions.NoSuchKey:
+            raise StorageItemDoesNotExist
 
         buffer.seek(0)
-
         return buffer
 
     def put_text(self, path: StoragePath, text: str, encoding: str = "utf-8") -> None:
@@ -1124,6 +1145,22 @@ class GoogleCloudStorage(Storage):
                         }
                     )
         return relic_data
+
+    def remove_obj(self, path: StoragePath) -> None:
+        try:
+            self.s3.delete_object(Bucket=self.s3_bucket, Key=self._join_path(path))
+        except self.s3.exceptions.NoSuchKey:
+            raise StorageItemDoesNotExist
+
+        if "notebooks-html" not in path:
+            metadata_path = path.copy()
+            metadata_path.insert(2, "metadata")
+            try:
+                self.s3.delete_object(
+                    Bucket=self.s3_bucket, Key=self._join_path(metadata_path)
+                )
+            except self.s3.exceptions.NoSuchKey:
+                raise StorageItemDoesNotExist
 
 
 def get_storage_by_name(name: str, root: str = os.path.expanduser("~")) -> Storage:
