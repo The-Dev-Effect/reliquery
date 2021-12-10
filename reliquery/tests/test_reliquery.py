@@ -53,8 +53,8 @@ def test_remove_relic_given_relic(tmp_path):
     with pytest.raises(FileNotFoundError):
         os.listdir(os.path.join(relic_path, "test", "test3"))
 
+
 def test_relic_removed_after_syncing_reliquery(tmp_path):
-    relic_path = tmp_path.joinpath("three")
     storages = init_reliquery_test_data(tmp_path)
 
     # test storage & relic

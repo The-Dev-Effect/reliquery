@@ -495,9 +495,8 @@ class Reliquery:
                             relic_data,
                         )
                     )
-        
-        self.metadata_db.remove_old_relic_data(list_ids)
 
+        self.metadata_db.remove_old_relic_data(list_ids)
 
     def get_relic_types_by_storage(self, storage: str) -> List[str]:
         return self.metadata_db.get_relic_types_by_storage(storage)
