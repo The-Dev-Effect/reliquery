@@ -52,3 +52,24 @@ def test_remove_relic_given_relic(tmp_path):
     assert len(rel.get_relic_names()) == 2
     with pytest.raises(FileNotFoundError):
         os.listdir(os.path.join(relic_path, "test", "test3"))
+
+def test_relic_removed_after_syncing_reliquery(tmp_path):
+    relic_path = tmp_path.joinpath("three")
+    storages = init_reliquery_test_data(tmp_path)
+
+    # test storage & relic
+    storage = FileStorage(tmp_path.joinpath("three"), "stor3")
+    storages.append(storage)
+    relic = Relic(name="test3", relic_type="test", storage=storage)
+
+    rel = Reliquery(storages=storages)
+    rel2 = Reliquery(storages=storages)
+    assert len(rel.get_relic_names()) == 3
+    assert len(rel2.get_relic_names()) == 3
+
+    rel.remove_relic(relic)
+    assert len(rel.get_relic_names()) == 2
+    assert len(rel2.get_relic_names()) == 3
+
+    rel2.sync_reliquery()
+    assert len(rel2.get_relic_names()) == 2

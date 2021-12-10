@@ -508,11 +508,14 @@ class Reliquery:
         This is done on the initial creation of a Reliquery object and prior
         to any queries over Relics.
         """
+        list_ids = []
+
         for stor in self.storages:
             relic_datas = [
                 self.metadata_db.sync_relic_data(RelicData.parse_dict(data))
                 for data in stor.get_all_relic_data()
             ]
+            list_ids.extend([i.id for i in relic_datas])
 
             if relic_datas:
                 for relic_data in relic_datas:
@@ -524,6 +527,9 @@ class Reliquery:
                             relic_data,
                         )
                     )
+        
+        self.metadata_db.remove_old_relic_data(list_ids)
+
 
     def get_relic_types_by_storage(self, storage: str) -> List[str]:
         return self.metadata_db.get_relic_types_by_storage(storage)
