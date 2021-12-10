@@ -517,6 +517,48 @@ class MetadataDB:
                 relic_data.relic_name, relic_data.relic_type, relic_data.storage_name
             )
 
+    def remove_old_relic_data(self, list_ids: List[int]) -> int:
+        """
+        Checks list of ids against database inorder to find any stale 
+        relics rows and remove them. 
+
+        param: 
+            list_ids: integer - list of ids as integers
+        
+        returns: int - number of rows removed
+        """
+        cur = self.conn.cursor()
+        stale_ids = [
+            i for i in cur.execute("SELECT id FROM relics;").fetchall()
+            if i[0] not in list_ids
+        ]
+        print(f"stale_ids: {stale_ids}")
+        if stale_ids:
+            return self.delete_relics_by_ids(stale_ids)
+        
+        return 0
+
+    def delete_relics_by_ids(self, list_ids: List[int]) -> int:
+        """
+        Deletes entries from list of ids
+
+        param: 
+            list_ids: integer - list of ids as integers
+        
+        returns: int - number of rows removed
+        """
+        cur = self.conn.cursor()
+        cur.executemany(
+            """
+            DELETE FROM relics
+            WHERE id = (?);
+            """,
+            list_ids
+        )
+        self.conn.commit()
+
+        return cur.rowcount
+
     def get_relic_data_by_name(
         self, relic_name: str, relic_type: str, storage_name: str
     ) -> RelicData:
