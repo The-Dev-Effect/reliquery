@@ -50,14 +50,18 @@ class Relic:
 
         else:
             self.storage = storage
+            self.storage_name = storage.name
 
         if check_exists:
             self._ensure_exists()
 
-        self.metadata_db = MetadataDB()
-        self.data = self.metadata_db.sync_relic_data(
-            RelicData(self.name, self.relic_type, self.storage_name)
-        )
+        """
+        since querying relics is not currently supproted there is
+        no need to create database object to persist relic data.
+        """
+        # self.metadata_db = MetadataDB()
+        # self.data = self.metadata_db.sync_relic_data(
+        #     RelicData(self.name, self.relic_type, self.storage_name)
 
     @classmethod
     def assert_valid_id(cls, id: str):
@@ -90,33 +94,18 @@ class Relic:
         return True
 
     def _relic_data(self):
-        return self.metadata_db.get_relic_data_by_name(
-            self.name, self.relic_type, self.storage_name
-        )
-
-    def _format_file_size(self, size_bytes: int) -> str:
-        sizes = {
-            "BYTES": 1,
-            "KB": 1000,
-            "MB": 1000 ** 2,
-            "GB": 1000 ** 3,
-            "TB": 1000 ** 4,
-        }
-
-        for k, v in sizes.items():
-            if size_bytes / v < 1024:
-                return "{size} {factor}".format(size=size_bytes / v, factor=k)
+        return RelicData(self.name, self.relic_type, self.storage_name)
 
     def add_array(self, name: str, array: np.ndarray):
 
         self.assert_valid_id(name)
 
-        size = self._format_file_size(getsizeof(array))
+        size = getsizeof(array)
         shape = str(np.array(array).shape)
         metadata = Metadata(
             name=name,
             data_type="arrays",
-            relic=self.data,
+            relic=self._relic_data(),
             size=size,
             shape=shape,
         )
@@ -150,7 +139,7 @@ class Relic:
 
         self.assert_valid_id(name)
 
-        metadata = Metadata(name=name, data_type="html", relic=self.data)
+        metadata = Metadata(name=name, data_type="html", relic=self._relic_data())
 
         self.storage.put_file([self.relic_type, self.name, "html", name], html_path)
         self._add_metadata(metadata)
@@ -159,7 +148,7 @@ class Relic:
     def add_html_string(self, name: str, html_str: str):
         self.assert_valid_id(name)
 
-        metadata = Metadata(name=name, data_type="html", relic=self.data)
+        metadata = Metadata(name=name, data_type="html", relic=self._relic_data())
 
         self.storage.put_text([self.relic_type, self.name, "html", name], html_str)
 
@@ -185,11 +174,11 @@ class Relic:
 
         self.assert_valid_id(name)
 
-        size = self._format_file_size(getsizeof(text))
+        size = getsizeof(text)
         metadata = Metadata(
             name=name,
             data_type="text",
-            relic=self.data,
+            relic=self._relic_data(),
             size=size,
             shape=len(text),
         )
@@ -241,7 +230,7 @@ class Relic:
         metadata = Metadata(
             name=name,
             data_type="images",
-            relic=self.data,
+            relic=self._relic_data(),
             size=size,
         )
 
@@ -300,7 +289,7 @@ class Relic:
         self.assert_valid_id(name)
 
         json_text = json.dumps(json_data)
-        size = self._format_file_size(getsizeof(json_data))
+        size = getsizeof(json_data)
         metadata = Metadata(
             name=name,
             data_type="json",
@@ -335,7 +324,7 @@ class Relic:
         self.assert_valid_id(name)
 
         json_pandasdf = pandas_data.to_json()
-        pandasdf_size = self._format_file_size(getsizeof(pandas_data))
+        pandasdf_size = getsizeof(pandas_data)
 
         metadata = Metadata(
             name=name,
@@ -555,3 +544,9 @@ class Reliquery:
 
     def sync_reliquery(self) -> None:
         self._sync_relics()
+
+    def remove_relic(self, relic: Relic) -> int:
+        relic.storage.remove_relic([relic.relic_type, relic.name])
+        return self.metadata_db.delete_relic(
+            relic.name, relic.relic_type, relic.storage_name
+        )

@@ -3,6 +3,7 @@ import logging
 import os
 import io
 from io import BytesIO, BufferedIOBase
+import shutil
 from typing import Any, List, Dict
 from shutil import copyfile
 import json
@@ -101,6 +102,9 @@ class Storage:
         raise NotImplementedError
 
     def remove_obj(self, path: StoragePath) -> None:
+        raise NotImplementedError
+
+    def remove_relic(self, path: StoragePath) -> None:
         raise NotImplementedError
 
 
@@ -248,6 +252,9 @@ class FileStorage(Storage):
                 os.remove(self._join_path(metadata_path))
             except FileNotFoundError:
                 raise StorageItemDoesNotExist
+
+    def remove_relic(self, path: StoragePath) -> None:
+        shutil.rmtree(self._join_path((path)))
 
 
 S3Client = Any
@@ -1161,6 +1168,18 @@ class GoogleCloudStorage(Storage):
                 )
             except self.s3.exceptions.NoSuchKey:
                 raise StorageItemDoesNotExist
+
+    def remove_relic(self, path: StoragePath) -> None:
+        name = path[1]
+        _type = path[0]
+        for i in self.list_key_paths([""]):
+            split_key = i.split("/")
+
+            if _type in split_key and name in split_key:
+                if split_key.index(_type) == 0 and split_key.index(name) == 1:
+                    self.s3.delete_object(
+                        Bucket=self.s3_bucket, Key=self._join_path(split_key)
+                    )
 
 
 def get_storage_by_name(name: str, root: str = os.path.expanduser("~")) -> Storage:

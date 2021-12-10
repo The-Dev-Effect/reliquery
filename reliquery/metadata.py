@@ -673,3 +673,18 @@ class MetadataDB:
             {"storage": relic[2], "type": relic[1], "name": relic[0]}
             for relic in cur.fetchall()
         ]
+
+    def delete_relic(self, relic_name: str, relic_type: str, storage_name: str) -> int:
+        cur = self.conn.cursor()
+        cur.execute(
+            """
+            DELETE FROM relics
+            WHERE relic_name = ?
+            AND relic_type = ?
+            AND storage_name = ?;
+            """,
+            (relic_name, relic_type, storage_name),
+        ),
+        self.conn.commit()
+
+        return cur.rowcount
