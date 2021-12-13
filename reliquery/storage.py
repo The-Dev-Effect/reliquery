@@ -2,7 +2,7 @@ import logging
 import os
 from io import BytesIO, BufferedIOBase
 from typing import Any, List, Dict
-from shutil import copyfile
+from shutil import Error, copyfile
 import json
 
 import boto3
@@ -11,6 +11,10 @@ from botocore.client import Config
 
 
 from . import settings
+
+import dropbox
+from dropbox.files import ListFolderError
+from dropbox.exceptions import ApiError
 
 
 StoragePath = List[str]
@@ -30,7 +34,7 @@ class Storage:
     def get_binary_obj(self, path: StoragePath) -> BytesIO:
         raise NotImplementedError
 
-    def put_text(self, path: StoragePath, buffer: BytesIO) -> None:
+    def put_text(self, path: StoragePath, text: str) -> None:
         raise NotImplementedError
 
     def get_text(self, path: StoragePath) -> BytesIO:
@@ -341,7 +345,7 @@ class S3Storage(Storage):
             dirpath.append(dirname)
             dir_keys = self.list_keys(dirpath.copy())
 
-            if len(dir_keys) > 0:
+            if dir_keys:
                 for key in dir_keys:
                     key_path = dirpath.copy()
                     key_path.append(key)
@@ -435,6 +439,151 @@ class S3Storage(Storage):
                     "storage_name": self.name,
                 }
 
+class DropboxStorage():
+    def __init__(
+        self,
+        access_token: str,
+        prefix: str,
+        name: str,
+    ):
+        self.access_token = access_token
+        self.dbx = dropbox.Dropbox(access_token)
+        self.prefix = "/"+prefix
+        self.name = name
+
+    def _join_path(self, path: StoragePath) -> str:
+        return "/".join([self.prefix] + path)
+
+    def put_file(self, path: StoragePath, file_path: str) -> None:
+        path = path.split()
+        with open(file_path, "rb") as f:
+            self.dbx.files_upload(f.read(), "/"+self._join_path(path), mute = True)
+
+    def put_binary_obj(self, path: StoragePath, buffer: BytesIO):
+        self.dbx.files_upload(buffer.read(), self._join_path(path), mute = True)
+
+    def get_binary_obj(self, path: StoragePath) -> BytesIO:
+        buffer = BytesIO()
+        obj = self.dbx.files_download(self._join_path(path), rev = None)[-1]
+        return obj
+
+    def put_text(self, path: StoragePath, text:str) -> None:
+        string_bytes = bytes(text, 'utf-8')
+        self.dbx.files_upload(string_bytes, self._join_path(path))
+
+    def get_text(self, path: StoragePath,) -> BytesIO:
+        try:
+            obj = self.dbx.files_download(self._join_path(path))[-1]
+            return obj
+        except ApiError:
+            raise StorageItemDoesNotExist
+
+    def list_keys(self, path: StoragePath) -> List[str]:
+        try:
+            return [i.name for i in self.dbx.files_list_folder(self._join_path(path)).entries]
+        except ApiError:
+            return []
+
+    def put_metadata(self, path: StoragePath, metadata: Dict):
+        metadata_bytes= json.dumps(metadata).encode('utf-8')
+        self.dbx.files_upload(metadata_bytes, self._join_path(path),mode=dropbox.files.WriteMode.overwrite)
+
+    def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
+        dirs = [
+            "arrays",
+            "html",
+            "text",
+            "images",
+            "json",
+            "pandasdf",
+            "files",
+            "notebooks",
+        ]
+
+        data = {
+            root_key: {
+                "arrays": [],
+                "text": [],
+                "html": [],
+                "images": [],
+                "json": [],
+                "pandasdf": [],
+                "files": [],
+                "notebooks": [],
+            }
+        }
+
+        def dict_from_path(path: StoragePath, dirname: str):
+            dirpath = path.copy()
+            dirpath.append(dirname)
+            entries = self.list_keys(dirpath)
+
+            for i in entries:
+                entry_path = dirpath.copy() 
+                entry_path.append(i)
+                data[root_key][dirname].append(self.get_binary_obj(entry_path).json())
+
+        for d in dirs:
+            dict_from_path(path, d)
+            
+        return data
+
+
+    def get_all_relic_metadata(self) -> List[Dict]:
+        raise NotImplementedError
+
+    def list_key_paths(self, path: StoragePath) -> List[str]:
+        paths = [] 
+        #joined_path = self._join_path(path)
+        subs = self.list_keys(path)
+
+        if subs:
+            for sub in subs:
+                copy = path.copy()
+                copy.append(sub)
+                sub_path = self._join_path(copy)
+                #if sub_path is a directory
+                try:
+                    self.dbx.files_list_folder(sub_path)
+                    isFolder = True
+                except ApiError:
+                    isFolder = False
+
+                if isFolder:
+                    paths.extend(self.list_key_paths(copy))
+                else:
+                    paths.append(sub_path)
+
+        return paths
+
+    def put_tags(self, path: StoragePath, tags: Dict) -> None:
+        self.put_text(path, json.dumps(tags))
+
+    def get_tags(self, path: StoragePath) -> Dict:
+        try:
+            return json.loads(self.get_text(path))
+        except StorageItemDoesNotExist:
+            return {}
+
+    def get_all_relic_tags(self) -> List[Dict]:
+        tag_keys = [
+            key for key in self.list_key_paths([""]) if "tags" in key.split("/")
+        ]
+
+        for key in tag_keys:
+            return self.get_tags(key.split("/")[-3:])
+
+    def get_all_relic_data(self) -> List[Dict]:
+        relic_types = {path.split("/")[0] for path in self.list_key_paths([""])}
+
+        for relic_type in relic_types:
+            names = {path.split("/")[1] for path in self.list_key_paths([relic_type])}
+            for name in names:
+                yield {
+                    "relic_name": name,
+                    "relic_type": relic_type,
+                    "storage_name": self.name,
+                }
 
 def get_storage_by_name(name: str, root: str = os.path.expanduser("~")) -> Storage:
     reliquery_dir = os.path.join(root, "reliquery")
@@ -467,6 +616,9 @@ def get_storage(name: str, root: str, config: Dict) -> Storage:
             return FileStorage(**config["storage"]["args"], name=name)
         else:
             return FileStorage(**config["storage"]["args"], root=root, name=name)
-
+    
+    elif config["storage"]["type"] == "Dropbox":
+        return DropboxStorage(**config["storage"]["args"],name=name)
+    
     else:
         raise ValueError(f"No storage found by name : {name}")
