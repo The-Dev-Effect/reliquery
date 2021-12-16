@@ -30,7 +30,7 @@ class Relic:
     """A Relic represents a collection of storage results from scientific exploration.
 
     This class is used to store and results, notations and, scienticic materials used in
-    research. 
+    research.
 
     Attributes:
         name(str): Name of relic.
@@ -182,7 +182,7 @@ class Relic:
 
         Args:
             name (str): Name of array to fetch
-        
+
         Returns:
             A numpy ndimensional array
 
@@ -200,16 +200,16 @@ class Relic:
 
     def list_arrays(self) -> List[np.ndarray]:
         """List of names of arrays stored
-        
+
         Returns:
             List of all array names stored on Relic
-        
+
         """
         return self.storage.list_keys([self.relic_type, self.name, "arrays"])
 
     def remove_array(self, name: str) -> None:
         """Remove array by name
-        
+
         Args:
             name: name of array to be removed
 
@@ -224,14 +224,14 @@ class Relic:
 
     def add_html_from_path(self, name: str, html_path: str) -> None:
         """Adds html from a path
-        
+
         Args:
             name: id to add html as
             html_path: path where html is located
-        
+
         Raises:
             InvalidRelicId: Name of html is in an incorrect format
-        
+
         """
         self.assert_valid_id(name)
 
@@ -243,14 +243,14 @@ class Relic:
     # TODO needs test coverage
     def add_html_string(self, name: str, html_str: str):
         """Adds html as a string to Relic
-        
+
         Args:
             name: id to store html as
             html_str: html as a string
 
         Raises:
             InvalidRelicId: Name of html is in an incorrect format
-        
+
         """
         self.assert_valid_id(name)
 
@@ -262,16 +262,16 @@ class Relic:
 
     def list_html(self) -> List[str]:
         """List names of html
-        
+
         Returns:
             List of html names stored on the Relic
-        
+
         """
         return self.storage.list_keys([self.relic_type, self.name, "html"])
 
     def get_html(self, name: str) -> str:
         """Fetches html by name
-        
+
         Args:
             name: name of html stored
 
@@ -281,7 +281,7 @@ class Relic:
         Raises:
             StorageItemDoesNotExist: When there is no html found by the given name
             InvalidRelicId: Name of html is in an incorrect format
-        
+
         """
         self.assert_valid_id(name)
 
@@ -292,14 +292,14 @@ class Relic:
 
     def remove_html(self, name: str) -> None:
         """Removes html by name
-        
+
         Args:
             name: name of html to be removed
-        
+
         Raises:
             StorageItemDoesNotExist: When there is no html found by the given name
             InvalidRelicId: Name of html is in an incorrect format
-        
+
         """
         self.assert_valid_id(name)
 
@@ -307,14 +307,14 @@ class Relic:
 
     def add_text(self, name: str, text: str) -> None:
         """Adds text by name
-        
+
         Args:
             name: id to store text by
             text: string of text to be stored
 
         Raises:
             InvalidRelicId: Name of text is in an incorrect format
-        
+
         """
         self.assert_valid_id(name)
 
@@ -332,16 +332,16 @@ class Relic:
 
     def list_text(self) -> List[str]:
         """Lists names of text stored
-        
+
         Returns:
             List of text names stored on the Relic
-        
+
         """
         return self.storage.list_keys([self.relic_type, self.name, "text"])
 
     def get_text(self, name: str) -> str:
         """Fetches text by name
-        
+
         Args:
             name: name of text stored
 
@@ -351,7 +351,7 @@ class Relic:
         Raises:
             StorageItemDoesNotExist: When there is no text found by the given name
             InvalidRelicId: Name of text is in an incorrect format
-        
+
         """
         self.assert_valid_id(name)
 
@@ -359,14 +359,14 @@ class Relic:
 
     def remove_text(self, name: str) -> None:
         """Remove text by name
-        
+
         Args:
             name: name of text to be removed
 
         Raises:
             StorageItemDoesNotExist: When there is no text found by the given name
             InvalidRelicId: Name of text is in an incorrect format
-        
+
         """
         self.assert_valid_id(name)
 
@@ -382,7 +382,7 @@ class Relic:
 
     def describe(self) -> Dict:
         """Describes the contents stored on a Relic
-        
+
         Returns:
             Dictionary of Relic content metadata
 
@@ -402,7 +402,7 @@ class Relic:
                     'pandasdf': [],
                     'files': [],
                     'notebooks': []}}
-        
+
         """
         return self.storage.get_metadata(
             [self.relic_type, self.name, "metadata"], self.name
@@ -410,7 +410,7 @@ class Relic:
 
     def add_tag(self, tags: Dict) -> None:
         """Adds tags to a Relic
-        
+
         Args:
             tags: dictionary of key value pairs
 
@@ -420,7 +420,7 @@ class Relic:
                     "pre-process": "PCA",
                     ...
                 }
-        
+
         """
         tags_path = [self.relic_type, self.name, "tags"]
 
@@ -431,23 +431,23 @@ class Relic:
 
     def list_tags(self) -> Dict:
         """Lists tags on a Relic
-        
+
         Returns:
             A dictionary containing all the key value pairs that make up tags
-        
+
         """
         return self.storage.get_tags([self.relic_type, self.name, "tags"])
 
     def add_image(self, name: str, image_bin: bytes):
         """Adds image to Relic
-        
+
         Args:
             name: id to store image by
-            image_bin: image as binary 
+            image_bin: image as binary
 
         Raises:
             InvalidRelicId: Name of image is in an incorrect format
-        
+
         """
         self.assert_valid_id(name)
 
@@ -469,7 +469,7 @@ class Relic:
 
     def get_image(self, name: str) -> BytesIO:
         """Fetches an image by name
-        
+
         Args:
             name: name of the image stored
 
@@ -479,7 +479,7 @@ class Relic:
         Raises:
             StorageItemDoesNotExist: When there is no image found by the given name
             InvalidRelicId: Name of image is in an incorrect format
-        
+
         """
         self.assert_valid_id(name)
 
@@ -487,23 +487,23 @@ class Relic:
 
     def list_images(self) -> List[str]:
         """Lists all the names of images stored
-        
+
         Returns:
             list of image names that are stored on the Relic
-        
+
         """
         return self.storage.list_keys([self.relic_type, self.name, "images"])
 
     def remove_image(self, name: str) -> None:
         """Removes an image by name
-        
+
         Args:
             name: name of image to be removed
 
         Raises:
             StorageItemDoesNotExist: When there is no image found by the given name
             InvalidRelicId: Name of image is in an incorrect format
-        
+
         """
         self.assert_valid_id(name)
 
@@ -511,14 +511,14 @@ class Relic:
 
     def add_json(self, name: str, json_data: Dict) -> None:
         """Adds json to Relic
-        
+
         Args:
             name: id to store json to Relic with.
             json_data: Python dictionary object to be converted to json
 
         Raises:
             InvalidRelicId: Name of json is in an incorrect format
-        
+
         """
         self.assert_valid_id(name)
 
@@ -536,16 +536,16 @@ class Relic:
 
     def list_json(self) -> List[str]:
         """Lists names of all json stored
-        
+
         Returns:
             List of json names that are stored on the Relic
-        
+
         """
         return self.storage.list_keys([self.relic_type, self.name, "json"])
 
     def get_json(self, name: str) -> Dict:
         """Fetches json from Relic by name
-        
+
         Args:
             name: name of json stored on Relic
 
@@ -555,7 +555,7 @@ class Relic:
         Raises:
             StorageItemDoesNotExist: When there is no json found by the given name
             InvalidRelicId: Name of json is in an incorrect format
-        
+
         """
         self.assert_valid_id(name)
 
@@ -565,14 +565,14 @@ class Relic:
 
     def remove_json(self, name: str) -> None:
         """Removes json stored by name
-        
+
         Args:
             name: name of json to be removed from Relic
 
         Raises:
             StorageItemDoesNotExist: When there is no json found by the given name
             InvalidRelicId: Name of json is in an incorrect format
-        
+
         """
         self.assert_valid_id(name)
 
@@ -582,13 +582,14 @@ class Relic:
         """Adds a dataframe to Relic by name
 
         Args:
-            name: 
-                id given to the dataframe 
-            pandas_data: 
-                Pandas DataFrame to stored as JSON on Relic. 
-                Note: 
-                    that json is used to serialize which comes with other caveats that can be found here:
-                    https://pandas.pydata.org/pandas-docs/version/0.23/generated/pandas.DataFrame.to_json.html
+            name:
+                id given to the dataframe
+            pandas_data:
+                Pandas DataFrame to stored as JSON on Relic.
+            Note:
+                that json is used to serialize which comes with other caveats
+                that can be found here:
+                https://pandas.pydata.org/pandas-docs/version/0.23/generated/pandas.DataFrame.to_json.html
 
         Raises:
             InvalidRelicId: Name of dataframe is in an incorrect format
@@ -614,23 +615,23 @@ class Relic:
 
     def list_pandasdf(self) -> List[str]:
         """Lists all dataframe names stored
-        
+
         Returns:
             List of dataframe names that are stored on Relic
-        
+
         """
         return self.storage.list_keys([self.relic_type, self.name, "pandasdf"])
 
     def get_pandasdf(self, name: str) -> pd.DataFrame:
         """Fetches dataframe by name
-        
+
         Args:
             name: name of dataframe
 
         Raises:
             StorageItemDoesNotExist: When there is no dataframe found by the given name
             InvalidRelicId: Name of dataframe is in an incorrect format
-        
+
         """
         self.assert_valid_id(name)
 
@@ -642,15 +643,15 @@ class Relic:
 
     def remove_pandasdf(self, name: str) -> None:
         """Removes a dataframe by name
-        
+
         Args:
-            name: 
+            name:
                 name of the dataframe to be removed.
 
         Raises:
             StorageItemDoesNotExist: When there is no dataframe found by the given name
             InvalidRelicId: Name of dataframe is in an incorrect format
-        
+
         """
         self.assert_valid_id(name)
 
@@ -658,14 +659,14 @@ class Relic:
 
     def add_files_from_path(self, name: str, path: str) -> None:
         """Adds file from the path given
-        
+
         Args:
             name: id given to file to be stored
             path: path where the file is to be read from
 
         Raises:
             InvalidRelicId: Name of file is in an incorrect format
-        
+
         """
         self.assert_valid_id(name)
         # TODO: Make use of stream like capabilities instead of full read()s
@@ -685,7 +686,7 @@ class Relic:
 
     def save_files_to_path(self, name: str, path: str) -> None:
         """Writes a file to the given path
-        
+
         Args:
             name: name of the file stored on the Relic
             path: path to where the file is written
@@ -693,7 +694,7 @@ class Relic:
         Raises:
             StorageItemDoesNotExist: When there is no file found by the given name
             InvalidRelicId: Name of file is in an incorrect format
-        
+
         """
         buffer = self.storage.get_binary_obj(
             [self.relic_type, self.name, "files", name]
@@ -706,23 +707,23 @@ class Relic:
 
     def list_files(self) -> List[str]:
         """Lists all the files stored on the Relic
-        
+
         Returns:
             A list of file names stored
-        
+
         """
         return self.storage.list_keys([self.relic_type, self.name, "files"])
 
     def get_file(self, name: str) -> BytesIO:
         """Fetches a file by given name
-        
+
         Args:
             name: Name of the file to be fetched
 
         Raises:
             StorageItemDoesNotExist: When there is no file found by the given name
             InvalidRelicId: Name of file is in an incorrect format
-        
+
         """
         self.assert_valid_id(name)
 
@@ -730,14 +731,14 @@ class Relic:
 
     def remove_file(self, name: str) -> None:
         """Removes file by name
-        
+
         Args:
             name: Name of the file to be removed.
-        
+
         Raises:
             StorageItemDoesNotExist: When there is no file found by the given name
             InvalidRelicId: Name of file is in an incorrect format
-        
+
         """
         self.assert_valid_id(name)
 
@@ -745,14 +746,14 @@ class Relic:
 
     def add_notebook_from_path(self, name: str, path: str) -> None:
         """Adds notebook from a given path
-        
+
         Args:
             name: id to store notebook by.
             path: path where to find the notebook to be stored.
 
         Raises:
             InvalidRelicId: Name of notebook is in an incorrect format
-        
+
         """
         self.assert_valid_id(name)
         # TODO: Make use of stream like capabilities instead of full read()s
@@ -782,26 +783,26 @@ class Relic:
 
     def list_notebooks(self) -> List[str]:
         """Lists stored notebooks
-        
+
         Returns:
             List of notebook names stored on the Relic.
-        
+
         """
         return self.storage.list_keys([self.relic_type, self.name, "notebooks"])
 
     def get_notebook(self, name: str) -> BytesIO:
         """Fetches notebook by name
-        
+
         Args:
             name: Name of the notebook
 
         Returns:
             Returns a the notebook as a file-like object. BytesIO
-        
+
         Raises:
             StorageItemDoesNotExist: When there is no notebook found by the given name
             InvalidRelicId: Name of notebook is in an incorrect format
-        
+
         """
         self.assert_valid_id(name)
 
@@ -811,7 +812,7 @@ class Relic:
 
     def save_notebook_to_path(self, name: str, path: str) -> None:
         """Writes a notebook file to the given path
-        
+
         Args:
             name: Name of notebook
             path: Path to where notebook file is to be written to.
@@ -819,7 +820,7 @@ class Relic:
         Raises:
             StorageItemDoesNotExist: When there is no notebook found by the given name
             InvalidRelicId: Name of notebook is in an incorrect format
-        
+
         """
         buffer = self.storage.get_binary_obj(
             [self.relic_type, self.name, "notebooks", name]
@@ -830,13 +831,13 @@ class Relic:
 
     def get_notebook_html(self, name: str) -> str:
         """Fetches rendered notebook html
-        
+
         Args:
             name: Name of notebook to fetch html for
 
         Returns:
             HTML of the notebook as a string.
-        
+
         Raises:
             StorageItemDoesNotExist: When there is no notebook found by the given name
             InvalidRelicId: Name of notebook is in an incorrect format
@@ -849,14 +850,14 @@ class Relic:
 
     def remove_notebook(self, name: str) -> None:
         """Removes notebook by name
-        
+
         Args:
             name (str): name of the notebook to be removed
 
         Raises:
             StorageItemDoesNotExist: When there is no notebook found by the given name
             InvalidRelicId: Name of notebook is in an incorrect format
-        
+
         """
         self.assert_valid_id(name)
 
@@ -866,8 +867,8 @@ class Relic:
 
 
 class Reliquery:
-    """ Class used to query over available and accessible storages and Relics.
-    
+    """Class used to query over available and accessible storages and Relics.
+
     Attributes:
         storages: List of Storage objects availble to Reliquery
         storage_map: Dictionary of storages mapped to storage names as keys
@@ -885,9 +886,8 @@ class Reliquery:
 
     """
 
-
     def __init__(self, storages: List[Storage] = []) -> None:
-        """ Initializes Reliquery class.
+        """Initializes Reliquery class.
 
         Args:
             storages: List of Storage objects given to query over defaults to none.
@@ -903,10 +903,10 @@ class Reliquery:
 
     def query(self, statement: str) -> List:
         """Queries Reliquery using SQL Statements.
-        
+
         Args:
             statement: SQL like string used to query Reliquery.
-            
+
         Returns:
             List of rows returned from SQL query.
 
@@ -916,7 +916,7 @@ class Reliquery:
     def get_relics_by_tag(self, key: str, value: str) -> List[Relic]:
         """
         Query relics for user defined tags added to Relics.
-        
+
         Args:
             key: string.
             value: string.
@@ -932,7 +932,7 @@ class Reliquery:
 
     def _sync_relics(self) -> None:
         """Syncs Relics from all available storages with the in-memory database.
-        
+
         This is done on the initial creation of a Reliquery object and prior
         to any queries over Relics.
 
@@ -961,13 +961,13 @@ class Reliquery:
 
     def get_relic_types_by_storage(self, storage: str) -> List[str]:
         """Fetches all relic types from given storage name
-        
+
         Args:
             storage (str): name of the storage where to fetch relic types from
 
         Returns:
             A list of strings that are the all the relic types in a storage.
-        
+
         """
         return self._metadata_db.get_relic_types_by_storage(storage)
 
@@ -975,7 +975,7 @@ class Reliquery:
         self, storage: str, relic_type: str
     ) -> List[Dict]:
         """Fetches all Relic names by storage and type
-        
+
         Args:
             storage (str): Name of which storage to fetch names from.
             relic_type (str): Name of which relic types to fetch from
@@ -998,13 +998,15 @@ class Reliquery:
                 },
                 ...
             ]
-        
+
         """
-        return self._metadata_db.get_relic_names_by_storage_and_type(storage, relic_type)
+        return self._metadata_db.get_relic_names_by_storage_and_type(
+            storage, relic_type
+        )
 
     def get_relic_names(self) -> List[Dict]:
         """Fetchs all avaiable Relic names
-        
+
         Returns:
             Dictionary list of mapped Relic names
 
@@ -1044,13 +1046,13 @@ class Reliquery:
                 },
                 ...
             ]
-        
+
         """
         return self._metadata_db.get_unique_relic_types_and_storages()
 
     def get_relic_names_by_storage(self, storage: str) -> List[Dict]:
         """Fetchs Relic names from a given storage
-        
+
         Args:
             storage (str): Name of the storage to get relics from
 
@@ -1069,7 +1071,7 @@ class Reliquery:
 
         Returns:
             The number of relics removed
-        
+
         """
         relic.storage.remove_relic([relic.relic_type, relic.name])
         return self._metadata_db.delete_relic(
