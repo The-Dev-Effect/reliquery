@@ -1,0 +1,11 @@
+{
+    "Dropbox": {
+        "storage": {
+            "type": "Dropbox",
+            "args": {
+                "prefix": "rel",
+                "access_token": ""
+            }
+        }
+    }
+}
