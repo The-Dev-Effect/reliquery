@@ -384,6 +384,7 @@ class Relic:
             [self.relic_type, self.name, "notebooks-html", name]
         )
 
+
 class Reliquery:
     """
     Class used to query over available and accessible storage locations and Relics
