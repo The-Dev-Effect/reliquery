@@ -160,7 +160,9 @@ def test_use_file_storage_when_getting_storage_with_config_having_file_type(
 
 # DropboxTests
 @mock.patch("reliquery.storage.dropbox.Dropbox")
-def test_use_dropbox_when_getting_storage_with_config_having_dropbox_type(mockholder,tmpdir):
+def test_use_dropbox_when_getting_storage_with_config_having_dropbox_type(
+    mockholder, tmpdir
+):
     reliquery_dir = os.path.join(tmpdir, "reliquery")
     os.makedirs(reliquery_dir)
     config_path = os.path.join(reliquery_dir, "config")
@@ -211,7 +213,7 @@ def test_availible_storages_returns_default_storage(tmpdir):
 
 @mock.patch.dict(os.environ, {"RELIQUERY_CONFIG": raw_config})
 @mock.patch("reliquery.storage.dropbox.Dropbox")
-def test_different_storage_types_given_env_config(mockholder,tmpdir):
+def test_different_storage_types_given_env_config(mockholder, tmpdir):
     storages = get_all_available_storages(tmpdir)
 
     assert len(storages) == 3
