@@ -18,6 +18,17 @@ from dropbox.exceptions import ApiError
 
 StoragePath = List[str]
 
+DATA_TYPES = [
+    "arrays",
+    "html",
+    "text",
+    "images",
+    "json",
+    "pandasdf",
+    "files",
+    "notebooks",
+]
+
 
 class StorageItemDoesNotExist(Exception):
     pass
@@ -115,29 +126,7 @@ class FileStorage(Storage):
             return f.write(json.dumps(metadata))
 
     def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
-        data = {
-            root_key: {
-                "arrays": [],
-                "text": [],
-                "html": [],
-                "images": [],
-                "json": [],
-                "pandasdf": [],
-                "files": [],
-                "notebooks": [],
-            }
-        }
-
-        dirs = [
-            "arrays",
-            "html",
-            "text",
-            "images",
-            "json",
-            "pandasdf",
-            "files",
-            "notebooks",
-        ]
+        data = {root_key: {k: [] for k in DATA_TYPES}}
 
         def dict_from_path(path: StoragePath, dirname: str):
             dirpath = path.copy()
@@ -150,7 +139,7 @@ class FileStorage(Storage):
                     with open(self._join_path(entry_path), "r") as f:
                         data[root_key][dirname].append(json.loads(f.read()))
 
-        for d in dirs:
+        for d in data[root_key]:
             dict_from_path(path, d)
 
         return data
@@ -195,7 +184,7 @@ class FileStorage(Storage):
 
     def get_all_relic_data(self) -> List[Dict]:
         relic_types = os.listdir(self._join_path([""]))
-
+        relic_data = []
         if relic_types:
             for relic_type in relic_types:
                 if os.path.isdir(self._join_path([relic_type])):
@@ -203,11 +192,14 @@ class FileStorage(Storage):
 
                     if names:
                         for name in names:
-                            yield {
-                                "relic_name": name,
-                                "relic_type": relic_type,
-                                "storage_name": self.name,
-                            }
+                            relic_data.append(
+                                {
+                                    "relic_name": name,
+                                    "relic_type": relic_type,
+                                    "storage_name": self.name,
+                                }
+                            )
+            return relic_data
         else:
             return []
 
@@ -299,29 +291,7 @@ class S3Storage(Storage):
         )
 
     def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
-        dirs = [
-            "arrays",
-            "html",
-            "text",
-            "images",
-            "json",
-            "pandasdf",
-            "files",
-            "notebooks",
-        ]
-
-        data = {
-            root_key: {
-                "arrays": [],
-                "text": [],
-                "html": [],
-                "images": [],
-                "json": [],
-                "pandasdf": [],
-                "files": [],
-                "notebooks": [],
-            }
-        }
+        data = {root_key: {k: [] for k in DATA_TYPES}}
 
         def dict_from_path(path: StoragePath, dirname: str) -> None:
             dirpath = path.copy()
@@ -345,7 +315,7 @@ class S3Storage(Storage):
                         json.loads(obj["Body"].read().decode("utf-8"))
                     )
 
-        for d in dirs:
+        for d in data[root_key]:
             dict_from_path(path, d)
 
         return data
@@ -396,18 +366,23 @@ class S3Storage(Storage):
 
     def get_all_relic_data(self) -> List[Dict]:
         relic_types = {path.split("/")[0] for path in self.list_key_paths([""])}
+        relic_data = []
 
         for relic_type in relic_types:
             names = {path.split("/")[1] for path in self.list_key_paths([relic_type])}
-            for name in names:
-                yield {
-                    "relic_name": name,
-                    "relic_type": relic_type,
-                    "storage_name": self.name,
-                }
+            if names:
+                for name in names:
+                    relic_data.append(
+                        {
+                            "relic_name": name,
+                            "relic_type": relic_type,
+                            "storage_name": self.name,
+                        }
+                    )
+            return relic_data
 
 
-class DropboxStorage:
+class DropboxStorage(Storage):
     def __init__(
         self,
         access_token: str,
@@ -426,7 +401,7 @@ class DropboxStorage:
         with open(file_path, "rb") as f:
             self.dbx.files_upload(f.read(), "/" + self._join_path(path), mute=True)
 
-    def put_binary_obj(self, path: StoragePath, buffer: BytesIO):
+    def put_binary_obj(self, path: StoragePath, buffer: BytesIO) -> None:
         self.dbx.files_upload(buffer.read(), self._join_path(path), mute=True)
 
     def get_binary_obj(self, path: StoragePath) -> BytesIO:
@@ -462,29 +437,7 @@ class DropboxStorage:
         )
 
     def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
-        dirs = [
-            "arrays",
-            "html",
-            "text",
-            "images",
-            "json",
-            "pandasdf",
-            "files",
-            "notebooks",
-        ]
-
-        data = {
-            root_key: {
-                "arrays": [],
-                "text": [],
-                "html": [],
-                "images": [],
-                "json": [],
-                "pandasdf": [],
-                "files": [],
-                "notebooks": [],
-            }
-        }
+        data = {root_key: {k: [] for k in DATA_TYPES}}
 
         def dict_from_path(path: StoragePath, dirname: str):
             dirpath = path.copy()
@@ -498,7 +451,7 @@ class DropboxStorage:
                     self.dbx.files_download(self._join_path(entry_path))[-1].json()
                 )
 
-        for d in dirs:
+        for d in data[root_key]:
             dict_from_path(path, d)
 
         return data
@@ -538,14 +491,20 @@ class DropboxStorage:
 
     def get_all_relic_data(self) -> List[Dict]:
         relic_types = {path.split("/")[2] for path in self.list_key_paths([])}
+        relic_data = []
+
         for relic_type in relic_types:
             names = {path.split("/")[3] for path in self.list_key_paths([relic_type])}
-            for name in names:
-                yield {
-                    "relic_name": name,
-                    "relic_type": relic_type,
-                    "storage_name": self.name,
-                }
+            if names:
+                for name in names:
+                    relic_data.append(
+                        {
+                            "relic_name": name,
+                            "relic_type": relic_type,
+                            "storage_name": self.name,
+                        }
+                    )
+            return relic_data
 
 
 def get_storage_by_name(name: str, root: str = os.path.expanduser("~")) -> Storage:
