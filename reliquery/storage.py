@@ -48,9 +48,6 @@ class Storage:
     def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
         raise NotImplementedError
 
-    def get_all_relic_metadata(self) -> List[Dict]:
-        raise NotImplementedError
-
     def put_tags(self, path: StoragePath, tags: Dict) -> None:
         raise NotImplementedError
 
@@ -157,17 +154,6 @@ class FileStorage(Storage):
             dict_from_path(path, d)
 
         return data
-
-    # TODO Test coverage needed
-    def get_all_relic_metadata(self, encoding: str = "utf-8") -> List[Dict]:
-        meta_keys = [
-            key for key in self.list_key_paths([""]) if "metadata" in key.split("/")
-        ]
-
-        if len(meta_keys) > 0:
-            for key in meta_keys:
-                with open(key, "r") as f:
-                    yield json.loads(f.read())
 
     def list_key_paths(self, path: StoragePath) -> List[str]:
         paths = []
@@ -364,22 +350,6 @@ class S3Storage(Storage):
 
         return data
 
-    def get_all_relic_metadata(self, encoding: str = "utf-8") -> List[Dict]:
-        meta_keys = [
-            key for key in self.list_key_paths([""]) if "metadata" in key.split("/")
-        ]
-
-        if len(meta_keys) > 0:
-            for key in meta_keys:
-                yield json.loads(
-                    self.s3.get_object(
-                        Key=self._join_path(key.split("/")),
-                        Bucket=self.s3_bucket,
-                    )["Body"]
-                    .read()
-                    .decode(encoding)
-                )
-
     def list_key_paths(self, path: StoragePath) -> List[str]:
         prefix = self._join_path(path)
 
@@ -444,7 +414,6 @@ class DropboxStorage:
         prefix: str,
         name: str,
     ):
-        self.access_token = access_token
         self.dbx = dropbox.Dropbox(access_token)
         self.prefix = "/" + prefix
         self.name = name
@@ -465,8 +434,8 @@ class DropboxStorage:
             self.dbx.files_download(self._join_path(path), rev=None)[-1].content
         )
 
-    def put_text(self, path: StoragePath, text: str) -> None:
-        string_bytes = bytes(text, "utf-8")
+    def put_text(self, path: StoragePath, text: str, encoding: str = "utf-8") -> None:
+        string_bytes = bytes(text, encoding)
         self.dbx.files_upload(string_bytes, self._join_path(path))
 
     def get_text(self, path: StoragePath) -> str:
@@ -533,16 +502,6 @@ class DropboxStorage:
             dict_from_path(path, d)
 
         return data
-
-    # def get_all_relic_metadata(self) -> List[Dict]:
-    #     meta_keys = [
-    #         key for key in self.list_key_paths([]) if "metadata" in key.split("/")
-    #     ]
-
-    #     if len(meta_keys) > 0:
-    #         for key in meta_keys:
-    #             obj = self.get_text(self._join_path(key))[-1]
-    #             yield json.loads(json.dumps(obj))
 
     def list_key_paths(self, path: StoragePath) -> List[str]:
         paths = []

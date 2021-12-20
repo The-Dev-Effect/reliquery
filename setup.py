@@ -10,6 +10,7 @@ install_requires = [
     "pandas",
     "nbconvert",
     "nbformat",
+    "dropbox",
 ]
 
 setup(
