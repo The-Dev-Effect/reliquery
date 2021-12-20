@@ -210,13 +210,10 @@ class Relic:
     def list_tags(self) -> Dict:
         return self.storage.get_tags([self.relic_type, self.name, "tags"])
 
-    def add_image(self, name: str, image_bin: bytes):
+    def add_image(self, name: str, image_bytes: BytesIO):
         self.assert_valid_id(name)
 
-        buffer = BytesIO(image_bin)
-        size = buffer.getbuffer().nbytes
-        buffer.seek(0)
-
+        size = image_bytes.getbuffer().nbytes
         metadata = Metadata(
             name=name,
             data_type="images",
@@ -225,14 +222,39 @@ class Relic:
         )
 
         self.storage.put_binary_obj(
-            [self.relic_type, self.name, "images", name], buffer
+            [self.relic_type, self.name, "images", name], image_bytes
         )
         self._add_metadata(metadata)
 
+    def add_image_from_path(self, name: str, image_path: str):
+        self.assert_valid_id(name)
+        # TODO: Make use of stream like capabilities instead of full read()s
+        with open(image_path, "rb") as input_file:
+            buffer = BytesIO(input_file.read())
+            fileSize = buffer.getbuffer().nbytes
+            metadata = Metadata(
+                name=name,
+                data_type="images",
+                relic=self._relic_data(),
+                size=fileSize,
+            )
+            self.storage.put_binary_obj(
+                [self.relic_type, self.name, "images", name], buffer
+            )
+            self._add_metadata(metadata)
+
     def get_image(self, name: str) -> BytesIO:
         self.assert_valid_id(name)
-
         return self.storage.get_binary_obj([self.relic_type, self.name, "images", name])
+
+    def save_image_to_path(self, name: str, path: str) -> None:
+        self.assert_valid_id(name)
+        buffer = self.storage.get_binary_obj(
+            [self.relic_type, self.name, "images", name]
+        )
+        content = buffer.read()
+        with open(path, "wb") as new_file:
+            new_file.write(content)
 
     def list_images(self) -> List[str]:
         return self.storage.list_keys([self.relic_type, self.name, "images"])
