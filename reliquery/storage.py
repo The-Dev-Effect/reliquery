@@ -185,23 +185,20 @@ class FileStorage(Storage):
     def get_all_relic_data(self) -> List[Dict]:
         relic_types = os.listdir(self._join_path([""]))
         relic_data = []
-        if relic_types:
-            for relic_type in relic_types:
-                if os.path.isdir(self._join_path([relic_type])):
-                    names = os.listdir(self._join_path([relic_type]))
+        for relic_type in relic_types:
+            if os.path.isdir(self._join_path([relic_type])):
+                names = os.listdir(self._join_path([relic_type]))
 
-                    if names:
-                        for name in names:
-                            relic_data.append(
-                                {
-                                    "relic_name": name,
-                                    "relic_type": relic_type,
-                                    "storage_name": self.name,
-                                }
-                            )
-            return relic_data
-        else:
-            return []
+                if names:
+                    for name in names:
+                        relic_data.append(
+                            {
+                                "relic_name": name,
+                                "relic_type": relic_type,
+                                "storage_name": self.name,
+                            }
+                        )
+        return relic_data
 
 
 S3Client = Any
@@ -298,22 +295,21 @@ class S3Storage(Storage):
             dirpath.append(dirname)
             dir_keys = self.list_keys(dirpath.copy())
 
-            if dir_keys:
-                for key in dir_keys:
-                    key_path = dirpath.copy()
-                    key_path.append(key)
+            for key in dir_keys:
+                key_path = dirpath.copy()
+                key_path.append(key)
 
-                    try:
-                        obj = self.s3.get_object(
-                            Key=self._join_path(key_path),
-                            Bucket=self.s3_bucket,
-                        )
-                    except self.s3.exceptions.NoSuchKey:
-                        raise StorageItemDoesNotExist
-
-                    data[root_key][dirname].append(
-                        json.loads(obj["Body"].read().decode("utf-8"))
+                try:
+                    obj = self.s3.get_object(
+                        Key=self._join_path(key_path),
+                        Bucket=self.s3_bucket,
                     )
+                except self.s3.exceptions.NoSuchKey:
+                    raise StorageItemDoesNotExist
+
+                data[root_key][dirname].append(
+                    json.loads(obj["Body"].read().decode("utf-8"))
+                )
 
         for d in data[root_key]:
             dict_from_path(path, d)
@@ -464,6 +460,7 @@ class DropboxStorage(Storage):
                 copy = path.copy()
                 copy.append(sub)
                 sub_path = self._join_path(copy)
+                #isinstace was found as the best way to check if a directory is a file or folder
                 if isinstance(
                     self.dbx.files_get_metadata(sub_path), dropbox.files.FolderMetadata
                 ):
