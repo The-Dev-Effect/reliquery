@@ -460,7 +460,8 @@ class DropboxStorage(Storage):
                 copy = path.copy()
                 copy.append(sub)
                 sub_path = self._join_path(copy)
-                #isinstace was found as the best way to check if a directory is a file or folder
+                # isinstace was found as the best way to check if a directory
+                # is a file or folder
                 if isinstance(
                     self.dbx.files_get_metadata(sub_path), dropbox.files.FolderMetadata
                 ):
