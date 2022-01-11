@@ -15,6 +15,13 @@ from . import settings
 import dropbox
 from dropbox.exceptions import ApiError
 
+from google.auth.transport.requests import Request
+from google.oauth2 import service_account
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+from apiclient.http import MediaFileUpload
+
 
 StoragePath = List[str]
 
@@ -504,6 +511,70 @@ class DropboxStorage(Storage):
                     )
             return relic_data
 
+class GoogleDrive(Storage):
+    def __init__(
+            self,
+            prefix: str,
+            name: str,
+            SCOPES: list,
+            SERVICE_ACCOUNT_FILE = str
+        ):
+            self.prefix = "/" + prefix
+            self.name = name
+            SCOPES = ['https://www.googleapis.com/auth/drive'] 
+            SERVICE_ACCOUNT_FILE = "token.json"
+
+            creds = None
+            if os.path.exists(SERVICE_ACCOUNT_FILE):
+                creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+            try:
+                self.service = build('drive', 'v3', credentials=creds)
+            except HttpError as error:
+                print(f'An error occurred: {error}')
+
+    def _join_path(self, path: StoragePath) -> str:
+        return "/".join([self.prefix] + path)
+
+    def put_file(self, path: StoragePath, file_path: str) -> None:
+        file_metadata = {'name': str(file_path.split("/")[-1]),'mimeType': 'application/vnd.google-apps.spreadsheet'}
+        media = MediaFileUpload('dataframe1.csv', mimetype='text/csv')
+        file = self.service.files().create(body=file_metadata,
+                                        media_body=media,
+                                        fields='id').execute()
+        print ('File ID: ' + file.get('id'))
+
+    def put_binary_obj(self, path: StoragePath, buffer: BytesIO):
+        raise NotImplementedError
+
+    def get_binary_obj(self, path: StoragePath) -> BytesIO:
+        raise NotImplementedError
+
+    def put_text(self, path: StoragePath, text: str) -> None:
+        raise NotImplementedError
+
+    def get_text(self, path: StoragePath) -> str:
+        raise NotImplementedError
+
+    def list_keys(self, path: StoragePath) -> List[str]:
+        raise NotImplementedError
+
+    def put_metadata(self, path: StoragePath, metadata: Dict):
+        raise NotImplementedError
+
+    def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
+        raise NotImplementedError
+
+    def put_tags(self, path: StoragePath, tags: Dict) -> None:
+        raise NotImplementedError
+
+    def get_tags(self, path: StoragePath) -> Dict:
+        raise NotImplementedError
+
+    def get_all_relic_tags(self) -> List[Dict]:
+        raise NotImplementedError
+
+    def get_all_relic_data(self) -> List[Dict]:
+        raise NotImplementedError
 
 def get_storage_by_name(name: str, root: str = os.path.expanduser("~")) -> Storage:
     reliquery_dir = os.path.join(root, "reliquery")
