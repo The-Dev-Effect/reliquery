@@ -164,7 +164,7 @@ relics[0].describe()
 
 
 ### Config<a name="config"></a>
-A json text file named config needs to be created in ~/reliquery 
+An optional json text file named config can be created in ~/reliquery to customize storage.
 <br />
 It can be setup to look like this...
 ```json
@@ -173,7 +173,7 @@ It can be setup to look like this...
     "storage": {
       "type": "File",
       "args": {
-        "root": "~/reliquery"
+        "root": "ENTER_PATH_TO_STORE_YOUR_RELIQUERY"
       }
     }
   },
