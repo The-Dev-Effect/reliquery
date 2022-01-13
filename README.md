@@ -19,7 +19,8 @@ An anti-format storage tool aimed towards supporting scientists. Giving them the
 11. [Config](#config)
 12. [File Storage](#file)
 13. [S3 Storage](#s3)
-14. [License](#lic)
+14. [Dropbox](#dropbox)
+15. [License](#lic)
 
 ## For production<a name="prod"></a>
 latest version 0.2.6
@@ -163,16 +164,16 @@ relics[0].describe()
 
 
 ### Config<a name="config"></a>
-A json text file named config located in ~/reliquery
+A json text file named config needs to be created in ~/reliquery 
 <br />
-Default looks like...
+It can be setup to look like this...
 ```json
 {
   "default": {
     "storage": {
       "type": "File",
       "args": {
-        "root": "/home/user/reliquery"
+        "root": "~/reliquery"
       }
     }
   },
@@ -203,6 +204,19 @@ In the quick example that will be:
 s3_signed
 * true = uses current aws_cli configuration
 * false = uses the anonymous IAM role
+
+## Dropbox Storage<a name="dropbox"></a>
+To use Dropbox with reliquery, the following must be added to the config file
+"Dropbox":{
+        "storage": {
+            "type": "Dropbox",
+            "args": {
+                "access_token": "YOUR_ACCESS_TOKEN",
+                "prefix": "relics"
+            }
+        }
+    }
+The access token is obtained by creating an app in the Dropbox App Console and giving it file read and write permissions.
 
 ## License<a name="lic"></a>
 
