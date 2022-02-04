@@ -14,13 +14,14 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 # OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
 # ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
 from boto.exception import SDBResponseError
 from boto.compat import six
+
 
 class SequenceGenerator(object):
     """Generic Sequence Generator object, this takes a single
@@ -35,6 +36,7 @@ class SequenceGenerator(object):
     The Sequence string can be a string or any iterable
     that has the "index" function and is indexable.
     """
+
     __name__ = "SequenceGenerator"
 
     def __init__(self, sequence_string, rollover=False):
@@ -62,17 +64,19 @@ class SequenceGenerator(object):
         # first element in our sequence
         if val is None or len(val) < self.sequence_length:
             return self.sequence_string[0]
-        last_value = val[-self.sequence_length:]
+        last_value = val[-self.sequence_length :]
         if (not self.rollover) and (last_value == self.last_item):
-            val = "%s%s" % (self(val[:-self.sequence_length]), self._inc(last_value))
+            val = "%s%s" % (self(val[: -self.sequence_length]), self._inc(last_value))
         else:
-            val = "%s%s" % (val[:-self.sequence_length], self._inc(last_value))
+            val = "%s%s" % (val[: -self.sequence_length], self._inc(last_value))
         return val
 
     def _inc(self, val):
         """Increment a single value"""
-        assert(len(val) == self.sequence_length)
-        return self.sequence_string[(self.sequence_string.index(val) + 1) % len(self.sequence_string)]
+        assert len(val) == self.sequence_length
+        return self.sequence_string[
+            (self.sequence_string.index(val) + 1) % len(self.sequence_string)
+        ]
 
 
 #
@@ -83,10 +87,12 @@ def increment_by_one(cv=None, lv=None):
         return 0
     return cv + 1
 
+
 def double(cv=None, lv=None):
     if cv is None:
         return 1
     return cv * 2
+
 
 def fib(cv=1, lv=0):
     """The fibonacci sequence, this incrementer uses the
@@ -96,6 +102,7 @@ def fib(cv=1, lv=0):
     if lv is None:
         lv = 0
     return cv + lv
+
 
 increment_string = SequenceGenerator("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
@@ -139,6 +146,7 @@ class Sequence(object):
 
         if self.id is None:
             import uuid
+
             self.id = str(uuid.uuid4())
 
         self.item_type = type(fnc(None))
@@ -146,6 +154,7 @@ class Sequence(object):
         # Allow us to pass in a full name to a function
         if isinstance(fnc, six.string_types):
             from boto.utils import find_class
+
             fnc = find_class(fnc)
         self.fnc = fnc
 
@@ -156,34 +165,34 @@ class Sequence(object):
     def set(self, val):
         """Set the value"""
         import time
+
         now = time.time()
         expected_value = []
         new_val = {}
-        new_val['timestamp'] = now
+        new_val["timestamp"] = now
         if self._value is not None:
-            new_val['last_value'] = self._value
-            expected_value = ['current_value', str(self._value)]
-        new_val['current_value'] = val
+            new_val["last_value"] = self._value
+            expected_value = ["current_value", str(self._value)]
+        new_val["current_value"] = val
         try:
             self.db.put_attributes(self.id, new_val, expected_value=expected_value)
-            self.timestamp = new_val['timestamp']
+            self.timestamp = new_val["timestamp"]
         except SDBResponseError as e:
             if e.status == 409:
                 raise ValueError("Sequence out of sync")
             else:
                 raise
 
-
     def get(self):
         """Get the value"""
         val = self.db.get_attributes(self.id, consistent_read=True)
         if val:
-            if 'timestamp' in val:
-                self.timestamp = val['timestamp']
-            if 'current_value' in val:
-                self._value = self.item_type(val['current_value'])
-            if "last_value" in val and val['last_value'] is not None:
-                self.last_value = self.item_type(val['last_value'])
+            if "timestamp" in val:
+                self.timestamp = val["timestamp"]
+            if "current_value" in val:
+                self._value = self.item_type(val["current_value"])
+            if "last_value" in val and val["last_value"] is not None:
+                self.last_value = self.item_type(val["last_value"])
         return self._value
 
     val = property(get, set)
@@ -193,17 +202,21 @@ class Sequence(object):
             self.__class__.__name__,
             self.id,
             self.domain_name,
-            self.fnc.__module__, self.fnc.__name__,
-            self.val)
-
+            self.fnc.__module__,
+            self.fnc.__name__,
+            self.val,
+        )
 
     def _connect(self):
         """Connect to our domain"""
         if not self._db:
             import boto
+
             sdb = boto.connect_sdb()
             if not self.domain_name:
-                self.domain_name = boto.config.get("DB", "sequence_db", boto.config.get("DB", "db_name", "default"))
+                self.domain_name = boto.config.get(
+                    "DB", "sequence_db", boto.config.get("DB", "db_name", "default")
+                )
             try:
                 self._db = sdb.get_domain(self.domain_name)
             except SDBResponseError as e:

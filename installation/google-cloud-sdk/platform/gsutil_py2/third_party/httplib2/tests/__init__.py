@@ -54,8 +54,7 @@ def assert_raises(exc_type):
 
 
 class BufferedReader(object):
-    """io.BufferedReader with \r\n support
-    """
+    """io.BufferedReader with \r\n support"""
 
     def __init__(self, sock):
         self._buf = b""
@@ -197,8 +196,7 @@ class MockResponse(six.BytesIO):
 
 
 class MockHTTPConnection(object):
-    """This class is just a mock of httplib.HTTPConnection used for testing
-    """
+    """This class is just a mock of httplib.HTTPConnection used for testing"""
 
     def __init__(
         self,
@@ -234,8 +232,7 @@ class MockHTTPConnection(object):
 
 
 class MockHTTPBadStatusConnection(object):
-    """Mock of httplib.HTTPConnection that raises BadStatusLine.
-    """
+    """Mock of httplib.HTTPConnection that raises BadStatusLine."""
 
     num_calls = 0
 
@@ -367,7 +364,9 @@ def server_socket(fun, request_count=1, timeout=5, scheme="", tls=None):
     if scheme is None:
         yield (bind_hostname, server_port)
     else:
-        yield u"{scheme}://{host}:{port}/".format(scheme=scheme, host=bind_hostname, port=server_port)
+        yield u"{scheme}://{host}:{port}/".format(
+            scheme=scheme, host=bind_hostname, port=server_port
+        )
     server.close()
     t.join()
     if gresult[0] is not None:
@@ -527,8 +526,7 @@ def server_reflect(**kwargs):
 
 
 def http_parse_auth(s):
-    """https://tools.ietf.org/html/rfc7235#section-2.1
-    """
+    """https://tools.ietf.org/html/rfc7235#section-2.1"""
     scheme, rest = s.split(" ", 1)
     result = {}
     while True:
@@ -749,8 +747,7 @@ def deflate_decompress(bs):
 
 
 def ssl_context(protocol=None):
-    """Workaround for old SSLContext() required protocol argument.
-    """
+    """Workaround for old SSLContext() required protocol argument."""
     if sys.version_info < (3, 5, 3):
         return ssl.SSLContext(ssl.PROTOCOL_SSLv23)
     return ssl.SSLContext()

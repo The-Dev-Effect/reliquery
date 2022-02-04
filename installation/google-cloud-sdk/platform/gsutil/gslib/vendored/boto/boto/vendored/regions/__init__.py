@@ -17,5 +17,5 @@ import logging
 
 # Leaving the logger enabled would pollute the logs too much for boto,
 # so here we disable them by default.
-_endpoint_logger = logging.getLogger('boto.vendored.regions.regions')
+_endpoint_logger = logging.getLogger("boto.vendored.regions.regions")
 _endpoint_logger.disabled = True

@@ -25,17 +25,17 @@ with open("README.rst", "r") as readme:
     long_description = readme.read()
 
 install_requires = [
-    'six',
-    'monotonic>=0.1',
+    "six",
+    "monotonic>=0.1",
 ]
 
 setup(
-    name='fasteners',
-    version='0.14.1',
-    description='A python package that provides useful locks.',
+    name="fasteners",
+    version="0.14.1",
+    description="A python package that provides useful locks.",
     author="Joshua Harlow",
-    author_email='harlowja@yahoo-inc.com',
-    url='https://github.com/harlowja/fasteners',
+    author_email="harlowja@yahoo-inc.com",
+    url="https://github.com/harlowja/fasteners",
     license="ASL 2.0",
     install_requires=install_requires,
     classifiers=[
@@ -50,8 +50,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.4",
     ],
-    keywords="locks thread threads interprocess"
-             " processes process fasteners",
+    keywords="locks thread threads interprocess" " processes process fasteners",
     packages=find_packages(),
     long_description=long_description,
 )

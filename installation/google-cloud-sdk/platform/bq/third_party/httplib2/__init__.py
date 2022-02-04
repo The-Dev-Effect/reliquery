@@ -24,13 +24,15 @@ import sys
 
 # pylint: disable=g-import-not-at-top, wildcard-import
 if sys.version_info.major == 2 and sys.version_info.minor >= 7:
-  import python2
-  del python2.__all__
-  from .python2 import *
+    import python2
+
+    del python2.__all__
+    from .python2 import *
 elif sys.version_info.major >= 3:
-  import httplib2.python3
-  del python3.__all__  # pylint: disable=undefined-variable
-  from .python3 import *
+    import httplib2.python3
+
+    del python3.__all__  # pylint: disable=undefined-variable
+    from .python3 import *
 else:
-  raise ImportError('Python < 2.7 is unsupported.')
+    raise ImportError("Python < 2.7 is unsupported.")
 # pylint: enable=g-import-not-at-top, wildcard-import

@@ -28,6 +28,7 @@ from boto.sdb.item import Item
 from boto.sdb.regioninfo import SDBRegionInfo
 from boto.exception import SDBResponseError
 
+
 class ItemThread(threading.Thread):
     """
     A threaded :class:`Item <boto.sdb.item.Item>` retriever utility class.
@@ -37,6 +38,7 @@ class ItemThread(threading.Thread):
     .. tip:: The item retrieval will not start until
         the :func:`run() <boto.sdb.connection.ItemThread.run>` method is called.
     """
+
     def __init__(self, name, domain_name, item_names):
         """
         :param str name: A thread name. Used for identification.
@@ -48,7 +50,7 @@ class ItemThread(threading.Thread):
         :ivar list items: A list of items retrieved. Starts as empty list.
         """
         super(ItemThread, self).__init__(name=name)
-        #print 'starting %s with %d items' % (name, len(item_names))
+        # print 'starting %s with %d items' % (name, len(item_names))
         self.domain_name = domain_name
         self.conn = SDBConnection()
         self.item_names = item_names
@@ -63,7 +65,9 @@ class ItemThread(threading.Thread):
             item = self.conn.get_attributes(self.domain_name, item_name)
             self.items.append(item)
 
-#boto.set_stream_logger('sdb')
+
+# boto.set_stream_logger('sdb')
+
 
 class SDBConnection(AWSQueryConnection):
     """
@@ -76,17 +80,31 @@ class SDBConnection(AWSQueryConnection):
         While you may instantiate this class directly, it may be easier to
         go through :py:func:`boto.connect_sdb`.
     """
-    DefaultRegionName = 'us-east-1'
-    DefaultRegionEndpoint = 'sdb.us-east-1.amazonaws.com'
-    APIVersion = '2009-04-15'
+
+    DefaultRegionName = "us-east-1"
+    DefaultRegionEndpoint = "sdb.us-east-1.amazonaws.com"
+    APIVersion = "2009-04-15"
     ResponseError = SDBResponseError
 
-    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None,
-                 is_secure=True, port=None, proxy=None, proxy_port=None,
-                 proxy_user=None, proxy_pass=None, debug=0,
-                 https_connection_factory=None, region=None, path='/',
-                 converter=None, security_token=None, validate_certs=True,
-                 profile_name=None):
+    def __init__(
+        self,
+        aws_access_key_id=None,
+        aws_secret_access_key=None,
+        is_secure=True,
+        port=None,
+        proxy=None,
+        proxy_port=None,
+        proxy_user=None,
+        proxy_pass=None,
+        debug=0,
+        https_connection_factory=None,
+        region=None,
+        path="/",
+        converter=None,
+        security_token=None,
+        validate_certs=True,
+        profile_name=None,
+    ):
         """
         For any keywords that aren't documented, refer to the parent class,
         :py:class:`boto.connection.AWSAuthConnection`. You can avoid having
@@ -104,28 +122,36 @@ class SDBConnection(AWSQueryConnection):
 
         """
         if not region:
-            region_name = boto.config.get('SDB', 'region', self.DefaultRegionName)
+            region_name = boto.config.get("SDB", "region", self.DefaultRegionName)
             for reg in boto.sdb.regions():
                 if reg.name == region_name:
                     region = reg
                     break
 
         self.region = region
-        super(SDBConnection, self).__init__(aws_access_key_id,
-                                    aws_secret_access_key,
-                                    is_secure, port, proxy,
-                                    proxy_port, proxy_user, proxy_pass,
-                                    self.region.endpoint, debug,
-                                    https_connection_factory, path,
-                                    security_token=security_token,
-                                    validate_certs=validate_certs,
-                                    profile_name=profile_name)
+        super(SDBConnection, self).__init__(
+            aws_access_key_id,
+            aws_secret_access_key,
+            is_secure,
+            port,
+            proxy,
+            proxy_port,
+            proxy_user,
+            proxy_pass,
+            self.region.endpoint,
+            debug,
+            https_connection_factory,
+            path,
+            security_token=security_token,
+            validate_certs=validate_certs,
+            profile_name=profile_name,
+        )
         self.box_usage = 0.0
         self.converter = converter
         self.item_cls = Item
 
     def _required_auth_capability(self):
-        return ['sdb']
+        return ["sdb"]
 
     def set_item_cls(self, cls):
         """
@@ -139,44 +165,45 @@ class SDBConnection(AWSQueryConnection):
         """
         self.item_cls = cls
 
-    def _build_name_value_list(self, params, attributes, replace=False,
-                              label='Attribute'):
+    def _build_name_value_list(
+        self, params, attributes, replace=False, label="Attribute"
+    ):
         keys = sorted(attributes.keys())
         i = 1
         for key in keys:
             value = attributes[key]
             if isinstance(value, list):
                 for v in value:
-                    params['%s.%d.Name' % (label, i)] = key
+                    params["%s.%d.Name" % (label, i)] = key
                     if self.converter:
                         v = self.converter.encode(v)
-                    params['%s.%d.Value' % (label, i)] = v
+                    params["%s.%d.Value" % (label, i)] = v
                     if replace:
-                        params['%s.%d.Replace' % (label, i)] = 'true'
+                        params["%s.%d.Replace" % (label, i)] = "true"
                     i += 1
             else:
-                params['%s.%d.Name' % (label, i)] = key
+                params["%s.%d.Name" % (label, i)] = key
                 if self.converter:
                     value = self.converter.encode(value)
-                params['%s.%d.Value' % (label, i)] = value
+                params["%s.%d.Value" % (label, i)] = value
                 if replace:
-                    params['%s.%d.Replace' % (label, i)] = 'true'
+                    params["%s.%d.Replace" % (label, i)] = "true"
             i += 1
 
     def _build_expected_value(self, params, expected_value):
-        params['Expected.1.Name'] = expected_value[0]
+        params["Expected.1.Name"] = expected_value[0]
         if expected_value[1] is True:
-            params['Expected.1.Exists'] = 'true'
+            params["Expected.1.Exists"] = "true"
         elif expected_value[1] is False:
-            params['Expected.1.Exists'] = 'false'
+            params["Expected.1.Exists"] = "false"
         else:
-            params['Expected.1.Value'] = expected_value[1]
+            params["Expected.1.Value"] = expected_value[1]
 
     def _build_batch_list(self, params, items, replace=False):
         item_names = items.keys()
         i = 0
         for item_name in item_names:
-            params['Item.%d.ItemName' % i] = item_name
+            params["Item.%d.ItemName" % i] = item_name
             j = 0
             item = items[item_name]
             if item is not None:
@@ -187,18 +214,18 @@ class SDBConnection(AWSQueryConnection):
                         for v in value:
                             if self.converter:
                                 v = self.converter.encode(v)
-                            params['Item.%d.Attribute.%d.Name' % (i, j)] = attr_name
-                            params['Item.%d.Attribute.%d.Value' % (i, j)] = v
+                            params["Item.%d.Attribute.%d.Name" % (i, j)] = attr_name
+                            params["Item.%d.Attribute.%d.Value" % (i, j)] = v
                             if replace:
-                                params['Item.%d.Attribute.%d.Replace' % (i, j)] = 'true'
+                                params["Item.%d.Attribute.%d.Replace" % (i, j)] = "true"
                             j += 1
                     else:
-                        params['Item.%d.Attribute.%d.Name' % (i, j)] = attr_name
+                        params["Item.%d.Attribute.%d.Name" % (i, j)] = attr_name
                         if self.converter:
                             value = self.converter.encode(value)
-                        params['Item.%d.Attribute.%d.Value' % (i, j)] = value
+                        params["Item.%d.Attribute.%d.Value" % (i, j)] = value
                         if replace:
-                            params['Item.%d.Attribute.%d.Replace' % (i, j)] = 'true'
+                            params["Item.%d.Attribute.%d.Replace" % (i, j)] = "true"
                         j += 1
             i += 1
 
@@ -206,7 +233,7 @@ class SDBConnection(AWSQueryConnection):
         i = 1
         attribute_names.sort()
         for name in attribute_names:
-            params['Attribute.%d.Name' % i] = name
+            params["Attribute.%d.Name" % i] = name
             i += 1
 
     def get_usage(self):
@@ -234,9 +261,9 @@ class SDBConnection(AWSQueryConnection):
             requests made on this specific connection instance. It is by
             no means an account-wide estimate.
         """
-        print('Total Usage: %f compute seconds' % self.box_usage)
+        print("Total Usage: %f compute seconds" % self.box_usage)
         cost = self.box_usage * 0.14
-        print('Approximate Cost: $%f' % cost)
+        print("Approximate Cost: $%f" % cost)
 
     def get_domain(self, domain_name, validate=True):
         """
@@ -302,10 +329,10 @@ class SDBConnection(AWSQueryConnection):
         """
         params = {}
         if max_domains:
-            params['MaxNumberOfDomains'] = max_domains
+            params["MaxNumberOfDomains"] = max_domains
         if next_token:
-            params['NextToken'] = next_token
-        return self.get_list('ListDomains', params, [('DomainName', Domain)])
+            params["NextToken"] = next_token
+        return self.get_list("ListDomains", params, [("DomainName", Domain)])
 
     def create_domain(self, domain_name):
         """
@@ -317,8 +344,8 @@ class SDBConnection(AWSQueryConnection):
         :rtype: :class:`boto.sdb.domain.Domain` object
         :return: The newly created domain
         """
-        params = {'DomainName': domain_name}
-        d = self.get_object('CreateDomain', params, Domain)
+        params = {"DomainName": domain_name}
+        d = self.get_object("CreateDomain", params, Domain)
         d.name = domain_name
         return d
 
@@ -341,7 +368,7 @@ class SDBConnection(AWSQueryConnection):
         :rtype: tuple
         :return: A ``tuple`` with contents outlined as per above.
         """
-        if (isinstance(domain_or_name, Domain)):
+        if isinstance(domain_or_name, Domain):
             return (domain_or_name, domain_or_name.name)
         else:
             return (self.get_domain(domain_or_name), domain_or_name)
@@ -360,8 +387,8 @@ class SDBConnection(AWSQueryConnection):
 
         """
         domain, domain_name = self.get_domain_and_name(domain_or_name)
-        params = {'DomainName': domain_name}
-        return self.get_status('DeleteDomain', params)
+        params = {"DomainName": domain_name}
+        return self.get_status("DeleteDomain", params)
 
     def domain_metadata(self, domain_or_name):
         """
@@ -374,13 +401,14 @@ class SDBConnection(AWSQueryConnection):
         :return: The newly created domain metadata object
         """
         domain, domain_name = self.get_domain_and_name(domain_or_name)
-        params = {'DomainName': domain_name}
-        d = self.get_object('DomainMetadata', params, DomainMetaData)
+        params = {"DomainName": domain_name}
+        d = self.get_object("DomainMetadata", params, DomainMetaData)
         d.domain = domain
         return d
 
-    def put_attributes(self, domain_or_name, item_name, attributes,
-                       replace=True, expected_value=None):
+    def put_attributes(
+        self, domain_or_name, item_name, attributes, replace=True, expected_value=None
+    ):
         """
         Store attributes for a given item in a domain.
 
@@ -420,12 +448,11 @@ class SDBConnection(AWSQueryConnection):
         :return: True if successful
         """
         domain, domain_name = self.get_domain_and_name(domain_or_name)
-        params = {'DomainName': domain_name,
-                  'ItemName': item_name}
+        params = {"DomainName": domain_name, "ItemName": item_name}
         self._build_name_value_list(params, attributes, replace)
         if expected_value:
             self._build_expected_value(params, expected_value)
-        return self.get_status('PutAttributes', params)
+        return self.get_status("PutAttributes", params)
 
     def batch_put_attributes(self, domain_or_name, items, replace=True):
         """
@@ -450,12 +477,18 @@ class SDBConnection(AWSQueryConnection):
         :return: True if successful
         """
         domain, domain_name = self.get_domain_and_name(domain_or_name)
-        params = {'DomainName': domain_name}
+        params = {"DomainName": domain_name}
         self._build_batch_list(params, items, replace)
-        return self.get_status('BatchPutAttributes', params, verb='POST')
+        return self.get_status("BatchPutAttributes", params, verb="POST")
 
-    def get_attributes(self, domain_or_name, item_name, attribute_names=None,
-                       consistent_read=False, item=None):
+    def get_attributes(
+        self,
+        domain_or_name,
+        item_name,
+        attribute_names=None,
+        consistent_read=False,
+        item=None,
+    ):
         """
         Retrieve attributes for a given item in a domain.
 
@@ -483,15 +516,14 @@ class SDBConnection(AWSQueryConnection):
         :return: An Item with the requested attribute name/values set on it
         """
         domain, domain_name = self.get_domain_and_name(domain_or_name)
-        params = {'DomainName': domain_name,
-                  'ItemName': item_name}
+        params = {"DomainName": domain_name, "ItemName": item_name}
         if consistent_read:
-            params['ConsistentRead'] = 'true'
+            params["ConsistentRead"] = "true"
         if attribute_names:
             if not isinstance(attribute_names, list):
                 attribute_names = [attribute_names]
-            self.build_list_params(params, attribute_names, 'AttributeName')
-        response = self.make_request('GetAttributes', params)
+            self.build_list_params(params, attribute_names, "AttributeName")
+        response = self.make_request("GetAttributes", params)
         body = response.read()
         if response.status == 200:
             if item is None:
@@ -502,8 +534,9 @@ class SDBConnection(AWSQueryConnection):
         else:
             raise SDBResponseError(response.status, response.reason, body)
 
-    def delete_attributes(self, domain_or_name, item_name, attr_names=None,
-                          expected_value=None):
+    def delete_attributes(
+        self, domain_or_name, item_name, attr_names=None, expected_value=None
+    ):
         """
         Delete attributes from a given item in a domain.
 
@@ -544,8 +577,7 @@ class SDBConnection(AWSQueryConnection):
         :return: True if successful
         """
         domain, domain_name = self.get_domain_and_name(domain_or_name)
-        params = {'DomainName': domain_name,
-                  'ItemName': item_name}
+        params = {"DomainName": domain_name, "ItemName": item_name}
         if attr_names:
             if isinstance(attr_names, list):
                 self._build_name_list(params, attr_names)
@@ -553,7 +585,7 @@ class SDBConnection(AWSQueryConnection):
                 self._build_name_value_list(params, attr_names)
         if expected_value:
             self._build_expected_value(params, expected_value)
-        return self.get_status('DeleteAttributes', params)
+        return self.get_status("DeleteAttributes", params)
 
     def batch_delete_attributes(self, domain_or_name, items):
         """
@@ -577,12 +609,11 @@ class SDBConnection(AWSQueryConnection):
         :return: True if successful
         """
         domain, domain_name = self.get_domain_and_name(domain_or_name)
-        params = {'DomainName': domain_name}
+        params = {"DomainName": domain_name}
         self._build_batch_list(params, items, False)
-        return self.get_status('BatchDeleteAttributes', params, verb='POST')
+        return self.get_status("BatchDeleteAttributes", params, verb="POST")
 
-    def select(self, domain_or_name, query='', next_token=None,
-               consistent_read=False):
+    def select(self, domain_or_name, query="", next_token=None, consistent_read=False):
         """
         Returns a set of Attributes for item names within domain_name that
         match the query.  The query must be expressed in using the SELECT
@@ -605,14 +636,15 @@ class SDBConnection(AWSQueryConnection):
         :return: An iterator containing the results.
         """
         domain, domain_name = self.get_domain_and_name(domain_or_name)
-        params = {'SelectExpression': query}
+        params = {"SelectExpression": query}
         if consistent_read:
-            params['ConsistentRead'] = 'true'
+            params["ConsistentRead"] = "true"
         if next_token:
-            params['NextToken'] = next_token
+            params["NextToken"] = next_token
         try:
-            return self.get_list('Select', params, [('Item', self.item_cls)],
-                             parent=domain)
+            return self.get_list(
+                "Select", params, [("Item", self.item_cls)], parent=domain
+            )
         except SDBResponseError as e:
             e.body = "Query: %s\n%s" % (query, e.body)
             raise e

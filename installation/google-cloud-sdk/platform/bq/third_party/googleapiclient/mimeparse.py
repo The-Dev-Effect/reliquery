@@ -42,7 +42,7 @@ def parse_mime_type(mime_type):
     into:
 
        ('application', 'xhtml', {'q', '0.5'})
-       """
+    """
     parts = mime_type.split(";")
     params = dict(
         [tuple([s.strip() for s in param.split("=", 1)]) for param in parts[1:]]

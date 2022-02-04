@@ -34,12 +34,11 @@ class TestOpsWorksConnection(unittest.TestCase):
 
     def test_describe_stacks(self):
         response = self.api.describe_stacks()
-        self.assertIn('Stacks', response)
+        self.assertIn("Stacks", response)
 
     def test_validation_errors(self):
         with self.assertRaises(JSONResponseError):
-            self.api.create_stack('testbotostack', 'us-east-1',
-                                  'badarn', 'badarn2')
+            self.api.create_stack("testbotostack", "us-east-1", "badarn", "badarn2")
 
 
 class TestOpsWorksHelpers(unittest.TestCase):
@@ -50,5 +49,5 @@ class TestOpsWorksHelpers(unittest.TestCase):
         self.assertIsInstance(response[0], RegionInfo)
 
     def test_connect_to_region(self):
-        connection = connect_to_region('us-east-1')
+        connection = connect_to_region("us-east-1")
         self.assertIsInstance(connection, OpsWorksConnection)

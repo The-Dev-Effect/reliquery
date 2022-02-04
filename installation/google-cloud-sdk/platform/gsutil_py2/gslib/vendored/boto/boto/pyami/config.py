@@ -26,34 +26,38 @@ import warnings
 
 import boto
 
-from boto.compat import expanduser, ConfigParser, NoOptionError, NoSectionError, StringIO
+from boto.compat import (
+    expanduser,
+    ConfigParser,
+    NoOptionError,
+    NoSectionError,
+    StringIO,
+)
 
 
 # By default we use two locations for the boto configurations,
 # /etc/boto.cfg and ~/.boto (which works on Windows and Unix).
-BotoConfigPath = '/etc/boto.cfg'
+BotoConfigPath = "/etc/boto.cfg"
 BotoConfigLocations = [BotoConfigPath]
-UserConfigPath = os.path.join(expanduser('~'), '.boto')
+UserConfigPath = os.path.join(expanduser("~"), ".boto")
 BotoConfigLocations.append(UserConfigPath)
 
 # If there's a BOTO_CONFIG variable set, we load ONLY
 # that variable
-if 'BOTO_CONFIG' in os.environ:
-    BotoConfigLocations = [expanduser(os.environ['BOTO_CONFIG'])]
+if "BOTO_CONFIG" in os.environ:
+    BotoConfigLocations = [expanduser(os.environ["BOTO_CONFIG"])]
 
 # If there's a BOTO_PATH variable set, we use anything there
 # as the current configuration locations, split with os.pathsep.
-elif 'BOTO_PATH' in os.environ:
+elif "BOTO_PATH" in os.environ:
     BotoConfigLocations = []
-    for path in os.environ['BOTO_PATH'].split(os.pathsep):
+    for path in os.environ["BOTO_PATH"].split(os.pathsep):
         BotoConfigLocations.append(expanduser(path))
 
 
 class Config(object):
-
     def __init__(self, path=None, fp=None, do_load=True):
-        self._parser = ConfigParser({'working_dir': '/mnt/pyami',
-                                     'debug': '0'})
+        self._parser = ConfigParser({"working_dir": "/mnt/pyami", "debug": "0"})
         if do_load:
             if path:
                 self.load_from_path(path)
@@ -62,11 +66,11 @@ class Config(object):
             else:
                 self.read(BotoConfigLocations)
             if "AWS_CREDENTIAL_FILE" in os.environ:
-                full_path = expanduser(os.environ['AWS_CREDENTIAL_FILE'])
+                full_path = expanduser(os.environ["AWS_CREDENTIAL_FILE"])
                 try:
                     self.load_credential_file(full_path)
                 except IOError:
-                    warnings.warn('Unable to load AWS_CREDENTIAL_FILE (%s)' % full_path)
+                    warnings.warn("Unable to load AWS_CREDENTIAL_FILE (%s)" % full_path)
 
     def __setstate__(self, state):
         # There's test that verify that (transitively) a Config
@@ -75,7 +79,7 @@ class Config(object):
         # we need to implement setstate to ensure we don't get
         # into recursive loops when looking up _parser when
         # this object is unpickled.
-        self._parser = state['_parser']
+        self._parser = state["_parser"]
 
     def __getattr__(self, name):
         return getattr(self._parser, name)
@@ -88,7 +92,11 @@ class Config(object):
         c_data = StringIO()
         c_data.write("[Credentials]\n")
         for line in open(path, "r").readlines():
-            c_data.write(line.replace("AWSAccessKeyId", "aws_access_key_id").replace("AWSSecretKey", "aws_secret_access_key"))
+            c_data.write(
+                line.replace("AWSAccessKeyId", "aws_access_key_id").replace(
+                    "AWSSecretKey", "aws_secret_access_key"
+                )
+            )
         c_data.seek(0)
         self.readfp(c_data)
 
@@ -113,7 +121,7 @@ class Config(object):
         if not config.has_section(section):
             config.add_section(section)
         config.set(section, option, value)
-        fp = open(path, 'w')
+        fp = open(path, "w")
         config.write(fp)
         fp.close()
         if not self.has_section(section):
@@ -128,21 +136,21 @@ class Config(object):
 
     def get_instance(self, name, default=None):
         try:
-            val = self.get('Instance', name)
+            val = self.get("Instance", name)
         except (NoOptionError, NoSectionError):
             val = default
         return val
 
     def get_user(self, name, default=None):
         try:
-            val = self.get('User', name)
+            val = self.get("User", name)
         except (NoOptionError, NoSectionError):
             val = default
         return val
 
     def getint_user(self, name, default=0):
         try:
-            val = self.getint('User', name)
+            val = self.getint("User", name)
         except (NoOptionError, NoSectionError):
             val = default
         return val
@@ -171,7 +179,7 @@ class Config(object):
     def getbool(self, section, name, default=False):
         if self.has_option(section, name):
             val = self.get(section, name)
-            if val.lower() == 'true':
+            if val.lower() == "true":
                 val = True
             else:
                 val = False
@@ -181,9 +189,9 @@ class Config(object):
 
     def setbool(self, section, name, value):
         if value:
-            self.set(section, name, 'true')
+            self.set(section, name, "true")
         else:
-            self.set(section, name, 'false')
+            self.set(section, name, "false")
 
     def dump(self):
         s = StringIO()
@@ -194,15 +202,16 @@ class Config(object):
         if not fp:
             fp = StringIO()
         for section in self.sections():
-            fp.write('[%s]\n' % section)
+            fp.write("[%s]\n" % section)
             for option in self.options(section):
-                if option == 'aws_secret_access_key':
-                    fp.write('%s = xxxxxxxxxxxxxxxxxx\n' % option)
+                if option == "aws_secret_access_key":
+                    fp.write("%s = xxxxxxxxxxxxxxxxxx\n" % option)
                 else:
-                    fp.write('%s = %s\n' % (option, self.get(section, option)))
+                    fp.write("%s = %s\n" % (option, self.get(section, option)))
 
     def dump_to_sdb(self, domain_name, item_name):
         from boto.compat import json
+
         sdb = boto.connect_sdb()
         domain = sdb.lookup(domain_name)
         if not domain:
@@ -218,6 +227,7 @@ class Config(object):
 
     def load_from_sdb(self, domain_name, item_name):
         from boto.compat import json
+
         sdb = boto.connect_sdb()
         domain = sdb.lookup(domain_name)
         item = domain.get_item(item_name)
@@ -228,7 +238,7 @@ class Config(object):
             for attr_name in d.keys():
                 attr_value = d[attr_name]
                 if attr_value is None:
-                    attr_value = 'None'
+                    attr_value = "None"
                 if isinstance(attr_value, bool):
                     self.setbool(section, attr_name, attr_value)
                 else:

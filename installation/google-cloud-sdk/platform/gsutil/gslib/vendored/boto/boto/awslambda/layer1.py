@@ -39,6 +39,7 @@ class AWSLambdaConnection(AWSAuthConnection):
     service works, go to `AWS LambdaL How it Works`_ in the AWS Lambda
     Developer Guide.
     """
+
     APIVersion = "2014-11-11"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "lambda.us-east-1.amazonaws.com"
@@ -51,23 +52,24 @@ class AWSLambdaConnection(AWSAuthConnection):
         "ServiceException": exceptions.ServiceException,
     }
 
-
     def __init__(self, **kwargs):
-        region = kwargs.get('region')
+        region = kwargs.get("region")
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
         else:
-            del kwargs['region']
-        kwargs['host'] = region.endpoint
+            del kwargs["region"]
+        kwargs["host"] = region.endpoint
         super(AWSLambdaConnection, self).__init__(**kwargs)
         self.region = region
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
-    def add_event_source(self, event_source, function_name, role,
-                         batch_size=None, parameters=None):
+    def add_event_source(
+        self, event_source, function_name, role, batch_size=None, parameters=None
+    ):
         """
         Identifies an Amazon Kinesis stream as the event source for an
         AWS Lambda function. AWS Lambda invokes the specified function
@@ -117,21 +119,26 @@ class AWSLambdaConnection(AWSAuthConnection):
 
         """
 
-        uri = '/2014-11-13/event-source-mappings/'
+        uri = "/2014-11-13/event-source-mappings/"
         params = {
-            'EventSource': event_source,
-            'FunctionName': function_name,
-            'Role': role,
+            "EventSource": event_source,
+            "FunctionName": function_name,
+            "Role": role,
         }
         headers = {}
         query_params = {}
         if batch_size is not None:
-            params['BatchSize'] = batch_size
+            params["BatchSize"] = batch_size
         if parameters is not None:
-            params['Parameters'] = parameters
-        return self.make_request('POST', uri, expected_status=200,
-                                 data=json.dumps(params), headers=headers,
-                                 params=query_params)
+            params["Parameters"] = parameters
+        return self.make_request(
+            "POST",
+            uri,
+            expected_status=200,
+            data=json.dumps(params),
+            headers=headers,
+            params=query_params,
+        )
 
     def delete_function(self, function_name):
         """
@@ -145,8 +152,8 @@ class AWSLambdaConnection(AWSAuthConnection):
 
         """
 
-        uri = '/2014-11-13/functions/{0}'.format(function_name)
-        return self.make_request('DELETE', uri, expected_status=204)
+        uri = "/2014-11-13/functions/{0}".format(function_name)
+        return self.make_request("DELETE", uri, expected_status=204)
 
     def get_event_source(self, uuid):
         """
@@ -161,8 +168,8 @@ class AWSLambdaConnection(AWSAuthConnection):
 
         """
 
-        uri = '/2014-11-13/event-source-mappings/{0}'.format(uuid)
-        return self.make_request('GET', uri, expected_status=200)
+        uri = "/2014-11-13/event-source-mappings/{0}".format(uuid)
+        return self.make_request("GET", uri, expected_status=200)
 
     def get_function(self, function_name):
         """
@@ -181,8 +188,8 @@ class AWSLambdaConnection(AWSAuthConnection):
 
         """
 
-        uri = '/2014-11-13/functions/{0}'.format(function_name)
-        return self.make_request('GET', uri, expected_status=200)
+        uri = "/2014-11-13/functions/{0}".format(function_name)
+        return self.make_request("GET", uri, expected_status=200)
 
     def get_function_configuration(self, function_name):
         """
@@ -199,8 +206,8 @@ class AWSLambdaConnection(AWSAuthConnection):
 
         """
 
-        uri = '/2014-11-13/functions/{0}/configuration'.format(function_name)
-        return self.make_request('GET', uri, expected_status=200)
+        uri = "/2014-11-13/functions/{0}/configuration".format(function_name)
+        return self.make_request("GET", uri, expected_status=200)
 
     def invoke_async(self, function_name, invoke_args):
         """
@@ -220,7 +227,7 @@ class AWSLambdaConnection(AWSAuthConnection):
             function as input.
 
         """
-        uri = '/2014-11-13/functions/{0}/invoke-async/'.format(function_name)
+        uri = "/2014-11-13/functions/{0}/invoke-async/".format(function_name)
         headers = {}
         query_params = {}
         try:
@@ -236,13 +243,19 @@ class AWSLambdaConnection(AWSAuthConnection):
                     "``invoke_args`` must be seekable."
                 )
             content_length = str(os.fstat(invoke_args.fileno()).st_size)
-        headers['Content-Length'] = content_length
-        return self.make_request('POST', uri, expected_status=202,
-                                 data=invoke_args, headers=headers,
-                                 params=query_params)
+        headers["Content-Length"] = content_length
+        return self.make_request(
+            "POST",
+            uri,
+            expected_status=202,
+            data=invoke_args,
+            headers=headers,
+            params=query_params,
+        )
 
-    def list_event_sources(self, event_source_arn=None, function_name=None,
-                           marker=None, max_items=None):
+    def list_event_sources(
+        self, event_source_arn=None, function_name=None, marker=None, max_items=None
+    ):
         """
         Returns a list of event source mappings. For each mapping, the
         API returns configuration information (see AddEventSource).
@@ -271,21 +284,26 @@ class AWSLambdaConnection(AWSAuthConnection):
 
         """
 
-        uri = '/2014-11-13/event-source-mappings/'
+        uri = "/2014-11-13/event-source-mappings/"
         params = {}
         headers = {}
         query_params = {}
         if event_source_arn is not None:
-            query_params['EventSource'] = event_source_arn
+            query_params["EventSource"] = event_source_arn
         if function_name is not None:
-            query_params['FunctionName'] = function_name
+            query_params["FunctionName"] = function_name
         if marker is not None:
-            query_params['Marker'] = marker
+            query_params["Marker"] = marker
         if max_items is not None:
-            query_params['MaxItems'] = max_items
-        return self.make_request('GET', uri, expected_status=200,
-                                 data=json.dumps(params), headers=headers,
-                                 params=query_params)
+            query_params["MaxItems"] = max_items
+        return self.make_request(
+            "GET",
+            uri,
+            expected_status=200,
+            data=json.dumps(params),
+            headers=headers,
+            params=query_params,
+        )
 
     def list_functions(self, marker=None, max_items=None):
         """
@@ -309,17 +327,22 @@ class AWSLambdaConnection(AWSAuthConnection):
 
         """
 
-        uri = '/2014-11-13/functions/'
+        uri = "/2014-11-13/functions/"
         params = {}
         headers = {}
         query_params = {}
         if marker is not None:
-            query_params['Marker'] = marker
+            query_params["Marker"] = marker
         if max_items is not None:
-            query_params['MaxItems'] = max_items
-        return self.make_request('GET', uri, expected_status=200,
-                                 data=json.dumps(params), headers=headers,
-                                 params=query_params)
+            query_params["MaxItems"] = max_items
+        return self.make_request(
+            "GET",
+            uri,
+            expected_status=200,
+            data=json.dumps(params),
+            headers=headers,
+            params=query_params,
+        )
 
     def remove_event_source(self, uuid):
         """
@@ -335,12 +358,18 @@ class AWSLambdaConnection(AWSAuthConnection):
 
         """
 
-        uri = '/2014-11-13/event-source-mappings/{0}'.format(uuid)
-        return self.make_request('DELETE', uri, expected_status=204)
+        uri = "/2014-11-13/event-source-mappings/{0}".format(uuid)
+        return self.make_request("DELETE", uri, expected_status=204)
 
-    def update_function_configuration(self, function_name, role=None,
-                                      handler=None, description=None,
-                                      timeout=None, memory_size=None):
+    def update_function_configuration(
+        self,
+        function_name,
+        role=None,
+        handler=None,
+        description=None,
+        timeout=None,
+        memory_size=None,
+    ):
         """
         Updates the configuration parameters for the specified Lambda
         function by using the values provided in the request. You
@@ -384,27 +413,41 @@ class AWSLambdaConnection(AWSAuthConnection):
 
         """
 
-        uri = '/2014-11-13/functions/{0}/configuration'.format(function_name)
+        uri = "/2014-11-13/functions/{0}/configuration".format(function_name)
         params = {}
         headers = {}
         query_params = {}
         if role is not None:
-            query_params['Role'] = role
+            query_params["Role"] = role
         if handler is not None:
-            query_params['Handler'] = handler
+            query_params["Handler"] = handler
         if description is not None:
-            query_params['Description'] = description
+            query_params["Description"] = description
         if timeout is not None:
-            query_params['Timeout'] = timeout
+            query_params["Timeout"] = timeout
         if memory_size is not None:
-            query_params['MemorySize'] = memory_size
-        return self.make_request('PUT', uri, expected_status=200,
-                                 data=json.dumps(params), headers=headers,
-                                 params=query_params)
+            query_params["MemorySize"] = memory_size
+        return self.make_request(
+            "PUT",
+            uri,
+            expected_status=200,
+            data=json.dumps(params),
+            headers=headers,
+            params=query_params,
+        )
 
-    def upload_function(self, function_name, function_zip, runtime, role,
-                        handler, mode, description=None, timeout=None,
-                        memory_size=None):
+    def upload_function(
+        self,
+        function_name,
+        function_zip,
+        runtime,
+        role,
+        handler,
+        mode,
+        description=None,
+        timeout=None,
+        memory_size=None,
+    ):
         """
         Creates a new Lambda function or updates an existing function.
         The function metadata is created from the request parameters,
@@ -464,23 +507,23 @@ class AWSLambdaConnection(AWSAuthConnection):
             value is 128 MB. The value must be a multiple of 64 MB.
 
         """
-        uri = '/2014-11-13/functions/{0}'.format(function_name)
+        uri = "/2014-11-13/functions/{0}".format(function_name)
         headers = {}
         query_params = {}
         if runtime is not None:
-            query_params['Runtime'] = runtime
+            query_params["Runtime"] = runtime
         if role is not None:
-            query_params['Role'] = role
+            query_params["Role"] = role
         if handler is not None:
-            query_params['Handler'] = handler
+            query_params["Handler"] = handler
         if mode is not None:
-            query_params['Mode'] = mode
+            query_params["Mode"] = mode
         if description is not None:
-            query_params['Description'] = description
+            query_params["Description"] = description
         if timeout is not None:
-            query_params['Timeout'] = timeout
+            query_params["Timeout"] = timeout
         if memory_size is not None:
-            query_params['MemorySize'] = memory_size
+            query_params["MemorySize"] = memory_size
 
         try:
             content_length = str(len(function_zip))
@@ -495,23 +538,30 @@ class AWSLambdaConnection(AWSAuthConnection):
                     "``function_zip`` must be seekable."
                 )
             content_length = str(os.fstat(function_zip.fileno()).st_size)
-        headers['Content-Length'] = content_length
-        return self.make_request('PUT', uri, expected_status=201,
-                                 data=function_zip, headers=headers,
-                                 params=query_params)
+        headers["Content-Length"] = content_length
+        return self.make_request(
+            "PUT",
+            uri,
+            expected_status=201,
+            data=function_zip,
+            headers=headers,
+            params=query_params,
+        )
 
-    def make_request(self, verb, resource, headers=None, data='',
-                     expected_status=None, params=None):
+    def make_request(
+        self, verb, resource, headers=None, data="", expected_status=None, params=None
+    ):
         if headers is None:
             headers = {}
         response = AWSAuthConnection.make_request(
-            self, verb, resource, headers=headers, data=data, params=params)
-        body = response.read().decode('utf-8')
+            self, verb, resource, headers=headers, data=data, params=params
+        )
+        body = response.read().decode("utf-8")
         if body:
             body = json.loads(body)
         if response.status == expected_status:
             return body
         else:
-            error_type = response.getheader('x-amzn-ErrorType').split(':')[0]
+            error_type = response.getheader("x-amzn-ErrorType").split(":")[0]
             error_class = self._faults.get(error_type, self.ResponseError)
             raise error_class(response.status, response.reason, body)

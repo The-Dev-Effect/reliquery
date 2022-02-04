@@ -31,10 +31,13 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.codedeploy.layer1 import CodeDeployConnection
-    return get_regions('codedeploy', connection_cls=CodeDeployConnection)
+
+    return get_regions("codedeploy", connection_cls=CodeDeployConnection)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.codedeploy.layer1 import CodeDeployConnection
-    return connect('codedeploy', region_name,
-                   connection_cls=CodeDeployConnection, **kw_params)
+
+    return connect(
+        "codedeploy", region_name, connection_cls=CodeDeployConnection, **kw_params
+    )

@@ -55,57 +55,85 @@ class TestAutoScaleGroup(AWSMockServiceTestCase):
     def test_autoscaling_group_with_termination_policies(self):
         self.set_http_response(status_code=200)
         autoscale = AutoScalingGroup(
-            name='foo', launch_config='lauch_config',
-            min_size=1, max_size=2,
-            termination_policies=['OldestInstance', 'OldestLaunchConfiguration'],
-            instance_id='test-id')
+            name="foo",
+            launch_config="lauch_config",
+            min_size=1,
+            max_size=2,
+            termination_policies=["OldestInstance", "OldestLaunchConfiguration"],
+            instance_id="test-id",
+        )
         self.service_connection.create_auto_scaling_group(autoscale)
-        self.assert_request_parameters({
-            'Action': 'CreateAutoScalingGroup',
-            'AutoScalingGroupName': 'foo',
-            'LaunchConfigurationName': 'lauch_config',
-            'MaxSize': 2,
-            'MinSize': 1,
-            'TerminationPolicies.member.1': 'OldestInstance',
-            'TerminationPolicies.member.2': 'OldestLaunchConfiguration',
-            'InstanceId': 'test-id',
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "CreateAutoScalingGroup",
+                "AutoScalingGroupName": "foo",
+                "LaunchConfigurationName": "lauch_config",
+                "MaxSize": 2,
+                "MinSize": 1,
+                "TerminationPolicies.member.1": "OldestInstance",
+                "TerminationPolicies.member.2": "OldestLaunchConfiguration",
+                "InstanceId": "test-id",
+            },
+            ignore_params_values=["Version"],
+        )
 
     def test_autoscaling_group_single_vpc_zone_identifier(self):
         self.set_http_response(status_code=200)
-        autoscale = AutoScalingGroup(
-            name='foo',
-            vpc_zone_identifier='vpc_zone_1')
+        autoscale = AutoScalingGroup(name="foo", vpc_zone_identifier="vpc_zone_1")
         self.service_connection.create_auto_scaling_group(autoscale)
-        self.assert_request_parameters({
-            'Action': 'CreateAutoScalingGroup',
-            'AutoScalingGroupName': 'foo',
-            'VPCZoneIdentifier': 'vpc_zone_1',
-        }, ignore_params_values=['MaxSize', 'MinSize', 'LaunchConfigurationName', 'Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "CreateAutoScalingGroup",
+                "AutoScalingGroupName": "foo",
+                "VPCZoneIdentifier": "vpc_zone_1",
+            },
+            ignore_params_values=[
+                "MaxSize",
+                "MinSize",
+                "LaunchConfigurationName",
+                "Version",
+            ],
+        )
 
     def test_autoscaling_group_vpc_zone_identifier_list(self):
         self.set_http_response(status_code=200)
         autoscale = AutoScalingGroup(
-            name='foo',
-            vpc_zone_identifier=['vpc_zone_1', 'vpc_zone_2'])
+            name="foo", vpc_zone_identifier=["vpc_zone_1", "vpc_zone_2"]
+        )
         self.service_connection.create_auto_scaling_group(autoscale)
-        self.assert_request_parameters({
-            'Action': 'CreateAutoScalingGroup',
-            'AutoScalingGroupName': 'foo',
-            'VPCZoneIdentifier': 'vpc_zone_1,vpc_zone_2',
-        }, ignore_params_values=['MaxSize', 'MinSize', 'LaunchConfigurationName', 'Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "CreateAutoScalingGroup",
+                "AutoScalingGroupName": "foo",
+                "VPCZoneIdentifier": "vpc_zone_1,vpc_zone_2",
+            },
+            ignore_params_values=[
+                "MaxSize",
+                "MinSize",
+                "LaunchConfigurationName",
+                "Version",
+            ],
+        )
 
     def test_autoscaling_group_vpc_zone_identifier_multi(self):
         self.set_http_response(status_code=200)
         autoscale = AutoScalingGroup(
-            name='foo',
-            vpc_zone_identifier='vpc_zone_1,vpc_zone_2')
+            name="foo", vpc_zone_identifier="vpc_zone_1,vpc_zone_2"
+        )
         self.service_connection.create_auto_scaling_group(autoscale)
-        self.assert_request_parameters({
-            'Action': 'CreateAutoScalingGroup',
-            'AutoScalingGroupName': 'foo',
-            'VPCZoneIdentifier': 'vpc_zone_1,vpc_zone_2',
-        }, ignore_params_values=['MaxSize', 'MinSize', 'LaunchConfigurationName', 'Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "CreateAutoScalingGroup",
+                "AutoScalingGroupName": "foo",
+                "VPCZoneIdentifier": "vpc_zone_1,vpc_zone_2",
+            },
+            ignore_params_values=[
+                "MaxSize",
+                "MinSize",
+                "LaunchConfigurationName",
+                "Version",
+            ],
+        )
 
 
 class TestAutoScaleGroupHonorCooldown(AWSMockServiceTestCase):
@@ -122,13 +150,16 @@ class TestAutoScaleGroupHonorCooldown(AWSMockServiceTestCase):
 
     def test_honor_cooldown(self):
         self.set_http_response(status_code=200)
-        self.service_connection.set_desired_capacity('foo', 10, True)
-        self.assert_request_parameters({
-            'Action': 'SetDesiredCapacity',
-            'AutoScalingGroupName': 'foo',
-            'DesiredCapacity': 10,
-            'HonorCooldown': 'true',
-        }, ignore_params_values=['Version'])
+        self.service_connection.set_desired_capacity("foo", 10, True)
+        self.assert_request_parameters(
+            {
+                "Action": "SetDesiredCapacity",
+                "AutoScalingGroupName": "foo",
+                "DesiredCapacity": 10,
+                "HonorCooldown": "true",
+            },
+            ignore_params_values=["Version"],
+        )
 
 
 class TestScheduledGroup(AWSMockServiceTestCase):
@@ -148,25 +179,30 @@ class TestScheduledGroup(AWSMockServiceTestCase):
 
     def test_scheduled_group_creation(self):
         self.set_http_response(status_code=200)
-        self.service_connection.create_scheduled_group_action('foo',
-                                                              'scheduled-foo',
-                                                              desired_capacity=1,
-                                                              start_time=datetime(2013, 1, 1, 22, 55, 31),
-                                                              end_time=datetime(2013, 2, 1, 22, 55, 31),
-                                                              min_size=1,
-                                                              max_size=2,
-                                                              recurrence='0 10 * * *')
-        self.assert_request_parameters({
-            'Action': 'PutScheduledUpdateGroupAction',
-            'AutoScalingGroupName': 'foo',
-            'ScheduledActionName': 'scheduled-foo',
-            'MaxSize': 2,
-            'MinSize': 1,
-            'DesiredCapacity': 1,
-            'EndTime': '2013-02-01T22:55:31',
-            'StartTime': '2013-01-01T22:55:31',
-            'Recurrence': '0 10 * * *',
-        }, ignore_params_values=['Version'])
+        self.service_connection.create_scheduled_group_action(
+            "foo",
+            "scheduled-foo",
+            desired_capacity=1,
+            start_time=datetime(2013, 1, 1, 22, 55, 31),
+            end_time=datetime(2013, 2, 1, 22, 55, 31),
+            min_size=1,
+            max_size=2,
+            recurrence="0 10 * * *",
+        )
+        self.assert_request_parameters(
+            {
+                "Action": "PutScheduledUpdateGroupAction",
+                "AutoScalingGroupName": "foo",
+                "ScheduledActionName": "scheduled-foo",
+                "MaxSize": 2,
+                "MinSize": 1,
+                "DesiredCapacity": 1,
+                "EndTime": "2013-02-01T22:55:31",
+                "StartTime": "2013-01-01T22:55:31",
+                "Recurrence": "0 10 * * *",
+            },
+            ignore_params_values=["Version"],
+        )
 
 
 class TestParseAutoScaleGroupResponse(AWSMockServiceTestCase):
@@ -217,25 +253,27 @@ class TestParseAutoScaleGroupResponse(AWSMockServiceTestCase):
 
     def test_get_all_groups_is_parsed_correctly(self):
         self.set_http_response(status_code=200)
-        response = self.service_connection.get_all_groups(names=['test_group'])
+        response = self.service_connection.get_all_groups(names=["test_group"])
         self.assertEqual(len(response), 1, response)
         as_group = response[0]
-        self.assertEqual(as_group.availability_zones, ['us-east-1c', 'us-east-1a'])
+        self.assertEqual(as_group.availability_zones, ["us-east-1c", "us-east-1a"])
         self.assertEqual(as_group.default_cooldown, 300)
         self.assertEqual(as_group.desired_capacity, 1)
         self.assertEqual(as_group.enabled_metrics, [])
         self.assertEqual(as_group.health_check_period, 0)
-        self.assertEqual(as_group.health_check_type, 'EC2')
-        self.assertEqual(as_group.launch_config_name, 'test_launchconfig')
+        self.assertEqual(as_group.health_check_type, "EC2")
+        self.assertEqual(as_group.launch_config_name, "test_launchconfig")
         self.assertEqual(as_group.load_balancers, [])
         self.assertEqual(as_group.min_size, 1)
         self.assertEqual(as_group.max_size, 2)
-        self.assertEqual(as_group.name, 'test_group')
+        self.assertEqual(as_group.name, "test_group")
         self.assertEqual(as_group.suspended_processes, [])
         self.assertEqual(as_group.tags, [])
-        self.assertEqual(as_group.termination_policies,
-                         ['OldestInstance', 'OldestLaunchConfiguration'])
-        self.assertEqual(as_group.instance_id, 'Something')
+        self.assertEqual(
+            as_group.termination_policies,
+            ["OldestInstance", "OldestLaunchConfiguration"],
+        )
+        self.assertEqual(as_group.instance_id, "Something")
 
 
 class TestDescribeTerminationPolicies(AWSMockServiceTestCase):
@@ -264,8 +302,14 @@ class TestDescribeTerminationPolicies(AWSMockServiceTestCase):
         response = self.service_connection.get_termination_policies()
         self.assertListEqual(
             response,
-            ['ClosestToNextInstanceHour', 'Default',
-             'NewestInstance', 'OldestInstance', 'OldestLaunchConfiguration'])
+            [
+                "ClosestToNextInstanceHour",
+                "Default",
+                "NewestInstance",
+                "OldestInstance",
+                "OldestLaunchConfiguration",
+            ],
+        )
 
 
 class TestLaunchConfigurationDescribe(AWSMockServiceTestCase):
@@ -318,30 +362,42 @@ class TestLaunchConfigurationDescribe(AWSMockServiceTestCase):
         self.assertEqual(response[0].associate_public_ip_address, True)
         self.assertEqual(response[0].name, "my-test-lc")
         self.assertEqual(response[0].instance_type, "m1.small")
-        self.assertEqual(response[0].launch_configuration_arn, "arn:aws:autoscaling:us-east-1:803981987763:launchConfiguration:9dbbbf87-6141-428a-a409-0752edbe6cad:launchConfigurationName/my-test-lc")
+        self.assertEqual(
+            response[0].launch_configuration_arn,
+            "arn:aws:autoscaling:us-east-1:803981987763:launchConfiguration:9dbbbf87-6141-428a-a409-0752edbe6cad:launchConfigurationName/my-test-lc",
+        )
         self.assertEqual(response[0].image_id, "ami-514ac838")
-        self.assertTrue(isinstance(response[0].instance_monitoring, launchconfig.InstanceMonitoring))
-        self.assertEqual(response[0].instance_monitoring.enabled, 'true')
+        self.assertTrue(
+            isinstance(response[0].instance_monitoring, launchconfig.InstanceMonitoring)
+        )
+        self.assertEqual(response[0].instance_monitoring.enabled, "true")
         self.assertEqual(response[0].ebs_optimized, False)
         self.assertEqual(response[0].block_device_mappings, [])
-        self.assertEqual(response[0].classic_link_vpc_id, 'vpc-12345')
-        self.assertEqual(response[0].classic_link_vpc_security_groups,
-                         ['sg-1234'])
+        self.assertEqual(response[0].classic_link_vpc_id, "vpc-12345")
+        self.assertEqual(response[0].classic_link_vpc_security_groups, ["sg-1234"])
 
-        self.assert_request_parameters({
-            'Action': 'DescribeLaunchConfigurations',
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "DescribeLaunchConfigurations",
+            },
+            ignore_params_values=["Version"],
+        )
 
     def test_get_all_configuration_limited(self):
         self.set_http_response(status_code=200)
 
-        response = self.service_connection.get_all_launch_configurations(max_records=10, names=["my-test1", "my-test2"])
-        self.assert_request_parameters({
-            'Action': 'DescribeLaunchConfigurations',
-            'MaxRecords': 10,
-            'LaunchConfigurationNames.member.1': 'my-test1',
-            'LaunchConfigurationNames.member.2': 'my-test2'
-        }, ignore_params_values=['Version'])
+        response = self.service_connection.get_all_launch_configurations(
+            max_records=10, names=["my-test1", "my-test2"]
+        )
+        self.assert_request_parameters(
+            {
+                "Action": "DescribeLaunchConfigurations",
+                "MaxRecords": 10,
+                "LaunchConfigurationNames.member.1": "my-test1",
+                "LaunchConfigurationNames.member.2": "my-test2",
+            },
+            ignore_params_values=["Version"],
+        )
 
 
 class TestLaunchConfiguration(AWSMockServiceTestCase):
@@ -357,50 +413,53 @@ class TestLaunchConfiguration(AWSMockServiceTestCase):
     def test_launch_config(self):
         # This unit test is based on #753 and #1343
         self.set_http_response(status_code=200)
-        dev_sdf = EBSBlockDeviceType(snapshot_id='snap-12345')
+        dev_sdf = EBSBlockDeviceType(snapshot_id="snap-12345")
 
         bdm = BlockDeviceMapping()
-        bdm['/dev/sdf'] = dev_sdf
+        bdm["/dev/sdf"] = dev_sdf
 
         lc = launchconfig.LaunchConfiguration(
             connection=self.service_connection,
-            name='launch_config',
-            image_id='123456',
-            instance_type='m1.large',
-            user_data='#!/bin/bash',
-            security_groups=['group1'],
-            spot_price='price',
+            name="launch_config",
+            image_id="123456",
+            instance_type="m1.large",
+            user_data="#!/bin/bash",
+            security_groups=["group1"],
+            spot_price="price",
             block_device_mappings=[bdm],
             associate_public_ip_address=True,
-            volume_type='atype',
+            volume_type="atype",
             delete_on_termination=False,
             iops=3000,
-            classic_link_vpc_id='vpc-1234',
-            classic_link_vpc_security_groups=['classic_link_group']
+            classic_link_vpc_id="vpc-1234",
+            classic_link_vpc_security_groups=["classic_link_group"],
         )
 
         response = self.service_connection.create_launch_configuration(lc)
 
-        self.assert_request_parameters({
-            'Action': 'CreateLaunchConfiguration',
-            'BlockDeviceMappings.member.1.DeviceName': '/dev/sdf',
-            'BlockDeviceMappings.member.1.Ebs.DeleteOnTermination': 'false',
-            'BlockDeviceMappings.member.1.Ebs.SnapshotId': 'snap-12345',
-            'EbsOptimized': 'false',
-            'LaunchConfigurationName': 'launch_config',
-            'ImageId': '123456',
-            'UserData': base64.b64encode(b'#!/bin/bash').decode('utf-8'),
-            'InstanceMonitoring.Enabled': 'false',
-            'InstanceType': 'm1.large',
-            'SecurityGroups.member.1': 'group1',
-            'SpotPrice': 'price',
-            'AssociatePublicIpAddress': 'true',
-            'VolumeType': 'atype',
-            'DeleteOnTermination': 'false',
-            'Iops': 3000,
-            'ClassicLinkVPCId': 'vpc-1234',
-            'ClassicLinkVPCSecurityGroups.member.1': 'classic_link_group'
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "CreateLaunchConfiguration",
+                "BlockDeviceMappings.member.1.DeviceName": "/dev/sdf",
+                "BlockDeviceMappings.member.1.Ebs.DeleteOnTermination": "false",
+                "BlockDeviceMappings.member.1.Ebs.SnapshotId": "snap-12345",
+                "EbsOptimized": "false",
+                "LaunchConfigurationName": "launch_config",
+                "ImageId": "123456",
+                "UserData": base64.b64encode(b"#!/bin/bash").decode("utf-8"),
+                "InstanceMonitoring.Enabled": "false",
+                "InstanceType": "m1.large",
+                "SecurityGroups.member.1": "group1",
+                "SpotPrice": "price",
+                "AssociatePublicIpAddress": "true",
+                "VolumeType": "atype",
+                "DeleteOnTermination": "false",
+                "Iops": 3000,
+                "ClassicLinkVPCId": "vpc-1234",
+                "ClassicLinkVPCSecurityGroups.member.1": "classic_link_group",
+            },
+            ignore_params_values=["Version"],
+        )
 
 
 class TestCreateAutoScalePolicy(AWSMockServiceTestCase):
@@ -430,52 +489,70 @@ class TestCreateAutoScalePolicy(AWSMockServiceTestCase):
         self.set_http_response(status_code=200)
 
         policy = ScalingPolicy(
-            name='foo', as_name='bar',
-            adjustment_type='PercentChangeInCapacity', scaling_adjustment=50,
-            min_adjustment_step=30)
+            name="foo",
+            as_name="bar",
+            adjustment_type="PercentChangeInCapacity",
+            scaling_adjustment=50,
+            min_adjustment_step=30,
+        )
         self.service_connection.create_scaling_policy(policy)
 
-        self.assert_request_parameters({
-            'Action': 'PutScalingPolicy',
-            'PolicyName': 'foo',
-            'AutoScalingGroupName': 'bar',
-            'AdjustmentType': 'PercentChangeInCapacity',
-            'ScalingAdjustment': 50,
-            'MinAdjustmentStep': 30
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "PutScalingPolicy",
+                "PolicyName": "foo",
+                "AutoScalingGroupName": "bar",
+                "AdjustmentType": "PercentChangeInCapacity",
+                "ScalingAdjustment": 50,
+                "MinAdjustmentStep": 30,
+            },
+            ignore_params_values=["Version"],
+        )
 
     def test_scaling_policy_with_wrong_adjustment_type(self):
         self.set_http_response(status_code=200)
 
         policy = ScalingPolicy(
-            name='foo', as_name='bar',
-            adjustment_type='ChangeInCapacity', scaling_adjustment=50,
-            min_adjustment_step=30)
+            name="foo",
+            as_name="bar",
+            adjustment_type="ChangeInCapacity",
+            scaling_adjustment=50,
+            min_adjustment_step=30,
+        )
         self.service_connection.create_scaling_policy(policy)
 
-        self.assert_request_parameters({
-            'Action': 'PutScalingPolicy',
-            'PolicyName': 'foo',
-            'AutoScalingGroupName': 'bar',
-            'AdjustmentType': 'ChangeInCapacity',
-            'ScalingAdjustment': 50
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "PutScalingPolicy",
+                "PolicyName": "foo",
+                "AutoScalingGroupName": "bar",
+                "AdjustmentType": "ChangeInCapacity",
+                "ScalingAdjustment": 50,
+            },
+            ignore_params_values=["Version"],
+        )
 
     def test_scaling_policy_without_min_adjustment_step(self):
         self.set_http_response(status_code=200)
 
         policy = ScalingPolicy(
-            name='foo', as_name='bar',
-            adjustment_type='PercentChangeInCapacity', scaling_adjustment=50)
+            name="foo",
+            as_name="bar",
+            adjustment_type="PercentChangeInCapacity",
+            scaling_adjustment=50,
+        )
         self.service_connection.create_scaling_policy(policy)
 
-        self.assert_request_parameters({
-            'Action': 'PutScalingPolicy',
-            'PolicyName': 'foo',
-            'AutoScalingGroupName': 'bar',
-            'AdjustmentType': 'PercentChangeInCapacity',
-            'ScalingAdjustment': 50
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "PutScalingPolicy",
+                "PolicyName": "foo",
+                "AutoScalingGroupName": "bar",
+                "AdjustmentType": "PercentChangeInCapacity",
+                "ScalingAdjustment": 50,
+            },
+            ignore_params_values=["Version"],
+        )
 
 
 class TestPutNotificationConfiguration(AWSMockServiceTestCase):
@@ -496,16 +573,26 @@ class TestPutNotificationConfiguration(AWSMockServiceTestCase):
     def test_autoscaling_group_put_notification_configuration(self):
         self.set_http_response(status_code=200)
         autoscale = AutoScalingGroup(
-            name='ana', launch_config='lauch_config',
-            min_size=1, max_size=2,
-            termination_policies=['OldestInstance', 'OldestLaunchConfiguration'])
-        self.service_connection.put_notification_configuration(autoscale, 'arn:aws:sns:us-east-1:19890506:AutoScaling-Up', ['autoscaling:EC2_INSTANCE_LAUNCH'])
-        self.assert_request_parameters({
-            'Action': 'PutNotificationConfiguration',
-            'AutoScalingGroupName': 'ana',
-            'NotificationTypes.member.1': 'autoscaling:EC2_INSTANCE_LAUNCH',
-            'TopicARN': 'arn:aws:sns:us-east-1:19890506:AutoScaling-Up',
-        }, ignore_params_values=['Version'])
+            name="ana",
+            launch_config="lauch_config",
+            min_size=1,
+            max_size=2,
+            termination_policies=["OldestInstance", "OldestLaunchConfiguration"],
+        )
+        self.service_connection.put_notification_configuration(
+            autoscale,
+            "arn:aws:sns:us-east-1:19890506:AutoScaling-Up",
+            ["autoscaling:EC2_INSTANCE_LAUNCH"],
+        )
+        self.assert_request_parameters(
+            {
+                "Action": "PutNotificationConfiguration",
+                "AutoScalingGroupName": "ana",
+                "NotificationTypes.member.1": "autoscaling:EC2_INSTANCE_LAUNCH",
+                "TopicARN": "arn:aws:sns:us-east-1:19890506:AutoScaling-Up",
+            },
+            ignore_params_values=["Version"],
+        )
 
 
 class TestDeleteNotificationConfiguration(AWSMockServiceTestCase):
@@ -526,15 +613,23 @@ class TestDeleteNotificationConfiguration(AWSMockServiceTestCase):
     def test_autoscaling_group_put_notification_configuration(self):
         self.set_http_response(status_code=200)
         autoscale = AutoScalingGroup(
-            name='ana', launch_config='lauch_config',
-            min_size=1, max_size=2,
-            termination_policies=['OldestInstance', 'OldestLaunchConfiguration'])
-        self.service_connection.delete_notification_configuration(autoscale, 'arn:aws:sns:us-east-1:19890506:AutoScaling-Up')
-        self.assert_request_parameters({
-            'Action': 'DeleteNotificationConfiguration',
-            'AutoScalingGroupName': 'ana',
-            'TopicARN': 'arn:aws:sns:us-east-1:19890506:AutoScaling-Up',
-        }, ignore_params_values=['Version'])
+            name="ana",
+            launch_config="lauch_config",
+            min_size=1,
+            max_size=2,
+            termination_policies=["OldestInstance", "OldestLaunchConfiguration"],
+        )
+        self.service_connection.delete_notification_configuration(
+            autoscale, "arn:aws:sns:us-east-1:19890506:AutoScaling-Up"
+        )
+        self.assert_request_parameters(
+            {
+                "Action": "DeleteNotificationConfiguration",
+                "AutoScalingGroupName": "ana",
+                "TopicARN": "arn:aws:sns:us-east-1:19890506:AutoScaling-Up",
+            },
+            ignore_params_values=["Version"],
+        )
 
 
 class TestAutoScalingTag(AWSMockServiceTestCase):
@@ -555,50 +650,55 @@ class TestAutoScalingTag(AWSMockServiceTestCase):
         tags = [
             Tag(
                 connection=self.service_connection,
-                key='alpha',
-                value='tango',
-                resource_id='sg-00000000',
-                resource_type='auto-scaling-group',
-                propagate_at_launch=True
+                key="alpha",
+                value="tango",
+                resource_id="sg-00000000",
+                resource_type="auto-scaling-group",
+                propagate_at_launch=True,
             ),
             Tag(
                 connection=self.service_connection,
-                key='bravo',
-                value='sierra',
-                resource_id='sg-00000000',
-                resource_type='auto-scaling-group',
-                propagate_at_launch=False
-            )]
+                key="bravo",
+                value="sierra",
+                resource_id="sg-00000000",
+                resource_type="auto-scaling-group",
+                propagate_at_launch=False,
+            ),
+        ]
 
         response = self.service_connection.create_or_update_tags(tags)
 
-        self.assert_request_parameters({
-            'Action': 'CreateOrUpdateTags',
-            'Tags.member.1.ResourceType': 'auto-scaling-group',
-            'Tags.member.1.ResourceId': 'sg-00000000',
-            'Tags.member.1.Key': 'alpha',
-            'Tags.member.1.Value': 'tango',
-            'Tags.member.1.PropagateAtLaunch': 'true',
-            'Tags.member.2.ResourceType': 'auto-scaling-group',
-            'Tags.member.2.ResourceId': 'sg-00000000',
-            'Tags.member.2.Key': 'bravo',
-            'Tags.member.2.Value': 'sierra',
-            'Tags.member.2.PropagateAtLaunch': 'false'
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "CreateOrUpdateTags",
+                "Tags.member.1.ResourceType": "auto-scaling-group",
+                "Tags.member.1.ResourceId": "sg-00000000",
+                "Tags.member.1.Key": "alpha",
+                "Tags.member.1.Value": "tango",
+                "Tags.member.1.PropagateAtLaunch": "true",
+                "Tags.member.2.ResourceType": "auto-scaling-group",
+                "Tags.member.2.ResourceId": "sg-00000000",
+                "Tags.member.2.Key": "bravo",
+                "Tags.member.2.Value": "sierra",
+                "Tags.member.2.PropagateAtLaunch": "false",
+            },
+            ignore_params_values=["Version"],
+        )
 
     def test_endElement(self):
         for i in [
-            ('Key', 'mykey', 'key'),
-            ('Value', 'myvalue', 'value'),
-            ('ResourceType', 'auto-scaling-group', 'resource_type'),
-            ('ResourceId', 'sg-01234567', 'resource_id'),
-            ('PropagateAtLaunch', 'true', 'propagate_at_launch')]:
-                self.check_tag_attributes_set(i[0], i[1], i[2])
+            ("Key", "mykey", "key"),
+            ("Value", "myvalue", "value"),
+            ("ResourceType", "auto-scaling-group", "resource_type"),
+            ("ResourceId", "sg-01234567", "resource_id"),
+            ("PropagateAtLaunch", "true", "propagate_at_launch"),
+        ]:
+            self.check_tag_attributes_set(i[0], i[1], i[2])
 
     def check_tag_attributes_set(self, name, value, attr):
         tag = Tag()
         tag.endElement(name, value, None)
-        if value == 'true':
+        if value == "true":
             self.assertEqual(getattr(tag, attr), True)
         else:
             self.assertEqual(getattr(tag, attr), value)
@@ -622,16 +722,18 @@ class TestAttachInstances(AWSMockServiceTestCase):
     def test_attach_instances(self):
         self.set_http_response(status_code=200)
         self.service_connection.attach_instances(
-            'autoscale',
-            ['inst2', 'inst1', 'inst4']
+            "autoscale", ["inst2", "inst1", "inst4"]
         )
-        self.assert_request_parameters({
-            'Action': 'AttachInstances',
-            'AutoScalingGroupName': 'autoscale',
-            'InstanceIds.member.1': 'inst2',
-            'InstanceIds.member.2': 'inst1',
-            'InstanceIds.member.3': 'inst4',
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "AttachInstances",
+                "AutoScalingGroupName": "autoscale",
+                "InstanceIds.member.1": "inst2",
+                "InstanceIds.member.2": "inst1",
+                "InstanceIds.member.3": "inst4",
+            },
+            ignore_params_values=["Version"],
+        )
 
 
 class TestDetachInstances(AWSMockServiceTestCase):
@@ -652,49 +754,53 @@ class TestDetachInstances(AWSMockServiceTestCase):
     def test_detach_instances(self):
         self.set_http_response(status_code=200)
         self.service_connection.detach_instances(
-            'autoscale',
-            ['inst2', 'inst1', 'inst4']
+            "autoscale", ["inst2", "inst1", "inst4"]
         )
-        self.assert_request_parameters({
-            'Action': 'DetachInstances',
-            'AutoScalingGroupName': 'autoscale',
-            'InstanceIds.member.1': 'inst2',
-            'InstanceIds.member.2': 'inst1',
-            'InstanceIds.member.3': 'inst4',
-            'ShouldDecrementDesiredCapacity': 'true',
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "DetachInstances",
+                "AutoScalingGroupName": "autoscale",
+                "InstanceIds.member.1": "inst2",
+                "InstanceIds.member.2": "inst1",
+                "InstanceIds.member.3": "inst4",
+                "ShouldDecrementDesiredCapacity": "true",
+            },
+            ignore_params_values=["Version"],
+        )
 
     def test_detach_instances_with_decrement_desired_capacity(self):
         self.set_http_response(status_code=200)
         self.service_connection.detach_instances(
-            'autoscale',
-            ['inst2', 'inst1', 'inst4'],
-            True
+            "autoscale", ["inst2", "inst1", "inst4"], True
         )
-        self.assert_request_parameters({
-            'Action': 'DetachInstances',
-            'AutoScalingGroupName': 'autoscale',
-            'InstanceIds.member.1': 'inst2',
-            'InstanceIds.member.2': 'inst1',
-            'InstanceIds.member.3': 'inst4',
-            'ShouldDecrementDesiredCapacity': 'true',
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "DetachInstances",
+                "AutoScalingGroupName": "autoscale",
+                "InstanceIds.member.1": "inst2",
+                "InstanceIds.member.2": "inst1",
+                "InstanceIds.member.3": "inst4",
+                "ShouldDecrementDesiredCapacity": "true",
+            },
+            ignore_params_values=["Version"],
+        )
 
     def test_detach_instances_without_decrement_desired_capacity(self):
         self.set_http_response(status_code=200)
         self.service_connection.detach_instances(
-            'autoscale',
-            ['inst2', 'inst1', 'inst4'],
-            False
+            "autoscale", ["inst2", "inst1", "inst4"], False
         )
-        self.assert_request_parameters({
-            'Action': 'DetachInstances',
-            'AutoScalingGroupName': 'autoscale',
-            'InstanceIds.member.1': 'inst2',
-            'InstanceIds.member.2': 'inst1',
-            'InstanceIds.member.3': 'inst4',
-            'ShouldDecrementDesiredCapacity': 'false',
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "DetachInstances",
+                "AutoScalingGroupName": "autoscale",
+                "InstanceIds.member.1": "inst2",
+                "InstanceIds.member.2": "inst1",
+                "InstanceIds.member.3": "inst4",
+                "ShouldDecrementDesiredCapacity": "false",
+            },
+            ignore_params_values=["Version"],
+        )
 
 
 class TestGetAccountLimits(AWSMockServiceTestCase):
@@ -717,9 +823,12 @@ class TestGetAccountLimits(AWSMockServiceTestCase):
     def test_autoscaling_group_put_notification_configuration(self):
         self.set_http_response(status_code=200)
         limits = self.service_connection.get_account_limits()
-        self.assert_request_parameters({
-            'Action': 'DescribeAccountLimits',
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "DescribeAccountLimits",
+            },
+            ignore_params_values=["Version"],
+        )
         self.assertEqual(limits.max_autoscaling_groups, 6)
         self.assertEqual(limits.max_launch_configurations, 3)
 
@@ -755,9 +864,9 @@ class TestGetAdjustmentTypes(AWSMockServiceTestCase):
     def test_autoscaling_adjustment_types(self):
         self.set_http_response(status_code=200)
         response = self.service_connection.get_all_adjustment_types()
-        self.assert_request_parameters({
-            'Action': 'DescribeAdjustmentTypes'
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {"Action": "DescribeAdjustmentTypes"}, ignore_params_values=["Version"]
+        )
 
         self.assertTrue(isinstance(response, list))
         self.assertEqual(response[0].adjustment_type, "ChangeInCapacity")
@@ -840,42 +949,69 @@ class TestLaunchConfigurationDescribeWithBlockDeviceTypes(AWSMockServiceTestCase
         self.assertEqual(response[0].associate_public_ip_address, True)
         self.assertEqual(response[0].name, "my-test-lc")
         self.assertEqual(response[0].instance_type, "m1.small")
-        self.assertEqual(response[0].launch_configuration_arn, "arn:aws:autoscaling:us-east-1:803981987763:launchConfiguration:9dbbbf87-6141-428a-a409-0752edbe6cad:launchConfigurationName/my-test-lc")
+        self.assertEqual(
+            response[0].launch_configuration_arn,
+            "arn:aws:autoscaling:us-east-1:803981987763:launchConfiguration:9dbbbf87-6141-428a-a409-0752edbe6cad:launchConfigurationName/my-test-lc",
+        )
         self.assertEqual(response[0].image_id, "ami-514ac838")
-        self.assertTrue(isinstance(response[0].instance_monitoring, launchconfig.InstanceMonitoring))
-        self.assertEqual(response[0].instance_monitoring.enabled, 'true')
+        self.assertTrue(
+            isinstance(response[0].instance_monitoring, launchconfig.InstanceMonitoring)
+        )
+        self.assertEqual(response[0].instance_monitoring.enabled, "true")
         self.assertEqual(response[0].ebs_optimized, False)
 
-        self.assertEqual(response[0].block_device_mappings['/dev/xvdb'].ephemeral_name, 'ephemeral0')
+        self.assertEqual(
+            response[0].block_device_mappings["/dev/xvdb"].ephemeral_name, "ephemeral0"
+        )
 
-        self.assertEqual(response[0].block_device_mappings['/dev/xvdc'].ephemeral_name, 'ephemeral1')
+        self.assertEqual(
+            response[0].block_device_mappings["/dev/xvdc"].ephemeral_name, "ephemeral1"
+        )
 
-        self.assertEqual(response[0].block_device_mappings['/dev/xvdp'].snapshot_id, 'snap-1234abcd')
-        self.assertEqual(response[0].block_device_mappings['/dev/xvdp'].delete_on_termination, True)
-        self.assertEqual(response[0].block_device_mappings['/dev/xvdp'].iops, 1000)
-        self.assertEqual(response[0].block_device_mappings['/dev/xvdp'].size, 100)
-        self.assertEqual(response[0].block_device_mappings['/dev/xvdp'].volume_type, 'io1')
+        self.assertEqual(
+            response[0].block_device_mappings["/dev/xvdp"].snapshot_id, "snap-1234abcd"
+        )
+        self.assertEqual(
+            response[0].block_device_mappings["/dev/xvdp"].delete_on_termination, True
+        )
+        self.assertEqual(response[0].block_device_mappings["/dev/xvdp"].iops, 1000)
+        self.assertEqual(response[0].block_device_mappings["/dev/xvdp"].size, 100)
+        self.assertEqual(
+            response[0].block_device_mappings["/dev/xvdp"].volume_type, "io1"
+        )
 
-        self.assertEqual(response[0].block_device_mappings['/dev/xvdh'].delete_on_termination, False)
-        self.assertEqual(response[0].block_device_mappings['/dev/xvdh'].iops, 2000)
-        self.assertEqual(response[0].block_device_mappings['/dev/xvdh'].size, 200)
-        self.assertEqual(response[0].block_device_mappings['/dev/xvdh'].volume_type, 'io1')
+        self.assertEqual(
+            response[0].block_device_mappings["/dev/xvdh"].delete_on_termination, False
+        )
+        self.assertEqual(response[0].block_device_mappings["/dev/xvdh"].iops, 2000)
+        self.assertEqual(response[0].block_device_mappings["/dev/xvdh"].size, 200)
+        self.assertEqual(
+            response[0].block_device_mappings["/dev/xvdh"].volume_type, "io1"
+        )
 
-        self.assert_request_parameters({
-            'Action': 'DescribeLaunchConfigurations',
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "DescribeLaunchConfigurations",
+            },
+            ignore_params_values=["Version"],
+        )
 
     def test_get_all_configuration_limited(self):
         self.set_http_response(status_code=200)
 
-        response = self.service_connection.get_all_launch_configurations(max_records=10, names=["my-test1", "my-test2"])
-        self.assert_request_parameters({
-            'Action': 'DescribeLaunchConfigurations',
-            'MaxRecords': 10,
-            'LaunchConfigurationNames.member.1': 'my-test1',
-            'LaunchConfigurationNames.member.2': 'my-test2'
-        }, ignore_params_values=['Version'])
+        response = self.service_connection.get_all_launch_configurations(
+            max_records=10, names=["my-test1", "my-test2"]
+        )
+        self.assert_request_parameters(
+            {
+                "Action": "DescribeLaunchConfigurations",
+                "MaxRecords": 10,
+                "LaunchConfigurationNames.member.1": "my-test1",
+                "LaunchConfigurationNames.member.2": "my-test2",
+            },
+            ignore_params_values=["Version"],
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -23,18 +23,17 @@ from boto.pyami.config import Config
 from boto.services.message import ServiceMessage
 import boto
 
-class ServiceDef(Config):
 
+class ServiceDef(Config):
     def __init__(self, config_file, aws_access_key_id=None, aws_secret_access_key=None):
         super(ServiceDef, self).__init__(config_file)
         self.aws_access_key_id = aws_access_key_id
         self.aws_secret_access_key = aws_secret_access_key
-        script = Config.get(self, 'Pyami', 'scripts')
+        script = Config.get(self, "Pyami", "scripts")
         if script:
-            self.name = script.split('.')[-1]
+            self.name = script.split(".")[-1]
         else:
             self.name = None
-
 
     def get(self, name, default=None):
         return super(ServiceDef, self).get(self.name, name, default)
@@ -53,7 +52,7 @@ class ServiceDef(Config):
     def getbool(self, option, default=False):
         try:
             val = super(ServiceDef, self).get(self.name, option)
-            if val.lower() == 'true':
+            if val.lower() == "true":
                 val = True
             else:
                 val = False
@@ -76,16 +75,14 @@ class ServiceDef(Config):
         val = self.get(name)
         if not val:
             return None
-        if name.find('queue') >= 0:
-            obj = boto.lookup('sqs', val)
+        if name.find("queue") >= 0:
+            obj = boto.lookup("sqs", val)
             if obj:
                 obj.set_message_class(ServiceMessage)
-        elif name.find('bucket') >= 0:
-            obj = boto.lookup('s3', val)
-        elif name.find('domain') >= 0:
-            obj = boto.lookup('sdb', val)
+        elif name.find("bucket") >= 0:
+            obj = boto.lookup("s3", val)
+        elif name.find("domain") >= 0:
+            obj = boto.lookup("sdb", val)
         else:
             obj = None
         return obj
-
-

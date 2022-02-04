@@ -32,6 +32,7 @@ class CloudHSMConnection(AWSQueryConnection):
     """
     AWS CloudHSM Service
     """
+
     APIVersion = "2014-05-30"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "cloudhsm.us-east-1.amazonaws.com"
@@ -45,21 +46,21 @@ class CloudHSMConnection(AWSQueryConnection):
         "CloudHsmInternalException": exceptions.CloudHsmInternalException,
     }
 
-
     def __init__(self, **kwargs):
-        region = kwargs.pop('region', None)
+        region = kwargs.pop("region", None)
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
 
-        if 'host' not in kwargs or kwargs['host'] is None:
-            kwargs['host'] = region.endpoint
+        if "host" not in kwargs or kwargs["host"] is None:
+            kwargs["host"] = region.endpoint
 
         super(CloudHSMConnection, self).__init__(**kwargs)
         self.region = region
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
     def create_hapg(self, label):
         """
@@ -71,13 +72,22 @@ class CloudHSMConnection(AWSQueryConnection):
         :param label: The label of the new high-availability partition group.
 
         """
-        params = {'Label': label, }
-        return self.make_request(action='CreateHapg',
-                                 body=json.dumps(params))
+        params = {
+            "Label": label,
+        }
+        return self.make_request(action="CreateHapg", body=json.dumps(params))
 
-    def create_hsm(self, subnet_id, ssh_key, iam_role_arn, subscription_type,
-                   eni_ip=None, external_id=None, client_token=None,
-                   syslog_ip=None):
+    def create_hsm(
+        self,
+        subnet_id,
+        ssh_key,
+        iam_role_arn,
+        subscription_type,
+        eni_ip=None,
+        external_id=None,
+        client_token=None,
+        syslog_ip=None,
+    ):
         """
         Creates an uninitialized HSM instance. Running this command
         provisions an HSM appliance and will result in charges to your
@@ -113,21 +123,20 @@ class CloudHSMConnection(AWSQueryConnection):
 
         """
         params = {
-            'SubnetId': subnet_id,
-            'SshKey': ssh_key,
-            'IamRoleArn': iam_role_arn,
-            'SubscriptionType': subscription_type,
+            "SubnetId": subnet_id,
+            "SshKey": ssh_key,
+            "IamRoleArn": iam_role_arn,
+            "SubscriptionType": subscription_type,
         }
         if eni_ip is not None:
-            params['EniIp'] = eni_ip
+            params["EniIp"] = eni_ip
         if external_id is not None:
-            params['ExternalId'] = external_id
+            params["ExternalId"] = external_id
         if client_token is not None:
-            params['ClientToken'] = client_token
+            params["ClientToken"] = client_token
         if syslog_ip is not None:
-            params['SyslogIp'] = syslog_ip
-        return self.make_request(action='CreateHsm',
-                                 body=json.dumps(params))
+            params["SyslogIp"] = syslog_ip
+        return self.make_request(action="CreateHsm", body=json.dumps(params))
 
     def create_luna_client(self, certificate, label=None):
         """
@@ -141,11 +150,12 @@ class CloudHSMConnection(AWSQueryConnection):
             certificate to be installed on the HSMs used by this client.
 
         """
-        params = {'Certificate': certificate, }
+        params = {
+            "Certificate": certificate,
+        }
         if label is not None:
-            params['Label'] = label
-        return self.make_request(action='CreateLunaClient',
-                                 body=json.dumps(params))
+            params["Label"] = label
+        return self.make_request(action="CreateLunaClient", body=json.dumps(params))
 
     def delete_hapg(self, hapg_arn):
         """
@@ -156,9 +166,10 @@ class CloudHSMConnection(AWSQueryConnection):
             delete.
 
         """
-        params = {'HapgArn': hapg_arn, }
-        return self.make_request(action='DeleteHapg',
-                                 body=json.dumps(params))
+        params = {
+            "HapgArn": hapg_arn,
+        }
+        return self.make_request(action="DeleteHapg", body=json.dumps(params))
 
     def delete_hsm(self, hsm_arn):
         """
@@ -169,9 +180,10 @@ class CloudHSMConnection(AWSQueryConnection):
         :param hsm_arn: The ARN of the HSM to delete.
 
         """
-        params = {'HsmArn': hsm_arn, }
-        return self.make_request(action='DeleteHsm',
-                                 body=json.dumps(params))
+        params = {
+            "HsmArn": hsm_arn,
+        }
+        return self.make_request(action="DeleteHsm", body=json.dumps(params))
 
     def delete_luna_client(self, client_arn):
         """
@@ -181,9 +193,10 @@ class CloudHSMConnection(AWSQueryConnection):
         :param client_arn: The ARN of the client to delete.
 
         """
-        params = {'ClientArn': client_arn, }
-        return self.make_request(action='DeleteLunaClient',
-                                 body=json.dumps(params))
+        params = {
+            "ClientArn": client_arn,
+        }
+        return self.make_request(action="DeleteLunaClient", body=json.dumps(params))
 
     def describe_hapg(self, hapg_arn):
         """
@@ -195,9 +208,10 @@ class CloudHSMConnection(AWSQueryConnection):
             describe.
 
         """
-        params = {'HapgArn': hapg_arn, }
-        return self.make_request(action='DescribeHapg',
-                                 body=json.dumps(params))
+        params = {
+            "HapgArn": hapg_arn,
+        }
+        return self.make_request(action="DescribeHapg", body=json.dumps(params))
 
     def describe_hsm(self, hsm_arn=None, hsm_serial_number=None):
         """
@@ -215,14 +229,12 @@ class CloudHSMConnection(AWSQueryConnection):
         """
         params = {}
         if hsm_arn is not None:
-            params['HsmArn'] = hsm_arn
+            params["HsmArn"] = hsm_arn
         if hsm_serial_number is not None:
-            params['HsmSerialNumber'] = hsm_serial_number
-        return self.make_request(action='DescribeHsm',
-                                 body=json.dumps(params))
+            params["HsmSerialNumber"] = hsm_serial_number
+        return self.make_request(action="DescribeHsm", body=json.dumps(params))
 
-    def describe_luna_client(self, client_arn=None,
-                             certificate_fingerprint=None):
+    def describe_luna_client(self, client_arn=None, certificate_fingerprint=None):
         """
         Retrieves information about an HSM client.
 
@@ -235,11 +247,10 @@ class CloudHSMConnection(AWSQueryConnection):
         """
         params = {}
         if client_arn is not None:
-            params['ClientArn'] = client_arn
+            params["ClientArn"] = client_arn
         if certificate_fingerprint is not None:
-            params['CertificateFingerprint'] = certificate_fingerprint
-        return self.make_request(action='DescribeLunaClient',
-                                 body=json.dumps(params))
+            params["CertificateFingerprint"] = certificate_fingerprint
+        return self.make_request(action="DescribeLunaClient", body=json.dumps(params))
 
     def get_config(self, client_arn, client_version, hapg_list):
         """
@@ -258,23 +269,21 @@ class CloudHSMConnection(AWSQueryConnection):
 
         """
         params = {
-            'ClientArn': client_arn,
-            'ClientVersion': client_version,
-            'HapgList': hapg_list,
+            "ClientArn": client_arn,
+            "ClientVersion": client_version,
+            "HapgList": hapg_list,
         }
-        return self.make_request(action='GetConfig',
-                                 body=json.dumps(params))
+        return self.make_request(action="GetConfig", body=json.dumps(params))
 
     def list_available_zones(self):
         """
         Lists the Availability Zones that have available AWS CloudHSM
         capacity.
 
-        
+
         """
         params = {}
-        return self.make_request(action='ListAvailableZones',
-                                 body=json.dumps(params))
+        return self.make_request(action="ListAvailableZones", body=json.dumps(params))
 
     def list_hapgs(self, next_token=None):
         """
@@ -292,9 +301,8 @@ class CloudHSMConnection(AWSQueryConnection):
         """
         params = {}
         if next_token is not None:
-            params['NextToken'] = next_token
-        return self.make_request(action='ListHapgs',
-                                 body=json.dumps(params))
+            params["NextToken"] = next_token
+        return self.make_request(action="ListHapgs", body=json.dumps(params))
 
     def list_hsms(self, next_token=None):
         """
@@ -313,9 +321,8 @@ class CloudHSMConnection(AWSQueryConnection):
         """
         params = {}
         if next_token is not None:
-            params['NextToken'] = next_token
-        return self.make_request(action='ListHsms',
-                                 body=json.dumps(params))
+            params["NextToken"] = next_token
+        return self.make_request(action="ListHsms", body=json.dumps(params))
 
     def list_luna_clients(self, next_token=None):
         """
@@ -334,9 +341,8 @@ class CloudHSMConnection(AWSQueryConnection):
         """
         params = {}
         if next_token is not None:
-            params['NextToken'] = next_token
-        return self.make_request(action='ListLunaClients',
-                                 body=json.dumps(params))
+            params["NextToken"] = next_token
+        return self.make_request(action="ListLunaClients", body=json.dumps(params))
 
     def modify_hapg(self, hapg_arn, label=None, partition_serial_list=None):
         """
@@ -354,16 +360,24 @@ class CloudHSMConnection(AWSQueryConnection):
             make members of the high-availability partition group.
 
         """
-        params = {'HapgArn': hapg_arn, }
+        params = {
+            "HapgArn": hapg_arn,
+        }
         if label is not None:
-            params['Label'] = label
+            params["Label"] = label
         if partition_serial_list is not None:
-            params['PartitionSerialList'] = partition_serial_list
-        return self.make_request(action='ModifyHapg',
-                                 body=json.dumps(params))
+            params["PartitionSerialList"] = partition_serial_list
+        return self.make_request(action="ModifyHapg", body=json.dumps(params))
 
-    def modify_hsm(self, hsm_arn, subnet_id=None, eni_ip=None,
-                   iam_role_arn=None, external_id=None, syslog_ip=None):
+    def modify_hsm(
+        self,
+        hsm_arn,
+        subnet_id=None,
+        eni_ip=None,
+        iam_role_arn=None,
+        external_id=None,
+        syslog_ip=None,
+    ):
         """
         Modifies an HSM.
 
@@ -387,19 +401,20 @@ class CloudHSMConnection(AWSQueryConnection):
         :param syslog_ip: The new IP address for the syslog monitoring server.
 
         """
-        params = {'HsmArn': hsm_arn, }
+        params = {
+            "HsmArn": hsm_arn,
+        }
         if subnet_id is not None:
-            params['SubnetId'] = subnet_id
+            params["SubnetId"] = subnet_id
         if eni_ip is not None:
-            params['EniIp'] = eni_ip
+            params["EniIp"] = eni_ip
         if iam_role_arn is not None:
-            params['IamRoleArn'] = iam_role_arn
+            params["IamRoleArn"] = iam_role_arn
         if external_id is not None:
-            params['ExternalId'] = external_id
+            params["ExternalId"] = external_id
         if syslog_ip is not None:
-            params['SyslogIp'] = syslog_ip
-        return self.make_request(action='ModifyHsm',
-                                 body=json.dumps(params))
+            params["SyslogIp"] = syslog_ip
+        return self.make_request(action="ModifyHsm", body=json.dumps(params))
 
     def modify_luna_client(self, client_arn, certificate):
         """
@@ -416,33 +431,34 @@ class CloudHSMConnection(AWSQueryConnection):
 
         """
         params = {
-            'ClientArn': client_arn,
-            'Certificate': certificate,
+            "ClientArn": client_arn,
+            "Certificate": certificate,
         }
-        return self.make_request(action='ModifyLunaClient',
-                                 body=json.dumps(params))
+        return self.make_request(action="ModifyLunaClient", body=json.dumps(params))
 
     def make_request(self, action, body):
         headers = {
-            'X-Amz-Target': '%s.%s' % (self.TargetPrefix, action),
-            'Host': self.region.endpoint,
-            'Content-Type': 'application/x-amz-json-1.1',
-            'Content-Length': str(len(body)),
+            "X-Amz-Target": "%s.%s" % (self.TargetPrefix, action),
+            "Host": self.region.endpoint,
+            "Content-Type": "application/x-amz-json-1.1",
+            "Content-Length": str(len(body)),
         }
         http_request = self.build_base_http_request(
-            method='POST', path='/', auth_path='/', params={},
-            headers=headers, data=body)
-        response = self._mexe(http_request, sender=None,
-                              override_num_retries=10)
-        response_body = response.read().decode('utf-8')
+            method="POST",
+            path="/",
+            auth_path="/",
+            params={},
+            headers=headers,
+            data=body,
+        )
+        response = self._mexe(http_request, sender=None, override_num_retries=10)
+        response_body = response.read().decode("utf-8")
         boto.log.debug(response_body)
         if response.status == 200:
             if response_body:
                 return json.loads(response_body)
         else:
             json_body = json.loads(response_body)
-            fault_name = json_body.get('__type', None)
+            fault_name = json_body.get("__type", None)
             exception_class = self._faults.get(fault_name, self.ResponseError)
-            raise exception_class(response.status, response.reason,
-                                  body=json_body)
-
+            raise exception_class(response.status, response.reason, body=json_body)

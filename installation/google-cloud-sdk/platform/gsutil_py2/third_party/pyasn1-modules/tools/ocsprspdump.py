@@ -17,8 +17,11 @@ from pyasn1_modules import pem
 from pyasn1_modules import rfc2560
 
 if len(sys.argv) != 1:
-    print("""Usage:
-$ cat ocsp-response.pem | %s""" % sys.argv[0])
+    print(
+        """Usage:
+$ cat ocsp-response.pem | %s"""
+        % sys.argv[0]
+    )
     sys.exit(-1)
 
 ocspReq = rfc2560.OCSPResponse()
@@ -31,4 +34,4 @@ cr, rest = decoder.decode(substrate, asn1Spec=ocspReq)
 
 print(cr.prettyPrint())
 
-assert encoder.encode(cr) == substrate, 'OCSP request recode fails'
+assert encoder.encode(cr) == substrate, "OCSP request recode fails"

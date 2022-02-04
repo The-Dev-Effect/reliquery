@@ -53,7 +53,7 @@ def _load_json_file(path):
 
     :returns: The loaded data
     """
-    with open(path, 'r') as endpoints_file:
+    with open(path, "r") as endpoints_file:
         return json.load(endpoints_file)
 
 
@@ -101,10 +101,10 @@ def load_regions():
     additional_path = None
 
     # Try the ENV var. If not, check the config file.
-    if os.environ.get('BOTO_ENDPOINTS'):
-        additional_path = os.environ['BOTO_ENDPOINTS']
-    elif boto.config.get('Boto', 'endpoints_path'):
-        additional_path = boto.config.get('Boto', 'endpoints_path')
+    if os.environ.get("BOTO_ENDPOINTS"):
+        additional_path = os.environ["BOTO_ENDPOINTS"]
+    elif boto.config.get("Boto", "endpoints_path"):
+        additional_path = boto.config.get("Boto", "endpoints_path")
 
     # If there's a file provided, we'll load it & additively merge it into
     # the endpoints.
@@ -161,9 +161,7 @@ def get_regions(service_name, region_cls=None, connection_cls=None):
     endpoints = load_regions()
 
     if service_name not in endpoints:
-        raise BotoClientError(
-            "Service '%s' not found in endpoints." % service_name
-        )
+        raise BotoClientError("Service '%s' not found in endpoints." % service_name)
 
     if region_cls is None:
         region_cls = RegionInfo
@@ -173,17 +171,16 @@ def get_regions(service_name, region_cls=None, connection_cls=None):
     for region_name, endpoint in endpoints.get(service_name, {}).items():
         region_objs.append(
             region_cls(
-                name=region_name,
-                endpoint=endpoint,
-                connection_cls=connection_cls
+                name=region_name, endpoint=endpoint, connection_cls=connection_cls
             )
         )
 
     return region_objs
 
 
-def connect(service_name, region_name, region_cls=None,
-            connection_cls=None, **kw_params):
+def connect(
+    service_name, region_name, region_cls=None, connection_cls=None, **kw_params
+):
     """Create a connection class for a given service in a given region.
 
     :param service_name: The name of the service to construct the
@@ -220,8 +217,7 @@ def connect(service_name, region_name, region_cls=None,
     return region.connect(**kw_params)
 
 
-def _get_region(service_name, region_name, region_cls=None,
-                connection_cls=None):
+def _get_region(service_name, region_name, region_cls=None, connection_cls=None):
     """Finds the region by searching through the known regions."""
     for region in get_regions(service_name, region_cls, connection_cls):
         if region.name == region_name:
@@ -229,24 +225,23 @@ def _get_region(service_name, region_name, region_cls=None,
     return None
 
 
-def _get_region_with_heuristics(service_name, region_name, region_cls=None,
-                                connection_cls=None):
+def _get_region_with_heuristics(
+    service_name, region_name, region_cls=None, connection_cls=None
+):
     """Finds the region using known regions and heuristics."""
     endpoints = load_endpoint_json(boto.ENDPOINTS_PATH)
     resolver = BotoEndpointResolver(endpoints)
     hostname = resolver.resolve_hostname(service_name, region_name)
 
     return region_cls(
-        name=region_name,
-        endpoint=hostname,
-        connection_cls=connection_cls
+        name=region_name, endpoint=hostname, connection_cls=connection_cls
     )
 
 
 def _use_endpoint_heuristics():
-    env_var = os.environ.get('BOTO_USE_ENDPOINT_HEURISTICS', 'false').lower()
-    config_var = boto.config.getbool('Boto', 'use_endpoint_heuristics', False)
-    return env_var == 'true' or config_var
+    env_var = os.environ.get("BOTO_USE_ENDPOINT_HEURISTICS", "false").lower()
+    config_var = boto.config.getbool("Boto", "use_endpoint_heuristics", False)
+    return env_var == "true" or config_var
 
 
 class RegionInfo(object):
@@ -254,23 +249,22 @@ class RegionInfo(object):
     Represents an AWS Region
     """
 
-    def __init__(self, connection=None, name=None, endpoint=None,
-                 connection_cls=None):
+    def __init__(self, connection=None, name=None, endpoint=None, connection_cls=None):
         self.connection = connection
         self.name = name
         self.endpoint = endpoint
         self.connection_cls = connection_cls
 
     def __repr__(self):
-        return 'RegionInfo:%s' % self.name
+        return "RegionInfo:%s" % self.name
 
     def startElement(self, name, attrs, connection):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'regionName':
+        if name == "regionName":
             self.name = value
-        elif name == 'regionEndpoint':
+        elif name == "regionEndpoint":
             self.endpoint = value
         else:
             setattr(self, name, value)

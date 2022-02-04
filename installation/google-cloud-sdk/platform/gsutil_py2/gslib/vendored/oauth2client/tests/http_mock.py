@@ -25,7 +25,7 @@ class ResponseMock(dict):
         if vals is None:
             vals = {}
         self.update(vals)
-        self.status = int(self.get('status', http_client.OK))
+        self.status = int(self.get("status", http_client.OK))
 
 
 class HttpMock(object):
@@ -38,7 +38,7 @@ class HttpMock(object):
             headers: dict, header to return with response
         """
         if headers is None:
-            headers = {'status': http_client.OK}
+            headers = {"status": http_client.OK}
         self.data = data
         self.response_headers = headers
         self.headers = None
@@ -48,12 +48,15 @@ class HttpMock(object):
         self.headers = None
         self.requests = 0
 
-    def request(self, uri,
-                method='GET',
-                body=None,
-                headers=None,
-                redirections=1,
-                connection_type=None):
+    def request(
+        self,
+        uri,
+        method="GET",
+        body=None,
+        headers=None,
+        redirections=1,
+        connection_type=None,
+    ):
         self.uri = uri
         self.method = method
         self.body = body
@@ -94,35 +97,37 @@ class HttpMockSequence(object):
         self._iterable = iterable
         self.requests = []
 
-    def request(self, uri,
-                method='GET',
-                body=None,
-                headers=None,
-                redirections=1,
-                connection_type=None):
+    def request(
+        self,
+        uri,
+        method="GET",
+        body=None,
+        headers=None,
+        redirections=1,
+        connection_type=None,
+    ):
         resp, content = self._iterable.pop(0)
-        self.requests.append({
-            'method': method,
-            'uri': uri,
-            'body': body,
-            'headers': headers,
-        })
+        self.requests.append(
+            {
+                "method": method,
+                "uri": uri,
+                "body": body,
+                "headers": headers,
+            }
+        )
         # Read any underlying stream before sending the request.
-        body_stream_content = (body.read()
-                               if getattr(body, 'read', None) else None)
-        if content == 'echo_request_headers':
+        body_stream_content = body.read() if getattr(body, "read", None) else None
+        if content == "echo_request_headers":
             content = headers
-        elif content == 'echo_request_body':
-            content = (body
-                       if body_stream_content is None else body_stream_content)
+        elif content == "echo_request_body":
+            content = body if body_stream_content is None else body_stream_content
         return ResponseMock(resp), content
 
 
 class CacheMock(object):
-
     def __init__(self):
         self.cache = {}
 
-    def get(self, key, namespace=''):
+    def get(self, key, namespace=""):
         # ignoring namespace for easier testing
         return self.cache.get(key, None)

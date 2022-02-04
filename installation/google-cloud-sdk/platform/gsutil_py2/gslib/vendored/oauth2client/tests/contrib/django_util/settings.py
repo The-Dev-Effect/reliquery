@@ -17,31 +17,29 @@
 import os
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'oauth2client.contrib.django_util',
-    'tests.contrib.django_util.apps.DjangoOrmTestApp',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "oauth2client.contrib.django_util",
+    "tests.contrib.django_util.apps.DjangoOrmTestApp",
 ]
 
-SECRET_KEY = 'this string is not a real django secret key'
+SECRET_KEY = "this string is not a real django secret key"
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join('.', 'db.sqlite3'),
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(".", "db.sqlite3"),
     }
 }
-MIDDLEWARE_CLASSES = (
-    'django.contrib.sessions.middleware.SessionMiddleware'
-)
+MIDDLEWARE_CLASSES = "django.contrib.sessions.middleware.SessionMiddleware"
 
-ALLOWED_HOSTS = ['testserver']
+ALLOWED_HOSTS = ["testserver"]
 
-GOOGLE_OAUTH2_CLIENT_ID = 'client_id2'
-GOOGLE_OAUTH2_CLIENT_SECRET = 'hunter2'
-GOOGLE_OAUTH2_SCOPES = ('https://www.googleapis.com/auth/cloud-platform',)
+GOOGLE_OAUTH2_CLIENT_ID = "client_id2"
+GOOGLE_OAUTH2_CLIENT_SECRET = "hunter2"
+GOOGLE_OAUTH2_SCOPES = ("https://www.googleapis.com/auth/cloud-platform",)
 
-ROOT_URLCONF = 'tests.contrib.django_util.test_django_util'
+ROOT_URLCONF = "tests.contrib.django_util.test_django_util"

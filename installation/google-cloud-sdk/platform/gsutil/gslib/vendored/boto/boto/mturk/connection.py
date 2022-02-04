@@ -39,42 +39,72 @@ class MTurkRequestError(EC2ResponseError):
 
 class MTurkConnection(AWSQueryConnection):
 
-    APIVersion = '2014-08-15'
+    APIVersion = "2014-08-15"
 
-    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None,
-                 is_secure=True, port=None, proxy=None, proxy_port=None,
-                 proxy_user=None, proxy_pass=None,
-                 host=None, debug=0,
-                 https_connection_factory=None, security_token=None,
-                 profile_name=None):
+    def __init__(
+        self,
+        aws_access_key_id=None,
+        aws_secret_access_key=None,
+        is_secure=True,
+        port=None,
+        proxy=None,
+        proxy_port=None,
+        proxy_user=None,
+        proxy_pass=None,
+        host=None,
+        debug=0,
+        https_connection_factory=None,
+        security_token=None,
+        profile_name=None,
+    ):
         if not host:
-            if config.has_option('MTurk', 'sandbox') and config.get('MTurk', 'sandbox') == 'True':
-                host = 'mechanicalturk.sandbox.amazonaws.com'
+            if (
+                config.has_option("MTurk", "sandbox")
+                and config.get("MTurk", "sandbox") == "True"
+            ):
+                host = "mechanicalturk.sandbox.amazonaws.com"
             else:
-                host = 'mechanicalturk.amazonaws.com'
+                host = "mechanicalturk.amazonaws.com"
         self.debug = debug
 
-        super(MTurkConnection, self).__init__(aws_access_key_id,
-                                    aws_secret_access_key,
-                                    is_secure, port, proxy, proxy_port,
-                                    proxy_user, proxy_pass, host, debug,
-                                    https_connection_factory,
-                                    security_token=security_token,
-                                    profile_name=profile_name)
+        super(MTurkConnection, self).__init__(
+            aws_access_key_id,
+            aws_secret_access_key,
+            is_secure,
+            port,
+            proxy,
+            proxy_port,
+            proxy_user,
+            proxy_pass,
+            host,
+            debug,
+            https_connection_factory,
+            security_token=security_token,
+            profile_name=profile_name,
+        )
 
     def _required_auth_capability(self):
-        return ['mturk']
+        return ["mturk"]
 
     def get_account_balance(self):
-        """
-        """
+        """ """
         params = {}
-        return self._process_request('GetAccountBalance', params,
-                                     [('AvailableBalance', Price),
-                                      ('OnHoldBalance', Price)])
+        return self._process_request(
+            "GetAccountBalance",
+            params,
+            [("AvailableBalance", Price), ("OnHoldBalance", Price)],
+        )
 
-    def register_hit_type(self, title, description, reward, duration,
-                          keywords=None, approval_delay=None, qual_req=None):
+    def register_hit_type(
+        self,
+        title,
+        description,
+        reward,
+        duration,
+        keywords=None,
+        approval_delay=None,
+        qual_req=None,
+    ):
         """
         Register a new HIT Type
         title, description are strings
@@ -85,37 +115,42 @@ class MTurkConnection(AWSQueryConnection):
             Title=title,
             Description=description,
             AssignmentDurationInSeconds=self.duration_as_seconds(duration),
-            )
-        params.update(MTurkConnection.get_price_as_price(reward).get_as_params('Reward'))
+        )
+        params.update(
+            MTurkConnection.get_price_as_price(reward).get_as_params("Reward")
+        )
 
         if keywords:
-            params['Keywords'] = self.get_keywords_as_string(keywords)
+            params["Keywords"] = self.get_keywords_as_string(keywords)
 
         if approval_delay is not None:
             d = self.duration_as_seconds(approval_delay)
-            params['AutoApprovalDelayInSeconds'] = d
+            params["AutoApprovalDelayInSeconds"] = d
 
         if qual_req is not None:
             params.update(qual_req.get_as_params())
 
-        return self._process_request('RegisterHITType', params,
-                                     [('HITTypeId', HITTypeId)])
+        return self._process_request(
+            "RegisterHITType", params, [("HITTypeId", HITTypeId)]
+        )
 
     def set_email_notification(self, hit_type, email, event_types=None):
         """
         Performs a SetHITTypeNotification operation to set email
         notification for a specified HIT type
         """
-        return self._set_notification(hit_type, 'Email', email,
-                                      'SetHITTypeNotification', event_types)
+        return self._set_notification(
+            hit_type, "Email", email, "SetHITTypeNotification", event_types
+        )
 
     def set_rest_notification(self, hit_type, url, event_types=None):
         """
         Performs a SetHITTypeNotification operation to set REST notification
         for a specified HIT type
         """
-        return self._set_notification(hit_type, 'REST', url,
-                                      'SetHITTypeNotification', event_types)
+        return self._set_notification(
+            hit_type, "REST", url, "SetHITTypeNotification", event_types
+        )
 
     def set_sqs_notification(self, hit_type, queue_url, event_types=None):
         """
@@ -124,68 +159,93 @@ class MTurkConnection(AWSQueryConnection):
         https://queue.amazonaws.com/<CUSTOMER_ID>/<QUEUE_NAME> and can be
         found when looking at the details for a Queue in the AWS Console
         """
-        return self._set_notification(hit_type, "SQS", queue_url,
-                                      'SetHITTypeNotification', event_types)
+        return self._set_notification(
+            hit_type, "SQS", queue_url, "SetHITTypeNotification", event_types
+        )
 
-    def send_test_event_notification(self, hit_type, url,
-                                     event_types=None,
-                                     test_event_type='Ping'):
+    def send_test_event_notification(
+        self, hit_type, url, event_types=None, test_event_type="Ping"
+    ):
         """
         Performs a SendTestEventNotification operation with REST notification
         for a specified HIT type
         """
-        return self._set_notification(hit_type, 'REST', url,
-                                      'SendTestEventNotification',
-                                      event_types, test_event_type)
+        return self._set_notification(
+            hit_type,
+            "REST",
+            url,
+            "SendTestEventNotification",
+            event_types,
+            test_event_type,
+        )
 
-    def _set_notification(self, hit_type, transport,
-                          destination, request_type,
-                          event_types=None, test_event_type=None):
+    def _set_notification(
+        self,
+        hit_type,
+        transport,
+        destination,
+        request_type,
+        event_types=None,
+        test_event_type=None,
+    ):
         """
         Common operation to set notification or send a test event
         notification for a specified HIT type
         """
-        params = {'HITTypeId': hit_type}
+        params = {"HITTypeId": hit_type}
 
         # from the Developer Guide:
         # The 'Active' parameter is optional. If omitted, the active status of
         # the HIT type's notification specification is unchanged. All HIT types
         # begin with their notification specifications in the "inactive" status.
-        notification_params = {'Destination': destination,
-                               'Transport': transport,
-                               'Version': boto.mturk.notification.NotificationMessage.NOTIFICATION_VERSION,
-                               'Active': True,
-                               }
+        notification_params = {
+            "Destination": destination,
+            "Transport": transport,
+            "Version": boto.mturk.notification.NotificationMessage.NOTIFICATION_VERSION,
+            "Active": True,
+        }
 
         # add specific event types if required
         if event_types:
-            self.build_list_params(notification_params, event_types,
-                                   'EventType')
+            self.build_list_params(notification_params, event_types, "EventType")
 
         # Set up dict of 'Notification.1.Transport' etc. values
         notification_rest_params = {}
         num = 1
         for key in notification_params:
-            notification_rest_params['Notification.%d.%s' % (num, key)] = notification_params[key]
+            notification_rest_params[
+                "Notification.%d.%s" % (num, key)
+            ] = notification_params[key]
 
         # Update main params dict
         params.update(notification_rest_params)
 
         # If test notification, specify the notification type to be tested
         if test_event_type:
-            params.update({'TestEventType': test_event_type})
+            params.update({"TestEventType": test_event_type})
 
         # Execute operation
         return self._process_request(request_type, params)
 
-    def create_hit(self, hit_type=None, question=None, hit_layout=None,
-                   lifetime=datetime.timedelta(days=7),
-                   max_assignments=1,
-                   title=None, description=None, keywords=None,
-                   reward=None, duration=datetime.timedelta(days=7),
-                   approval_delay=None, annotation=None,
-                   questions=None, qualifications=None,
-                   layout_params=None, response_groups=None):
+    def create_hit(
+        self,
+        hit_type=None,
+        question=None,
+        hit_layout=None,
+        lifetime=datetime.timedelta(days=7),
+        max_assignments=1,
+        title=None,
+        description=None,
+        keywords=None,
+        reward=None,
+        duration=datetime.timedelta(days=7),
+        approval_delay=None,
+        annotation=None,
+        questions=None,
+        qualifications=None,
+        layout_params=None,
+        response_groups=None,
+    ):
         """
         Creates a new HIT.
         Returns a ResultSet
@@ -193,17 +253,19 @@ class MTurkConnection(AWSQueryConnection):
         """
 
         # Handle basic required arguments and set up params dict
-        params = {'LifetimeInSeconds':
-                      self.duration_as_seconds(lifetime),
-                  'MaxAssignments': max_assignments,
-                 }
+        params = {
+            "LifetimeInSeconds": self.duration_as_seconds(lifetime),
+            "MaxAssignments": max_assignments,
+        }
 
         # handle single or multiple questions or layouts
         neither = question is None and questions is None
         if hit_layout is None:
             both = question is not None and questions is not None
             if neither or both:
-                raise ValueError("Must specify question (single Question instance) or questions (list or QuestionForm instance), but not both")
+                raise ValueError(
+                    "Must specify question (single Question instance) or questions (list or QuestionForm instance), but not both"
+                )
             if question:
                 questions = [question]
             question_param = QuestionForm(questions)
@@ -213,18 +275,20 @@ class MTurkConnection(AWSQueryConnection):
                 question_param = question
             elif isinstance(question, HTMLQuestion):
                 question_param = question
-            params['Question'] = question_param.get_as_xml()
+            params["Question"] = question_param.get_as_xml()
         else:
             if not neither:
-                raise ValueError("Must not specify question (single Question instance) or questions (list or QuestionForm instance) when specifying hit_layout")
-            params['HITLayoutId'] = hit_layout
+                raise ValueError(
+                    "Must not specify question (single Question instance) or questions (list or QuestionForm instance) when specifying hit_layout"
+                )
+            params["HITLayoutId"] = hit_layout
             if layout_params:
                 params.update(layout_params.get_as_params())
 
         # if hit type specified then add it
         # else add the additional required parameters
         if hit_type:
-            params['HITTypeId'] = hit_type
+            params["HITTypeId"] = hit_type
         else:
             # Handle keywords
             final_keywords = MTurkConnection.get_keywords_as_string(keywords)
@@ -239,19 +303,19 @@ class MTurkConnection(AWSQueryConnection):
                 Description=description,
                 Keywords=final_keywords,
                 AssignmentDurationInSeconds=final_duration,
-                )
-            additional_params.update(final_price.get_as_params('Reward'))
+            )
+            additional_params.update(final_price.get_as_params("Reward"))
 
             if approval_delay is not None:
                 d = self.duration_as_seconds(approval_delay)
-                additional_params['AutoApprovalDelayInSeconds'] = d
+                additional_params["AutoApprovalDelayInSeconds"] = d
 
             # add these params to the others
             params.update(additional_params)
 
         # add the annotation if specified
         if annotation is not None:
-            params['RequesterAnnotation'] = annotation
+            params["RequesterAnnotation"] = annotation
 
         # Add the Qualifications if specified
         if qualifications is not None:
@@ -259,10 +323,10 @@ class MTurkConnection(AWSQueryConnection):
 
         # Handle optional response groups argument
         if response_groups:
-            self.build_list_params(params, response_groups, 'ResponseGroup')
+            self.build_list_params(params, response_groups, "ResponseGroup")
 
         # Submit
-        return self._process_request('CreateHIT', params, [('HIT', HIT)])
+        return self._process_request("CreateHIT", params, [("HIT", HIT)])
 
     def change_hit_type_of_hit(self, hit_id, hit_type):
         """
@@ -273,31 +337,37 @@ class MTurkConnection(AWSQueryConnection):
         :type hit_id: str
         :type hit_type: str
         """
-        params = {'HITId': hit_id,
-                  'HITTypeId': hit_type}
+        params = {"HITId": hit_id, "HITTypeId": hit_type}
 
-        return self._process_request('ChangeHITTypeOfHIT', params)
+        return self._process_request("ChangeHITTypeOfHIT", params)
 
-    def get_reviewable_hits(self, hit_type=None, status='Reviewable',
-                            sort_by='Expiration', sort_direction='Ascending',
-                            page_size=10, page_number=1):
+    def get_reviewable_hits(
+        self,
+        hit_type=None,
+        status="Reviewable",
+        sort_by="Expiration",
+        sort_direction="Ascending",
+        page_size=10,
+        page_number=1,
+    ):
         """
         Retrieve the HITs that have a status of Reviewable, or HITs that
         have a status of Reviewing, and that belong to the Requester
         calling the operation.
         """
-        params = {'Status': status,
-                  'SortProperty': sort_by,
-                  'SortDirection': sort_direction,
-                  'PageSize': page_size,
-                  'PageNumber': page_number}
+        params = {
+            "Status": status,
+            "SortProperty": sort_by,
+            "SortDirection": sort_direction,
+            "PageSize": page_size,
+            "PageNumber": page_number,
+        }
 
         # Handle optional hit_type argument
         if hit_type is not None:
-            params.update({'HITTypeId': hit_type})
+            params.update({"HITTypeId": hit_type})
 
-        return self._process_request('GetReviewableHITs', params,
-                                     [('HIT', HIT)])
+        return self._process_request("GetReviewableHITs", params, [("HIT", HIT)])
 
     @staticmethod
     def _get_pages(page_size, total_records):
@@ -320,13 +390,21 @@ class MTurkConnection(AWSQueryConnection):
         page_size = 100
         search_rs = self.search_hits(page_size=page_size)
         total_records = int(search_rs.TotalNumResults)
-        get_page_hits = lambda page: self.search_hits(page_size=page_size, page_number=page)
+        get_page_hits = lambda page: self.search_hits(
+            page_size=page_size, page_number=page
+        )
         page_nums = self._get_pages(page_size, total_records)
         hit_sets = itertools.imap(get_page_hits, page_nums)
         return itertools.chain.from_iterable(hit_sets)
 
-    def search_hits(self, sort_by='CreationTime', sort_direction='Ascending',
-                    page_size=10, page_number=1, response_groups=None):
+    def search_hits(
+        self,
+        sort_by="CreationTime",
+        sort_direction="Ascending",
+        page_size=10,
+        page_number=1,
+        response_groups=None,
+    ):
         """
         Return a page of a Requester's HITs, on behalf of the Requester.
         The operation returns HITs of any status, except for HITs that
@@ -335,15 +413,17 @@ class MTurkConnection(AWSQueryConnection):
         The SearchHITs operation does not accept any search parameters
         that filter the results.
         """
-        params = {'SortProperty': sort_by,
-                  'SortDirection': sort_direction,
-                  'PageSize': page_size,
-                  'PageNumber': page_number}
+        params = {
+            "SortProperty": sort_by,
+            "SortDirection": sort_direction,
+            "PageSize": page_size,
+            "PageNumber": page_number,
+        }
         # Handle optional response groups argument
         if response_groups:
-            self.build_list_params(params, response_groups, 'ResponseGroup')
+            self.build_list_params(params, response_groups, "ResponseGroup")
 
-        return self._process_request('SearchHITs', params, [('HIT', HIT)])
+        return self._process_request("SearchHITs", params, [("HIT", HIT)])
 
     def get_assignment(self, assignment_id, response_groups=None):
         """
@@ -364,19 +444,26 @@ class MTurkConnection(AWSQueryConnection):
 
         """
 
-        params = {'AssignmentId': assignment_id}
+        params = {"AssignmentId": assignment_id}
 
         # Handle optional response groups argument
         if response_groups:
-            self.build_list_params(params, response_groups, 'ResponseGroup')
+            self.build_list_params(params, response_groups, "ResponseGroup")
 
-        return self._process_request('GetAssignment', params,
-                                     [('Assignment', Assignment),
-                                      ('HIT', HIT)])
+        return self._process_request(
+            "GetAssignment", params, [("Assignment", Assignment), ("HIT", HIT)]
+        )
 
-    def get_assignments(self, hit_id, status=None,
-                            sort_by='SubmitTime', sort_direction='Ascending',
-                            page_size=10, page_number=1, response_groups=None):
+    def get_assignments(
+        self,
+        hit_id,
+        status=None,
+        sort_by="SubmitTime",
+        sort_direction="Ascending",
+        page_size=10,
+        page_number=1,
+        response_groups=None,
+    ):
         """
         Retrieves completed assignments for a HIT.
         Use this operation to retrieve the results for a HIT.
@@ -400,45 +487,45 @@ class MTurkConnection(AWSQueryConnection):
         The ResultSet will contain zero or more Assignment objects
 
         """
-        params = {'HITId': hit_id,
-                  'SortProperty': sort_by,
-                  'SortDirection': sort_direction,
-                  'PageSize': page_size,
-                  'PageNumber': page_number}
+        params = {
+            "HITId": hit_id,
+            "SortProperty": sort_by,
+            "SortDirection": sort_direction,
+            "PageSize": page_size,
+            "PageNumber": page_number,
+        }
 
         if status is not None:
-            params['AssignmentStatus'] = status
+            params["AssignmentStatus"] = status
 
         # Handle optional response groups argument
         if response_groups:
-            self.build_list_params(params, response_groups, 'ResponseGroup')
+            self.build_list_params(params, response_groups, "ResponseGroup")
 
-        return self._process_request('GetAssignmentsForHIT', params,
-                                     [('Assignment', Assignment)])
+        return self._process_request(
+            "GetAssignmentsForHIT", params, [("Assignment", Assignment)]
+        )
 
     def approve_assignment(self, assignment_id, feedback=None):
-        """
-        """
-        params = {'AssignmentId': assignment_id}
+        """ """
+        params = {"AssignmentId": assignment_id}
         if feedback:
-            params['RequesterFeedback'] = feedback
-        return self._process_request('ApproveAssignment', params)
+            params["RequesterFeedback"] = feedback
+        return self._process_request("ApproveAssignment", params)
 
     def reject_assignment(self, assignment_id, feedback=None):
-        """
-        """
-        params = {'AssignmentId': assignment_id}
+        """ """
+        params = {"AssignmentId": assignment_id}
         if feedback:
-            params['RequesterFeedback'] = feedback
-        return self._process_request('RejectAssignment', params)
+            params["RequesterFeedback"] = feedback
+        return self._process_request("RejectAssignment", params)
 
     def approve_rejected_assignment(self, assignment_id, feedback=None):
-        """
-        """
-        params = {'AssignmentId': assignment_id}
+        """ """
+        params = {"AssignmentId": assignment_id}
         if feedback:
-            params['RequesterFeedback'] = feedback
-        return self._process_request('ApproveRejectedAssignment', params)
+            params["RequesterFeedback"] = feedback
+        return self._process_request("ApproveRejectedAssignment", params)
 
     def get_file_upload_url(self, assignment_id, question_identifier):
         """
@@ -449,21 +536,23 @@ class MTurkConnection(AWSQueryConnection):
         Will have a FileUploadURL attribute as per the API Reference.
         """
 
-        params = {'AssignmentId': assignment_id,
-                  'QuestionIdentifier': question_identifier}
+        params = {
+            "AssignmentId": assignment_id,
+            "QuestionIdentifier": question_identifier,
+        }
 
-        return self._process_request('GetFileUploadURL', params,
-                                     [('FileUploadURL', FileUploadURL)])
+        return self._process_request(
+            "GetFileUploadURL", params, [("FileUploadURL", FileUploadURL)]
+        )
 
     def get_hit(self, hit_id, response_groups=None):
-        """
-        """
-        params = {'HITId': hit_id}
+        """ """
+        params = {"HITId": hit_id}
         # Handle optional response groups argument
         if response_groups:
-            self.build_list_params(params, response_groups, 'ResponseGroup')
+            self.build_list_params(params, response_groups, "ResponseGroup")
 
-        return self._process_request('GetHIT', params, [('HIT', HIT)])
+        return self._process_request("GetHIT", params, [("HIT", HIT)])
 
     def set_reviewing(self, hit_id, revert=None):
         """
@@ -474,10 +563,10 @@ class MTurkConnection(AWSQueryConnection):
         Reviewing.  Similarly, only Reviewing HITs can be reverted back to a
         status of Reviewable.
         """
-        params = {'HITId': hit_id}
+        params = {"HITId": hit_id}
         if revert:
-            params['Revert'] = revert
-        return self._process_request('SetHITAsReviewing', params)
+            params["Revert"] = revert
+        return self._process_request("SetHITAsReviewing", params)
 
     def disable_hit(self, hit_id, response_groups=None):
         """
@@ -496,12 +585,12 @@ class MTurkConnection(AWSQueryConnection):
         It is not possible to re-enable a HIT once it has been disabled.
         To make the work from a disabled HIT available again, create a new HIT.
         """
-        params = {'HITId': hit_id}
+        params = {"HITId": hit_id}
         # Handle optional response groups argument
         if response_groups:
-            self.build_list_params(params, response_groups, 'ResponseGroup')
+            self.build_list_params(params, response_groups, "ResponseGroup")
 
-        return self._process_request('DisableHIT', params)
+        return self._process_request("DisableHIT", params)
 
     def dispose_hit(self, hit_id):
         """
@@ -512,9 +601,9 @@ class MTurkConnection(AWSQueryConnection):
         can call GetReviewableHITs to determine which HITs are
         reviewable, then call GetAssignmentsForHIT to retrieve the
         assignments.  Disposing of a HIT removes the HIT from the
-        results of a call to GetReviewableHITs.  """
-        params = {'HITId': hit_id}
-        return self._process_request('DisposeHIT', params)
+        results of a call to GetReviewableHITs."""
+        params = {"HITId": hit_id}
+        return self._process_request("DisposeHIT", params)
 
     def expire_hit(self, hit_id):
 
@@ -530,11 +619,10 @@ class MTurkConnection(AWSQueryConnection):
         submitted, the expired HIT becomes"reviewable", and will be
         returned by a call to GetReviewableHITs.
         """
-        params = {'HITId': hit_id}
-        return self._process_request('ForceExpireHIT', params)
+        params = {"HITId": hit_id}
+        return self._process_request("ForceExpireHIT", params)
 
-    def extend_hit(self, hit_id, assignments_increment=None,
-                   expiration_increment=None):
+    def extend_hit(self, hit_id, assignments_increment=None, expiration_increment=None):
         """
         Increase the maximum number of assignments, or extend the
         expiration date, of an existing HIT.
@@ -549,19 +637,22 @@ class MTurkConnection(AWSQueryConnection):
         before extending the HIT, if so desired.
         """
         # must provide assignment *or* expiration increment
-        if (assignments_increment is None and expiration_increment is None) or \
-           (assignments_increment is not None and expiration_increment is not None):
-            raise ValueError("Must specify either assignments_increment or expiration_increment, but not both")
+        if (assignments_increment is None and expiration_increment is None) or (
+            assignments_increment is not None and expiration_increment is not None
+        ):
+            raise ValueError(
+                "Must specify either assignments_increment or expiration_increment, but not both"
+            )
 
-        params = {'HITId': hit_id}
+        params = {"HITId": hit_id}
         if assignments_increment:
-            params['MaxAssignmentsIncrement'] = assignments_increment
+            params["MaxAssignmentsIncrement"] = assignments_increment
         if expiration_increment:
-            params['ExpirationIncrementInSeconds'] = expiration_increment
+            params["ExpirationIncrementInSeconds"] = expiration_increment
 
-        return self._process_request('ExtendHIT', params)
+        return self._process_request("ExtendHIT", params)
 
-    def get_help(self, about, help_type='Operation'):
+    def get_help(self, about, help_type="Operation"):
         """
         Return information about the Mechanical Turk Service
         operations and response group NOTE - this is basically useless
@@ -569,8 +660,8 @@ class MTurkConnection(AWSQueryConnection):
 
         help_type: either 'Operation' or 'ResponseGroup'
         """
-        params = {'About': about, 'HelpType': help_type}
-        return self._process_request('Help', params)
+        params = {"About": about, "HelpType": help_type}
+        return self._process_request("Help", params)
 
     def grant_bonus(self, worker_id, assignment_id, bonus_price, reason):
         """
@@ -582,51 +673,52 @@ class MTurkConnection(AWSQueryConnection):
         assignment.  The Bonus must be passed in as an instance of the
         Price object.
         """
-        params = bonus_price.get_as_params('BonusAmount', 1)
-        params['WorkerId'] = worker_id
-        params['AssignmentId'] = assignment_id
-        params['Reason'] = reason
+        params = bonus_price.get_as_params("BonusAmount", 1)
+        params["WorkerId"] = worker_id
+        params["AssignmentId"] = assignment_id
+        params["Reason"] = reason
 
-        return self._process_request('GrantBonus', params)
+        return self._process_request("GrantBonus", params)
 
     def block_worker(self, worker_id, reason):
         """
         Block a worker from working on my tasks.
         """
-        params = {'WorkerId': worker_id, 'Reason': reason}
+        params = {"WorkerId": worker_id, "Reason": reason}
 
-        return self._process_request('BlockWorker', params)
+        return self._process_request("BlockWorker", params)
 
     def unblock_worker(self, worker_id, reason):
         """
         Unblock a worker from working on my tasks.
         """
-        params = {'WorkerId': worker_id, 'Reason': reason}
+        params = {"WorkerId": worker_id, "Reason": reason}
 
-        return self._process_request('UnblockWorker', params)
+        return self._process_request("UnblockWorker", params)
 
     def notify_workers(self, worker_ids, subject, message_text):
         """
         Send a text message to workers.
         """
-        params = {'Subject': subject,
-                  'MessageText': message_text}
-        self.build_list_params(params, worker_ids, 'WorkerId')
+        params = {"Subject": subject, "MessageText": message_text}
+        self.build_list_params(params, worker_ids, "WorkerId")
 
-        return self._process_request('NotifyWorkers', params)
+        return self._process_request("NotifyWorkers", params)
 
-    def create_qualification_type(self,
-                                  name,
-                                  description,
-                                  status,
-                                  keywords=None,
-                                  retry_delay=None,
-                                  test=None,
-                                  answer_key=None,
-                                  answer_key_xml=None,
-                                  test_duration=None,
-                                  auto_granted=False,
-                                  auto_granted_value=1):
+    def create_qualification_type(
+        self,
+        name,
+        description,
+        status,
+        keywords=None,
+        retry_delay=None,
+        test=None,
+        answer_key=None,
+        answer_key_xml=None,
+        test_duration=None,
+        auto_granted=False,
+        auto_granted_value=1,
+    ):
         """
         Create a new Qualification Type.
 
@@ -660,181 +752,231 @@ class MTurkConnection(AWSQueryConnection):
 
         """
 
-        params = {'Name': name,
-                  'Description': description,
-                  'QualificationTypeStatus': status,
-                  }
+        params = {
+            "Name": name,
+            "Description": description,
+            "QualificationTypeStatus": status,
+        }
         if retry_delay is not None:
-            params['RetryDelayInSeconds'] = retry_delay
+            params["RetryDelayInSeconds"] = retry_delay
 
         if test is not None:
-            assert(isinstance(test, QuestionForm))
-            assert(test_duration is not None)
-            params['Test'] = test.get_as_xml()
+            assert isinstance(test, QuestionForm)
+            assert test_duration is not None
+            params["Test"] = test.get_as_xml()
 
         if test_duration is not None:
-            params['TestDurationInSeconds'] = test_duration
+            params["TestDurationInSeconds"] = test_duration
 
         if answer_key is not None:
             if isinstance(answer_key, basestring):
-                params['AnswerKey'] = answer_key  # xml
+                params["AnswerKey"] = answer_key  # xml
             else:
                 raise TypeError
                 # Eventually someone will write an AnswerKey class.
 
         if auto_granted:
-            assert(test is None)
-            params['AutoGranted'] = True
-            params['AutoGrantedValue'] = auto_granted_value
+            assert test is None
+            params["AutoGranted"] = True
+            params["AutoGrantedValue"] = auto_granted_value
 
         if keywords:
-            params['Keywords'] = self.get_keywords_as_string(keywords)
+            params["Keywords"] = self.get_keywords_as_string(keywords)
 
-        return self._process_request('CreateQualificationType', params,
-                                     [('QualificationType',
-                                       QualificationType)])
+        return self._process_request(
+            "CreateQualificationType",
+            params,
+            [("QualificationType", QualificationType)],
+        )
 
     def get_qualification_type(self, qualification_type_id):
-        params = {'QualificationTypeId': qualification_type_id }
-        return self._process_request('GetQualificationType', params,
-                                     [('QualificationType', QualificationType)])
+        params = {"QualificationTypeId": qualification_type_id}
+        return self._process_request(
+            "GetQualificationType", params, [("QualificationType", QualificationType)]
+        )
 
     def get_all_qualifications_for_qual_type(self, qualification_type_id):
         page_size = 100
-        search_qual = self.get_qualifications_for_qualification_type(qualification_type_id)
+        search_qual = self.get_qualifications_for_qualification_type(
+            qualification_type_id
+        )
         total_records = int(search_qual.TotalNumResults)
-        get_page_quals = lambda page: self.get_qualifications_for_qualification_type(qualification_type_id = qualification_type_id, page_size=page_size, page_number = page)
+        get_page_quals = lambda page: self.get_qualifications_for_qualification_type(
+            qualification_type_id=qualification_type_id,
+            page_size=page_size,
+            page_number=page,
+        )
         page_nums = self._get_pages(page_size, total_records)
         qual_sets = itertools.imap(get_page_quals, page_nums)
         return itertools.chain.from_iterable(qual_sets)
 
-    def get_qualifications_for_qualification_type(self, qualification_type_id, page_size=100, page_number = 1):
-        params = {'QualificationTypeId': qualification_type_id,
-                  'PageSize': page_size,
-                  'PageNumber': page_number}
-        return self._process_request('GetQualificationsForQualificationType', params,
-                                     [('Qualification', Qualification)])
+    def get_qualifications_for_qualification_type(
+        self, qualification_type_id, page_size=100, page_number=1
+    ):
+        params = {
+            "QualificationTypeId": qualification_type_id,
+            "PageSize": page_size,
+            "PageNumber": page_number,
+        }
+        return self._process_request(
+            "GetQualificationsForQualificationType",
+            params,
+            [("Qualification", Qualification)],
+        )
 
-    def update_qualification_type(self, qualification_type_id,
-                                  description=None,
-                                  status=None,
-                                  retry_delay=None,
-                                  test=None,
-                                  answer_key=None,
-                                  test_duration=None,
-                                  auto_granted=None,
-                                  auto_granted_value=None):
+    def update_qualification_type(
+        self,
+        qualification_type_id,
+        description=None,
+        status=None,
+        retry_delay=None,
+        test=None,
+        answer_key=None,
+        test_duration=None,
+        auto_granted=None,
+        auto_granted_value=None,
+    ):
 
-        params = {'QualificationTypeId': qualification_type_id}
+        params = {"QualificationTypeId": qualification_type_id}
 
         if description is not None:
-            params['Description'] = description
+            params["Description"] = description
 
         if status is not None:
-            params['QualificationTypeStatus'] = status
+            params["QualificationTypeStatus"] = status
 
         if retry_delay is not None:
-            params['RetryDelayInSeconds'] = retry_delay
+            params["RetryDelayInSeconds"] = retry_delay
 
         if test is not None:
-            assert(isinstance(test, QuestionForm))
-            params['Test'] = test.get_as_xml()
+            assert isinstance(test, QuestionForm)
+            params["Test"] = test.get_as_xml()
 
         if test_duration is not None:
-            params['TestDurationInSeconds'] = test_duration
+            params["TestDurationInSeconds"] = test_duration
 
         if answer_key is not None:
             if isinstance(answer_key, basestring):
-                params['AnswerKey'] = answer_key  # xml
+                params["AnswerKey"] = answer_key  # xml
             else:
                 raise TypeError
                 # Eventually someone will write an AnswerKey class.
 
         if auto_granted is not None:
-            params['AutoGranted'] = auto_granted
+            params["AutoGranted"] = auto_granted
 
         if auto_granted_value is not None:
-            params['AutoGrantedValue'] = auto_granted_value
+            params["AutoGrantedValue"] = auto_granted_value
 
-        return self._process_request('UpdateQualificationType', params,
-                                     [('QualificationType', QualificationType)])
+        return self._process_request(
+            "UpdateQualificationType",
+            params,
+            [("QualificationType", QualificationType)],
+        )
 
     def dispose_qualification_type(self, qualification_type_id):
         """TODO: Document."""
-        params = {'QualificationTypeId': qualification_type_id}
-        return self._process_request('DisposeQualificationType', params)
+        params = {"QualificationTypeId": qualification_type_id}
+        return self._process_request("DisposeQualificationType", params)
 
-    def search_qualification_types(self, query=None, sort_by='Name',
-                                   sort_direction='Ascending', page_size=10,
-                                   page_number=1, must_be_requestable=True,
-                                   must_be_owned_by_caller=True):
+    def search_qualification_types(
+        self,
+        query=None,
+        sort_by="Name",
+        sort_direction="Ascending",
+        page_size=10,
+        page_number=1,
+        must_be_requestable=True,
+        must_be_owned_by_caller=True,
+    ):
         """TODO: Document."""
-        params = {'Query': query,
-                  'SortProperty': sort_by,
-                  'SortDirection': sort_direction,
-                  'PageSize': page_size,
-                  'PageNumber': page_number,
-                  'MustBeRequestable': must_be_requestable,
-                  'MustBeOwnedByCaller': must_be_owned_by_caller}
-        return self._process_request('SearchQualificationTypes', params,
-                    [('QualificationType', QualificationType)])
+        params = {
+            "Query": query,
+            "SortProperty": sort_by,
+            "SortDirection": sort_direction,
+            "PageSize": page_size,
+            "PageNumber": page_number,
+            "MustBeRequestable": must_be_requestable,
+            "MustBeOwnedByCaller": must_be_owned_by_caller,
+        }
+        return self._process_request(
+            "SearchQualificationTypes",
+            params,
+            [("QualificationType", QualificationType)],
+        )
 
-    def get_qualification_requests(self, qualification_type_id,
-                                   sort_by='Expiration',
-                                   sort_direction='Ascending', page_size=10,
-                                   page_number=1):
+    def get_qualification_requests(
+        self,
+        qualification_type_id,
+        sort_by="Expiration",
+        sort_direction="Ascending",
+        page_size=10,
+        page_number=1,
+    ):
         """TODO: Document."""
-        params = {'QualificationTypeId': qualification_type_id,
-                  'SortProperty': sort_by,
-                  'SortDirection': sort_direction,
-                  'PageSize': page_size,
-                  'PageNumber': page_number}
-        return self._process_request('GetQualificationRequests', params,
-                    [('QualificationRequest', QualificationRequest)])
+        params = {
+            "QualificationTypeId": qualification_type_id,
+            "SortProperty": sort_by,
+            "SortDirection": sort_direction,
+            "PageSize": page_size,
+            "PageNumber": page_number,
+        }
+        return self._process_request(
+            "GetQualificationRequests",
+            params,
+            [("QualificationRequest", QualificationRequest)],
+        )
 
     def grant_qualification(self, qualification_request_id, integer_value=1):
         """TODO: Document."""
-        params = {'QualificationRequestId': qualification_request_id,
-                  'IntegerValue': integer_value}
-        return self._process_request('GrantQualification', params)
+        params = {
+            "QualificationRequestId": qualification_request_id,
+            "IntegerValue": integer_value,
+        }
+        return self._process_request("GrantQualification", params)
 
-    def revoke_qualification(self, subject_id, qualification_type_id,
-                             reason=None):
+    def revoke_qualification(self, subject_id, qualification_type_id, reason=None):
         """TODO: Document."""
-        params = {'SubjectId': subject_id,
-                  'QualificationTypeId': qualification_type_id,
-                  'Reason': reason}
-        return self._process_request('RevokeQualification', params)
+        params = {
+            "SubjectId": subject_id,
+            "QualificationTypeId": qualification_type_id,
+            "Reason": reason,
+        }
+        return self._process_request("RevokeQualification", params)
 
-    def assign_qualification(self, qualification_type_id, worker_id,
-                             value=1, send_notification=True):
-        params = {'QualificationTypeId': qualification_type_id,
-                  'WorkerId' : worker_id,
-                  'IntegerValue' : value,
-                  'SendNotification' : send_notification}
-        return self._process_request('AssignQualification', params)
+    def assign_qualification(
+        self, qualification_type_id, worker_id, value=1, send_notification=True
+    ):
+        params = {
+            "QualificationTypeId": qualification_type_id,
+            "WorkerId": worker_id,
+            "IntegerValue": value,
+            "SendNotification": send_notification,
+        }
+        return self._process_request("AssignQualification", params)
 
     def get_qualification_score(self, qualification_type_id, worker_id):
         """TODO: Document."""
-        params = {'QualificationTypeId' : qualification_type_id,
-                  'SubjectId' : worker_id}
-        return self._process_request('GetQualificationScore', params,
-                    [('Qualification', Qualification)])
+        params = {"QualificationTypeId": qualification_type_id, "SubjectId": worker_id}
+        return self._process_request(
+            "GetQualificationScore", params, [("Qualification", Qualification)]
+        )
 
-    def update_qualification_score(self, qualification_type_id, worker_id,
-                                   value):
+    def update_qualification_score(self, qualification_type_id, worker_id, value):
         """TODO: Document."""
-        params = {'QualificationTypeId' : qualification_type_id,
-                  'SubjectId' : worker_id,
-                  'IntegerValue' : value}
-        return self._process_request('UpdateQualificationScore', params)
+        params = {
+            "QualificationTypeId": qualification_type_id,
+            "SubjectId": worker_id,
+            "IntegerValue": value,
+        }
+        return self._process_request("UpdateQualificationScore", params)
 
     def _process_request(self, request_type, params, marker_elems=None):
         """
         Helper to process the xml response from AWS
         """
-        params['Operation'] = request_type
-        response = self.make_request(None, params, verb='POST')
+        params["Operation"] = request_type
+        response = self.make_request(None, params, verb="POST")
         return self._process_response(response, marker_elems)
 
     def _process_response(self, response, marker_elems=None):
@@ -844,7 +986,7 @@ class MTurkConnection(AWSQueryConnection):
         body = response.read()
         if self.debug == 2:
             print(body)
-        if '<Errors>' not in body.decode('utf-8'):
+        if "<Errors>" not in body.decode("utf-8"):
             rs = ResultSet(marker_elems)
             h = handler.XmlHandler(rs, self)
             xml.sax.parseString(body, h)
@@ -859,15 +1001,18 @@ class MTurkConnection(AWSQueryConnection):
         a list or a string
         """
         if isinstance(keywords, list):
-            keywords = ', '.join(keywords)
+            keywords = ", ".join(keywords)
         if isinstance(keywords, str):
             final_keywords = keywords
         elif isinstance(keywords, unicode):
-            final_keywords = keywords.encode('utf-8')
+            final_keywords = keywords.encode("utf-8")
         elif keywords is None:
             final_keywords = ""
         else:
-            raise TypeError("keywords argument must be a string or a list of strings; got a %s" % type(keywords))
+            raise TypeError(
+                "keywords argument must be a string or a list of strings; got a %s"
+                % type(keywords)
+            )
         return final_keywords
 
     @staticmethod
@@ -888,7 +1033,9 @@ class MTurkConnection(AWSQueryConnection):
         try:
             duration = int(duration)
         except TypeError:
-            raise TypeError("Duration must be a timedelta or int-castable, got %s" % type(duration))
+            raise TypeError(
+                "Duration must be a timedelta or int-castable, got %s" % type(duration)
+            )
         return duration
 
 
@@ -896,6 +1043,7 @@ class BaseAutoResultElement(object):
     """
     Base class to automatically add attributes when parsing XML
     """
+
     def __init__(self, connection):
         pass
 
@@ -916,14 +1064,18 @@ class HIT(BaseAutoResultElement):
 
     # property helper to determine if HIT has expired
     def _has_expired(self):
-        """ Has this HIT expired yet? """
+        """Has this HIT expired yet?"""
         expired = False
-        if hasattr(self, 'Expiration'):
+        if hasattr(self, "Expiration"):
             now = datetime.datetime.utcnow()
-            expiration = datetime.datetime.strptime(self.Expiration, '%Y-%m-%dT%H:%M:%SZ')
-            expired = (now >= expiration)
+            expiration = datetime.datetime.strptime(
+                self.Expiration, "%Y-%m-%dT%H:%M:%SZ"
+            )
+            expired = now >= expiration
         else:
-            raise ValueError("ERROR: Request for expired property, but no Expiration in HIT!")
+            raise ValueError(
+                "ERROR: Request for expired property, but no Expiration in HIT!"
+            )
         return expired
 
     # are we there yet?
@@ -985,8 +1137,8 @@ class QualificationRequest(BaseAutoResultElement):
 
     def endElement(self, name, value, connection):
         # the answer consists of embedded XML, so it needs to be parsed independantly
-        if name == 'Answer':
-            answer_rs = ResultSet([('Answer', QuestionFormAnswer)])
+        if name == "Answer":
+            answer_rs = ResultSet([("Answer", QuestionFormAnswer)])
             h = handler.XmlHandler(answer_rs, connection)
             value = connection.get_utf8able_str(value)
             xml.sax.parseString(value, h)
@@ -1010,8 +1162,8 @@ class Assignment(BaseAutoResultElement):
 
     def endElement(self, name, value, connection):
         # the answer consists of embedded XML, so it needs to be parsed independantly
-        if name == 'Answer':
-            answer_rs = ResultSet([('Answer', QuestionFormAnswer)])
+        if name == "Answer":
+            answer_rs = ResultSet([("Answer", QuestionFormAnswer)])
             h = handler.XmlHandler(answer_rs, connection)
             value = connection.get_utf8able_str(value)
             xml.sax.parseString(value, h)
@@ -1046,7 +1198,10 @@ class QuestionFormAnswer(BaseAutoResultElement):
         self.qid = None
 
     def endElement(self, name, value, connection):
-        if name == 'QuestionIdentifier':
+        if name == "QuestionIdentifier":
             self.qid = value
-        elif name in ['FreeText', 'SelectionIdentifier', 'OtherSelectionText'] and self.qid:
+        elif (
+            name in ["FreeText", "SelectionIdentifier", "OtherSelectionText"]
+            and self.qid
+        ):
             self.fields.append(value)

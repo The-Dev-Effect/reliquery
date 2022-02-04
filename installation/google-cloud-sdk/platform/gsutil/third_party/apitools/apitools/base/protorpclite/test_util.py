@@ -43,20 +43,16 @@ from apitools.base.protorpclite import messages
 from apitools.base.protorpclite import util
 
 # Unicode of the word "Russian" in cyrillic.
-RUSSIAN = u'\u0440\u0443\u0441\u0441\u043a\u0438\u0439'
+RUSSIAN = u"\u0440\u0443\u0441\u0441\u043a\u0438\u0439"
 
 # All characters binary value interspersed with nulls.
-BINARY = b''.join(six.int2byte(value) + b'\0' for value in range(256))
+BINARY = b"".join(six.int2byte(value) + b"\0" for value in range(256))
 
 
 class TestCase(unittest.TestCase):
-
-    def assertRaisesWithRegexpMatch(self,
-                                    exception,
-                                    regexp,
-                                    function,
-                                    *params,
-                                    **kwargs):
+    def assertRaisesWithRegexpMatch(
+        self, exception, regexp, function, *params, **kwargs
+    ):
         """Check that exception is raised and text matches regular expression.
 
         Args:
@@ -68,12 +64,10 @@ class TestCase(unittest.TestCase):
         """
         try:
             function(*params, **kwargs)
-            self.fail('Expected exception %s was not raised' %
-                      exception.__name__)
+            self.fail("Expected exception %s was not raised" % exception.__name__)
         except exception as err:
             match = bool(re.match(regexp, str(err)))
-            self.assertTrue(match, 'Expected match "%s", found "%s"' % (regexp,
-                                                                        err))
+            self.assertTrue(match, 'Expected match "%s", found "%s"' % (regexp, err))
 
     def assertHeaderSame(self, header1, header2):
         """Check that two HTTP headers are the same.
@@ -114,14 +108,11 @@ class TestCase(unittest.TestCase):
 
         error_message = []
         for item in unmatched1:
-            error_message.append(
-                '  Item from iter1 not found in iter2: %r' % item)
+            error_message.append("  Item from iter1 not found in iter2: %r" % item)
         for item in list2:
-            error_message.append(
-                '  Item from iter2 not found in iter1: %r' % item)
+            error_message.append("  Item from iter2 not found in iter1: %r" % item)
         if error_message:
-            self.fail('Collections not equivalent:\n' +
-                      '\n'.join(error_message))
+            self.fail("Collections not equivalent:\n" + "\n".join(error_message))
 
 
 class ModuleInterfaceTest(object):
@@ -205,10 +196,11 @@ class ModuleInterfaceTest(object):
         This is a basic configuration test for the test itself so does not
         get it's own test case.
         """
-        if not hasattr(self, 'MODULE'):
+        if not hasattr(self, "MODULE"):
             self.fail(
                 "You must define 'MODULE' on ModuleInterfaceTest sub-class "
-                "%s." % type(self).__name__)
+                "%s." % type(self).__name__
+            )
 
     def testAllExist(self):
         """Test that all attributes defined in __all__ exist."""
@@ -217,32 +209,37 @@ class ModuleInterfaceTest(object):
             if not hasattr(self.MODULE, attribute):
                 missing_attributes.append(attribute)
         if missing_attributes:
-            self.fail('%s of __all__ are not defined in module.' %
-                      missing_attributes)
+            self.fail("%s of __all__ are not defined in module." % missing_attributes)
 
     def testAllExported(self):
         """Test that all public attributes not imported are in __all__."""
         missing_attributes = []
         for attribute in dir(self.MODULE):
-            if not attribute.startswith('_'):
-                if (attribute not in self.MODULE.__all__ and
-                        not isinstance(getattr(self.MODULE, attribute),
-                                       types.ModuleType) and
-                        attribute != 'with_statement'):
+            if not attribute.startswith("_"):
+                if (
+                    attribute not in self.MODULE.__all__
+                    and not isinstance(
+                        getattr(self.MODULE, attribute), types.ModuleType
+                    )
+                    and attribute != "with_statement"
+                ):
                     missing_attributes.append(attribute)
         if missing_attributes:
-            self.fail('%s are not modules and not defined in __all__.' %
-                      missing_attributes)
+            self.fail(
+                "%s are not modules and not defined in __all__." % missing_attributes
+            )
 
     def testNoExportedProtectedVariables(self):
         """Test that there are no protected variables listed in __all__."""
         protected_variables = []
         for attribute in self.MODULE.__all__:
-            if attribute.startswith('_'):
+            if attribute.startswith("_"):
                 protected_variables.append(attribute)
         if protected_variables:
-            self.fail('%s are protected variables and may not be exported.' %
-                      protected_variables)
+            self.fail(
+                "%s are protected variables and may not be exported."
+                % protected_variables
+            )
 
     def testNoExportedModules(self):
         """Test that no modules exist in __all__."""
@@ -257,8 +254,7 @@ class ModuleInterfaceTest(object):
                 if isinstance(value, types.ModuleType):
                     exported_modules.append(attribute)
         if exported_modules:
-            self.fail('%s are modules and may not be exported.' %
-                      exported_modules)
+            self.fail("%s are modules and may not be exported." % exported_modules)
 
 
 class NestedMessage(messages.Message):
@@ -277,7 +273,7 @@ class HasNestedMessage(messages.Message):
 class HasDefault(messages.Message):
     """Has a default value."""
 
-    a_value = messages.StringField(1, default=u'a default')
+    a_value = messages.StringField(1, default=u"a default")
 
 
 class OptionalMessage(messages.Message):
@@ -285,6 +281,7 @@ class OptionalMessage(messages.Message):
 
     class SimpleEnum(messages.Enum):
         """Simple enumeration type."""
+
         VAL1 = 1
         VAL2 = 2
 
@@ -304,36 +301,29 @@ class RepeatedMessage(messages.Message):
 
     class SimpleEnum(messages.Enum):
         """Simple enumeration type."""
+
         VAL1 = 1
         VAL2 = 2
 
-    double_value = messages.FloatField(1,
-                                       variant=messages.Variant.DOUBLE,
-                                       repeated=True)
-    float_value = messages.FloatField(2,
-                                      variant=messages.Variant.FLOAT,
-                                      repeated=True)
-    int64_value = messages.IntegerField(3,
-                                        variant=messages.Variant.INT64,
-                                        repeated=True)
-    uint64_value = messages.IntegerField(4,
-                                         variant=messages.Variant.UINT64,
-                                         repeated=True)
-    int32_value = messages.IntegerField(5,
-                                        variant=messages.Variant.INT32,
-                                        repeated=True)
-    bool_value = messages.BooleanField(6,
-                                       variant=messages.Variant.BOOL,
-                                       repeated=True)
-    string_value = messages.StringField(7,
-                                        variant=messages.Variant.STRING,
-                                        repeated=True)
-    bytes_value = messages.BytesField(8,
-                                      variant=messages.Variant.BYTES,
-                                      repeated=True)
-    enum_value = messages.EnumField(SimpleEnum,
-                                    10,
-                                    repeated=True)
+    double_value = messages.FloatField(
+        1, variant=messages.Variant.DOUBLE, repeated=True
+    )
+    float_value = messages.FloatField(2, variant=messages.Variant.FLOAT, repeated=True)
+    int64_value = messages.IntegerField(
+        3, variant=messages.Variant.INT64, repeated=True
+    )
+    uint64_value = messages.IntegerField(
+        4, variant=messages.Variant.UINT64, repeated=True
+    )
+    int32_value = messages.IntegerField(
+        5, variant=messages.Variant.INT32, repeated=True
+    )
+    bool_value = messages.BooleanField(6, variant=messages.Variant.BOOL, repeated=True)
+    string_value = messages.StringField(
+        7, variant=messages.Variant.STRING, repeated=True
+    )
+    bytes_value = messages.BytesField(8, variant=messages.Variant.BYTES, repeated=True)
+    enum_value = messages.EnumField(SimpleEnum, 10, repeated=True)
 
 
 class HasOptionalNestedMessage(messages.Message):
@@ -430,12 +420,13 @@ class ProtoConformanceTestBase(object):
           >
     """
 
-    encoded_empty_message = ''
+    encoded_empty_message = ""
 
     def testEncodeInvalidMessage(self):
         message = NestedMessage()
-        self.assertRaises(messages.ValidationError,
-                          self.PROTOLIB.encode_message, message)
+        self.assertRaises(
+            messages.ValidationError, self.PROTOLIB.encode_message, message
+        )
 
     def CompareEncoded(self, expected_encoded, actual_encoded):
         """Compare two encoded protocol values.
@@ -464,7 +455,7 @@ class ProtoConformanceTestBase(object):
         message.double_value = 1.23
         message.int64_value = -100000000000
         message.int32_value = 1020
-        message.string_value = u'a string'
+        message.string_value = u"a string"
         message.enum_value = OptionalMessage.SimpleEnum.VAL2
 
         self.EncodeDecode(self.encoded_partial, message)
@@ -478,8 +469,8 @@ class ProtoConformanceTestBase(object):
         message.uint64_value = 102020202020
         message.int32_value = 1020
         message.bool_value = True
-        message.string_value = u'a string\u044f'
-        message.bytes_value = b'a bytes\xff\xfe'
+        message.string_value = u"a string\u044f"
+        message.bytes_value = b"a bytes\xff\xfe"
         message.enum_value = OptionalMessage.SimpleEnum.VAL2
 
         self.EncodeDecode(self.encoded_full, message)
@@ -493,17 +484,19 @@ class ProtoConformanceTestBase(object):
         message.uint64_value = [102020202020, 10]
         message.int32_value = [1020, 718]
         message.bool_value = [True, False]
-        message.string_value = [u'a string\u044f', u'another string']
-        message.bytes_value = [b'a bytes\xff\xfe', b'another bytes']
-        message.enum_value = [RepeatedMessage.SimpleEnum.VAL2,
-                              RepeatedMessage.SimpleEnum.VAL1]
+        message.string_value = [u"a string\u044f", u"another string"]
+        message.bytes_value = [b"a bytes\xff\xfe", b"another bytes"]
+        message.enum_value = [
+            RepeatedMessage.SimpleEnum.VAL2,
+            RepeatedMessage.SimpleEnum.VAL1,
+        ]
 
         self.EncodeDecode(self.encoded_repeated, message)
 
     def testNested(self):
         """Test nested messages."""
         nested_message = NestedMessage()
-        nested_message.a_value = u'a string'
+        nested_message.a_value = u"a string"
 
         message = HasNestedMessage()
         message.nested = nested_message
@@ -513,9 +506,9 @@ class ProtoConformanceTestBase(object):
     def testRepeatedNested(self):
         """Test repeated nested messages."""
         nested_message1 = NestedMessage()
-        nested_message1.a_value = u'a string'
+        nested_message1.a_value = u"a string"
         nested_message2 = NestedMessage()
-        nested_message2.a_value = u'another string'
+        nested_message2.a_value = u"another string"
 
         message = HasNestedMessage()
         message.repeated_nested = [nested_message1, nested_message2]
@@ -525,29 +518,32 @@ class ProtoConformanceTestBase(object):
     def testStringTypes(self):
         """Test that encoding str on StringField works."""
         message = OptionalMessage()
-        message.string_value = 'Latin'
+        message.string_value = "Latin"
         self.EncodeDecode(self.encoded_string_types, message)
 
     def testEncodeUninitialized(self):
         """Test that cannot encode uninitialized message."""
         required = NestedMessage()
-        self.assertRaisesWithRegexpMatch(messages.ValidationError,
-                                         "Message NestedMessage is missing "
-                                         "required field a_value",
-                                         self.PROTOLIB.encode_message,
-                                         required)
+        self.assertRaisesWithRegexpMatch(
+            messages.ValidationError,
+            "Message NestedMessage is missing " "required field a_value",
+            self.PROTOLIB.encode_message,
+            required,
+        )
 
     def testUnexpectedField(self):
         """Test decoding and encoding unexpected fields."""
         loaded_message = self.PROTOLIB.decode_message(
-            OptionalMessage, self.unexpected_tag_message)
+            OptionalMessage, self.unexpected_tag_message
+        )
         # Message should be equal to an empty message, since unknown
         # values aren't included in equality.
         self.assertEquals(OptionalMessage(), loaded_message)
         # Verify that the encoded message matches the source, including the
         # unknown value.
-        self.assertEquals(self.unexpected_tag_message,
-                          self.PROTOLIB.encode_message(loaded_message))
+        self.assertEquals(
+            self.unexpected_tag_message, self.PROTOLIB.encode_message(loaded_message)
+        )
 
     def testDoNotSendDefault(self):
         """Test that default is not sent when nothing is assigned."""
@@ -583,8 +579,9 @@ class ProtoConformanceTestBase(object):
         # successfully decoded even if the enum value is invalid. Encoding the
         # decoded message should result in equivalence with the original
         # encoded message containing an invalid enum.
-        decoded = self.PROTOLIB.decode_message(OptionalMessage,
-                                               self.encoded_invalid_enum)
+        decoded = self.PROTOLIB.decode_message(
+            OptionalMessage, self.encoded_invalid_enum
+        )
         message = OptionalMessage()
         self.assertEqual(message, decoded)
         encoded = self.PROTOLIB.encode_message(decoded)
@@ -599,7 +596,8 @@ class ProtoConformanceTestBase(object):
         value = datetime.datetime(2013, 1, 3, 11, 36, 30, 123000)
         message = MyMessage(value=value)
         decoded = self.PROTOLIB.decode_message(
-            MyMessage, self.PROTOLIB.encode_message(message))
+            MyMessage, self.PROTOLIB.encode_message(message)
+        )
         self.assertEquals(decoded.value, value)
 
     def testDateTimeWithTimeZone(self):
@@ -608,24 +606,26 @@ class ProtoConformanceTestBase(object):
         class MyMessage(messages.Message):
             value = message_types.DateTimeField(1)
 
-        value = datetime.datetime(2013, 1, 3, 11, 36, 30, 123000,
-                                  util.TimeZoneOffset(8 * 60))
+        value = datetime.datetime(
+            2013, 1, 3, 11, 36, 30, 123000, util.TimeZoneOffset(8 * 60)
+        )
         message = MyMessage(value=value)
         decoded = self.PROTOLIB.decode_message(
-            MyMessage, self.PROTOLIB.encode_message(message))
+            MyMessage, self.PROTOLIB.encode_message(message)
+        )
         self.assertEquals(decoded.value, value)
 
 
 def pick_unused_port():
     """Find an unused port to use in tests.
 
-      Derived from Damon Kohlers example:
+    Derived from Damon Kohlers example:
 
-        http://code.activestate.com/recipes/531822-pick-unused-port
+      http://code.activestate.com/recipes/531822-pick-unused-port
     """
     temp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
-        temp.bind(('localhost', 0))
+        temp.bind(("localhost", 0))
         port = temp.getsockname()[1]
     finally:
         temp.close()
@@ -642,8 +642,8 @@ def get_module_name(module_attribute):
       The fully qualified module name or simple module name where
       'module_attribute' is defined if the module name is "__main__".
     """
-    if module_attribute.__module__ == '__main__':
+    if module_attribute.__module__ == "__main__":
         module_file = inspect.getfile(module_attribute)
-        default = os.path.basename(module_file).split('.')[0]
+        default = os.path.basename(module_file).split(".")[0]
         return default
     return module_attribute.__module__

@@ -19,6 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+
 class DBSnapshot(object):
     """
     Represents a RDS DB Snapshot
@@ -69,49 +70,49 @@ class DBSnapshot(object):
         self.vpc_id = None
 
     def __repr__(self):
-        return 'DBSnapshot:%s' % self.id
+        return "DBSnapshot:%s" % self.id
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'Engine':
+        if name == "Engine":
             self.engine = value
-        elif name == 'EngineVersion':
+        elif name == "EngineVersion":
             self.engine_version = value
-        elif name == 'InstanceCreateTime':
+        elif name == "InstanceCreateTime":
             self.instance_create_time = value
-        elif name == 'SnapshotCreateTime':
+        elif name == "SnapshotCreateTime":
             self.snapshot_create_time = value
-        elif name == 'DBInstanceIdentifier':
+        elif name == "DBInstanceIdentifier":
             self.instance_id = value
-        elif name == 'DBSnapshotIdentifier':
+        elif name == "DBSnapshotIdentifier":
             self.id = value
-        elif name == 'Port':
+        elif name == "Port":
             self.port = int(value)
-        elif name == 'Status':
+        elif name == "Status":
             self.status = value
-        elif name == 'AvailabilityZone':
+        elif name == "AvailabilityZone":
             self.availability_zone = value
-        elif name == 'MasterUsername':
+        elif name == "MasterUsername":
             self.master_username = value
-        elif name == 'AllocatedStorage':
+        elif name == "AllocatedStorage":
             self.allocated_storage = int(value)
-        elif name == 'SnapshotTime':
+        elif name == "SnapshotTime":
             self.time = value
-        elif name == 'LicenseModel':
+        elif name == "LicenseModel":
             self.license_model = value
-        elif name == 'Iops':
+        elif name == "Iops":
             self.iops = int(value)
-        elif name == 'OptionGroupName':
+        elif name == "OptionGroupName":
             self.option_group_name = value
-        elif name == 'PercentProgress':
+        elif name == "PercentProgress":
             self.percent_progress = int(value)
-        elif name == 'SnapshotType':
+        elif name == "SnapshotType":
             self.snapshot_type = value
-        elif name == 'SourceRegion':
+        elif name == "SourceRegion":
             self.source_region = value
-        elif name == 'VpcId':
+        elif name == "VpcId":
             self.vpc_id = value
         else:
             setattr(self, name, value)
@@ -134,5 +135,5 @@ class DBSnapshot(object):
                 if i.id == self.id:
                     self.__dict__.update(i.__dict__)
         elif validate:
-            raise ValueError('%s is not a valid Snapshot ID' % self.id)
+            raise ValueError("%s is not a valid Snapshot ID" % self.id)
         return self.status

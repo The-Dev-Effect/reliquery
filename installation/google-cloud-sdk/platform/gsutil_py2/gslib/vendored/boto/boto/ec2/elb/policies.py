@@ -28,16 +28,15 @@ class AppCookieStickinessPolicy(object):
         self.policy_name = None
 
     def __repr__(self):
-        return 'AppCookieStickiness(%s, %s)' % (self.policy_name,
-                                                self.cookie_name)
+        return "AppCookieStickiness(%s, %s)" % (self.policy_name, self.cookie_name)
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'CookieName':
+        if name == "CookieName":
             self.cookie_name = value
-        elif name == 'PolicyName':
+        elif name == "PolicyName":
             self.policy_name = value
 
 
@@ -47,16 +46,18 @@ class LBCookieStickinessPolicy(object):
         self.cookie_expiration_period = None
 
     def __repr__(self):
-        return 'LBCookieStickiness(%s, %s)' % (self.policy_name,
-                                               self.cookie_expiration_period)
+        return "LBCookieStickiness(%s, %s)" % (
+            self.policy_name,
+            self.cookie_expiration_period,
+        )
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'CookieExpirationPeriod':
+        if name == "CookieExpirationPeriod":
             self.cookie_expiration_period = value
-        elif name == 'PolicyName':
+        elif name == "PolicyName":
             self.policy_name = value
 
 
@@ -65,7 +66,7 @@ class OtherPolicy(object):
         self.policy_name = None
 
     def __repr__(self):
-        return 'OtherPolicy(%s)' % (self.policy_name)
+        return "OtherPolicy(%s)" % (self.policy_name)
 
     def startElement(self, name, attrs, connection):
         pass
@@ -78,6 +79,7 @@ class Policies(object):
     """
     ELB Policies
     """
+
     def __init__(self, connection=None):
         self.connection = connection
         self.app_cookie_stickiness_policies = None
@@ -85,22 +87,22 @@ class Policies(object):
         self.other_policies = None
 
     def __repr__(self):
-        app = 'AppCookieStickiness%s' % self.app_cookie_stickiness_policies
-        lb = 'LBCookieStickiness%s' % self.lb_cookie_stickiness_policies
-        other = 'Other%s' % self.other_policies
-        return 'Policies(%s,%s,%s)' % (app, lb, other)
+        app = "AppCookieStickiness%s" % self.app_cookie_stickiness_policies
+        lb = "LBCookieStickiness%s" % self.lb_cookie_stickiness_policies
+        other = "Other%s" % self.other_policies
+        return "Policies(%s,%s,%s)" % (app, lb, other)
 
     def startElement(self, name, attrs, connection):
-        if name == 'AppCookieStickinessPolicies':
-            rs = ResultSet([('member', AppCookieStickinessPolicy)])
+        if name == "AppCookieStickinessPolicies":
+            rs = ResultSet([("member", AppCookieStickinessPolicy)])
             self.app_cookie_stickiness_policies = rs
             return rs
-        elif name == 'LBCookieStickinessPolicies':
-            rs = ResultSet([('member', LBCookieStickinessPolicy)])
+        elif name == "LBCookieStickinessPolicies":
+            rs = ResultSet([("member", LBCookieStickinessPolicy)])
             self.lb_cookie_stickiness_policies = rs
             return rs
-        elif name == 'OtherPolicies':
-            rs = ResultSet([('member', OtherPolicy)])
+        elif name == "OtherPolicies":
+            rs = ResultSet([("member", OtherPolicy)])
             self.other_policies = rs
             return rs
 

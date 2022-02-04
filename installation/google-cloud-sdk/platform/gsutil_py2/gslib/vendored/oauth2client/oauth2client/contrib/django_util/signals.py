@@ -24,5 +24,4 @@ import django.dispatch
 It passes the Django request object and the OAuth2 credentials object to the
  receiver.
 """
-oauth2_authorized = django.dispatch.Signal(
-    providing_args=["request", "credentials"])
+oauth2_authorized = django.dispatch.Signal(providing_args=["request", "credentials"])

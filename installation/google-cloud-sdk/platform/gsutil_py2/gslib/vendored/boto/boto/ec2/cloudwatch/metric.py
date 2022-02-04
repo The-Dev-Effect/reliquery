@@ -28,14 +28,36 @@ from boto.ec2.cloudwatch.dimension import Dimension
 
 class Metric(object):
 
-    Statistics = ['Minimum', 'Maximum', 'Sum', 'Average', 'SampleCount']
-    Units = ['Seconds', 'Microseconds', 'Milliseconds', 'Bytes', 'Kilobytes',
-             'Megabytes', 'Gigabytes', 'Terabytes', 'Bits', 'Kilobits',
-             'Megabits', 'Gigabits', 'Terabits', 'Percent', 'Count',
-             'Bytes/Second', 'Kilobytes/Second', 'Megabytes/Second',
-             'Gigabytes/Second', 'Terabytes/Second', 'Bits/Second',
-             'Kilobits/Second', 'Megabits/Second', 'Gigabits/Second',
-             'Terabits/Second', 'Count/Second', None]
+    Statistics = ["Minimum", "Maximum", "Sum", "Average", "SampleCount"]
+    Units = [
+        "Seconds",
+        "Microseconds",
+        "Milliseconds",
+        "Bytes",
+        "Kilobytes",
+        "Megabytes",
+        "Gigabytes",
+        "Terabytes",
+        "Bits",
+        "Kilobits",
+        "Megabits",
+        "Gigabits",
+        "Terabits",
+        "Percent",
+        "Count",
+        "Bytes/Second",
+        "Kilobytes/Second",
+        "Megabytes/Second",
+        "Gigabytes/Second",
+        "Terabytes/Second",
+        "Bits/Second",
+        "Kilobits/Second",
+        "Megabits/Second",
+        "Gigabits/Second",
+        "Terabits/Second",
+        "Count/Second",
+        None,
+    ]
 
     def __init__(self, connection=None):
         self.connection = connection
@@ -44,17 +66,17 @@ class Metric(object):
         self.dimensions = None
 
     def __repr__(self):
-        return 'Metric:%s' % self.name
+        return "Metric:%s" % self.name
 
     def startElement(self, name, attrs, connection):
-        if name == 'Dimensions':
+        if name == "Dimensions":
             self.dimensions = Dimension()
             return self.dimensions
 
     def endElement(self, name, value, connection):
-        if name == 'MetricName':
+        if name == "MetricName":
             self.name = value
-        elif name == 'Namespace':
+        elif name == "Namespace":
             self.namespace = value
         else:
             setattr(self, name, value)
@@ -95,20 +117,33 @@ class Metric(object):
         """
         if not isinstance(statistics, list):
             statistics = [statistics]
-        return self.connection.get_metric_statistics(period,
-                                                     start_time,
-                                                     end_time,
-                                                     self.name,
-                                                     self.namespace,
-                                                     statistics,
-                                                     self.dimensions,
-                                                     unit)
+        return self.connection.get_metric_statistics(
+            period,
+            start_time,
+            end_time,
+            self.name,
+            self.namespace,
+            statistics,
+            self.dimensions,
+            unit,
+        )
 
-    def create_alarm(self, name, comparison, threshold,
-                     period, evaluation_periods,
-                     statistic, enabled=True, description=None,
-                     dimensions=None, alarm_actions=None, ok_actions=None,
-                     insufficient_data_actions=None, unit=None):
+    def create_alarm(
+        self,
+        name,
+        comparison,
+        threshold,
+        period,
+        evaluation_periods,
+        statistic,
+        enabled=True,
+        description=None,
+        dimensions=None,
+        alarm_actions=None,
+        ok_actions=None,
+        insufficient_data_actions=None,
+        unit=None,
+    ):
         """
         Creates or updates an alarm and associates it with this metric.
         Optionally, this operation can associate one or more
@@ -126,17 +161,27 @@ class Metric(object):
         """
         if not dimensions:
             dimensions = self.dimensions
-        alarm = MetricAlarm(self.connection, name, self.name,
-                            self.namespace, statistic, comparison,
-                            threshold, period, evaluation_periods,
-                            unit, description, dimensions,
-                            alarm_actions, insufficient_data_actions,
-                            ok_actions)
+        alarm = MetricAlarm(
+            self.connection,
+            name,
+            self.name,
+            self.namespace,
+            statistic,
+            comparison,
+            threshold,
+            period,
+            evaluation_periods,
+            unit,
+            description,
+            dimensions,
+            alarm_actions,
+            insufficient_data_actions,
+            ok_actions,
+        )
         if self.connection.put_metric_alarm(alarm):
             return alarm
 
-    def describe_alarms(self, period=None, statistic=None,
-                        dimensions=None, unit=None):
+    def describe_alarms(self, period=None, statistic=None, dimensions=None, unit=None):
         """
         Retrieves all alarms for this metric. Specify a statistic, period,
         or unit to filter the set of alarms further.
@@ -161,9 +206,6 @@ class Metric(object):
 
         :rtype list
         """
-        return self.connection.describe_alarms_for_metric(self.name,
-                                                          self.namespace,
-                                                          period,
-                                                          statistic,
-                                                          dimensions,
-                                                          unit)
+        return self.connection.describe_alarms_for_metric(
+            self.name, self.namespace, period, statistic, dimensions, unit
+        )

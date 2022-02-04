@@ -23,16 +23,16 @@
 class Request(object):
     def __init__(self, connection=None):
         self.connection = connection
-        self.request_id = ''
+        self.request_id = ""
 
     def __repr__(self):
-        return 'Request:%s' % self.request_id
+        return "Request:%s" % self.request_id
 
     def startElement(self, name, attrs, connection):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'RequestId':
+        if name == "RequestId":
             self.request_id = value
         else:
             setattr(self, name, value)

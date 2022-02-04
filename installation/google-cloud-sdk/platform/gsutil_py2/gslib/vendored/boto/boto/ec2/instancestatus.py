@@ -33,9 +33,9 @@ class Details(dict):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'name':
+        if name == "name":
             self._name = value
-        elif name == 'status':
+        elif name == "status":
             self[self._name] = value
         else:
             setattr(self, name, value)
@@ -53,27 +53,26 @@ class Event(object):
         the event.
     """
 
-    def __init__(self, code=None, description=None,
-                 not_before=None, not_after=None):
+    def __init__(self, code=None, description=None, not_before=None, not_after=None):
         self.code = code
         self.description = description
         self.not_before = not_before
         self.not_after = not_after
 
     def __repr__(self):
-        return 'Event:%s' % self.code
+        return "Event:%s" % self.code
 
     def startElement(self, name, attrs, connection):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'code':
+        if name == "code":
             self.code = value
-        elif name == 'description':
+        elif name == "description":
             self.description = value
-        elif name == 'notBefore':
+        elif name == "notBefore":
             self.not_before = value
-        elif name == 'notAfter':
+        elif name == "notAfter":
             self.not_after = value
         else:
             setattr(self, name, value)
@@ -95,24 +94,23 @@ class Status(object):
         self.details = details
 
     def __repr__(self):
-        return 'Status:%s' % self.status
+        return "Status:%s" % self.status
 
     def startElement(self, name, attrs, connection):
-        if name == 'details':
+        if name == "details":
             return self.details
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'status':
+        if name == "status":
             self.status = value
         else:
             setattr(self, name, value)
 
 
 class EventSet(list):
-
     def startElement(self, name, attrs, connection):
-        if name == 'item':
+        if name == "item":
             event = Event()
             self.append(event)
             return event
@@ -143,8 +141,9 @@ class InstanceStatus(object):
         functionality that arises from problems internal to the instance.
     """
 
-    def __init__(self, id=None, zone=None, events=None,
-                 state_code=None, state_name=None):
+    def __init__(
+        self, id=None, zone=None, events=None, state_code=None, state_name=None
+    ):
         self.id = id
         self.zone = zone
         self.events = events
@@ -154,27 +153,27 @@ class InstanceStatus(object):
         self.instance_status = Status()
 
     def __repr__(self):
-        return 'InstanceStatus:%s' % self.id
+        return "InstanceStatus:%s" % self.id
 
     def startElement(self, name, attrs, connection):
-        if name == 'eventsSet':
+        if name == "eventsSet":
             self.events = EventSet()
             return self.events
-        elif name == 'systemStatus':
+        elif name == "systemStatus":
             return self.system_status
-        elif name == 'instanceStatus':
+        elif name == "instanceStatus":
             return self.instance_status
         else:
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'instanceId':
+        if name == "instanceId":
             self.id = value
-        elif name == 'availabilityZone':
+        elif name == "availabilityZone":
             self.zone = value
-        elif name == 'code':
+        elif name == "code":
             self.state_code = int(value)
-        elif name == 'name':
+        elif name == "name":
             self.state_name = value
         else:
             setattr(self, name, value)
@@ -199,7 +198,7 @@ class InstanceStatusSet(list):
         self.next_token = None
 
     def startElement(self, name, attrs, connection):
-        if name == 'item':
+        if name == "item":
             status = InstanceStatus()
             self.append(status)
             return status
@@ -207,6 +206,6 @@ class InstanceStatusSet(list):
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'nextToken':
+        if name == "nextToken":
             self.next_token = value
         setattr(self, name, value)

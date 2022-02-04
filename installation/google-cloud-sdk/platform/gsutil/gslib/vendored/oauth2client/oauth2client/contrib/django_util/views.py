@@ -37,8 +37,8 @@ from oauth2client.contrib import django_util
 from oauth2client.contrib.django_util import get_storage
 from oauth2client.contrib.django_util import signals
 
-_CSRF_KEY = 'google_oauth2_csrf_token'
-_FLOW_KEY = 'google_oauth2_flow_{0}'
+_CSRF_KEY = "google_oauth2_csrf_token"
+_FLOW_KEY = "google_oauth2_flow_{0}"
 
 
 def _make_flow(request, scopes, return_url=None):
@@ -58,10 +58,12 @@ def _make_flow(request, scopes, return_url=None):
 
     request.session[_CSRF_KEY] = csrf_token
 
-    state = json.dumps({
-        'csrf_token': csrf_token,
-        'return_url': return_url,
-    })
+    state = json.dumps(
+        {
+            "csrf_token": csrf_token,
+            "return_url": return_url,
+        }
+    )
 
     flow = client.OAuth2WebServerFlow(
         client_id=django_util.oauth2_settings.client_id,
@@ -69,7 +71,9 @@ def _make_flow(request, scopes, return_url=None):
         scope=scopes,
         state=state,
         redirect_uri=request.build_absolute_uri(
-            urlresolvers.reverse("google_oauth:callback")))
+            urlresolvers.reverse("google_oauth:callback")
+        ),
+    )
 
     flow_key = _FLOW_KEY.format(csrf_token)
     request.session[flow_key] = jsonpickle.encode(flow)
@@ -77,7 +81,7 @@ def _make_flow(request, scopes, return_url=None):
 
 
 def _get_flow_for_token(csrf_token, request):
-    """ Looks up the flow in session to recover information about requested
+    """Looks up the flow in session to recover information about requested
     scopes.
 
     Args:
@@ -94,7 +98,7 @@ def _get_flow_for_token(csrf_token, request):
 
 
 def oauth2_callback(request):
-    """ View that handles the user's return from OAuth2 provider.
+    """View that handles the user's return from OAuth2 provider.
 
     This view verifies the CSRF state and OAuth authorization code, and on
     success stores the credentials obtained in the storage provider,
@@ -107,57 +111,57 @@ def oauth2_callback(request):
     Returns:
          A redirect response back to the return_url.
     """
-    if 'error' in request.GET:
-        reason = request.GET.get(
-            'error_description', request.GET.get('error', ''))
+    if "error" in request.GET:
+        reason = request.GET.get("error_description", request.GET.get("error", ""))
         reason = html.escape(reason)
-        return http.HttpResponseBadRequest(
-            'Authorization failed {0}'.format(reason))
+        return http.HttpResponseBadRequest("Authorization failed {0}".format(reason))
 
     try:
-        encoded_state = request.GET['state']
-        code = request.GET['code']
+        encoded_state = request.GET["state"]
+        code = request.GET["code"]
     except KeyError:
         return http.HttpResponseBadRequest(
-            'Request missing state or authorization code')
+            "Request missing state or authorization code"
+        )
 
     try:
         server_csrf = request.session[_CSRF_KEY]
     except KeyError:
-        return http.HttpResponseBadRequest(
-            'No existing session for this flow.')
+        return http.HttpResponseBadRequest("No existing session for this flow.")
 
     try:
         state = json.loads(encoded_state)
-        client_csrf = state['csrf_token']
-        return_url = state['return_url']
+        client_csrf = state["csrf_token"]
+        return_url = state["return_url"]
     except (ValueError, KeyError):
-        return http.HttpResponseBadRequest('Invalid state parameter.')
+        return http.HttpResponseBadRequest("Invalid state parameter.")
 
     if client_csrf != server_csrf:
-        return http.HttpResponseBadRequest('Invalid CSRF token.')
+        return http.HttpResponseBadRequest("Invalid CSRF token.")
 
     flow = _get_flow_for_token(client_csrf, request)
 
     if not flow:
-        return http.HttpResponseBadRequest('Missing Oauth2 flow.')
+        return http.HttpResponseBadRequest("Missing Oauth2 flow.")
 
     try:
         credentials = flow.step2_exchange(code)
     except client.FlowExchangeError as exchange_error:
         return http.HttpResponseBadRequest(
-            'An error has occurred: {0}'.format(exchange_error))
+            "An error has occurred: {0}".format(exchange_error)
+        )
 
     get_storage(request).put(credentials)
 
-    signals.oauth2_authorized.send(sender=signals.oauth2_authorized,
-                                   request=request, credentials=credentials)
+    signals.oauth2_authorized.send(
+        sender=signals.oauth2_authorized, request=request, credentials=credentials
+    )
 
     return shortcuts.redirect(return_url)
 
 
 def oauth2_authorize(request):
-    """ View to start the OAuth2 Authorization flow.
+    """View to start the OAuth2 Authorization flow.
 
      This view starts the OAuth2 authorization flow. If scopes is passed in
      as a  GET URL parameter, it will authorize those scopes, otherwise the
@@ -171,16 +175,19 @@ def oauth2_authorize(request):
     Returns:
          A redirect to Google OAuth2 Authorization.
     """
-    return_url = request.GET.get('return_url', None)
+    return_url = request.GET.get("return_url", None)
     if not return_url:
-        return_url = request.META.get('HTTP_REFERER', '/')
+        return_url = request.META.get("HTTP_REFERER", "/")
 
-    scopes = request.GET.getlist('scopes', django_util.oauth2_settings.scopes)
+    scopes = request.GET.getlist("scopes", django_util.oauth2_settings.scopes)
     # Model storage (but not session storage) requires a logged in user
     if django_util.oauth2_settings.storage_model:
         if not request.user.is_authenticated():
-            return redirect('{0}?next={1}'.format(
-                settings.LOGIN_URL, parse.quote(request.get_full_path())))
+            return redirect(
+                "{0}?next={1}".format(
+                    settings.LOGIN_URL, parse.quote(request.get_full_path())
+                )
+            )
         # This checks for the case where we ended up here because of a logged
         # out user but we had credentials for it in the first place
         else:

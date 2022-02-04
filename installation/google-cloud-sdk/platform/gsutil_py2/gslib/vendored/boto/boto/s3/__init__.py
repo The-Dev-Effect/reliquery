@@ -28,7 +28,6 @@ from boto.regioninfo import connect
 
 
 class S3RegionInfo(RegionInfo):
-
     def connect(self, **kw_params):
         """
         Connect to this Region's endpoint. Returns an connection
@@ -52,24 +51,25 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.s3.connection import S3Connection
-    return get_regions(
-        's3',
-        region_cls=S3RegionInfo,
-        connection_cls=S3Connection
-    )
+
+    return get_regions("s3", region_cls=S3RegionInfo, connection_cls=S3Connection)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.s3.connection import S3Connection
-    if 'host' in kw_params:
-        host = kw_params.pop('host')
-        if host not in ['', None]:
+
+    if "host" in kw_params:
+        host = kw_params.pop("host")
+        if host not in ["", None]:
             region = S3RegionInfo(
-                name='custom',
-                endpoint=host,
-                connection_cls=S3Connection
+                name="custom", endpoint=host, connection_cls=S3Connection
             )
             return region.connect(**kw_params)
 
-    return connect('s3', region_name, region_cls=S3RegionInfo,
-                   connection_cls=S3Connection, **kw_params)
+    return connect(
+        "s3",
+        region_name,
+        region_cls=S3RegionInfo,
+        connection_cls=S3Connection,
+        **kw_params
+    )

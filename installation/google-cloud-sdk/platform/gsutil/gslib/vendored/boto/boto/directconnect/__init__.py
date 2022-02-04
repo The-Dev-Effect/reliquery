@@ -32,10 +32,16 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.directconnect.layer1 import DirectConnectConnection
-    return get_regions('directconnect', connection_cls=DirectConnectConnection)
+
+    return get_regions("directconnect", connection_cls=DirectConnectConnection)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.directconnect.layer1 import DirectConnectConnection
-    return connect('directconnect', region_name,
-                   connection_cls=DirectConnectConnection, **kw_params)
+
+    return connect(
+        "directconnect",
+        region_name,
+        connection_cls=DirectConnectConnection,
+        **kw_params
+    )

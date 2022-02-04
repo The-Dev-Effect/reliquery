@@ -30,8 +30,8 @@ class EncryptedData(univ.OctetString):
 
 class EncryptedPrivateKeyInfo(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('encryptionAlgorithm', AlgorithmIdentifier()),
-        namedtype.NamedType('encryptedData', EncryptedData())
+        namedtype.NamedType("encryptionAlgorithm", AlgorithmIdentifier()),
+        namedtype.NamedType("encryptedData", EncryptedData()),
     )
 
 
@@ -44,14 +44,18 @@ class Attributes(univ.SetOf):
 
 
 class Version(univ.Integer):
-    namedValues = namedval.NamedValues(('v1', 0), ('v2', 1))
+    namedValues = namedval.NamedValues(("v1", 0), ("v2", 1))
 
 
 class PrivateKeyInfo(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('version', Version()),
-        namedtype.NamedType('privateKeyAlgorithm', AlgorithmIdentifier()),
-        namedtype.NamedType('privateKey', PrivateKey()),
-        namedtype.OptionalNamedType('attributes', Attributes().subtype(
-            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0)))
+        namedtype.NamedType("version", Version()),
+        namedtype.NamedType("privateKeyAlgorithm", AlgorithmIdentifier()),
+        namedtype.NamedType("privateKey", PrivateKey()),
+        namedtype.OptionalNamedType(
+            "attributes",
+            Attributes().subtype(
+                implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0)
+            ),
+        ),
     )

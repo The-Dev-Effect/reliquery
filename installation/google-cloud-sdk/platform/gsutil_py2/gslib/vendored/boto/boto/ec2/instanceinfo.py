@@ -35,15 +35,15 @@ class InstanceInfo(object):
         self.state = state
 
     def __repr__(self):
-        return 'InstanceInfo:%s' % self.id
+        return "InstanceInfo:%s" % self.id
 
     def startElement(self, name, attrs, connection):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'instanceId' or name == 'InstanceId':
+        if name == "instanceId" or name == "InstanceId":
             self.id = value
-        elif name == 'state':
+        elif name == "state":
             self.state = value
         else:
             setattr(self, name, value)

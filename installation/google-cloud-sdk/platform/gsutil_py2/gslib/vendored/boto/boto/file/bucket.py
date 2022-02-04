@@ -27,10 +27,10 @@ from boto.file.key import Key
 from boto.file.simpleresultset import SimpleResultSet
 from boto.s3.bucketlistresultset import BucketListResultSet
 
+
 class Bucket(object):
     def __init__(self, name, contained_key):
-        """Instantiate an anonymous file-based Bucket around a single key.
-        """
+        """Instantiate an anonymous file-based Bucket around a single key."""
         self.name = name
         self.contained_key = contained_key
 
@@ -38,10 +38,9 @@ class Bucket(object):
         return iter(BucketListResultSet(self))
 
     def __str__(self):
-        return 'anonymous bucket for file://' + self.contained_key
+        return "anonymous bucket for file://" + self.contained_key
 
-    def delete_key(self, key_name, headers=None,
-                   version_id=None, mfa_token=None):
+    def delete_key(self, key_name, headers=None, version_id=None, mfa_token=None):
         """
         Deletes a key from the bucket.
 
@@ -68,8 +67,9 @@ class Bucket(object):
         key = Key(self.name, self.contained_key)
         return SimpleResultSet([key])
 
-    def get_key(self, key_name, headers=None, version_id=None,
-                                            key_type=Key.KEY_REGULAR_FILE):
+    def get_key(
+        self, key_name, headers=None, version_id=None, key_type=Key.KEY_REGULAR_FILE
+    ):
         """
         Check to see if a particular key exists within the bucket.
         Returns: An instance of a Key object or None
@@ -86,10 +86,10 @@ class Bucket(object):
         :rtype: :class:`boto.file.key.Key`
         :returns: A Key object from this bucket.
         """
-        if key_name == '-':
-            return Key(self.name, '-', key_type=Key.KEY_STREAM_READABLE)
+        if key_name == "-":
+            return Key(self.name, "-", key_type=Key.KEY_STREAM_READABLE)
         else:
-            fp = open(key_name, 'rb')
+            fp = open(key_name, "rb")
             return Key(self.name, key_name, fp)
 
     def new_key(self, key_name=None, key_type=Key.KEY_REGULAR_FILE):
@@ -102,11 +102,11 @@ class Bucket(object):
         :rtype: :class:`boto.file.key.Key`
         :returns: An instance of the newly created key object
         """
-        if key_name == '-':
-            return Key(self.name, '-', key_type=Key.KEY_STREAM_WRITABLE)
+        if key_name == "-":
+            return Key(self.name, "-", key_type=Key.KEY_STREAM_WRITABLE)
         else:
             dir_name = os.path.dirname(key_name)
             if dir_name and not os.path.exists(dir_name):
                 os.makedirs(dir_name)
-            fp = open(key_name, 'wb')
+            fp = open(key_name, "wb")
             return Key(self.name, key_name, fp)

@@ -21,35 +21,35 @@ from pyu2f import errors
 from pyu2f import model
 
 if sys.version_info[:2] < (2, 7):
-  import unittest2 as unittest  # pylint: disable=g-import-not-at-top
+    import unittest2 as unittest  # pylint: disable=g-import-not-at-top
 else:
-  import unittest  # pylint: disable=g-import-not-at-top
+    import unittest  # pylint: disable=g-import-not-at-top
 
 
 class ModelTest(unittest.TestCase):
+    def testClientDataRegistration(self):
+        cd = model.ClientData(model.ClientData.TYP_REGISTRATION, b"ABCD", "somemachine")
+        obj = json.loads(cd.GetJson())
+        self.assertEquals(len(list(obj.keys())), 3)
+        self.assertEquals(obj["typ"], model.ClientData.TYP_REGISTRATION)
+        self.assertEquals(obj["challenge"], "QUJDRA")
+        self.assertEquals(obj["origin"], "somemachine")
 
-  def testClientDataRegistration(self):
-    cd = model.ClientData(model.ClientData.TYP_REGISTRATION, b'ABCD',
-                          'somemachine')
-    obj = json.loads(cd.GetJson())
-    self.assertEquals(len(list(obj.keys())), 3)
-    self.assertEquals(obj['typ'], model.ClientData.TYP_REGISTRATION)
-    self.assertEquals(obj['challenge'], 'QUJDRA')
-    self.assertEquals(obj['origin'], 'somemachine')
+    def testClientDataAuth(self):
+        cd = model.ClientData(
+            model.ClientData.TYP_AUTHENTICATION, b"ABCD", "somemachine"
+        )
+        obj = json.loads(cd.GetJson())
+        self.assertEquals(len(list(obj.keys())), 3)
+        self.assertEquals(obj["typ"], model.ClientData.TYP_AUTHENTICATION)
+        self.assertEquals(obj["challenge"], "QUJDRA")
+        self.assertEquals(obj["origin"], "somemachine")
 
-  def testClientDataAuth(self):
-    cd = model.ClientData(model.ClientData.TYP_AUTHENTICATION, b'ABCD',
-                          'somemachine')
-    obj = json.loads(cd.GetJson())
-    self.assertEquals(len(list(obj.keys())), 3)
-    self.assertEquals(obj['typ'], model.ClientData.TYP_AUTHENTICATION)
-    self.assertEquals(obj['challenge'], 'QUJDRA')
-    self.assertEquals(obj['origin'], 'somemachine')
-
-  def testClientDataInvalid(self):
-    self.assertRaises(errors.InvalidModelError, model.ClientData, 'foobar',
-                      b'ABCD', 'somemachine')
+    def testClientDataInvalid(self):
+        self.assertRaises(
+            errors.InvalidModelError, model.ClientData, "foobar", b"ABCD", "somemachine"
+        )
 
 
-if __name__ == '__main__':
-  unittest.main()
+if __name__ == "__main__":
+    unittest.main()

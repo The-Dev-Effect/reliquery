@@ -28,29 +28,31 @@ import warnings
 
 ver = sys.version_info
 if (ver.major == 2 and ver.minor < 7) or (ver.major == 3 and ver.minor < 5):
-  sys.exit('gsutil requires python 2.7 or 3.5+.')
+    sys.exit("gsutil requires python 2.7 or 3.5+.")
 
 # setup a string to load the correct httplib2
 if sys.version_info.major == 2:
-  submodule_pyvers = 'python2'
+    submodule_pyvers = "python2"
 else:
-  submodule_pyvers = 'python3'
+    submodule_pyvers = "python3"
 
 
 def OutputAndExit(message):
-  sys.stderr.write('%s\n' % message)
-  sys.exit(1)
+    sys.stderr.write("%s\n" % message)
+    sys.exit(1)
 
 
 GSUTIL_DIR = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
 if not GSUTIL_DIR:
-  OutputAndExit('Unable to determine where gsutil is installed. Sorry, '
-                'cannot run correctly without this.\n')
+    OutputAndExit(
+        "Unable to determine where gsutil is installed. Sorry, "
+        "cannot run correctly without this.\n"
+    )
 
 # The wrapper script adds all third_party libraries to the Python path, since
 # we don't assume any third party libraries are installed system-wide.
-THIRD_PARTY_DIR = os.path.join(GSUTIL_DIR, 'third_party')
-VENDORED_DIR = os.path.join(THIRD_PARTY_DIR, 'vendored')
+THIRD_PARTY_DIR = os.path.join(GSUTIL_DIR, "third_party")
+VENDORED_DIR = os.path.join(THIRD_PARTY_DIR, "vendored")
 
 # Flag for whether or not an import wrapper is used to measure time taken for
 # individual imports.
@@ -58,32 +60,32 @@ MEASURING_TIME_ACTIVE = False
 
 # Filter out "module was already imported" warnings that get printed after we
 # add our bundled version of modules to the Python path.
-warnings.filterwarnings('ignore',
-                        category=UserWarning,
-                        message=r'.* httplib2 was already imported from')
-warnings.filterwarnings('ignore',
-                        category=UserWarning,
-                        message=r'.* oauth2client was already imported from')
+warnings.filterwarnings(
+    "ignore", category=UserWarning, message=r".* httplib2 was already imported from"
+)
+warnings.filterwarnings(
+    "ignore", category=UserWarning, message=r".* oauth2client was already imported from"
+)
 
 # List of third-party libraries. The first element of the tuple is the name of
 # the directory under third_party and the second element is the subdirectory
 # that needs to be added to sys.path.
 THIRD_PARTY_LIBS = [
-    ('argcomplete', ''),  # For tab-completion (gcloud installs only).
-    ('mock', ''),
-    ('funcsigs', ''),  # mock dependency
-    ('google-reauth-python', ''),  # Package name: google_reauth
-    ('pyu2f', ''),  # google_reauth dependency
-    ('pyasn1', ''),  # oauth2client dependency
-    ('pyasn1-modules', ''),  # oauth2client dependency
-    ('rsa', ''),  # oauth2client dependency
-    ('apitools', ''),
-    ('gcs-oauth2-boto-plugin', ''),
-    ('fasteners', ''),  # oauth2client and apitools dependency
-    ('monotonic', ''),  # fasteners dependency
-    ('httplib2', submodule_pyvers),
-    ('retry-decorator', ''),
-    ('six', ''),  # Python 2 / 3 compatibility dependency
+    ("argcomplete", ""),  # For tab-completion (gcloud installs only).
+    ("mock", ""),
+    ("funcsigs", ""),  # mock dependency
+    ("google-reauth-python", ""),  # Package name: google_reauth
+    ("pyu2f", ""),  # google_reauth dependency
+    ("pyasn1", ""),  # oauth2client dependency
+    ("pyasn1-modules", ""),  # oauth2client dependency
+    ("rsa", ""),  # oauth2client dependency
+    ("apitools", ""),
+    ("gcs-oauth2-boto-plugin", ""),
+    ("fasteners", ""),  # oauth2client and apitools dependency
+    ("monotonic", ""),  # fasteners dependency
+    ("httplib2", submodule_pyvers),
+    ("retry-decorator", ""),
+    ("six", ""),  # Python 2 / 3 compatibility dependency
 ]
 
 # The wrapper script adds all third_party libraries to the Python path, since
@@ -92,35 +94,38 @@ THIRD_PARTY_LIBS = [
 # Note that vendored libraries (e.g. Boto) are added to the Python path in
 # gslib/__init__.py, as they will always be present even when bypassing this
 # script and invoking gslib.__main__.py's main() method directly.
-THIRD_PARTY_DIR = os.path.join(GSUTIL_DIR, 'third_party')
+THIRD_PARTY_DIR = os.path.join(GSUTIL_DIR, "third_party")
 for libdir, subdir in THIRD_PARTY_LIBS:
-  if not os.path.isdir(os.path.join(THIRD_PARTY_DIR, libdir)):
-    OutputAndExit(
-        'There is no %s library under the gsutil third-party directory (%s).\n'
-        'The gsutil command cannot work properly when installed this way.\n'
-        'Please re-install gsutil per the installation instructions.' %
-        (libdir, THIRD_PARTY_DIR))
-  sys.path.insert(0, os.path.join(THIRD_PARTY_DIR, libdir, subdir))
+    if not os.path.isdir(os.path.join(THIRD_PARTY_DIR, libdir)):
+        OutputAndExit(
+            "There is no %s library under the gsutil third-party directory (%s).\n"
+            "The gsutil command cannot work properly when installed this way.\n"
+            "Please re-install gsutil per the installation instructions."
+            % (libdir, THIRD_PARTY_DIR)
+        )
+    sys.path.insert(0, os.path.join(THIRD_PARTY_DIR, libdir, subdir))
 
-CRCMOD_PATH = os.path.join(THIRD_PARTY_DIR, 'crcmod', submodule_pyvers)
-CRCMOD_OSX_PATH = os.path.join(THIRD_PARTY_DIR, 'crcmod_osx')
+CRCMOD_PATH = os.path.join(THIRD_PARTY_DIR, "crcmod", submodule_pyvers)
+CRCMOD_OSX_PATH = os.path.join(THIRD_PARTY_DIR, "crcmod_osx")
 try:
-  # pylint: disable=g-import-not-at-top
-  import crcmod
+    # pylint: disable=g-import-not-at-top
+    import crcmod
 except ImportError:
-  # Note: the bundled crcmod module under THIRD_PARTY_DIR does not include its
-  # compiled C extension, but we still add it to sys.path because other parts of
-  # gsutil assume that at least the core crcmod module will be available.
-  local_crcmod_path = (CRCMOD_OSX_PATH if 'darwin' in str(sys.platform).lower()
-                       else CRCMOD_PATH)
-  sys.path.insert(0, local_crcmod_path)
+    # Note: the bundled crcmod module under THIRD_PARTY_DIR does not include its
+    # compiled C extension, but we still add it to sys.path because other parts of
+    # gsutil assume that at least the core crcmod module will be available.
+    local_crcmod_path = (
+        CRCMOD_OSX_PATH if "darwin" in str(sys.platform).lower() else CRCMOD_PATH
+    )
+    sys.path.insert(0, local_crcmod_path)
 
 
 def RunMain():
-  # pylint: disable=g-import-not-at-top
-  import gslib.__main__
-  sys.exit(gslib.__main__.main())
+    # pylint: disable=g-import-not-at-top
+    import gslib.__main__
+
+    sys.exit(gslib.__main__.main())
 
 
-if __name__ == '__main__':
-  RunMain()
+if __name__ == "__main__":
+    RunMain()

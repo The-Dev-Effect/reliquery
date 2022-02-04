@@ -1,4 +1,5 @@
 from boto.compat import six
+
 # Copyright (c) 2006,2007 Mitch Garnaat http://garnaat.org/
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
@@ -20,13 +21,15 @@ from boto.compat import six
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-def query_lister(domain, query='', max_items=None, attr_names=None):
+
+def query_lister(domain, query="", max_items=None, attr_names=None):
     more_results = True
     num_results = 0
     next_token = None
     while more_results:
-        rs = domain.connection.query_with_attributes(domain, query, attr_names,
-                                                     next_token=next_token)
+        rs = domain.connection.query_with_attributes(
+            domain, query, attr_names, next_token=next_token
+        )
         for item in rs:
             if max_items:
                 if num_results == max_items:
@@ -36,9 +39,9 @@ def query_lister(domain, query='', max_items=None, attr_names=None):
         next_token = rs.next_token
         more_results = next_token is not None
 
-class QueryResultSet(object):
 
-    def __init__(self, domain=None, query='', max_items=None, attr_names=None):
+class QueryResultSet(object):
+    def __init__(self, domain=None, query="", max_items=None, attr_names=None):
         self.max_items = max_items
         self.domain = domain
         self.query = query
@@ -47,7 +50,8 @@ class QueryResultSet(object):
     def __iter__(self):
         return query_lister(self.domain, self.query, self.max_items, self.attr_names)
 
-def select_lister(domain, query='', max_items=None):
+
+def select_lister(domain, query="", max_items=None):
     more_results = True
     num_results = 0
     next_token = None
@@ -62,10 +66,16 @@ def select_lister(domain, query='', max_items=None):
         next_token = rs.next_token
         more_results = next_token is not None
 
-class SelectResultSet(object):
 
-    def __init__(self, domain=None, query='', max_items=None,
-                 next_token=None, consistent_read=False):
+class SelectResultSet(object):
+    def __init__(
+        self,
+        domain=None,
+        query="",
+        max_items=None,
+        next_token=None,
+        consistent_read=False,
+    ):
         self.domain = domain
         self.query = query
         self.consistent_read = consistent_read
@@ -76,9 +86,12 @@ class SelectResultSet(object):
         more_results = True
         num_results = 0
         while more_results:
-            rs = self.domain.connection.select(self.domain, self.query,
-                                               next_token=self.next_token,
-                                               consistent_read=self.consistent_read)
+            rs = self.domain.connection.select(
+                self.domain,
+                self.query,
+                next_token=self.next_token,
+                consistent_read=self.consistent_read,
+            )
             for item in rs:
                 if self.max_items and num_results >= self.max_items:
                     raise StopIteration

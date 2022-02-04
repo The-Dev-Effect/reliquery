@@ -55,9 +55,17 @@ class OptionGroup(object):
     :ivar options: The list of :py:class:`boto.rds.optiongroup.Option` objects
                    associated with the group
     """
-    def __init__(self, connection=None, name=None, engine_name=None,
-                 major_engine_version=None, description=None,
-                 allow_both_vpc_and_nonvpc=False, vpc_id=None):
+
+    def __init__(
+        self,
+        connection=None,
+        name=None,
+        engine_name=None,
+        major_engine_version=None,
+        description=None,
+        allow_both_vpc_and_nonvpc=False,
+        vpc_id=None,
+    ):
         self.name = name
         self.engine_name = engine_name
         self.major_engine_version = major_engine_version
@@ -67,31 +75,29 @@ class OptionGroup(object):
         self.options = []
 
     def __repr__(self):
-        return 'OptionGroup:%s' % self.name
+        return "OptionGroup:%s" % self.name
 
     def startElement(self, name, attrs, connection):
-        if name == 'Options':
-            self.options = ResultSet([
-                ('Options', Option)
-            ])
+        if name == "Options":
+            self.options = ResultSet([("Options", Option)])
         else:
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'OptionGroupName':
+        if name == "OptionGroupName":
             self.name = value
-        elif name == 'EngineName':
+        elif name == "EngineName":
             self.engine_name = value
-        elif name == 'MajorEngineVersion':
+        elif name == "MajorEngineVersion":
             self.major_engine_version = value
-        elif name == 'OptionGroupDescription':
+        elif name == "OptionGroupDescription":
             self.description = value
-        elif name == 'AllowsVpcAndNonVpcInstanceMemberships':
-            if value.lower() == 'true':
+        elif name == "AllowsVpcAndNonVpcInstanceMemberships":
+            if value.lower() == "true":
                 self.allow_both_vpc_and_nonvpc = True
             else:
                 self.allow_both_vpc_and_nonvpc = False
-        elif name == 'VpcId':
+        elif name == "VpcId":
             self.vpc_id = value
         else:
             setattr(self, name, value)
@@ -116,9 +122,18 @@ class Option(object):
                                this VPC Security Group allows access to the
                                port.
     """
-    def __init__(self, name=None, description=None, permanent=False,
-                 persistent=False, port=None, settings=None,
-                 db_security_groups=None, vpc_security_groups=None):
+
+    def __init__(
+        self,
+        name=None,
+        description=None,
+        permanent=False,
+        persistent=False,
+        port=None,
+        settings=None,
+        db_security_groups=None,
+        vpc_security_groups=None,
+    ):
         self.name = name
         self.description = description
         self.permanent = permanent
@@ -138,40 +153,38 @@ class Option(object):
             self.vpc_security_groups = []
 
     def __repr__(self):
-        return 'Option:%s' % self.name
+        return "Option:%s" % self.name
 
     def startElement(self, name, attrs, connection):
-        if name == 'OptionSettings':
-            self.settings = ResultSet([
-                ('OptionSettings', OptionSetting)
-            ])
-        elif name == 'DBSecurityGroupMemberships':
-            self.db_security_groups = ResultSet([
-                ('DBSecurityGroupMemberships', DBSecurityGroup)
-            ])
-        elif name == 'VpcSecurityGroupMemberships':
-            self.vpc_security_groups = ResultSet([
-                ('VpcSecurityGroupMemberships', VpcSecurityGroup)
-            ])
+        if name == "OptionSettings":
+            self.settings = ResultSet([("OptionSettings", OptionSetting)])
+        elif name == "DBSecurityGroupMemberships":
+            self.db_security_groups = ResultSet(
+                [("DBSecurityGroupMemberships", DBSecurityGroup)]
+            )
+        elif name == "VpcSecurityGroupMemberships":
+            self.vpc_security_groups = ResultSet(
+                [("VpcSecurityGroupMemberships", VpcSecurityGroup)]
+            )
         else:
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'OptionName':
+        if name == "OptionName":
             self.name = value
-        elif name == 'OptionDescription':
+        elif name == "OptionDescription":
             self.description = value
-        elif name == 'Permanent':
-            if value.lower() == 'true':
+        elif name == "Permanent":
+            if value.lower() == "true":
                 self.permenant = True
             else:
                 self.permenant = False
-        elif name == 'Persistent':
-            if value.lower() == 'true':
+        elif name == "Persistent":
+            if value.lower() == "true":
                 self.persistent = True
             else:
                 self.persistent = False
-        elif name == 'Port':
+        elif name == "Port":
             self.port = int(value)
         else:
             setattr(self, name, value)
@@ -194,9 +207,18 @@ class OptionSetting(object):
                          collection.
     """
 
-    def __init__(self, name=None, description=None, value=None,
-                 default_value=False, allowed_values=None, data_type=None,
-                 apply_type=None, is_modifiable=False, is_collection=False):
+    def __init__(
+        self,
+        name=None,
+        description=None,
+        value=None,
+        default_value=False,
+        allowed_values=None,
+        data_type=None,
+        apply_type=None,
+        is_modifiable=False,
+        is_collection=False,
+    ):
         self.name = name
         self.description = description
         self.value = value
@@ -208,33 +230,33 @@ class OptionSetting(object):
         self.is_collection = is_collection
 
     def __repr__(self):
-        return 'OptionSetting:%s' % self.name
+        return "OptionSetting:%s" % self.name
 
     def startElement(self, name, attrs, connection):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'Name':
+        if name == "Name":
             self.name = value
-        elif name == 'Description':
+        elif name == "Description":
             self.description = value
-        elif name == 'Value':
+        elif name == "Value":
             self.value = value
-        elif name == 'DefaultValue':
+        elif name == "DefaultValue":
             self.default_value = value
-        elif name == 'AllowedValues':
+        elif name == "AllowedValues":
             self.allowed_values = value
-        elif name == 'DataType':
+        elif name == "DataType":
             self.data_type = value
-        elif name == 'ApplyType':
+        elif name == "ApplyType":
             self.apply_type = value
-        elif name == 'IsModifiable':
-            if value.lower() == 'true':
+        elif name == "IsModifiable":
+            if value.lower() == "true":
                 self.is_modifiable = True
             else:
                 self.is_modifiable = False
-        elif name == 'IsCollection':
-            if value.lower() == 'true':
+        elif name == "IsCollection":
+            if value.lower() == "true":
                 self.is_collection = True
             else:
                 self.is_collection = False
@@ -246,20 +268,21 @@ class VpcSecurityGroup(object):
     """
     Describes a VPC security group for use in a OptionGroup
     """
+
     def __init__(self, vpc_id=None, status=None):
         self.vpc_id = vpc_id
         self.status = status
 
     def __repr__(self):
-        return 'VpcSecurityGroup:%s' % self.vpc_id
+        return "VpcSecurityGroup:%s" % self.vpc_id
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'VpcSecurityGroupId':
+        if name == "VpcSecurityGroupId":
             self.vpc_id = value
-        elif name == 'Status':
+        elif name == "Status":
             self.status = value
         else:
             setattr(self, name, value)
@@ -285,10 +308,21 @@ class OptionGroupOption(object):
     :ivar depends_on: List of all options that are prerequisites for this
                       option.
     """
-    def __init__(self, name=None, description=None, engine_name=None,
-                 major_engine_version=None, min_minor_engine_version=None,
-                 permanent=False, persistent=False, port_required=False,
-                 default_port=None, settings=None, depends_on=None):
+
+    def __init__(
+        self,
+        name=None,
+        description=None,
+        engine_name=None,
+        major_engine_version=None,
+        min_minor_engine_version=None,
+        permanent=False,
+        persistent=False,
+        port_required=False,
+        default_port=None,
+        settings=None,
+        depends_on=None,
+    ):
         self.name = name
         self.description = description
         self.engine_name = engine_name
@@ -308,45 +342,45 @@ class OptionGroupOption(object):
             self.depends_on = []
 
     def __repr__(self):
-        return 'OptionGroupOption:%s' % self.name
+        return "OptionGroupOption:%s" % self.name
 
     def startElement(self, name, attrs, connection):
-        if name == 'OptionGroupOptionSettings':
-            self.settings = ResultSet([
-                ('OptionGroupOptionSettings', OptionGroupOptionSetting)
-            ])
-        elif name == 'OptionsDependedOn':
+        if name == "OptionGroupOptionSettings":
+            self.settings = ResultSet(
+                [("OptionGroupOptionSettings", OptionGroupOptionSetting)]
+            )
+        elif name == "OptionsDependedOn":
             self.depends_on = []
         else:
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'Name':
+        if name == "Name":
             self.name = value
-        elif name == 'Description':
+        elif name == "Description":
             self.description = value
-        elif name == 'EngineName':
+        elif name == "EngineName":
             self.engine_name = value
-        elif name == 'MajorEngineVersion':
+        elif name == "MajorEngineVersion":
             self.major_engine_version = value
-        elif name == 'MinimumRequiredMinorEngineVersion':
+        elif name == "MinimumRequiredMinorEngineVersion":
             self.min_minor_engine_version = value
-        elif name == 'Permanent':
-            if value.lower() == 'true':
+        elif name == "Permanent":
+            if value.lower() == "true":
                 self.permenant = True
             else:
                 self.permenant = False
-        elif name == 'Persistent':
-            if value.lower() == 'true':
+        elif name == "Persistent":
+            if value.lower() == "true":
                 self.persistent = True
             else:
                 self.persistent = False
-        elif name == 'PortRequired':
-            if value.lower() == 'true':
+        elif name == "PortRequired":
+            if value.lower() == "true":
                 self.port_required = True
             else:
                 self.port_required = False
-        elif name == 'DefaultPort':
+        elif name == "DefaultPort":
             self.default_port = int(value)
         else:
             setattr(self, name, value)
@@ -369,8 +403,15 @@ class OptionGroupOptionSetting(object):
                          collection.
     """
 
-    def __init__(self, name=None, description=None, default_value=False,
-                 allowed_values=None, apply_type=None, is_modifiable=False):
+    def __init__(
+        self,
+        name=None,
+        description=None,
+        default_value=False,
+        allowed_values=None,
+        apply_type=None,
+        is_modifiable=False,
+    ):
         self.name = name
         self.description = description
         self.default_value = default_value
@@ -379,24 +420,24 @@ class OptionGroupOptionSetting(object):
         self.is_modifiable = is_modifiable
 
     def __repr__(self):
-        return 'OptionGroupOptionSetting:%s' % self.name
+        return "OptionGroupOptionSetting:%s" % self.name
 
     def startElement(self, name, attrs, connection):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'SettingName':
+        if name == "SettingName":
             self.name = value
-        elif name == 'SettingDescription':
+        elif name == "SettingDescription":
             self.description = value
-        elif name == 'DefaultValue':
+        elif name == "DefaultValue":
             self.default_value = value
-        elif name == 'AllowedValues':
+        elif name == "AllowedValues":
             self.allowed_values = value
-        elif name == 'ApplyType':
+        elif name == "ApplyType":
             self.apply_type = value
-        elif name == 'IsModifiable':
-            if value.lower() == 'true':
+        elif name == "IsModifiable":
+            if value.lower() == "true":
                 self.is_modifiable = True
             else:
                 self.is_modifiable = False

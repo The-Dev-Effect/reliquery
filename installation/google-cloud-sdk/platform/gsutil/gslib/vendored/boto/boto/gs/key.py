@@ -30,6 +30,7 @@ from boto.s3.key import Key as S3Key
 from boto.s3.keyfile import KeyFile
 from boto.utils import compute_hash, get_utf8able_str
 
+
 class Key(S3Key):
     """
     Represents a key (object) in a GS bucket.
@@ -70,71 +71,76 @@ class Key(S3Key):
 
     def __repr__(self):
         if self.generation and self.metageneration:
-            ver_str = '#%s.%s' % (self.generation, self.metageneration)
+            ver_str = "#%s.%s" % (self.generation, self.metageneration)
         else:
-            ver_str = ''
+            ver_str = ""
         if self.bucket:
-            return '<Key: %s,%s%s>' % (self.bucket.name, self.name, ver_str)
+            return "<Key: %s,%s%s>" % (self.bucket.name, self.name, ver_str)
         else:
-            return '<Key: None,%s%s>' % (self.name, ver_str)
+            return "<Key: None,%s%s>" % (self.name, ver_str)
 
     def endElement(self, name, value, connection):
-        if name == 'Key':
+        if name == "Key":
             self.name = value
-        elif name == 'ETag':
+        elif name == "ETag":
             self.etag = value
-        elif name == 'IsLatest':
-            if value == 'true':
+        elif name == "IsLatest":
+            if value == "true":
                 self.is_latest = True
             else:
                 self.is_latest = False
-        elif name == 'LastModified':
+        elif name == "LastModified":
             self.last_modified = value
-        elif name == 'Size':
+        elif name == "Size":
             self.size = int(value)
-        elif name == 'StorageClass':
+        elif name == "StorageClass":
             self.storage_class = value
-        elif name == 'Owner':
+        elif name == "Owner":
             pass
-        elif name == 'VersionId':
+        elif name == "VersionId":
             self.version_id = value
-        elif name == 'Generation':
+        elif name == "Generation":
             self.generation = value
-        elif name == 'MetaGeneration':
+        elif name == "MetaGeneration":
             self.metageneration = value
         else:
             setattr(self, name, value)
 
     def handle_version_headers(self, resp, force=False):
-        self.metageneration = resp.getheader('x-goog-metageneration', None)
-        self.generation = resp.getheader('x-goog-generation', None)
+        self.metageneration = resp.getheader("x-goog-metageneration", None)
+        self.generation = resp.getheader("x-goog-generation", None)
 
     def handle_restore_headers(self, response):
         return
 
     def handle_addl_headers(self, headers):
         for key, value in headers:
-            if key == 'x-goog-hash':
-                for hash_pair in value.split(','):
-                    alg, b64_digest = hash_pair.strip().split('=', 1)
+            if key == "x-goog-hash":
+                for hash_pair in value.split(","):
+                    alg, b64_digest = hash_pair.strip().split("=", 1)
                     self.cloud_hashes[alg] = binascii.a2b_base64(b64_digest)
-            elif key == 'x-goog-component-count':
+            elif key == "x-goog-component-count":
                 self.component_count = int(value)
-            elif key == 'x-goog-generation':
+            elif key == "x-goog-generation":
                 self.generation = value
             # Use x-goog-stored-content-encoding and
             # x-goog-stored-content-length to indicate original content length
             # and encoding, which are transcoding-invariant (so are preferable
             # over using content-encoding and size headers).
-            elif key == 'x-goog-stored-content-encoding':
+            elif key == "x-goog-stored-content-encoding":
                 self.content_encoding = value
-            elif key == 'x-goog-stored-content-length':
+            elif key == "x-goog-stored-content-length":
                 self.size = int(value)
-            elif key == 'x-goog-storage-class':
+            elif key == "x-goog-storage-class":
                 self.storage_class = value
 
-    def open_read(self, headers=None, query_args='',
-                  override_num_retries=None, response_headers=None):
+    def open_read(
+        self,
+        headers=None,
+        query_args="",
+        override_num_retries=None,
+        response_headers=None,
+    ):
         """
         Open this key for reading
 
@@ -159,31 +165,53 @@ class Key(S3Key):
         # The rest of the processing is handled in the parent class.
         if self.generation:
             if query_args:
-                query_args += '&'
-            query_args += 'generation=%s' % self.generation
-        super(Key, self).open_read(headers=headers, query_args=query_args,
-                                   override_num_retries=override_num_retries,
-                                   response_headers=response_headers)
+                query_args += "&"
+            query_args += "generation=%s" % self.generation
+        super(Key, self).open_read(
+            headers=headers,
+            query_args=query_args,
+            override_num_retries=override_num_retries,
+            response_headers=response_headers,
+        )
 
-    def get_file(self, fp, headers=None, cb=None, num_cb=10,
-                 torrent=False, version_id=None, override_num_retries=None,
-                 response_headers=None, hash_algs=None):
+    def get_file(
+        self,
+        fp,
+        headers=None,
+        cb=None,
+        num_cb=10,
+        torrent=False,
+        version_id=None,
+        override_num_retries=None,
+        response_headers=None,
+        hash_algs=None,
+    ):
         query_args = None
         if self.generation:
-            query_args = ['generation=%s' % self.generation]
-        self._get_file_internal(fp, headers=headers, cb=cb, num_cb=num_cb,
-                                override_num_retries=override_num_retries,
-                                response_headers=response_headers,
-                                hash_algs=hash_algs,
-                                query_args=query_args)
+            query_args = ["generation=%s" % self.generation]
+        self._get_file_internal(
+            fp,
+            headers=headers,
+            cb=cb,
+            num_cb=num_cb,
+            override_num_retries=override_num_retries,
+            response_headers=response_headers,
+            hash_algs=hash_algs,
+            query_args=query_args,
+        )
 
-    def get_contents_to_file(self, fp, headers=None,
-                             cb=None, num_cb=10,
-                             torrent=False,
-                             version_id=None,
-                             res_download_handler=None,
-                             response_headers=None,
-                             hash_algs=None):
+    def get_contents_to_file(
+        self,
+        fp,
+        headers=None,
+        cb=None,
+        num_cb=10,
+        torrent=False,
+        version_id=None,
+        res_download_handler=None,
+        response_headers=None,
+        hash_algs=None,
+    ):
         """
         Retrieve an object from GCS using the name of the Key object as the
         key in GCS. Write the contents of the object to the file pointed
@@ -226,15 +254,27 @@ class Key(S3Key):
         """
         if self.bucket is not None:
             if res_download_handler:
-                res_download_handler.get_file(self, fp, headers, cb, num_cb,
-                                              torrent=torrent,
-                                              version_id=version_id,
-                                              hash_algs=hash_algs)
+                res_download_handler.get_file(
+                    self,
+                    fp,
+                    headers,
+                    cb,
+                    num_cb,
+                    torrent=torrent,
+                    version_id=version_id,
+                    hash_algs=hash_algs,
+                )
             else:
-                self.get_file(fp, headers, cb, num_cb, torrent=torrent,
-                              version_id=version_id,
-                              response_headers=response_headers,
-                              hash_algs=hash_algs)
+                self.get_file(
+                    fp,
+                    headers,
+                    cb,
+                    num_cb,
+                    torrent=torrent,
+                    version_id=version_id,
+                    response_headers=response_headers,
+                    hash_algs=hash_algs,
+                )
 
     def compute_hash(self, fp, algorithm, size=None):
         """
@@ -253,7 +293,8 @@ class Key(S3Key):
             in place into different parts. Less bytes may be available.
         """
         hex_digest, b64_digest, data_size = compute_hash(
-            fp, size=size, hash_algorithm=algorithm)
+            fp, size=size, hash_algorithm=algorithm
+        )
         # The internal implementation of compute_hash() needs to return the
         # data size, but we don't want to return that value to the external
         # caller because it changes the class interface (i.e. it might
@@ -263,9 +304,17 @@ class Key(S3Key):
         self.size = data_size
         return (hex_digest, b64_digest)
 
-    def send_file(self, fp, headers=None, cb=None, num_cb=10,
-                  query_args=None, chunked_transfer=False, size=None,
-                  hash_algs=None):
+    def send_file(
+        self,
+        fp,
+        headers=None,
+        cb=None,
+        num_cb=10,
+        query_args=None,
+        chunked_transfer=False,
+        size=None,
+        hash_algs=None,
+    ):
         """
         Upload a file to GCS.
 
@@ -308,15 +357,24 @@ class Key(S3Key):
             corresponding hashing class that implements update() and digest().
             Defaults to {'md5': hashlib.md5}.
         """
-        self._send_file_internal(fp, headers=headers, cb=cb, num_cb=num_cb,
-                                 query_args=query_args,
-                                 chunked_transfer=chunked_transfer, size=size,
-                                 hash_algs=hash_algs)
+        self._send_file_internal(
+            fp,
+            headers=headers,
+            cb=cb,
+            num_cb=num_cb,
+            query_args=query_args,
+            chunked_transfer=chunked_transfer,
+            size=size,
+            hash_algs=hash_algs,
+        )
 
     def delete(self, headers=None):
-        return self.bucket.delete_key(self.name, version_id=self.version_id,
-                                      generation=self.generation,
-                                      headers=headers)
+        return self.bucket.delete_key(
+            self.name,
+            version_id=self.version_id,
+            generation=self.generation,
+            headers=headers,
+        )
 
     def add_email_grant(self, permission, email_address):
         """
@@ -402,10 +460,20 @@ class Key(S3Key):
         acl.add_group_grant(permission, group_id)
         self.set_acl(acl)
 
-    def set_contents_from_file(self, fp, headers=None, replace=True,
-                               cb=None, num_cb=10, policy=None, md5=None,
-                               res_upload_handler=None, size=None, rewind=False,
-                               if_generation=None):
+    def set_contents_from_file(
+        self,
+        fp,
+        headers=None,
+        replace=True,
+        cb=None,
+        num_cb=10,
+        policy=None,
+        md5=None,
+        res_upload_handler=None,
+        size=None,
+        rewind=False,
+        if_generation=None,
+    ):
         """
         Store an object in GS using the name of the Key object as the
         key in GS and the contents of the file pointed to by 'fp' as the
@@ -494,8 +562,7 @@ class Key(S3Key):
         provider = self.bucket.connection.provider
         if res_upload_handler and size:
             # could use size instead of file_length if provided but...
-            raise BotoClientError(
-                '"size" param not supported for resumable uploads.')
+            raise BotoClientError('"size" param not supported for resumable uploads.')
         headers = headers or {}
         if policy:
             headers[provider.acl_header] = policy
@@ -528,12 +595,14 @@ class Key(S3Key):
                         # error whereby there is data before the fp but nothing
                         # after it.
                         fp.seek(spos)
-                        raise AttributeError('fp is at EOF. Use rewind option '
-                                             'or seek() to data start.')
+                        raise AttributeError(
+                            "fp is at EOF. Use rewind option "
+                            "or seek() to data start."
+                        )
                 # seek back to the correct position.
                 fp.seek(spos)
 
-        if hasattr(fp, 'name'):
+        if hasattr(fp, "name"):
             self.path = fp.name
         if self.bucket is not None:
             if isinstance(fp, KeyFile):
@@ -545,7 +614,7 @@ class Key(S3Key):
                 # non-multipart-uploaded objects. If the etag is 32 hex
                 # chars use it as an MD5, to avoid having to read the file
                 # twice while transferring.
-                if (re.match('^"[a-fA-F0-9]{32}"$', key.etag)):
+                if re.match('^"[a-fA-F0-9]{32}"$', key.etag):
                     etag = key.etag.strip('"')
                     md5 = (etag, base64.b64encode(binascii.unhexlify(etag)))
             if size:
@@ -572,7 +641,7 @@ class Key(S3Key):
                     return
 
             if if_generation is not None:
-                headers['x-goog-if-generation-match'] = str(if_generation)
+                headers["x-goog-if-generation-match"] = str(if_generation)
 
             if res_upload_handler:
                 res_upload_handler.send_file(self, fp, headers, cb, num_cb)
@@ -580,11 +649,19 @@ class Key(S3Key):
                 # Not a resumable transfer so use basic send_file mechanism.
                 self.send_file(fp, headers, cb, num_cb, size=size)
 
-    def set_contents_from_filename(self, filename, headers=None, replace=True,
-                                   cb=None, num_cb=10, policy=None, md5=None,
-                                   reduced_redundancy=None,
-                                   res_upload_handler=None,
-                                   if_generation=None):
+    def set_contents_from_filename(
+        self,
+        filename,
+        headers=None,
+        replace=True,
+        cb=None,
+        num_cb=10,
+        policy=None,
+        md5=None,
+        reduced_redundancy=None,
+        res_upload_handler=None,
+        if_generation=None,
+    ):
         """
         Store an object in GS using the name of the Key object as the
         key in GS and the contents of the file named by 'filename'.
@@ -644,14 +721,30 @@ class Key(S3Key):
         # content.
         self.local_hashes = {}
 
-        with open(filename, 'rb') as fp:
-            self.set_contents_from_file(fp, headers, replace, cb, num_cb,
-                                        policy, md5, res_upload_handler,
-                                        if_generation=if_generation)
+        with open(filename, "rb") as fp:
+            self.set_contents_from_file(
+                fp,
+                headers,
+                replace,
+                cb,
+                num_cb,
+                policy,
+                md5,
+                res_upload_handler,
+                if_generation=if_generation,
+            )
 
-    def set_contents_from_string(self, s, headers=None, replace=True,
-                                 cb=None, num_cb=10, policy=None, md5=None,
-                                 if_generation=None):
+    def set_contents_from_string(
+        self,
+        s,
+        headers=None,
+        replace=True,
+        cb=None,
+        num_cb=10,
+        policy=None,
+        md5=None,
+        if_generation=None,
+    ):
         """
         Store an object in GCS using the name of the Key object as the
         key in GCS and the string 's' as the contents.
@@ -707,9 +800,9 @@ class Key(S3Key):
         self.base64md5 = None
 
         fp = StringIO(get_utf8able_str(s))
-        r = self.set_contents_from_file(fp, headers, replace, cb, num_cb,
-                                        policy, md5,
-                                        if_generation=if_generation)
+        r = self.set_contents_from_file(
+            fp, headers, replace, cb, num_cb, policy, md5, if_generation=if_generation
+        )
         fp.close()
         return r
 
@@ -770,15 +863,21 @@ class Key(S3Key):
             this value. If set to the value 0, the object will only be written
             if it doesn't already exist.
         """
-        if_generation = kwargs.pop('if_generation', None)
+        if_generation = kwargs.pop("if_generation", None)
         if if_generation is not None:
-            headers = kwargs.get('headers', {})
-            headers['x-goog-if-generation-match'] = str(if_generation)
-            kwargs['headers'] = headers
+            headers = kwargs.get("headers", {})
+            headers["x-goog-if-generation-match"] = str(if_generation)
+            kwargs["headers"] = headers
         super(Key, self).set_contents_from_stream(*args, **kwargs)
 
-    def set_acl(self, acl_or_str, headers=None, generation=None,
-                 if_generation=None, if_metageneration=None):
+    def set_acl(
+        self,
+        acl_or_str,
+        headers=None,
+        generation=None,
+        if_generation=None,
+        if_metageneration=None,
+    ):
         """Sets the ACL for this object.
 
         :type acl_or_str: string or :class:`boto.gs.acl.ACL`
@@ -803,10 +902,14 @@ class Key(S3Key):
             this value.
         """
         if self.bucket is not None:
-            self.bucket.set_acl(acl_or_str, self.name, headers=headers,
-                                generation=generation,
-                                if_generation=if_generation,
-                                if_metageneration=if_metageneration)
+            self.bucket.set_acl(
+                acl_or_str,
+                self.name,
+                headers=headers,
+                generation=generation,
+                if_generation=if_generation,
+                if_metageneration=if_metageneration,
+            )
 
     def get_acl(self, headers=None, generation=None):
         """Returns the ACL of this object.
@@ -820,8 +923,9 @@ class Key(S3Key):
         :rtype: :class:`.gs.acl.ACL`
         """
         if self.bucket is not None:
-            return self.bucket.get_acl(self.name, headers=headers,
-                                       generation=generation)
+            return self.bucket.get_acl(
+                self.name, headers=headers, generation=generation
+            )
 
     def get_xml_acl(self, headers=None, generation=None):
         """Returns the ACL string of this object.
@@ -835,11 +939,18 @@ class Key(S3Key):
         :rtype: str
         """
         if self.bucket is not None:
-            return self.bucket.get_xml_acl(self.name, headers=headers,
-                                           generation=generation)
+            return self.bucket.get_xml_acl(
+                self.name, headers=headers, generation=generation
+            )
 
-    def set_xml_acl(self, acl_str, headers=None, generation=None,
-                     if_generation=None, if_metageneration=None):
+    def set_xml_acl(
+        self,
+        acl_str,
+        headers=None,
+        generation=None,
+        if_generation=None,
+        if_metageneration=None,
+    ):
         """Sets this objects's ACL to an XML string.
 
         :type acl_str: string
@@ -863,13 +974,23 @@ class Key(S3Key):
             this value.
         """
         if self.bucket is not None:
-            return self.bucket.set_xml_acl(acl_str, self.name, headers=headers,
-                                           generation=generation,
-                                           if_generation=if_generation,
-                                           if_metageneration=if_metageneration)
+            return self.bucket.set_xml_acl(
+                acl_str,
+                self.name,
+                headers=headers,
+                generation=generation,
+                if_generation=if_generation,
+                if_metageneration=if_metageneration,
+            )
 
-    def set_canned_acl(self, acl_str, headers=None, generation=None,
-                       if_generation=None, if_metageneration=None):
+    def set_canned_acl(
+        self,
+        acl_str,
+        headers=None,
+        generation=None,
+        if_generation=None,
+        if_metageneration=None,
+    ):
         """Sets this objects's ACL using a predefined (canned) value.
 
         :type acl_str: string
@@ -900,7 +1021,7 @@ class Key(S3Key):
                 headers=headers,
                 generation=generation,
                 if_generation=if_generation,
-                if_metageneration=if_metageneration
+                if_metageneration=if_metageneration,
             )
 
     def compose(self, components, content_type=None, headers=None):
@@ -920,28 +1041,31 @@ class Key(S3Key):
         compose_req = []
         for key in components:
             if key.bucket.name != self.bucket.name:
-                raise BotoClientError(
-                    'GCS does not support inter-bucket composing')
+                raise BotoClientError("GCS does not support inter-bucket composing")
 
-            generation_tag = ''
+            generation_tag = ""
             if key.generation:
-                generation_tag = ('<Generation>%s</Generation>'
-                                  % str(key.generation))
-            compose_req.append('<Component><Name>%s</Name>%s</Component>' %
-                               (key.name, generation_tag))
-        compose_req_xml = ('<ComposeRequest>%s</ComposeRequest>' %
-                         ''.join(compose_req))
+                generation_tag = "<Generation>%s</Generation>" % str(key.generation)
+            compose_req.append(
+                "<Component><Name>%s</Name>%s</Component>" % (key.name, generation_tag)
+            )
+        compose_req_xml = "<ComposeRequest>%s</ComposeRequest>" % "".join(compose_req)
         headers = headers or {}
         if content_type:
-            headers['Content-Type'] = content_type
+            headers["Content-Type"] = content_type
         resp = self.bucket.connection.make_request(
-            'PUT', self.bucket.name, self.name,
-            headers=headers, query_args='compose',
-            data=compose_req_xml)
+            "PUT",
+            self.bucket.name,
+            self.name,
+            headers=headers,
+            query_args="compose",
+            data=compose_req_xml,
+        )
         if resp.status < 200 or resp.status > 299:
             raise self.bucket.connection.provider.storage_response_error(
-                resp.status, resp.reason, resp.read())
+                resp.status, resp.reason, resp.read()
+            )
 
         # Return the generation so that the result URI can be built with this
         # for automatic parallel uploads.
-        return resp.getheader('x-goog-generation')
+        return resp.getheader("x-goog-generation")

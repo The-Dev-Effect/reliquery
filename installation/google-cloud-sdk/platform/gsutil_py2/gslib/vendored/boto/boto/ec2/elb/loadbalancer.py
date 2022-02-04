@@ -39,15 +39,15 @@ class Backend(object):
         self.policies = None
 
     def __repr__(self):
-        return 'Backend(%r:%r)' % (self.instance_port, self.policies)
+        return "Backend(%r:%r)" % (self.instance_port, self.policies)
 
     def startElement(self, name, attrs, connection):
-        if name == 'PolicyNames':
-            self.policies = ResultSet([('member', OtherPolicy)])
+        if name == "PolicyNames":
+            self.policies = ResultSet([("member", OtherPolicy)])
             return self.policies
 
     def endElement(self, name, value, connection):
-        if name == 'InstancePort':
+        if name == "InstancePort":
             self.instance_port = int(value)
         return
 
@@ -57,12 +57,13 @@ class LoadBalancerZones(object):
     Used to collect the zones for a Load Balancer when enable_zones
     or disable_zones are called.
     """
+
     def __init__(self, connection=None):
         self.connection = connection
         self.zones = ListElement()
 
     def startElement(self, name, attrs, connection):
-        if name == 'AvailabilityZones':
+        if name == "AvailabilityZones":
             return self.zones
 
     def endElement(self, name, value, connection):
@@ -128,54 +129,54 @@ class LoadBalancer(object):
         self._attributes = None
 
     def __repr__(self):
-        return 'LoadBalancer:%s' % self.name
+        return "LoadBalancer:%s" % self.name
 
     def startElement(self, name, attrs, connection):
-        if name == 'HealthCheck':
+        if name == "HealthCheck":
             self.health_check = HealthCheck(self)
             return self.health_check
-        elif name == 'ListenerDescriptions':
-            self.listeners = ResultSet([('member', Listener)])
+        elif name == "ListenerDescriptions":
+            self.listeners = ResultSet([("member", Listener)])
             return self.listeners
-        elif name == 'AvailabilityZones':
+        elif name == "AvailabilityZones":
             return self.availability_zones
-        elif name == 'Instances':
-            self.instances = ResultSet([('member', InstanceInfo)])
+        elif name == "Instances":
+            self.instances = ResultSet([("member", InstanceInfo)])
             return self.instances
-        elif name == 'Policies':
+        elif name == "Policies":
             self.policies = Policies(self)
             return self.policies
-        elif name == 'SourceSecurityGroup':
+        elif name == "SourceSecurityGroup":
             self.source_security_group = SecurityGroup()
             return self.source_security_group
-        elif name == 'Subnets':
+        elif name == "Subnets":
             return self.subnets
-        elif name == 'SecurityGroups':
+        elif name == "SecurityGroups":
             return self.security_groups
-        elif name == 'VPCId':
+        elif name == "VPCId":
             pass
         elif name == "BackendServerDescriptions":
-            self.backends = ResultSet([('member', Backend)])
+            self.backends = ResultSet([("member", Backend)])
             return self.backends
         else:
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'LoadBalancerName':
+        if name == "LoadBalancerName":
             self.name = value
-        elif name == 'DNSName':
+        elif name == "DNSName":
             self.dns_name = value
-        elif name == 'CreatedTime':
+        elif name == "CreatedTime":
             self.created_time = value
-        elif name == 'InstanceId':
+        elif name == "InstanceId":
             self.instances.append(value)
-        elif name == 'CanonicalHostedZoneName':
+        elif name == "CanonicalHostedZoneName":
             self.canonical_hosted_zone_name = value
-        elif name == 'CanonicalHostedZoneNameID':
+        elif name == "CanonicalHostedZoneNameID":
             self.canonical_hosted_zone_name_id = value
-        elif name == 'VPCId':
+        elif name == "VPCId":
             self.vpc_id = value
-        elif name == 'Scheme':
+        elif name == "Scheme":
             self.scheme = value
         else:
             setattr(self, name, value)
@@ -204,8 +205,7 @@ class LoadBalancer(object):
         """
         if isinstance(zones, six.string_types):
             zones = [zones]
-        new_zones = self.connection.disable_availability_zones(
-            self.name, zones)
+        new_zones = self.connection.disable_availability_zones(self.name, zones)
         self.availability_zones = new_zones
 
     def get_attributes(self, force=False):
@@ -242,7 +242,8 @@ class LoadBalancer(object):
         :return: True if successful, False if not.
         """
         success = self.connection.modify_lb_attribute(
-            self.name, 'crossZoneLoadBalancing', True)
+            self.name, "crossZoneLoadBalancing", True
+        )
         if success and self._attributes:
             self._attributes.cross_zone_load_balancing.enabled = True
         return success
@@ -255,7 +256,8 @@ class LoadBalancer(object):
         :return: True if successful, False if not.
         """
         success = self.connection.modify_lb_attribute(
-            self.name, 'crossZoneLoadBalancing', False)
+            self.name, "crossZoneLoadBalancing", False
+        )
         if success and self._attributes:
             self._attributes.cross_zone_load_balancing.enabled = False
         return success
@@ -272,8 +274,7 @@ class LoadBalancer(object):
         """
         if isinstance(instances, six.string_types):
             instances = [instances]
-        new_instances = self.connection.register_instances(self.name,
-                                                           instances)
+        new_instances = self.connection.register_instances(self.name, instances)
         self.instances = new_instances
 
     def deregister_instances(self, instances):
@@ -287,8 +288,7 @@ class LoadBalancer(object):
         """
         if isinstance(instances, six.string_types):
             instances = [instances]
-        new_instances = self.connection.deregister_instances(self.name,
-                                                             instances)
+        new_instances = self.connection.deregister_instances(self.name, instances)
         self.instances = new_instances
 
     def delete(self):
@@ -324,8 +324,7 @@ class LoadBalancer(object):
         return self.connection.describe_instance_health(self.name, instances)
 
     def create_listeners(self, listeners):
-        return self.connection.create_load_balancer_listeners(self.name,
-                                                              listeners)
+        return self.connection.create_load_balancer_listeners(self.name, listeners)
 
     def create_listener(self, inPort, outPort=None, proto="tcp"):
         if outPort is None:
@@ -333,8 +332,7 @@ class LoadBalancer(object):
         return self.create_listeners([(inPort, outPort, proto)])
 
     def delete_listeners(self, listeners):
-        return self.connection.delete_load_balancer_listeners(self.name,
-                                                              listeners)
+        return self.connection.delete_load_balancer_listeners(self.name, listeners)
 
     def delete_listener(self, inPort):
         return self.delete_listeners([inPort])
@@ -347,31 +345,32 @@ class LoadBalancer(object):
         return self.connection.delete_lb_policy(self.name, policy_name)
 
     def set_policies_of_listener(self, lb_port, policies):
-        return self.connection.set_lb_policies_of_listener(self.name,
-                                                           lb_port,
-                                                           policies)
+        return self.connection.set_lb_policies_of_listener(self.name, lb_port, policies)
 
     def set_policies_of_backend_server(self, instance_port, policies):
         return self.connection.set_lb_policies_of_backend_server(
-            self.name, instance_port, policies)
+            self.name, instance_port, policies
+        )
 
-    def create_cookie_stickiness_policy(self, cookie_expiration_period,
-                                        policy_name):
+    def create_cookie_stickiness_policy(self, cookie_expiration_period, policy_name):
         return self.connection.create_lb_cookie_stickiness_policy(
-            cookie_expiration_period, self.name, policy_name)
+            cookie_expiration_period, self.name, policy_name
+        )
 
     def create_app_cookie_stickiness_policy(self, name, policy_name):
-        return self.connection.create_app_cookie_stickiness_policy(name,
-                                                                   self.name,
-                                                                   policy_name)
+        return self.connection.create_app_cookie_stickiness_policy(
+            name, self.name, policy_name
+        )
 
     def set_listener_SSL_certificate(self, lb_port, ssl_certificate_id):
         return self.connection.set_lb_listener_SSL_certificate(
-            self.name, lb_port, ssl_certificate_id)
+            self.name, lb_port, ssl_certificate_id
+        )
 
     def create_lb_policy(self, policy_name, policy_type, policy_attribute):
         return self.connection.create_lb_policy(
-            self.name, policy_name, policy_type, policy_attribute)
+            self.name, policy_name, policy_type, policy_attribute
+        )
 
     def attach_subnets(self, subnets):
         """
@@ -398,8 +397,7 @@ class LoadBalancer(object):
         """
         if isinstance(subnets, six.string_types):
             subnets = [subnets]
-        new_subnets = self.connection.detach_lb_from_subnets(
-            self.name, subnets)
+        new_subnets = self.connection.detach_lb_from_subnets(self.name, subnets)
         self.subnets = new_subnets
 
     def apply_security_groups(self, security_groups):
@@ -415,5 +413,6 @@ class LoadBalancer(object):
         if isinstance(security_groups, six.string_types):
             security_groups = [security_groups]
         new_sgs = self.connection.apply_security_groups_to_lb(
-            self.name, security_groups)
+            self.name, security_groups
+        )
         self.security_groups = new_sgs

@@ -14,9 +14,9 @@ class TestDescribeLogs(AWSMockServiceTestCase):
         self.set_http_response(status_code=200)
         api_response = self.service_connection.describe_log_groups()
 
-        self.assertEqual(0, len(api_response['logGroups']))
+        self.assertEqual(0, len(api_response["logGroups"]))
 
         self.assert_request_parameters({})
 
-        target = self.actual_request.headers['X-Amz-Target']
-        self.assertTrue('DescribeLogGroups' in target)
+        target = self.actual_request.headers["X-Amz-Target"]
+        self.assertTrue("DescribeLogGroups" in target)

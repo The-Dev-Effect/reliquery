@@ -35,7 +35,7 @@ from boto.regioninfo import connect
 import boto
 from boto.compat import six
 
-RegionData = load_regions().get('elasticloadbalancing', {})
+RegionData = load_regions().get("elasticloadbalancing", {})
 
 
 def regions():
@@ -45,7 +45,7 @@ def regions():
     :rtype: list
     :return: A list of :class:`boto.RegionInfo` instances
     """
-    return get_regions('elasticloadbalancing', connection_cls=ELBConnection)
+    return get_regions("elasticloadbalancing", connection_cls=ELBConnection)
 
 
 def connect_to_region(region_name, **kw_params):
@@ -59,23 +59,37 @@ def connect_to_region(region_name, **kw_params):
     :return: A connection to the given region, or None if an invalid region
         name is given
     """
-    return connect('elasticloadbalancing', region_name,
-                   connection_cls=ELBConnection, **kw_params)
+    return connect(
+        "elasticloadbalancing", region_name, connection_cls=ELBConnection, **kw_params
+    )
 
 
 class ELBConnection(AWSQueryConnection):
 
-    APIVersion = boto.config.get('Boto', 'elb_version', '2012-06-01')
-    DefaultRegionName = boto.config.get('Boto', 'elb_region_name', 'us-east-1')
+    APIVersion = boto.config.get("Boto", "elb_version", "2012-06-01")
+    DefaultRegionName = boto.config.get("Boto", "elb_region_name", "us-east-1")
     DefaultRegionEndpoint = boto.config.get(
-        'Boto', 'elb_region_endpoint',
-        'elasticloadbalancing.us-east-1.amazonaws.com')
+        "Boto", "elb_region_endpoint", "elasticloadbalancing.us-east-1.amazonaws.com"
+    )
 
-    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None,
-                 is_secure=True, port=None, proxy=None, proxy_port=None,
-                 proxy_user=None, proxy_pass=None, debug=0,
-                 https_connection_factory=None, region=None, path='/',
-                 security_token=None, validate_certs=True, profile_name=None):
+    def __init__(
+        self,
+        aws_access_key_id=None,
+        aws_secret_access_key=None,
+        is_secure=True,
+        port=None,
+        proxy=None,
+        proxy_port=None,
+        proxy_user=None,
+        proxy_pass=None,
+        debug=0,
+        https_connection_factory=None,
+        region=None,
+        path="/",
+        security_token=None,
+        validate_certs=True,
+        profile_name=None,
+    ):
         """
         Init method to create a new connection to EC2 Load Balancing Service.
 
@@ -83,21 +97,30 @@ class ELBConnection(AWSQueryConnection):
             the boto configuration file.
         """
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
         self.region = region
-        super(ELBConnection, self).__init__(aws_access_key_id,
-                                            aws_secret_access_key,
-                                            is_secure, port, proxy, proxy_port,
-                                            proxy_user, proxy_pass,
-                                            self.region.endpoint, debug,
-                                            https_connection_factory, path,
-                                            security_token,
-                                            validate_certs=validate_certs,
-                                            profile_name=profile_name)
+        super(ELBConnection, self).__init__(
+            aws_access_key_id,
+            aws_secret_access_key,
+            is_secure,
+            port,
+            proxy,
+            proxy_port,
+            proxy_user,
+            proxy_pass,
+            self.region.endpoint,
+            debug,
+            https_connection_factory,
+            path,
+            security_token,
+            validate_certs=validate_certs,
+            profile_name=profile_name,
+        )
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
     def build_list_params(self, params, items, label):
         if isinstance(items, six.string_types):
@@ -124,18 +147,27 @@ class ELBConnection(AWSQueryConnection):
         """
         params = {}
         if load_balancer_names:
-            self.build_list_params(params, load_balancer_names,
-                                   'LoadBalancerNames.member.%d')
+            self.build_list_params(
+                params, load_balancer_names, "LoadBalancerNames.member.%d"
+            )
 
         if marker:
-            params['Marker'] = marker
+            params["Marker"] = marker
 
-        return self.get_list('DescribeLoadBalancers', params,
-                             [('member', LoadBalancer)])
+        return self.get_list(
+            "DescribeLoadBalancers", params, [("member", LoadBalancer)]
+        )
 
-    def create_load_balancer(self, name, zones, listeners=None, subnets=None,
-                             security_groups=None, scheme='internet-facing',
-                             complex_listeners=None):
+    def create_load_balancer(
+        self,
+        name,
+        zones,
+        listeners=None,
+        subnets=None,
+        security_groups=None,
+        scheme="internet-facing",
+        complex_listeners=None,
+    ):
         """
         Create a new load balancer for your account. By default the load
         balancer will be created in EC2. To create a load balancer inside a
@@ -201,19 +233,18 @@ class ELBConnection(AWSQueryConnection):
             # Must specify one of the two options
             return None
 
-        params = {'LoadBalancerName': name,
-                  'Scheme': scheme}
+        params = {"LoadBalancerName": name, "Scheme": scheme}
 
         # Handle legacy listeners
         if listeners:
             for index, listener in enumerate(listeners):
                 i = index + 1
                 protocol = listener[2].upper()
-                params['Listeners.member.%d.LoadBalancerPort' % i] = listener[0]
-                params['Listeners.member.%d.InstancePort' % i] = listener[1]
-                params['Listeners.member.%d.Protocol' % i] = listener[2]
-                if protocol == 'HTTPS' or protocol == 'SSL':
-                    params['Listeners.member.%d.SSLCertificateId' % i] = listener[3]
+                params["Listeners.member.%d.LoadBalancerPort" % i] = listener[0]
+                params["Listeners.member.%d.InstancePort" % i] = listener[1]
+                params["Listeners.member.%d.Protocol" % i] = listener[2]
+                if protocol == "HTTPS" or protocol == "SSL":
+                    params["Listeners.member.%d.SSLCertificateId" % i] = listener[3]
 
         # Handle the full listeners
         if complex_listeners:
@@ -221,25 +252,23 @@ class ELBConnection(AWSQueryConnection):
                 i = index + 1
                 protocol = listener[2].upper()
                 InstanceProtocol = listener[3].upper()
-                params['Listeners.member.%d.LoadBalancerPort' % i] = listener[0]
-                params['Listeners.member.%d.InstancePort' % i] = listener[1]
-                params['Listeners.member.%d.Protocol' % i] = listener[2]
-                params['Listeners.member.%d.InstanceProtocol' % i] = listener[3]
-                if protocol == 'HTTPS' or protocol == 'SSL':
-                    params['Listeners.member.%d.SSLCertificateId' % i] = listener[4]
+                params["Listeners.member.%d.LoadBalancerPort" % i] = listener[0]
+                params["Listeners.member.%d.InstancePort" % i] = listener[1]
+                params["Listeners.member.%d.Protocol" % i] = listener[2]
+                params["Listeners.member.%d.InstanceProtocol" % i] = listener[3]
+                if protocol == "HTTPS" or protocol == "SSL":
+                    params["Listeners.member.%d.SSLCertificateId" % i] = listener[4]
 
         if zones:
-            self.build_list_params(params, zones, 'AvailabilityZones.member.%d')
+            self.build_list_params(params, zones, "AvailabilityZones.member.%d")
 
         if subnets:
-            self.build_list_params(params, subnets, 'Subnets.member.%d')
+            self.build_list_params(params, subnets, "Subnets.member.%d")
 
         if security_groups:
-            self.build_list_params(params, security_groups,
-                                   'SecurityGroups.member.%d')
+            self.build_list_params(params, security_groups, "SecurityGroups.member.%d")
 
-        load_balancer = self.get_object('CreateLoadBalancer',
-                                        params, LoadBalancer)
+        load_balancer = self.get_object("CreateLoadBalancer", params, LoadBalancer)
         load_balancer.name = name
         load_balancer.listeners = listeners
         load_balancer.availability_zones = zones
@@ -247,8 +276,9 @@ class ELBConnection(AWSQueryConnection):
         load_balancer.security_groups = security_groups
         return load_balancer
 
-    def create_load_balancer_listeners(self, name, listeners=None,
-                                       complex_listeners=None):
+    def create_load_balancer_listeners(
+        self, name, listeners=None, complex_listeners=None
+    ):
         """
         Creates a Listener (or group of listeners) for an existing
         Load Balancer
@@ -285,18 +315,18 @@ class ELBConnection(AWSQueryConnection):
             # Must specify one of the two options
             return None
 
-        params = {'LoadBalancerName': name}
+        params = {"LoadBalancerName": name}
 
         # Handle the simple listeners
         if listeners:
             for index, listener in enumerate(listeners):
                 i = index + 1
                 protocol = listener[2].upper()
-                params['Listeners.member.%d.LoadBalancerPort' % i] = listener[0]
-                params['Listeners.member.%d.InstancePort' % i] = listener[1]
-                params['Listeners.member.%d.Protocol' % i] = listener[2]
-                if protocol == 'HTTPS' or protocol == 'SSL':
-                    params['Listeners.member.%d.SSLCertificateId' % i] = listener[3]
+                params["Listeners.member.%d.LoadBalancerPort" % i] = listener[0]
+                params["Listeners.member.%d.InstancePort" % i] = listener[1]
+                params["Listeners.member.%d.Protocol" % i] = listener[2]
+                if protocol == "HTTPS" or protocol == "SSL":
+                    params["Listeners.member.%d.SSLCertificateId" % i] = listener[3]
 
         # Handle the full listeners
         if complex_listeners:
@@ -304,14 +334,14 @@ class ELBConnection(AWSQueryConnection):
                 i = index + 1
                 protocol = listener[2].upper()
                 InstanceProtocol = listener[3].upper()
-                params['Listeners.member.%d.LoadBalancerPort' % i] = listener[0]
-                params['Listeners.member.%d.InstancePort' % i] = listener[1]
-                params['Listeners.member.%d.Protocol' % i] = listener[2]
-                params['Listeners.member.%d.InstanceProtocol' % i] = listener[3]
-                if protocol == 'HTTPS' or protocol == 'SSL':
-                    params['Listeners.member.%d.SSLCertificateId' % i] = listener[4]
+                params["Listeners.member.%d.LoadBalancerPort" % i] = listener[0]
+                params["Listeners.member.%d.InstancePort" % i] = listener[1]
+                params["Listeners.member.%d.Protocol" % i] = listener[2]
+                params["Listeners.member.%d.InstanceProtocol" % i] = listener[3]
+                if protocol == "HTTPS" or protocol == "SSL":
+                    params["Listeners.member.%d.SSLCertificateId" % i] = listener[4]
 
-        return self.get_status('CreateLoadBalancerListeners', params)
+        return self.get_status("CreateLoadBalancerListeners", params)
 
     def delete_load_balancer(self, name):
         """
@@ -320,8 +350,8 @@ class ELBConnection(AWSQueryConnection):
         :type name: string
         :param name: The name of the Load Balancer to delete
         """
-        params = {'LoadBalancerName': name}
-        return self.get_status('DeleteLoadBalancer', params)
+        params = {"LoadBalancerName": name}
+        return self.get_status("DeleteLoadBalancer", params)
 
     def delete_load_balancer_listeners(self, name, ports):
         """
@@ -335,10 +365,10 @@ class ELBConnection(AWSQueryConnection):
 
         :return: The status of the request
         """
-        params = {'LoadBalancerName': name}
+        params = {"LoadBalancerName": name}
         for index, port in enumerate(ports):
-            params['LoadBalancerPorts.member.%d' % (index + 1)] = port
-        return self.get_status('DeleteLoadBalancerListeners', params)
+            params["LoadBalancerPorts.member.%d" % (index + 1)] = port
+        return self.get_status("DeleteLoadBalancerListeners", params)
 
     def enable_availability_zones(self, load_balancer_name, zones_to_add):
         """
@@ -357,11 +387,11 @@ class ELBConnection(AWSQueryConnection):
         :return: An updated list of zones for this Load Balancer.
 
         """
-        params = {'LoadBalancerName': load_balancer_name}
-        self.build_list_params(params, zones_to_add,
-                               'AvailabilityZones.member.%d')
-        obj = self.get_object('EnableAvailabilityZonesForLoadBalancer',
-                              params, LoadBalancerZones)
+        params = {"LoadBalancerName": load_balancer_name}
+        self.build_list_params(params, zones_to_add, "AvailabilityZones.member.%d")
+        obj = self.get_object(
+            "EnableAvailabilityZonesForLoadBalancer", params, LoadBalancerZones
+        )
         return obj.zones
 
     def disable_availability_zones(self, load_balancer_name, zones_to_remove):
@@ -382,11 +412,11 @@ class ELBConnection(AWSQueryConnection):
         :return: An updated list of zones for this Load Balancer.
 
         """
-        params = {'LoadBalancerName': load_balancer_name}
-        self.build_list_params(params, zones_to_remove,
-                               'AvailabilityZones.member.%d')
-        obj = self.get_object('DisableAvailabilityZonesForLoadBalancer',
-                              params, LoadBalancerZones)
+        params = {"LoadBalancerName": load_balancer_name}
+        self.build_list_params(params, zones_to_remove, "AvailabilityZones.member.%d")
+        obj = self.get_object(
+            "DisableAvailabilityZonesForLoadBalancer", params, LoadBalancerZones
+        )
         return obj.zones
 
     def modify_lb_attribute(self, load_balancer_name, attribute, value):
@@ -410,39 +440,42 @@ class ELBConnection(AWSQueryConnection):
         :return: Whether the operation succeeded or not
         """
 
-        bool_reqs = ('crosszoneloadbalancing',)
+        bool_reqs = ("crosszoneloadbalancing",)
         if attribute.lower() in bool_reqs:
             if isinstance(value, bool):
                 if value:
-                    value = 'true'
+                    value = "true"
                 else:
-                    value = 'false'
+                    value = "false"
 
-        params = {'LoadBalancerName': load_balancer_name}
-        if attribute.lower() == 'crosszoneloadbalancing':
-            params['LoadBalancerAttributes.CrossZoneLoadBalancing.Enabled'
-                   ] = value
-        elif attribute.lower() == 'accesslog':
-            params['LoadBalancerAttributes.AccessLog.Enabled'] = \
-                value.enabled and 'true' or 'false'
-            params['LoadBalancerAttributes.AccessLog.S3BucketName'] = \
-                value.s3_bucket_name
-            params['LoadBalancerAttributes.AccessLog.S3BucketPrefix'] = \
-                value.s3_bucket_prefix
-            params['LoadBalancerAttributes.AccessLog.EmitInterval'] = \
-                value.emit_interval
-        elif attribute.lower() == 'connectiondraining':
-            params['LoadBalancerAttributes.ConnectionDraining.Enabled'] = \
-                value.enabled and 'true' or 'false'
-            params['LoadBalancerAttributes.ConnectionDraining.Timeout'] = \
-                value.timeout
-        elif attribute.lower() == 'connectingsettings':
-            params['LoadBalancerAttributes.ConnectionSettings.IdleTimeout'] = \
-                value.idle_timeout
+        params = {"LoadBalancerName": load_balancer_name}
+        if attribute.lower() == "crosszoneloadbalancing":
+            params["LoadBalancerAttributes.CrossZoneLoadBalancing.Enabled"] = value
+        elif attribute.lower() == "accesslog":
+            params["LoadBalancerAttributes.AccessLog.Enabled"] = (
+                value.enabled and "true" or "false"
+            )
+            params[
+                "LoadBalancerAttributes.AccessLog.S3BucketName"
+            ] = value.s3_bucket_name
+            params[
+                "LoadBalancerAttributes.AccessLog.S3BucketPrefix"
+            ] = value.s3_bucket_prefix
+            params[
+                "LoadBalancerAttributes.AccessLog.EmitInterval"
+            ] = value.emit_interval
+        elif attribute.lower() == "connectiondraining":
+            params["LoadBalancerAttributes.ConnectionDraining.Enabled"] = (
+                value.enabled and "true" or "false"
+            )
+            params["LoadBalancerAttributes.ConnectionDraining.Timeout"] = value.timeout
+        elif attribute.lower() == "connectingsettings":
+            params[
+                "LoadBalancerAttributes.ConnectionSettings.IdleTimeout"
+            ] = value.idle_timeout
         else:
-            raise ValueError('InvalidAttribute', attribute)
-        return self.get_status('ModifyLoadBalancerAttributes', params,
-                               verb='GET')
+            raise ValueError("InvalidAttribute", attribute)
+        return self.get_status("ModifyLoadBalancerAttributes", params, verb="GET")
 
     def get_all_lb_attributes(self, load_balancer_name):
         """Gets all Attributes of a Load Balancer
@@ -454,9 +487,9 @@ class ELBConnection(AWSQueryConnection):
         :return: The attribute object of the ELB.
         """
         from boto.ec2.elb.attributes import LbAttributes
-        params = {'LoadBalancerName': load_balancer_name}
-        return self.get_object('DescribeLoadBalancerAttributes',
-                               params, LbAttributes)
+
+        params = {"LoadBalancerName": load_balancer_name}
+        return self.get_object("DescribeLoadBalancerAttributes", params, LbAttributes)
 
     def get_lb_attribute(self, load_balancer_name, attribute):
         """Gets an attribute of a Load Balancer
@@ -479,13 +512,13 @@ class ELBConnection(AWSQueryConnection):
         :return: The new value for the attribute
         """
         attributes = self.get_all_lb_attributes(load_balancer_name)
-        if attribute.lower() == 'accesslog':
+        if attribute.lower() == "accesslog":
             return attributes.access_log
-        if attribute.lower() == 'crosszoneloadbalancing':
+        if attribute.lower() == "crosszoneloadbalancing":
             return attributes.cross_zone_load_balancing.enabled
-        if attribute.lower() == 'connectiondraining':
+        if attribute.lower() == "connectiondraining":
             return attributes.connection_draining
-        if attribute.lower() == 'connectingsettings':
+        if attribute.lower() == "connectingsettings":
             return attributes.connecting_settings
         return None
 
@@ -503,11 +536,11 @@ class ELBConnection(AWSQueryConnection):
         :return: An updated list of instances for this Load Balancer.
 
         """
-        params = {'LoadBalancerName': load_balancer_name}
-        self.build_list_params(params, instances,
-                               'Instances.member.%d.InstanceId')
-        return self.get_list('RegisterInstancesWithLoadBalancer',
-                             params, [('member', InstanceInfo)])
+        params = {"LoadBalancerName": load_balancer_name}
+        self.build_list_params(params, instances, "Instances.member.%d.InstanceId")
+        return self.get_list(
+            "RegisterInstancesWithLoadBalancer", params, [("member", InstanceInfo)]
+        )
 
     def deregister_instances(self, load_balancer_name, instances):
         """
@@ -523,11 +556,11 @@ class ELBConnection(AWSQueryConnection):
         :return: An updated list of instances for this Load Balancer.
 
         """
-        params = {'LoadBalancerName': load_balancer_name}
-        self.build_list_params(params, instances,
-                               'Instances.member.%d.InstanceId')
-        return self.get_list('DeregisterInstancesFromLoadBalancer',
-                             params, [('member', InstanceInfo)])
+        params = {"LoadBalancerName": load_balancer_name}
+        self.build_list_params(params, instances, "Instances.member.%d.InstanceId")
+        return self.get_list(
+            "DeregisterInstancesFromLoadBalancer", params, [("member", InstanceInfo)]
+        )
 
     def describe_instance_health(self, load_balancer_name, instances=None):
         """
@@ -545,12 +578,12 @@ class ELBConnection(AWSQueryConnection):
         :return: list of state info for instances in this Load Balancer.
 
         """
-        params = {'LoadBalancerName': load_balancer_name}
+        params = {"LoadBalancerName": load_balancer_name}
         if instances:
-            self.build_list_params(params, instances,
-                                   'Instances.member.%d.InstanceId')
-        return self.get_list('DescribeInstanceHealth', params,
-                             [('member', InstanceState)])
+            self.build_list_params(params, instances, "Instances.member.%d.InstanceId")
+        return self.get_list(
+            "DescribeInstanceHealth", params, [("member", InstanceState)]
+        )
 
     def configure_health_check(self, name, health_check):
         """
@@ -566,25 +599,28 @@ class ELBConnection(AWSQueryConnection):
         :rtype: :class:`boto.ec2.elb.healthcheck.HealthCheck`
         :return: The updated :class:`boto.ec2.elb.healthcheck.HealthCheck`
         """
-        params = {'LoadBalancerName': name,
-                  'HealthCheck.Timeout': health_check.timeout,
-                  'HealthCheck.Target': health_check.target,
-                  'HealthCheck.Interval': health_check.interval,
-                  'HealthCheck.UnhealthyThreshold': health_check.unhealthy_threshold,
-                  'HealthCheck.HealthyThreshold': health_check.healthy_threshold}
-        return self.get_object('ConfigureHealthCheck', params, HealthCheck)
+        params = {
+            "LoadBalancerName": name,
+            "HealthCheck.Timeout": health_check.timeout,
+            "HealthCheck.Target": health_check.target,
+            "HealthCheck.Interval": health_check.interval,
+            "HealthCheck.UnhealthyThreshold": health_check.unhealthy_threshold,
+            "HealthCheck.HealthyThreshold": health_check.healthy_threshold,
+        }
+        return self.get_object("ConfigureHealthCheck", params, HealthCheck)
 
-    def set_lb_listener_SSL_certificate(self, lb_name, lb_port,
-                                        ssl_certificate_id):
+    def set_lb_listener_SSL_certificate(self, lb_name, lb_port, ssl_certificate_id):
         """
         Sets the certificate that terminates the specified listener's SSL
         connections. The specified certificate replaces any prior certificate
         that was used on the same LoadBalancer and port.
         """
-        params = {'LoadBalancerName': lb_name,
-                  'LoadBalancerPort': lb_port,
-                  'SSLCertificateId': ssl_certificate_id}
-        return self.get_status('SetLoadBalancerListenerSSLCertificate', params)
+        params = {
+            "LoadBalancerName": lb_name,
+            "LoadBalancerPort": lb_port,
+            "SSLCertificateId": ssl_certificate_id,
+        }
+        return self.get_status("SetLoadBalancerListenerSSLCertificate", params)
 
     def create_app_cookie_stickiness_policy(self, name, lb_name, policy_name):
         """
@@ -602,13 +638,16 @@ class ELBConnection(AWSQueryConnection):
         If the application cookie is explicitly removed or expires, the session
         stops being sticky until a new application cookie is issued.
         """
-        params = {'CookieName': name,
-                  'LoadBalancerName': lb_name,
-                  'PolicyName': policy_name}
-        return self.get_status('CreateAppCookieStickinessPolicy', params)
+        params = {
+            "CookieName": name,
+            "LoadBalancerName": lb_name,
+            "PolicyName": policy_name,
+        }
+        return self.get_status("CreateAppCookieStickinessPolicy", params)
 
-    def create_lb_cookie_stickiness_policy(self, cookie_expiration_period,
-                                           lb_name, policy_name):
+    def create_lb_cookie_stickiness_policy(
+        self, cookie_expiration_period, lb_name, policy_name
+    ):
         """
         Generates a stickiness policy with sticky session lifetimes controlled
         by the lifetime of the browser (user-agent) or a specified expiration
@@ -629,14 +668,12 @@ class ELBConnection(AWSQueryConnection):
 
         None may be passed for cookie_expiration_period.
         """
-        params = {'LoadBalancerName': lb_name,
-                  'PolicyName': policy_name}
+        params = {"LoadBalancerName": lb_name, "PolicyName": policy_name}
         if cookie_expiration_period is not None:
-            params['CookieExpirationPeriod'] = cookie_expiration_period
-        return self.get_status('CreateLBCookieStickinessPolicy', params)
+            params["CookieExpirationPeriod"] = cookie_expiration_period
+        return self.get_status("CreateLBCookieStickinessPolicy", params)
 
-    def create_lb_policy(self, lb_name, policy_name, policy_type,
-                         policy_attributes):
+    def create_lb_policy(self, lb_name, policy_name, policy_type, policy_attributes):
         """
         Creates a new policy that contains the necessary attributes
         depending on the policy type. Policies are settings that are
@@ -644,24 +681,25 @@ class ELBConnection(AWSQueryConnection):
         front-end listener, or the back-end application server.
 
         """
-        params = {'LoadBalancerName': lb_name,
-                  'PolicyName': policy_name,
-                  'PolicyTypeName': policy_type}
+        params = {
+            "LoadBalancerName": lb_name,
+            "PolicyName": policy_name,
+            "PolicyTypeName": policy_type,
+        }
         for index, (name, value) in enumerate(six.iteritems(policy_attributes), 1):
-            params['PolicyAttributes.member.%d.AttributeName' % index] = name
-            params['PolicyAttributes.member.%d.AttributeValue' % index] = value
+            params["PolicyAttributes.member.%d.AttributeName" % index] = name
+            params["PolicyAttributes.member.%d.AttributeValue" % index] = value
         else:
-            params['PolicyAttributes'] = ''
-        return self.get_status('CreateLoadBalancerPolicy', params)
+            params["PolicyAttributes"] = ""
+        return self.get_status("CreateLoadBalancerPolicy", params)
 
     def delete_lb_policy(self, lb_name, policy_name):
         """
         Deletes a policy from the LoadBalancer. The specified policy must not
         be enabled for any listeners.
         """
-        params = {'LoadBalancerName': lb_name,
-                  'PolicyName': policy_name}
-        return self.get_status('DeleteLoadBalancerPolicy', params)
+        params = {"LoadBalancerName": lb_name, "PolicyName": policy_name}
+        return self.get_status("DeleteLoadBalancerPolicy", params)
 
     def set_lb_policies_of_listener(self, lb_name, lb_port, policies):
         """
@@ -669,28 +707,24 @@ class ELBConnection(AWSQueryConnection):
         balancer. Currently only zero (0) or one (1) policy can be associated
         with a listener.
         """
-        params = {'LoadBalancerName': lb_name,
-                  'LoadBalancerPort': lb_port}
+        params = {"LoadBalancerName": lb_name, "LoadBalancerPort": lb_port}
         if len(policies):
-            self.build_list_params(params, policies, 'PolicyNames.member.%d')
+            self.build_list_params(params, policies, "PolicyNames.member.%d")
         else:
-            params['PolicyNames'] = ''
-        return self.get_status('SetLoadBalancerPoliciesOfListener', params)
+            params["PolicyNames"] = ""
+        return self.get_status("SetLoadBalancerPoliciesOfListener", params)
 
-    def set_lb_policies_of_backend_server(self, lb_name, instance_port,
-                                          policies):
+    def set_lb_policies_of_backend_server(self, lb_name, instance_port, policies):
         """
         Replaces the current set of policies associated with a port on which
         the back-end server is listening with a new set of policies.
         """
-        params = {'LoadBalancerName': lb_name,
-                  'InstancePort': instance_port}
+        params = {"LoadBalancerName": lb_name, "InstancePort": instance_port}
         if policies:
-            self.build_list_params(params, policies, 'PolicyNames.member.%d')
+            self.build_list_params(params, policies, "PolicyNames.member.%d")
         else:
-            params['PolicyNames'] = ''
-        return self.get_status('SetLoadBalancerPoliciesForBackendServer',
-                               params)
+            params["PolicyNames"] = ""
+        return self.get_status("SetLoadBalancerPoliciesForBackendServer", params)
 
     def apply_security_groups_to_lb(self, name, security_groups):
         """
@@ -708,11 +742,9 @@ class ELBConnection(AWSQueryConnection):
         :return: An updated list of security groups for this Load Balancer.
 
         """
-        params = {'LoadBalancerName': name}
-        self.build_list_params(params, security_groups,
-                               'SecurityGroups.member.%d')
-        return self.get_list('ApplySecurityGroupsToLoadBalancer',
-                             params, None)
+        params = {"LoadBalancerName": name}
+        self.build_list_params(params, security_groups, "SecurityGroups.member.%d")
+        return self.get_list("ApplySecurityGroupsToLoadBalancer", params, None)
 
     def attach_lb_to_subnets(self, name, subnets):
         """
@@ -730,11 +762,9 @@ class ELBConnection(AWSQueryConnection):
         :return: An updated list of subnets for this Load Balancer.
 
         """
-        params = {'LoadBalancerName': name}
-        self.build_list_params(params, subnets,
-                               'Subnets.member.%d')
-        return self.get_list('AttachLoadBalancerToSubnets',
-                             params, None)
+        params = {"LoadBalancerName": name}
+        self.build_list_params(params, subnets, "Subnets.member.%d")
+        return self.get_list("AttachLoadBalancerToSubnets", params, None)
 
     def detach_lb_from_subnets(self, name, subnets):
         """
@@ -750,8 +780,6 @@ class ELBConnection(AWSQueryConnection):
         :return: An updated list of subnets for this Load Balancer.
 
         """
-        params = {'LoadBalancerName': name}
-        self.build_list_params(params, subnets,
-                               'Subnets.member.%d')
-        return self.get_list('DetachLoadBalancerFromSubnets',
-                             params, None)
+        params = {"LoadBalancerName": name}
+        self.build_list_params(params, subnets, "Subnets.member.%d")
+        return self.get_list("DetachLoadBalancerFromSubnets", params, None)

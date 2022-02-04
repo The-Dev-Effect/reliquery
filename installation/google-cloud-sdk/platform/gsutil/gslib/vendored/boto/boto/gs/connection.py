@@ -26,26 +26,52 @@ from boto.s3.connection import check_lowercase_bucketname
 from boto.compat import six
 from boto.utils import get_utf8able_str
 
+
 class Location(object):
-    DEFAULT = 'US'
-    EU = 'EU'
+    DEFAULT = "US"
+    EU = "EU"
+
 
 class GSConnection(S3Connection):
 
-    DefaultHost = 'storage.googleapis.com'
-    QueryString = 'Signature=%s&Expires=%d&GoogleAccessId=%s'
+    DefaultHost = "storage.googleapis.com"
+    QueryString = "Signature=%s&Expires=%d&GoogleAccessId=%s"
 
-    def __init__(self, gs_access_key_id=None, gs_secret_access_key=None,
-                 is_secure=True, port=None, proxy=None, proxy_port=None,
-                 proxy_user=None, proxy_pass=None,
-                 host=DefaultHost, debug=0, https_connection_factory=None,
-                 calling_format=SubdomainCallingFormat(), path='/',
-                 suppress_consec_slashes=True):
-        super(GSConnection, self).__init__(gs_access_key_id, gs_secret_access_key,
-                 is_secure, port, proxy, proxy_port, proxy_user, proxy_pass,
-                 host, debug, https_connection_factory, calling_format, path,
-                 "google", Bucket,
-                 suppress_consec_slashes=suppress_consec_slashes)
+    def __init__(
+        self,
+        gs_access_key_id=None,
+        gs_secret_access_key=None,
+        is_secure=True,
+        port=None,
+        proxy=None,
+        proxy_port=None,
+        proxy_user=None,
+        proxy_pass=None,
+        host=DefaultHost,
+        debug=0,
+        https_connection_factory=None,
+        calling_format=SubdomainCallingFormat(),
+        path="/",
+        suppress_consec_slashes=True,
+    ):
+        super(GSConnection, self).__init__(
+            gs_access_key_id,
+            gs_secret_access_key,
+            is_secure,
+            port,
+            proxy,
+            proxy_port,
+            proxy_user,
+            proxy_pass,
+            host,
+            debug,
+            https_connection_factory,
+            calling_format,
+            path,
+            "google",
+            Bucket,
+            suppress_consec_slashes=suppress_consec_slashes,
+        )
 
     def _required_auth_capability(self):
         """
@@ -54,13 +80,18 @@ class GSConnection(S3Connection):
         gcs.
         """
         if self.anon:
-            return ['anon']
+            return ["anon"]
         else:
-            return ['s3']
+            return ["s3"]
 
-    def create_bucket(self, bucket_name, headers=None,
-                      location=Location.DEFAULT, policy=None,
-                      storage_class='STANDARD'):
+    def create_bucket(
+        self,
+        bucket_name,
+        headers=None,
+        location=Location.DEFAULT,
+        policy=None,
+        storage_class="STANDARD",
+    ):
         """
         Creates a new bucket. By default it's located in the USA. You can
         pass Location.EU to create bucket in the EU. You can also pass
@@ -90,30 +121,35 @@ class GSConnection(S3Connection):
             if headers:
                 headers[self.provider.acl_header] = policy
             else:
-                headers = {self.provider.acl_header : policy}
+                headers = {self.provider.acl_header: policy}
         if not location:
             location = Location.DEFAULT
-        location_elem = ('<LocationConstraint>%s</LocationConstraint>'
-                         % location)
+        location_elem = "<LocationConstraint>%s</LocationConstraint>" % location
         if storage_class:
-            storage_class_elem = ('<StorageClass>%s</StorageClass>'
-                                  % storage_class)
+            storage_class_elem = "<StorageClass>%s</StorageClass>" % storage_class
         else:
-            storage_class_elem = ''
-        data = ('<CreateBucketConfiguration>%s%s</CreateBucketConfiguration>'
-                 % (location_elem, storage_class_elem))
+            storage_class_elem = ""
+        data = "<CreateBucketConfiguration>%s%s</CreateBucketConfiguration>" % (
+            location_elem,
+            storage_class_elem,
+        )
         response = self.make_request(
-            'PUT', get_utf8able_str(bucket_name), headers=headers,
-            data=get_utf8able_str(data))
+            "PUT",
+            get_utf8able_str(bucket_name),
+            headers=headers,
+            data=get_utf8able_str(data),
+        )
         body = response.read()
         if response.status == 409:
             raise self.provider.storage_create_error(
-                response.status, response.reason, body)
+                response.status, response.reason, body
+            )
         if response.status == 200:
             return self.bucket_class(self, bucket_name)
         else:
             raise self.provider.storage_response_error(
-                response.status, response.reason, body)
+                response.status, response.reason, body
+            )
 
     def get_bucket(self, bucket_name, validate=True, headers=None):
         """

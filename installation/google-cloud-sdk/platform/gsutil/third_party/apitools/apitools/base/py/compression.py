@@ -21,14 +21,13 @@ from collections import deque
 from apitools.base.py import gzip
 
 __all__ = [
-    'CompressStream',
+    "CompressStream",
 ]
 
 
 # pylint: disable=invalid-name
 # Note: Apitools only uses the default chunksize when compressing.
-def CompressStream(in_stream, length=None, compresslevel=2,
-                   chunksize=16777216):
+def CompressStream(in_stream, length=None, compresslevel=2, chunksize=16777216):
 
     """Compresses an input stream into a file-like buffer.
 
@@ -69,9 +68,9 @@ def CompressStream(in_stream, length=None, compresslevel=2,
     in_read = 0
     in_exhausted = False
     out_stream = StreamingBuffer()
-    with gzip.GzipFile(mode='wb',
-                       fileobj=out_stream,
-                       compresslevel=compresslevel) as compress_stream:
+    with gzip.GzipFile(
+        mode="wb", fileobj=out_stream, compresslevel=compresslevel
+    ) as compress_stream:
         # Read until we've written at least length bytes to the output stream.
         while not length or out_stream.length < length:
             data = in_stream.read(chunksize)
@@ -142,6 +141,6 @@ class StreamingBuffer(object):
         if size < 0:
             ret_list[-1], remainder = ret_list[-1][:size], ret_list[-1][size:]
             self.__buf.appendleft(remainder)
-        ret = b''.join(ret_list)
+        ret = b"".join(ret_list)
         self.__size -= len(ret)
         return ret

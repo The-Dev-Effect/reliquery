@@ -61,22 +61,22 @@ class BaseTest(unittest.TestCase):
 
 
 class TestGzip(BaseTest):
-    def write_and_read_back(self, data, mode='b'):
+    def write_and_read_back(self, data, mode="b"):
         b_data = bytes(data)
-        with gzip.GzipFile(self.filename, 'w' + mode) as f:
+        with gzip.GzipFile(self.filename, "w" + mode) as f:
             l = f.write(data)
         self.assertEqual(l, len(b_data))
-        with gzip.GzipFile(self.filename, 'r' + mode) as f:
+        with gzip.GzipFile(self.filename, "r" + mode) as f:
             self.assertEqual(f.read(), b_data)
 
     def test_write(self):
-        with gzip.GzipFile(self.filename, 'wb') as f:
+        with gzip.GzipFile(self.filename, "wb") as f:
             f.write(data1 * 50)
 
             # Try flush and fileno.
             f.flush()
             f.fileno()
-            if hasattr(os, 'fsync'):
+            if hasattr(os, "fsync"):
                 os.fsync(f.fileno())
             f.close()
 
@@ -96,23 +96,23 @@ class TestGzip(BaseTest):
         # Test that non-bytes-like types raise TypeError.
         # Issue #21560: attempts to write incompatible types
         # should not affect the state of the fileobject
-        with gzip.GzipFile(self.filename, 'wb') as f:
+        with gzip.GzipFile(self.filename, "wb") as f:
             if six.PY2:
                 with self.assertRaises(UnicodeEncodeError):
-                    f.write(u'\xff')
+                    f.write(u"\xff")
             elif six.PY3:
                 with self.assertRaises(TypeError):
-                    f.write(u'\xff')
+                    f.write(u"\xff")
             with self.assertRaises(TypeError):
                 f.write([1])
             f.write(data1)
-        with gzip.GzipFile(self.filename, 'rb') as f:
+        with gzip.GzipFile(self.filename, "rb") as f:
             self.assertEqual(f.read(), data1)
 
     def test_read(self):
         self.test_write()
         # Try reading.
-        with gzip.GzipFile(self.filename, 'r') as f:
+        with gzip.GzipFile(self.filename, "r") as f:
             d = f.read()
         self.assertEqual(d, data1 * 50)
 
@@ -120,7 +120,7 @@ class TestGzip(BaseTest):
         self.test_write()
         blocks = []
         nread = 0
-        with gzip.GzipFile(self.filename, 'r') as f:
+        with gzip.GzipFile(self.filename, "r") as f:
             while True:
                 d = f.read1()
                 if not d:
@@ -129,7 +129,7 @@ class TestGzip(BaseTest):
                 nread += len(d)
                 # Check that position was updated correctly (see issue10791).
                 self.assertEqual(f.tell(), nread)
-        self.assertEqual(b''.join(blocks), data1 * 50)
+        self.assertEqual(b"".join(blocks), data1 * 50)
 
     def test_io_on_closed_object(self):
         # Test that I/O operations on closed GzipFile objects raise a
@@ -137,7 +137,7 @@ class TestGzip(BaseTest):
 
         # Write to a file, open it for reading, then close it.
         self.test_write()
-        f = gzip.GzipFile(self.filename, 'r')
+        f = gzip.GzipFile(self.filename, "r")
         f.close()
         with self.assertRaises(ValueError):
             f.read(1)
@@ -146,20 +146,20 @@ class TestGzip(BaseTest):
         with self.assertRaises(ValueError):
             f.tell()
         # Open the file for writing, then close it.
-        f = gzip.GzipFile(self.filename, 'w')
+        f = gzip.GzipFile(self.filename, "w")
         f.close()
         with self.assertRaises(ValueError):
-            f.write(b'')
+            f.write(b"")
         with self.assertRaises(ValueError):
             f.flush()
 
     def test_append(self):
         self.test_write()
         # Append to the previous file
-        with gzip.GzipFile(self.filename, 'ab') as f:
+        with gzip.GzipFile(self.filename, "ab") as f:
             f.write(data2 * 15)
 
-        with gzip.GzipFile(self.filename, 'rb') as f:
+        with gzip.GzipFile(self.filename, "rb") as f:
             d = f.read()
         self.assertEqual(d, (data1 * 50) + (data2 * 15))
 
@@ -167,11 +167,11 @@ class TestGzip(BaseTest):
         # Bug #1074261 was triggered when reading a file that contained
         # many, many members.  Create such a file and verify that reading it
         # works.
-        with gzip.GzipFile(self.filename, 'wb', 9) as f:
-            f.write(b'a')
+        with gzip.GzipFile(self.filename, "wb", 9) as f:
+            f.write(b"a")
         for i in range(0, 200):
             with gzip.GzipFile(self.filename, "ab", 9) as f:  # append
-                f.write(b'a')
+                f.write(b"a")
 
         # Try reading the file
         with gzip.GzipFile(self.filename, "rb") as zgfile:
@@ -181,14 +181,14 @@ class TestGzip(BaseTest):
                 contents += ztxt
                 if not ztxt:
                     break
-        self.assertEqual(contents, b'a' * 201)
+        self.assertEqual(contents, b"a" * 201)
 
     def test_buffered_reader(self):
         # Issue #7471: a GzipFile can be wrapped in a BufferedReader for
         # performance.
         self.test_write()
 
-        with gzip.GzipFile(self.filename, 'rb') as f:
+        with gzip.GzipFile(self.filename, "rb") as f:
             with io.BufferedReader(f) as r:
                 lines = [line for line in r]
 
@@ -198,7 +198,7 @@ class TestGzip(BaseTest):
         self.test_write()
         # Try .readline() with varying line lengths
 
-        with gzip.GzipFile(self.filename, 'rb') as f:
+        with gzip.GzipFile(self.filename, "rb") as f:
             line_length = 0
             while 1:
                 L = f.readline(line_length)
@@ -211,10 +211,10 @@ class TestGzip(BaseTest):
         self.test_write()
         # Try .readlines()
 
-        with gzip.GzipFile(self.filename, 'rb') as f:
+        with gzip.GzipFile(self.filename, "rb") as f:
             L = f.readlines()
 
-        with gzip.GzipFile(self.filename, 'rb') as f:
+        with gzip.GzipFile(self.filename, "rb") as f:
             while 1:
                 L = f.readlines(150)
                 if L == []:
@@ -252,71 +252,70 @@ class TestGzip(BaseTest):
 
     def test_seek_write(self):
         # Try seek, write test
-        with gzip.GzipFile(self.filename, 'w') as f:
+        with gzip.GzipFile(self.filename, "w") as f:
             for pos in range(0, 256, 16):
                 f.seek(pos)
-                f.write(b'GZ\n')
+                f.write(b"GZ\n")
 
     def test_mode(self):
         self.test_write()
-        with gzip.GzipFile(self.filename, 'r') as f:
-            self.assertEqual(f.myfileobj.mode, 'rb')
+        with gzip.GzipFile(self.filename, "r") as f:
+            self.assertEqual(f.myfileobj.mode, "rb")
 
     def test_1647484(self):
-        for mode in ('wb', 'rb'):
+        for mode in ("wb", "rb"):
             with gzip.GzipFile(self.filename, mode) as f:
                 self.assertTrue(hasattr(f, "name"))
                 self.assertEqual(f.name, self.filename)
 
     def test_paddedfile_getattr(self):
         self.test_write()
-        with gzip.GzipFile(self.filename, 'rb') as f:
+        with gzip.GzipFile(self.filename, "rb") as f:
             self.assertTrue(hasattr(f.fileobj, "name"))
             self.assertEqual(f.fileobj.name, self.filename)
 
     def test_mtime(self):
         mtime = 123456789
-        with gzip.GzipFile(self.filename, 'w', mtime=mtime) as fWrite:
+        with gzip.GzipFile(self.filename, "w", mtime=mtime) as fWrite:
             fWrite.write(data1)
         with gzip.GzipFile(self.filename) as fRead:
             dataRead = fRead.read()
             self.assertEqual(dataRead, data1)
-            self.assertTrue(hasattr(fRead, 'mtime'))
+            self.assertTrue(hasattr(fRead, "mtime"))
             self.assertEqual(fRead.mtime, mtime)
 
     def test_metadata(self):
         mtime = 123456789
 
-        with gzip.GzipFile(self.filename, 'w', mtime=mtime) as fWrite:
+        with gzip.GzipFile(self.filename, "w", mtime=mtime) as fWrite:
             fWrite.write(data1)
 
-        with open(self.filename, 'rb') as fRead:
+        with open(self.filename, "rb") as fRead:
             # see RFC 1952: http://www.faqs.org/rfcs/rfc1952.html
 
             idBytes = fRead.read(2)
-            self.assertEqual(idBytes, b'\x1f\x8b')  # gzip ID
+            self.assertEqual(idBytes, b"\x1f\x8b")  # gzip ID
 
             cmByte = fRead.read(1)
-            self.assertEqual(cmByte, b'\x08')  # deflate
+            self.assertEqual(cmByte, b"\x08")  # deflate
 
             flagsByte = fRead.read(1)
-            self.assertEqual(flagsByte, b'\x08')  # only the FNAME flag is set
+            self.assertEqual(flagsByte, b"\x08")  # only the FNAME flag is set
 
             mtimeBytes = fRead.read(4)
-            self.assertEqual(mtimeBytes, struct.pack(
-                '<i', mtime))  # little-endian
+            self.assertEqual(mtimeBytes, struct.pack("<i", mtime))  # little-endian
 
             xflByte = fRead.read(1)
-            self.assertEqual(xflByte, b'\x02')  # maximum compression
+            self.assertEqual(xflByte, b"\x02")  # maximum compression
 
             osByte = fRead.read(1)
-            self.assertEqual(osByte, b'\xff')  # OS "unknown" (OS-independent)
+            self.assertEqual(osByte, b"\xff")  # OS "unknown" (OS-independent)
 
             # Since the FNAME flag is set, the zero-terminated filename
             # follows. RFC 1952 specifies that this is the name of the input
             # file, if any. However, the gzip module defaults to storing the
             # name of the output file in this field.
-            expected = self.filename.encode('Latin-1') + b'\x00'
+            expected = self.filename.encode("Latin-1") + b"\x00"
             nameBytes = fRead.read(len(expected))
             self.assertEqual(nameBytes, expected)
 
@@ -325,10 +324,10 @@ class TestGzip(BaseTest):
             fRead.seek(os.stat(self.filename).st_size - 8)
 
             crc32Bytes = fRead.read(4)  # CRC32 of uncompressed data [data1]
-            self.assertEqual(crc32Bytes, b'\xaf\xd7d\x83')
+            self.assertEqual(crc32Bytes, b"\xaf\xd7d\x83")
 
             isizeBytes = fRead.read(4)
-            self.assertEqual(isizeBytes, struct.pack('<i', len(data1)))
+            self.assertEqual(isizeBytes, struct.pack("<i", len(data1)))
 
     def test_with_open(self):
         # GzipFile supports the context management protocol
@@ -388,18 +387,18 @@ class TestGzip(BaseTest):
             nread = 0
             for n in sizes():
                 s = f.peek(n)
-                if s == b'':
+                if s == b"":
                     break
                 self.assertEqual(f.read(len(s)), s)
                 nread += len(s)
-            self.assertEqual(f.read(100), b'')
+            self.assertEqual(f.read(100), b"")
             self.assertEqual(nread, len(uncompressed))
 
     def test_textio_readlines(self):
         # Issue #10791: TextIOWrapper.readlines() fails when wrapping GzipFile.
         lines = (data1 * 50).decode("ascii").splitlines(True)
         self.test_write()
-        with gzip.GzipFile(self.filename, 'r') as f:
+        with gzip.GzipFile(self.filename, "r") as f:
             with io.TextIOWrapper(f, encoding="ascii") as t:
                 self.assertEqual(t.readlines(), lines)
 
@@ -461,11 +460,13 @@ class TestGzip(BaseTest):
 
     def test_read_with_extra(self):
         # Gzip data with an extra field
-        gzdata = (b'\x1f\x8b\x08\x04\xb2\x17cQ\x02\xff'
-                  b'\x05\x00Extra'
-                  b'\x0bI-.\x01\x002\xd1Mx\x04\x00\x00\x00')
+        gzdata = (
+            b"\x1f\x8b\x08\x04\xb2\x17cQ\x02\xff"
+            b"\x05\x00Extra"
+            b"\x0bI-.\x01\x002\xd1Mx\x04\x00\x00\x00"
+        )
         with gzip.GzipFile(fileobj=io.BytesIO(gzdata)) as f:
-            self.assertEqual(f.read(), b'Test')
+            self.assertEqual(f.read(), b"Test")
 
     def test_prepend_error(self):
         # See issue #20875

@@ -64,8 +64,11 @@ class LockStack(object):
             try:
                 lock.release()
             except Exception:
-                self._logger.exception("Failed releasing lock %s from lock"
-                                       " stack with %s locks", am_left, tot_am)
+                self._logger.exception(
+                    "Failed releasing lock %s from lock" " stack with %s locks",
+                    am_left,
+                    tot_am,
+                )
             am_left -= 1
 
 
@@ -76,8 +79,7 @@ class RetryAgain(Exception):
 class Retry(object):
     """A little retry helper object."""
 
-    def __init__(self, delay, max_delay,
-                 sleep_func=time.sleep, watch=None):
+    def __init__(self, delay, max_delay, sleep_func=time.sleep, watch=None):
         self.delay = delay
         self.attempts = 0
         self.max_delay = max_delay

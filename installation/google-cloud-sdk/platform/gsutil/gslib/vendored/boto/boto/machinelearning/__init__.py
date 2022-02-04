@@ -32,11 +32,16 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.machinelearning.layer1 import MachineLearningConnection
-    return get_regions('machinelearning',
-                       connection_cls=MachineLearningConnection)
+
+    return get_regions("machinelearning", connection_cls=MachineLearningConnection)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.machinelearning.layer1 import MachineLearningConnection
-    return connect('machinelearning', region_name,
-                   connection_cls=MachineLearningConnection, **kw_params)
+
+    return connect(
+        "machinelearning",
+        region_name,
+        connection_cls=MachineLearningConnection,
+        **kw_params
+    )

@@ -32,10 +32,13 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.datapipeline.layer1 import DataPipelineConnection
-    return get_regions('datapipeline', connection_cls=DataPipelineConnection)
+
+    return get_regions("datapipeline", connection_cls=DataPipelineConnection)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.datapipeline.layer1 import DataPipelineConnection
-    return connect('datapipeline', region_name,
-                   connection_cls=DataPipelineConnection, **kw_params)
+
+    return connect(
+        "datapipeline", region_name, connection_cls=DataPipelineConnection, **kw_params
+    )

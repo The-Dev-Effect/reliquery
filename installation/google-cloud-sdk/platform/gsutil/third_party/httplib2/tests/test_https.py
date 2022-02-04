@@ -21,7 +21,9 @@ def test_get_301_via_https():
     def handler(request):
         if request.uri == "/final":
             return tests.http_response_bytes(body=b"final")
-        return tests.http_response_bytes(status="301 goto", headers={"location": glocation[0]})
+        return tests.http_response_bytes(
+            status="301 goto", headers={"location": glocation[0]}
+        )
 
     with tests.server_request(handler, request_count=2, tls=True) as uri:
         glocation[0] = urllib.parse.urljoin(uri, "/final")
@@ -41,7 +43,9 @@ def test_get_301_via_https_spec_violation_on_location():
     def handler(request):
         if request.uri == "/final":
             return tests.http_response_bytes(body=b"final")
-        return tests.http_response_bytes(status="301 goto", headers={"location": "/final"})
+        return tests.http_response_bytes(
+            status="301 goto", headers={"location": "/final"}
+        )
 
     with tests.server_request(handler, request_count=2, tls=True) as uri:
         response, content = http.request(uri, "GET")
@@ -78,7 +82,7 @@ def test_not_trusted_ca():
 def test_set_min_tls_version():
     # Test setting minimum TLS version
     # We expect failure on Python < 3.7 or OpenSSL < 1.1
-    expect_success = hasattr(ssl.SSLContext(), 'minimum_version')
+    expect_success = hasattr(ssl.SSLContext(), "minimum_version")
     try:
         http = httplib2.Http(tls_minimum_version="TLSv1_2")
         http.request(tests.DUMMY_HTTPS_URL)
@@ -96,7 +100,7 @@ def test_set_max_tls_version():
     # Test setting maximum TLS version
     # We expect RuntimeError on Python < 3.7 or OpenSSL < 1.1
     # We expect socket error otherwise
-    expect_success = hasattr(ssl.SSLContext(), 'maximum_version')
+    expect_success = hasattr(ssl.SSLContext(), "maximum_version")
     try:
         http = httplib2.Http(tls_maximum_version="TLSv1_2")
         http.request(tests.DUMMY_HTTPS_URL)
@@ -176,8 +180,12 @@ def test_client_cert_password_verified():
     http = httplib2.Http(ca_certs=tests.CA_CERTS)
     with tests.server_request(handler, tls=setup_tls) as uri:
         uri_parsed = urllib.parse.urlparse(uri)
-        http.add_certificate(tests.CLIENT_ENCRYPTED_PEM, tests.CLIENT_ENCRYPTED_PEM,
-                             uri_parsed.netloc, password="12345")
+        http.add_certificate(
+            tests.CLIENT_ENCRYPTED_PEM,
+            tests.CLIENT_ENCRYPTED_PEM,
+            uri_parsed.netloc,
+            password="12345",
+        )
         http.request(uri)
 
     assert len(cert_log) == 1
@@ -193,7 +201,9 @@ def test_sni_set_servername_callback():
     sni_log = []
 
     def setup_tls(context, server, skip_errors):
-        context.set_servername_callback(lambda _sock, hostname, _context: sni_log.append(hostname))
+        context.set_servername_callback(
+            lambda _sock, hostname, _context: sni_log.append(hostname)
+        )
         return context.wrap_socket(server, server_side=True)
 
     http = httplib2.Http(ca_certs=tests.CA_CERTS)

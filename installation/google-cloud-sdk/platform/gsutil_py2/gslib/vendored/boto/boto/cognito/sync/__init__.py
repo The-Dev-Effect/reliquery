@@ -32,10 +32,13 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.cognito.sync.layer1 import CognitoSyncConnection
-    return get_regions('cognito-sync', connection_cls=CognitoSyncConnection)
+
+    return get_regions("cognito-sync", connection_cls=CognitoSyncConnection)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.cognito.sync.layer1 import CognitoSyncConnection
-    return connect('cognito-sync', region_name,
-                   connection_cls=CognitoSyncConnection, **kw_params)
+
+    return connect(
+        "cognito-sync", region_name, connection_cls=CognitoSyncConnection, **kw_params
+    )

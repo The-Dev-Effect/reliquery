@@ -41,23 +41,19 @@ class StorageUriTest(unittest.TestCase):
 
     def test_storage_uri_regionless(self):
         # First, create a bucket in a different region.
-        conn = S3Connection(
-            host='s3-us-west-2.amazonaws.com'
-        )
-        bucket_name = 'keytest-%d' % int(time.time())
+        conn = S3Connection(host="s3-us-west-2.amazonaws.com")
+        bucket_name = "keytest-%d" % int(time.time())
         bucket = conn.create_bucket(bucket_name, location=Location.USWest2)
         self.addCleanup(self.nuke_bucket, bucket)
 
         # Now use ``storage_uri`` to try to make a new key.
         # This would throw a 301 exception.
-        suri = boto.storage_uri('s3://%s/test' % bucket_name)
+        suri = boto.storage_uri("s3://%s/test" % bucket_name)
         the_key = suri.new_key()
-        the_key.key = 'Test301'
-        the_key.set_contents_from_string(
-            'This should store in a different region.'
-        )
+        the_key.key = "Test301"
+        the_key.set_contents_from_string("This should store in a different region.")
 
         # Check it a different way.
-        alt_conn = boto.connect_s3(host='s3-us-west-2.amazonaws.com')
+        alt_conn = boto.connect_s3(host="s3-us-west-2.amazonaws.com")
         alt_bucket = alt_conn.get_bucket(bucket_name)
-        alt_key = alt_bucket.get_key('Test301')
+        alt_key = alt_bucket.get_key("Test301")

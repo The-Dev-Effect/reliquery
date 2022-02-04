@@ -43,11 +43,16 @@ _SYNOPSIS = """
             [--autoclass] [--retention <time>] [--pap <setting>]
             [--placement <region1>,<region2>]
             [--rpo {}] gs://<bucket_name>...
-""".format(VALID_RPO_VALUES_STRING)
+""".format(
+    VALID_RPO_VALUES_STRING
+)
 
-_DETAILED_HELP_TEXT = ("""
+_DETAILED_HELP_TEXT = (
+    """
 <B>SYNOPSIS</B>
-""" + _SYNOPSIS + """
+"""
+    + _SYNOPSIS
+    + """
 
 
 <B>DESCRIPTION</B>
@@ -164,178 +169,208 @@ _DETAILED_HELP_TEXT = ("""
                          are {rpo_values}. If unspecified, DEFAULT is applied
                          for dual-region and multi-region buckets.
 
-""".format(rpo_values=VALID_RPO_VALUES_STRING))
+""".format(
+        rpo_values=VALID_RPO_VALUES_STRING
+    )
+)
 
 # Regex to disallow buckets violating charset or not [3..255] chars total.
-BUCKET_NAME_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9\._-]{1,253}[a-zA-Z0-9]$')
+BUCKET_NAME_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9\._-]{1,253}[a-zA-Z0-9]$")
 # Regex to disallow buckets with individual DNS labels longer than 63.
-TOO_LONG_DNS_NAME_COMP = re.compile(r'[-_a-z0-9]{64}')
+TOO_LONG_DNS_NAME_COMP = re.compile(r"[-_a-z0-9]{64}")
 
 IamConfigurationValue = apitools_messages.Bucket.IamConfigurationValue
 BucketPolicyOnlyValue = IamConfigurationValue.BucketPolicyOnlyValue
 
 
 class MbCommand(Command):
-  """Implementation of gsutil mb command."""
+    """Implementation of gsutil mb command."""
 
-  # Command specification. See base class for documentation.
-  command_spec = Command.CreateCommandSpec(
-      'mb',
-      command_name_aliases=['makebucket', 'createbucket', 'md', 'mkdir'],
-      usage_synopsis=_SYNOPSIS,
-      min_args=1,
-      max_args=NO_MAX,
-      supported_sub_args='b:c:l:p:s:',
-      supported_private_args=[
-          'autoclass', 'retention=', 'pap=', 'placement=', 'rpo='
-      ],
-      file_url_ok=False,
-      provider_url_ok=False,
-      urls_start_arg=0,
-      gs_api_support=[ApiSelector.XML, ApiSelector.JSON],
-      gs_default_api=ApiSelector.JSON,
-      argparse_arguments=[
-          CommandArgument.MakeZeroOrMoreCloudBucketURLsArgument()
-      ],
-  )
-  # Help specification. See help_provider.py for documentation.
-  help_spec = Command.HelpSpec(
-      help_name='mb',
-      help_name_aliases=[
-          'createbucket',
-          'makebucket',
-          'md',
-          'mkdir',
-          'location',
-          'dra',
-          'dras',
-          'reduced_availability',
-          'durable_reduced_availability',
-          'rr',
-          'reduced_redundancy',
-          'standard',
-          'storage class',
-          'nearline',
-          'nl',
-      ],
-      help_type='command_help',
-      help_one_line_summary='Make buckets',
-      help_text=_DETAILED_HELP_TEXT,
-      subcommand_help_text={},
-  )
+    # Command specification. See base class for documentation.
+    command_spec = Command.CreateCommandSpec(
+        "mb",
+        command_name_aliases=["makebucket", "createbucket", "md", "mkdir"],
+        usage_synopsis=_SYNOPSIS,
+        min_args=1,
+        max_args=NO_MAX,
+        supported_sub_args="b:c:l:p:s:",
+        supported_private_args=[
+            "autoclass",
+            "retention=",
+            "pap=",
+            "placement=",
+            "rpo=",
+        ],
+        file_url_ok=False,
+        provider_url_ok=False,
+        urls_start_arg=0,
+        gs_api_support=[ApiSelector.XML, ApiSelector.JSON],
+        gs_default_api=ApiSelector.JSON,
+        argparse_arguments=[CommandArgument.MakeZeroOrMoreCloudBucketURLsArgument()],
+    )
+    # Help specification. See help_provider.py for documentation.
+    help_spec = Command.HelpSpec(
+        help_name="mb",
+        help_name_aliases=[
+            "createbucket",
+            "makebucket",
+            "md",
+            "mkdir",
+            "location",
+            "dra",
+            "dras",
+            "reduced_availability",
+            "durable_reduced_availability",
+            "rr",
+            "reduced_redundancy",
+            "standard",
+            "storage class",
+            "nearline",
+            "nl",
+        ],
+        help_type="command_help",
+        help_one_line_summary="Make buckets",
+        help_text=_DETAILED_HELP_TEXT,
+        subcommand_help_text={},
+    )
 
-  def RunCommand(self):
-    """Command entry point for the mb command."""
-    autoclass = False
-    bucket_policy_only = None
-    location = None
-    storage_class = None
-    seconds = None
-    public_access_prevention = None
-    rpo = None
-    json_only_flags_in_command = []
-    placements = None
-    if self.sub_opts:
-      for o, a in self.sub_opts:
-        if o == '--autoclass':
-          autoclass = True
-          json_only_flags_in_command.append(o)
-        elif o == '-l':
-          location = a
-        elif o == '-p':
-          # Project IDs are sent as header values when using gs and s3 XML APIs.
-          InsistAscii(a, 'Invalid non-ASCII character found in project ID')
-          self.project_id = a
-        elif o == '-c' or o == '-s':
-          storage_class = NormalizeStorageClass(a)
-        elif o == '--retention':
-          seconds = RetentionInSeconds(a)
-        elif o == '--rpo':
-          rpo = a.strip()
-          if rpo not in VALID_RPO_VALUES:
-            raise CommandException(
-                'Invalid value for --rpo. Must be one of: {},'
-                ' provided: {}'.format(VALID_RPO_VALUES_STRING, a))
-          json_only_flags_in_command.append(o)
-        elif o == '-b':
-          InsistOnOrOff(a, 'Only on and off values allowed for -b option')
-          bucket_policy_only = (a == 'on')
-          json_only_flags_in_command.append(o)
-        elif o == '--pap':
-          public_access_prevention = a
-          json_only_flags_in_command.append(o)
-        elif o == '--placement':
-          placements = a.split(',')
-          if len(placements) != 2:
-            raise CommandException(
-                'Please specify two regions separated by comma without space.'
-                ' Specified: {}'.format(a))
-          json_only_flags_in_command.append(o)
+    def RunCommand(self):
+        """Command entry point for the mb command."""
+        autoclass = False
+        bucket_policy_only = None
+        location = None
+        storage_class = None
+        seconds = None
+        public_access_prevention = None
+        rpo = None
+        json_only_flags_in_command = []
+        placements = None
+        if self.sub_opts:
+            for o, a in self.sub_opts:
+                if o == "--autoclass":
+                    autoclass = True
+                    json_only_flags_in_command.append(o)
+                elif o == "-l":
+                    location = a
+                elif o == "-p":
+                    # Project IDs are sent as header values when using gs and s3 XML APIs.
+                    InsistAscii(a, "Invalid non-ASCII character found in project ID")
+                    self.project_id = a
+                elif o == "-c" or o == "-s":
+                    storage_class = NormalizeStorageClass(a)
+                elif o == "--retention":
+                    seconds = RetentionInSeconds(a)
+                elif o == "--rpo":
+                    rpo = a.strip()
+                    if rpo not in VALID_RPO_VALUES:
+                        raise CommandException(
+                            "Invalid value for --rpo. Must be one of: {},"
+                            " provided: {}".format(VALID_RPO_VALUES_STRING, a)
+                        )
+                    json_only_flags_in_command.append(o)
+                elif o == "-b":
+                    InsistOnOrOff(a, "Only on and off values allowed for -b option")
+                    bucket_policy_only = a == "on"
+                    json_only_flags_in_command.append(o)
+                elif o == "--pap":
+                    public_access_prevention = a
+                    json_only_flags_in_command.append(o)
+                elif o == "--placement":
+                    placements = a.split(",")
+                    if len(placements) != 2:
+                        raise CommandException(
+                            "Please specify two regions separated by comma without space."
+                            " Specified: {}".format(a)
+                        )
+                    json_only_flags_in_command.append(o)
 
-    bucket_metadata = apitools_messages.Bucket(location=location,
-                                               rpo=rpo,
-                                               storageClass=storage_class)
-    if autoclass:
-      bucket_metadata.autoclass = apitools_messages.Bucket.AutoclassValue(
-          enabled=autoclass)
-    if bucket_policy_only or public_access_prevention:
-      bucket_metadata.iamConfiguration = IamConfigurationValue()
-      iam_config = bucket_metadata.iamConfiguration
-      if bucket_policy_only:
-        iam_config.bucketPolicyOnly = BucketPolicyOnlyValue()
-        iam_config.bucketPolicyOnly.enabled = bucket_policy_only
-      if public_access_prevention:
-        iam_config.publicAccessPrevention = public_access_prevention
+        bucket_metadata = apitools_messages.Bucket(
+            location=location, rpo=rpo, storageClass=storage_class
+        )
+        if autoclass:
+            bucket_metadata.autoclass = apitools_messages.Bucket.AutoclassValue(
+                enabled=autoclass
+            )
+        if bucket_policy_only or public_access_prevention:
+            bucket_metadata.iamConfiguration = IamConfigurationValue()
+            iam_config = bucket_metadata.iamConfiguration
+            if bucket_policy_only:
+                iam_config.bucketPolicyOnly = BucketPolicyOnlyValue()
+                iam_config.bucketPolicyOnly.enabled = bucket_policy_only
+            if public_access_prevention:
+                iam_config.publicAccessPrevention = public_access_prevention
 
-    if placements:
-      placement_config = apitools_messages.Bucket.CustomPlacementConfigValue()
-      placement_config.dataLocations = placements
-      bucket_metadata.customPlacementConfig = placement_config
+        if placements:
+            placement_config = apitools_messages.Bucket.CustomPlacementConfigValue()
+            placement_config.dataLocations = placements
+            bucket_metadata.customPlacementConfig = placement_config
 
-    for bucket_url_str in self.args:
-      bucket_url = StorageUrlFromString(bucket_url_str)
-      if seconds is not None:
-        if bucket_url.scheme != 'gs':
-          raise CommandException('Retention policy can only be specified for '
-                                 'GCS buckets.')
-        retention_policy = (apitools_messages.Bucket.RetentionPolicyValue(
-            retentionPeriod=seconds))
-        bucket_metadata.retentionPolicy = retention_policy
+        for bucket_url_str in self.args:
+            bucket_url = StorageUrlFromString(bucket_url_str)
+            if seconds is not None:
+                if bucket_url.scheme != "gs":
+                    raise CommandException(
+                        "Retention policy can only be specified for " "GCS buckets."
+                    )
+                retention_policy = apitools_messages.Bucket.RetentionPolicyValue(
+                    retentionPeriod=seconds
+                )
+                bucket_metadata.retentionPolicy = retention_policy
 
-      if json_only_flags_in_command and self.gsutil_api.GetApiSelector(
-          bucket_url.scheme) != ApiSelector.JSON:
-        raise CommandException('The {} option(s) can only be used for GCS'
-                               ' Buckets with the JSON API'.format(
-                                   ', '.join(json_only_flags_in_command)))
+            if (
+                json_only_flags_in_command
+                and self.gsutil_api.GetApiSelector(bucket_url.scheme)
+                != ApiSelector.JSON
+            ):
+                raise CommandException(
+                    "The {} option(s) can only be used for GCS"
+                    " Buckets with the JSON API".format(
+                        ", ".join(json_only_flags_in_command)
+                    )
+                )
 
-      if not bucket_url.IsBucket():
-        raise CommandException('The mb command requires a URL that specifies a '
-                               'bucket.\n"%s" is not valid.' % bucket_url)
-      if (not BUCKET_NAME_RE.match(bucket_url.bucket_name) or
-          TOO_LONG_DNS_NAME_COMP.search(bucket_url.bucket_name)):
-        raise InvalidUrlError('Invalid bucket name in URL "%s"' %
-                              bucket_url.bucket_name)
+            if not bucket_url.IsBucket():
+                raise CommandException(
+                    "The mb command requires a URL that specifies a "
+                    'bucket.\n"%s" is not valid.' % bucket_url
+                )
+            if not BUCKET_NAME_RE.match(
+                bucket_url.bucket_name
+            ) or TOO_LONG_DNS_NAME_COMP.search(bucket_url.bucket_name):
+                raise InvalidUrlError(
+                    'Invalid bucket name in URL "%s"' % bucket_url.bucket_name
+                )
 
-      self.logger.info('Creating %s...', bucket_url)
-      # Pass storage_class param only if this is a GCS bucket. (In S3 the
-      # storage class is specified on the key object.)
-      try:
-        self.gsutil_api.CreateBucket(bucket_url.bucket_name,
-                                     project_id=self.project_id,
-                                     metadata=bucket_metadata,
-                                     provider=bucket_url.scheme)
-      except BadRequestException as e:
-        if (e.status == 400 and e.reason == 'DotfulBucketNameNotUnderTld' and
-            bucket_url.scheme == 'gs'):
-          bucket_name = bucket_url.bucket_name
-          final_comp = bucket_name[bucket_name.rfind('.') + 1:]
-          raise CommandException('\n'.join(
-              textwrap.wrap(
-                  'Buckets with "." in the name must be valid DNS names. The bucket'
-                  ' you are attempting to create (%s) is not a valid DNS name,'
-                  ' because the final component (%s) is not currently a valid part'
-                  ' of the top-level DNS tree.' % (bucket_name, final_comp))))
-        else:
-          raise
+            self.logger.info("Creating %s...", bucket_url)
+            # Pass storage_class param only if this is a GCS bucket. (In S3 the
+            # storage class is specified on the key object.)
+            try:
+                self.gsutil_api.CreateBucket(
+                    bucket_url.bucket_name,
+                    project_id=self.project_id,
+                    metadata=bucket_metadata,
+                    provider=bucket_url.scheme,
+                )
+            except BadRequestException as e:
+                if (
+                    e.status == 400
+                    and e.reason == "DotfulBucketNameNotUnderTld"
+                    and bucket_url.scheme == "gs"
+                ):
+                    bucket_name = bucket_url.bucket_name
+                    final_comp = bucket_name[bucket_name.rfind(".") + 1 :]
+                    raise CommandException(
+                        "\n".join(
+                            textwrap.wrap(
+                                'Buckets with "." in the name must be valid DNS names. The bucket'
+                                " you are attempting to create (%s) is not a valid DNS name,"
+                                " because the final component (%s) is not currently a valid part"
+                                " of the top-level DNS tree."
+                                % (bucket_name, final_comp)
+                            )
+                        )
+                    )
+                else:
+                    raise
 
-    return 0
+        return 0

@@ -7,11 +7,15 @@ import os
 import subprocess
 from .compat import str, sys_encoding
 
+
 def _call(*args, **kwargs):
     try:
-        return subprocess.check_output(*args, **kwargs).decode(sys_encoding).splitlines()
+        return (
+            subprocess.check_output(*args, **kwargs).decode(sys_encoding).splitlines()
+        )
     except subprocess.CalledProcessError:
         return []
+
 
 class ChoicesCompleter(object):
     def __init__(self, choices):
@@ -27,7 +31,9 @@ class ChoicesCompleter(object):
     def __call__(self, **kwargs):
         return (self._convert(c) for c in self.choices)
 
+
 EnvironCompleter = ChoicesCompleter(os.environ)
+
 
 class FilesCompleter(object):
     """
@@ -46,18 +52,31 @@ class FilesCompleter(object):
         completion = []
         if self.allowednames:
             if self.directories:
-                files = _call(["bash", "-c", "compgen -A directory -- '{p}'".format(p=prefix)])
+                files = _call(
+                    ["bash", "-c", "compgen -A directory -- '{p}'".format(p=prefix)]
+                )
                 completion += [f + "/" for f in files]
             for x in self.allowednames:
-                completion += _call(["bash", "-c", "compgen -A file -X '!*.{0}' -- '{p}'".format(x, p=prefix)])
+                completion += _call(
+                    [
+                        "bash",
+                        "-c",
+                        "compgen -A file -X '!*.{0}' -- '{p}'".format(x, p=prefix),
+                    ]
+                )
         else:
-            completion += _call(["bash", "-c", "compgen -A file -- '{p}'".format(p=prefix)])
-            anticomp = _call(["bash", "-c", "compgen -A directory -- '{p}'".format(p=prefix)])
+            completion += _call(
+                ["bash", "-c", "compgen -A file -- '{p}'".format(p=prefix)]
+            )
+            anticomp = _call(
+                ["bash", "-c", "compgen -A directory -- '{p}'".format(p=prefix)]
+            )
             completion = list(set(completion) - set(anticomp))
 
             if self.directories:
                 completion += [f + "/" for f in anticomp]
         return completion
+
 
 class _FilteredFilesCompleter(object):
     def __init__(self, predicate):
@@ -89,9 +108,11 @@ class _FilteredFilesCompleter(object):
                 continue
             yield candidate + "/" if os.path.isdir(candidate) else candidate
 
+
 class DirectoriesCompleter(_FilteredFilesCompleter):
     def __init__(self):
         _FilteredFilesCompleter.__init__(self, predicate=os.path.isdir)
+
 
 class SuppressCompleter(object):
     """

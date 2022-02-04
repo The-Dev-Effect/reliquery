@@ -44,8 +44,11 @@ class InvalidCertificateException(http_client.HTTPException):
         self.reason = reason
 
     def __str__(self):
-        return ('Host %s returned an invalid certificate (%s): %s' %
-                (self.host, self.reason, self.cert))
+        return "Host %s returned an invalid certificate (%s): %s" % (
+            self.host,
+            self.reason,
+            self.cert,
+        )
 
 
 def GetValidHostsForCert(cert):
@@ -56,11 +59,10 @@ def GetValidHostsForCert(cert):
     Returns:
       list: A list of valid host globs.
     """
-    if 'subjectAltName' in cert:
-        return [x[1] for x in cert['subjectAltName'] if x[0].lower() == 'dns']
+    if "subjectAltName" in cert:
+        return [x[1] for x in cert["subjectAltName"] if x[0].lower() == "dns"]
     else:
-        return [x[0][1] for x in cert['subject']
-                if x[0][0].lower() == 'commonname']
+        return [x[0][1] for x in cert["subject"] if x[0][0].lower() == "commonname"]
 
 
 def ValidateCertificateHostname(cert, hostname):
@@ -75,10 +77,12 @@ def ValidateCertificateHostname(cert, hostname):
     hosts = GetValidHostsForCert(cert)
     boto.log.debug(
         "validating server certificate: hostname=%s, certificate hosts=%s",
-        hostname, hosts)
+        hostname,
+        hosts,
+    )
     for host in hosts:
-        host_re = host.replace('.', '\.').replace('*', '[^.]*')
-        if re.search('^%s$' % (host_re,), hostname, re.I):
+        host_re = host.replace(".", "\.").replace("*", "[^.]*")
+        if re.search("^%s$" % (host_re,), hostname, re.I):
             return True
     return False
 
@@ -88,8 +92,16 @@ class CertValidatingHTTPSConnection(http_client.HTTPConnection):
 
     default_port = http_client.HTTPS_PORT
 
-    def __init__(self, host, port=default_port, key_file=None, cert_file=None,
-                 ca_certs=None, strict=None, **kwargs):
+    def __init__(
+        self,
+        host,
+        port=default_port,
+        key_file=None,
+        cert_file=None,
+        ca_certs=None,
+        strict=None,
+        **kwargs
+    ):
         """Constructor.
 
         Args:
@@ -106,7 +118,7 @@ class CertValidatingHTTPSConnection(http_client.HTTPConnection):
             # Python 3.2 and newer have deprecated and removed the strict
             # parameter. Since the params are supported as keyword arguments
             # we conditionally add it here.
-            kwargs['strict'] = strict
+            kwargs["strict"] = strict
 
         http_client.HTTPConnection.__init__(self, host=host, port=port, **kwargs)
         self.key_file = key_file
@@ -125,7 +137,7 @@ class CertValidatingHTTPSConnection(http_client.HTTPConnection):
         else:
             msg += "using system provided SSL certs"
         boto.log.debug(msg)
-        if hasattr(ssl, 'SSLContext') and getattr(ssl, 'HAS_SNI', False):
+        if hasattr(ssl, "SSLContext") and getattr(ssl, "HAS_SNI", False):
             # Use SSLContext so we can specify server_hostname for SNI
             # (Required for connections to storage.googleapis.com)
             context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
@@ -143,14 +155,18 @@ class CertValidatingHTTPSConnection(http_client.HTTPConnection):
             self.sock.ca_certs = self.ca_certs
             self.sock.ciphers = None
         else:
-            self.sock = ssl.wrap_socket(sock, keyfile=self.key_file,
-                                        certfile=self.cert_file,
-                                        cert_reqs=ssl.CERT_REQUIRED,
-                                        ca_certs=self.ca_certs)
+            self.sock = ssl.wrap_socket(
+                sock,
+                keyfile=self.key_file,
+                certfile=self.cert_file,
+                cert_reqs=ssl.CERT_REQUIRED,
+                ca_certs=self.ca_certs,
+            )
         cert = self.sock.getpeercert()
-        hostname = self.host.split(':', 0)[0]
+        hostname = self.host.split(":", 0)[0]
         if not ValidateCertificateHostname(cert, hostname):
-            raise InvalidCertificateException(hostname,
-                                              cert,
-                                              'remote hostname "%s" does not match '
-                                              'certificate' % hostname)
+            raise InvalidCertificateException(
+                hostname,
+                cert,
+                'remote hostname "%s" does not match ' "certificate" % hostname,
+            )

@@ -53,54 +53,102 @@ class CloudFormationConnection(AWSQueryConnection):
     can find the product's technical documentation at
     `http://aws.amazon.com/documentation/`_.
     """
-    APIVersion = boto.config.get('Boto', 'cfn_version', '2010-05-15')
-    DefaultRegionName = boto.config.get('Boto', 'cfn_region_name', 'us-east-1')
-    DefaultRegionEndpoint = boto.config.get('Boto', 'cfn_region_endpoint',
-                                            'cloudformation.us-east-1.amazonaws.com')
+
+    APIVersion = boto.config.get("Boto", "cfn_version", "2010-05-15")
+    DefaultRegionName = boto.config.get("Boto", "cfn_region_name", "us-east-1")
+    DefaultRegionEndpoint = boto.config.get(
+        "Boto", "cfn_region_endpoint", "cloudformation.us-east-1.amazonaws.com"
+    )
 
     valid_states = (
-        'CREATE_IN_PROGRESS', 'CREATE_FAILED', 'CREATE_COMPLETE',
-        'ROLLBACK_IN_PROGRESS', 'ROLLBACK_FAILED', 'ROLLBACK_COMPLETE',
-        'DELETE_IN_PROGRESS', 'DELETE_FAILED', 'DELETE_COMPLETE',
-        'UPDATE_IN_PROGRESS', 'UPDATE_COMPLETE_CLEANUP_IN_PROGRESS',
-        'UPDATE_COMPLETE', 'UPDATE_ROLLBACK_IN_PROGRESS',
-        'UPDATE_ROLLBACK_FAILED',
-        'UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS',
-        'UPDATE_ROLLBACK_COMPLETE')
+        "CREATE_IN_PROGRESS",
+        "CREATE_FAILED",
+        "CREATE_COMPLETE",
+        "ROLLBACK_IN_PROGRESS",
+        "ROLLBACK_FAILED",
+        "ROLLBACK_COMPLETE",
+        "DELETE_IN_PROGRESS",
+        "DELETE_FAILED",
+        "DELETE_COMPLETE",
+        "UPDATE_IN_PROGRESS",
+        "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS",
+        "UPDATE_COMPLETE",
+        "UPDATE_ROLLBACK_IN_PROGRESS",
+        "UPDATE_ROLLBACK_FAILED",
+        "UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS",
+        "UPDATE_ROLLBACK_COMPLETE",
+    )
 
-    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None,
-                 is_secure=True, port=None, proxy=None, proxy_port=None,
-                 proxy_user=None, proxy_pass=None, debug=0,
-                 https_connection_factory=None, region=None, path='/',
-                 converter=None, security_token=None, validate_certs=True,
-                 profile_name=None):
+    def __init__(
+        self,
+        aws_access_key_id=None,
+        aws_secret_access_key=None,
+        is_secure=True,
+        port=None,
+        proxy=None,
+        proxy_port=None,
+        proxy_user=None,
+        proxy_pass=None,
+        debug=0,
+        https_connection_factory=None,
+        region=None,
+        path="/",
+        converter=None,
+        security_token=None,
+        validate_certs=True,
+        profile_name=None,
+    ):
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                self.DefaultRegionEndpoint, CloudFormationConnection)
+            region = RegionInfo(
+                self,
+                self.DefaultRegionName,
+                self.DefaultRegionEndpoint,
+                CloudFormationConnection,
+            )
         self.region = region
-        super(CloudFormationConnection, self).__init__(aws_access_key_id,
-                                    aws_secret_access_key,
-                                    is_secure, port, proxy, proxy_port,
-                                    proxy_user, proxy_pass,
-                                    self.region.endpoint, debug,
-                                    https_connection_factory, path,
-                                    security_token,
-                                    validate_certs=validate_certs,
-                                    profile_name=profile_name)
+        super(CloudFormationConnection, self).__init__(
+            aws_access_key_id,
+            aws_secret_access_key,
+            is_secure,
+            port,
+            proxy,
+            proxy_port,
+            proxy_user,
+            proxy_pass,
+            self.region.endpoint,
+            debug,
+            https_connection_factory,
+            path,
+            security_token,
+            validate_certs=validate_certs,
+            profile_name=profile_name,
+        )
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
     def encode_bool(self, v):
         v = bool(v)
         return {True: "true", False: "false"}[v]
 
-    def _build_create_or_update_params(self, stack_name, template_body,
-            template_url, parameters, disable_rollback, timeout_in_minutes,
-            notification_arns, capabilities, on_failure, stack_policy_body,
-            stack_policy_url, tags, use_previous_template=None,
-            stack_policy_during_update_body=None,
-            stack_policy_during_update_url=None):
+    def _build_create_or_update_params(
+        self,
+        stack_name,
+        template_body,
+        template_url,
+        parameters,
+        disable_rollback,
+        timeout_in_minutes,
+        notification_arns,
+        capabilities,
+        on_failure,
+        stack_policy_body,
+        stack_policy_url,
+        tags,
+        use_previous_template=None,
+        stack_policy_during_update_body=None,
+        stack_policy_during_update_url=None,
+    ):
         """
         Helper that creates JSON parameters needed by a Stack Create or
         Stack Update call.
@@ -224,54 +272,57 @@ class CloudFormationConnection(AWSQueryConnection):
         :rtype: dict
         :return: JSON parameters represented as a Python dict.
         """
-        params = {'ContentType': "JSON", 'StackName': stack_name,
-                'DisableRollback': self.encode_bool(disable_rollback)}
+        params = {
+            "ContentType": "JSON",
+            "StackName": stack_name,
+            "DisableRollback": self.encode_bool(disable_rollback),
+        }
         if template_body:
-            params['TemplateBody'] = template_body
+            params["TemplateBody"] = template_body
         if template_url:
-            params['TemplateURL'] = template_url
+            params["TemplateURL"] = template_url
         if use_previous_template is not None:
-            params['UsePreviousTemplate'] = self.encode_bool(use_previous_template)
+            params["UsePreviousTemplate"] = self.encode_bool(use_previous_template)
         if template_body and template_url:
-            boto.log.warning("If both TemplateBody and TemplateURL are"
-                " specified, only TemplateBody will be honored by the API")
+            boto.log.warning(
+                "If both TemplateBody and TemplateURL are"
+                " specified, only TemplateBody will be honored by the API"
+            )
         if parameters and len(parameters) > 0:
             for i, parameter_tuple in enumerate(parameters):
                 key, value = parameter_tuple[:2]
-                use_previous = (parameter_tuple[2]
-                                if len(parameter_tuple) > 2 else False)
-                params['Parameters.member.%d.ParameterKey' % (i + 1)] = key
+                use_previous = parameter_tuple[2] if len(parameter_tuple) > 2 else False
+                params["Parameters.member.%d.ParameterKey" % (i + 1)] = key
                 if use_previous:
-                    params['Parameters.member.%d.UsePreviousValue'
-                           % (i + 1)] = self.encode_bool(use_previous)
+                    params[
+                        "Parameters.member.%d.UsePreviousValue" % (i + 1)
+                    ] = self.encode_bool(use_previous)
                 else:
-                    params['Parameters.member.%d.ParameterValue' % (i + 1)] = value
+                    params["Parameters.member.%d.ParameterValue" % (i + 1)] = value
 
         if capabilities:
             for i, value in enumerate(capabilities):
-                params['Capabilities.member.%d' % (i + 1)] = value
+                params["Capabilities.member.%d" % (i + 1)] = value
         if tags:
             for i, (key, value) in enumerate(tags.items()):
-                params['Tags.member.%d.Key' % (i + 1)] = key
-                params['Tags.member.%d.Value' % (i + 1)] = value
+                params["Tags.member.%d.Key" % (i + 1)] = key
+                params["Tags.member.%d.Value" % (i + 1)] = value
         if notification_arns and len(notification_arns) > 0:
-            self.build_list_params(params, notification_arns,
-                                   "NotificationARNs.member")
+            self.build_list_params(params, notification_arns, "NotificationARNs.member")
         if timeout_in_minutes:
-            params['TimeoutInMinutes'] = int(timeout_in_minutes)
+            params["TimeoutInMinutes"] = int(timeout_in_minutes)
         if disable_rollback is not None:
-            params['DisableRollback'] = str(
-                disable_rollback).lower()
+            params["DisableRollback"] = str(disable_rollback).lower()
         if on_failure is not None:
-            params['OnFailure'] = on_failure
+            params["OnFailure"] = on_failure
         if stack_policy_body is not None:
-            params['StackPolicyBody'] = stack_policy_body
+            params["StackPolicyBody"] = stack_policy_body
         if stack_policy_url is not None:
-            params['StackPolicyURL'] = stack_policy_url
+            params["StackPolicyURL"] = stack_policy_url
         if stack_policy_during_update_body is not None:
-            params['StackPolicyDuringUpdateBody'] = stack_policy_during_update_body
+            params["StackPolicyDuringUpdateBody"] = stack_policy_during_update_body
         if stack_policy_during_update_url is not None:
-            params['StackPolicyDuringUpdateURL'] = stack_policy_during_update_url
+            params["StackPolicyDuringUpdateURL"] = stack_policy_during_update_url
         return params
 
     def _do_request(self, call, params, path, method):
@@ -294,19 +345,30 @@ class CloudFormationConnection(AWSQueryConnection):
         :return: Parsed JSON response data
         """
         response = self.make_request(call, params, path, method)
-        body = response.read().decode('utf-8')
+        body = response.read().decode("utf-8")
         if response.status == 200:
             body = json.loads(body)
             return body
         else:
-            boto.log.error('%s %s' % (response.status, response.reason))
-            boto.log.error('%s' % body)
+            boto.log.error("%s %s" % (response.status, response.reason))
+            boto.log.error("%s" % body)
             raise self.ResponseError(response.status, response.reason, body=body)
 
-    def create_stack(self, stack_name, template_body=None, template_url=None,
-            parameters=None, notification_arns=None, disable_rollback=None,
-            timeout_in_minutes=None, capabilities=None, tags=None,
-            on_failure=None, stack_policy_body=None, stack_policy_url=None):
+    def create_stack(
+        self,
+        stack_name,
+        template_body=None,
+        template_url=None,
+        parameters=None,
+        notification_arns=None,
+        disable_rollback=None,
+        timeout_in_minutes=None,
+        capabilities=None,
+        tags=None,
+        on_failure=None,
+        stack_policy_body=None,
+        stack_policy_url=None,
+    ):
         """
         Creates a stack as specified in the template. After the call
         completes successfully, the stack creation starts. You can
@@ -396,20 +458,40 @@ class CloudFormationConnection(AWSQueryConnection):
             propagated to EC2 resources that are created as part of the stack.
             A maximum number of 10 tags can be specified.
         """
-        params = self._build_create_or_update_params(stack_name, template_body,
-            template_url, parameters, disable_rollback, timeout_in_minutes,
-            notification_arns, capabilities, on_failure, stack_policy_body,
-            stack_policy_url, tags)
-        body = self._do_request('CreateStack', params, '/', 'POST')
-        return body['CreateStackResponse']['CreateStackResult']['StackId']
+        params = self._build_create_or_update_params(
+            stack_name,
+            template_body,
+            template_url,
+            parameters,
+            disable_rollback,
+            timeout_in_minutes,
+            notification_arns,
+            capabilities,
+            on_failure,
+            stack_policy_body,
+            stack_policy_url,
+            tags,
+        )
+        body = self._do_request("CreateStack", params, "/", "POST")
+        return body["CreateStackResponse"]["CreateStackResult"]["StackId"]
 
-    def update_stack(self, stack_name, template_body=None, template_url=None,
-            parameters=None, notification_arns=None, disable_rollback=False,
-            timeout_in_minutes=None, capabilities=None, tags=None,
-            use_previous_template=None,
-            stack_policy_during_update_body=None,
-            stack_policy_during_update_url=None,
-            stack_policy_body=None, stack_policy_url=None):
+    def update_stack(
+        self,
+        stack_name,
+        template_body=None,
+        template_url=None,
+        parameters=None,
+        notification_arns=None,
+        disable_rollback=False,
+        timeout_in_minutes=None,
+        capabilities=None,
+        tags=None,
+        use_previous_template=None,
+        stack_policy_during_update_body=None,
+        stack_policy_during_update_url=None,
+        stack_policy_body=None,
+        stack_policy_url=None,
+    ):
         """
         Updates a stack as specified in the template. After the call
         completes successfully, the stack update starts. You can check
@@ -529,13 +611,25 @@ class CloudFormationConnection(AWSQueryConnection):
         :rtype: string
         :return: The unique Stack ID.
         """
-        params = self._build_create_or_update_params(stack_name, template_body,
-            template_url, parameters, disable_rollback, timeout_in_minutes,
-            notification_arns, capabilities, None, stack_policy_body,
-            stack_policy_url, tags, use_previous_template,
-            stack_policy_during_update_body, stack_policy_during_update_url)
-        body = self._do_request('UpdateStack', params, '/', 'POST')
-        return body['UpdateStackResponse']['UpdateStackResult']['StackId']
+        params = self._build_create_or_update_params(
+            stack_name,
+            template_body,
+            template_url,
+            parameters,
+            disable_rollback,
+            timeout_in_minutes,
+            notification_arns,
+            capabilities,
+            None,
+            stack_policy_body,
+            stack_policy_url,
+            tags,
+            use_previous_template,
+            stack_policy_during_update_body,
+            stack_policy_during_update_url,
+        )
+        body = self._do_request("UpdateStack", params, "/", "POST")
+        return body["UpdateStackResponse"]["UpdateStackResult"]["StackId"]
 
     def delete_stack(self, stack_name_or_id):
         """
@@ -549,8 +643,8 @@ class CloudFormationConnection(AWSQueryConnection):
             with the stack.
 
         """
-        params = {'ContentType': "JSON", 'StackName': stack_name_or_id}
-        return self._do_request('DeleteStack', params, '/', 'GET')
+        params = {"ContentType": "JSON", "StackName": stack_name_or_id}
+        return self._do_request("DeleteStack", params, "/", "GET")
 
     def describe_stack_events(self, stack_name_or_id=None, next_token=None):
         """
@@ -573,11 +667,10 @@ class CloudFormationConnection(AWSQueryConnection):
         """
         params = {}
         if stack_name_or_id:
-            params['StackName'] = stack_name_or_id
+            params["StackName"] = stack_name_or_id
         if next_token:
-            params['NextToken'] = next_token
-        return self.get_list('DescribeStackEvents', params, [('member',
-            StackEvent)])
+            params["NextToken"] = next_token
+        return self.get_list("DescribeStackEvents", params, [("member", StackEvent)])
 
     def describe_stack_resource(self, stack_name_or_id, logical_resource_id):
         """
@@ -599,13 +692,16 @@ class CloudFormationConnection(AWSQueryConnection):
         Default: There is no default value.
 
         """
-        params = {'ContentType': "JSON", 'StackName': stack_name_or_id,
-                'LogicalResourceId': logical_resource_id}
-        return self._do_request('DescribeStackResource', params, '/', 'GET')
+        params = {
+            "ContentType": "JSON",
+            "StackName": stack_name_or_id,
+            "LogicalResourceId": logical_resource_id,
+        }
+        return self._do_request("DescribeStackResource", params, "/", "GET")
 
-    def describe_stack_resources(self, stack_name_or_id=None,
-            logical_resource_id=None,
-            physical_resource_id=None):
+    def describe_stack_resources(
+        self, stack_name_or_id=None, logical_resource_id=None, physical_resource_id=None
+    ):
         """
         Returns AWS resource descriptions for running and deleted
         stacks. If `StackName` is specified, all the associated
@@ -658,13 +754,14 @@ class CloudFormationConnection(AWSQueryConnection):
         """
         params = {}
         if stack_name_or_id:
-            params['StackName'] = stack_name_or_id
+            params["StackName"] = stack_name_or_id
         if logical_resource_id:
-            params['LogicalResourceId'] = logical_resource_id
+            params["LogicalResourceId"] = logical_resource_id
         if physical_resource_id:
-            params['PhysicalResourceId'] = physical_resource_id
-        return self.get_list('DescribeStackResources', params,
-                             [('member', StackResource)])
+            params["PhysicalResourceId"] = physical_resource_id
+        return self.get_list(
+            "DescribeStackResources", params, [("member", StackResource)]
+        )
 
     def describe_stacks(self, stack_name_or_id=None, next_token=None):
         """
@@ -684,10 +781,10 @@ class CloudFormationConnection(AWSQueryConnection):
         """
         params = {}
         if stack_name_or_id:
-            params['StackName'] = stack_name_or_id
+            params["StackName"] = stack_name_or_id
         if next_token is not None:
-            params['NextToken'] = next_token
-        return self.get_list('DescribeStacks', params, [('member', Stack)])
+            params["NextToken"] = next_token
+        return self.get_list("DescribeStacks", params, [("member", Stack)])
 
     def get_template(self, stack_name_or_id):
         """
@@ -711,8 +808,8 @@ class CloudFormationConnection(AWSQueryConnection):
         Default: There is no default value.
 
         """
-        params = {'ContentType': "JSON", 'StackName': stack_name_or_id}
-        return self._do_request('GetTemplate', params, '/', 'GET')
+        params = {"ContentType": "JSON", "StackName": stack_name_or_id}
+        return self._do_request("GetTemplate", params, "/", "GET")
 
     def list_stack_resources(self, stack_name_or_id, next_token=None):
         """
@@ -739,11 +836,12 @@ class CloudFormationConnection(AWSQueryConnection):
         Default: There is no default value.
 
         """
-        params = {'StackName': stack_name_or_id}
+        params = {"StackName": stack_name_or_id}
         if next_token:
-            params['NextToken'] = next_token
-        return self.get_list('ListStackResources', params,
-                             [('member', StackResourceSummary)])
+            params["NextToken"] = next_token
+        return self.get_list(
+            "ListStackResources", params, [("member", StackResourceSummary)]
+        )
 
     def list_stacks(self, stack_status_filters=None, next_token=None):
         """
@@ -768,13 +866,13 @@ class CloudFormationConnection(AWSQueryConnection):
         """
         params = {}
         if next_token:
-            params['NextToken'] = next_token
+            params["NextToken"] = next_token
         if stack_status_filters and len(stack_status_filters) > 0:
-            self.build_list_params(params, stack_status_filters,
-                "StackStatusFilter.member")
+            self.build_list_params(
+                params, stack_status_filters, "StackStatusFilter.member"
+            )
 
-        return self.get_list('ListStacks', params,
-                             [('member', StackSummary)])
+        return self.get_list("ListStacks", params, [("member", StackSummary)])
 
     def validate_template(self, template_body=None, template_url=None):
         """
@@ -798,14 +896,15 @@ class CloudFormationConnection(AWSQueryConnection):
         """
         params = {}
         if template_body:
-            params['TemplateBody'] = template_body
+            params["TemplateBody"] = template_body
         if template_url:
-            params['TemplateURL'] = template_url
+            params["TemplateURL"] = template_url
         if template_body and template_url:
-            boto.log.warning("If both TemplateBody and TemplateURL are"
-                " specified, only TemplateBody will be honored by the API")
-        return self.get_object('ValidateTemplate', params, Template,
-                verb="POST")
+            boto.log.warning(
+                "If both TemplateBody and TemplateURL are"
+                " specified, only TemplateBody will be honored by the API"
+            )
+        return self.get_object("ValidateTemplate", params, Template, verb="POST")
 
     def cancel_update_stack(self, stack_name_or_id=None):
         """
@@ -822,11 +921,12 @@ class CloudFormationConnection(AWSQueryConnection):
         """
         params = {}
         if stack_name_or_id:
-            params['StackName'] = stack_name_or_id
-        return self.get_status('CancelUpdateStack', params)
+            params["StackName"] = stack_name_or_id
+        return self.get_status("CancelUpdateStack", params)
 
-    def estimate_template_cost(self, template_body=None, template_url=None,
-                               parameters=None):
+    def estimate_template_cost(
+        self, template_body=None, template_url=None, parameters=None
+    ):
         """
         Returns the estimated monthly cost of a template. The return
         value is an AWS Simple Monthly Calculator URL with a query
@@ -855,20 +955,20 @@ class CloudFormationConnection(AWSQueryConnection):
         :rtype: string
         :returns: URL to pre-filled cost calculator
         """
-        params = {'ContentType': "JSON"}
+        params = {"ContentType": "JSON"}
         if template_body is not None:
-            params['TemplateBody'] = template_body
+            params["TemplateBody"] = template_body
         if template_url is not None:
-            params['TemplateURL'] = template_url
+            params["TemplateURL"] = template_url
         if parameters and len(parameters) > 0:
             for i, (key, value) in enumerate(parameters):
-                params['Parameters.member.%d.ParameterKey' % (i + 1)] = key
-                params['Parameters.member.%d.ParameterValue' % (i + 1)] = value
+                params["Parameters.member.%d.ParameterKey" % (i + 1)] = key
+                params["Parameters.member.%d.ParameterValue" % (i + 1)] = value
 
-        response = self._do_request('EstimateTemplateCost', params, '/', 'POST')
-        return response['EstimateTemplateCostResponse']\
-                       ['EstimateTemplateCostResult']\
-                       ['Url']
+        response = self._do_request("EstimateTemplateCost", params, "/", "POST")
+        return response["EstimateTemplateCostResponse"]["EstimateTemplateCostResult"][
+            "Url"
+        ]
 
     def get_stack_policy(self, stack_name_or_id):
         """
@@ -882,14 +982,18 @@ class CloudFormationConnection(AWSQueryConnection):
         :rtype: string
         :return: The policy JSON document
         """
-        params = {'ContentType': "JSON", 'StackName': stack_name_or_id, }
-        response = self._do_request('GetStackPolicy', params, '/', 'POST')
-        return response['GetStackPolicyResponse']\
-                       ['GetStackPolicyResult']\
-                       ['StackPolicyBody']
+        params = {
+            "ContentType": "JSON",
+            "StackName": stack_name_or_id,
+        }
+        response = self._do_request("GetStackPolicy", params, "/", "POST")
+        return response["GetStackPolicyResponse"]["GetStackPolicyResult"][
+            "StackPolicyBody"
+        ]
 
-    def set_stack_policy(self, stack_name_or_id, stack_policy_body=None,
-                         stack_policy_url=None):
+    def set_stack_policy(
+        self, stack_name_or_id, stack_policy_body=None, stack_policy_url=None
+    ):
         """
         Sets a stack policy for a specified stack.
 
@@ -912,11 +1016,14 @@ class CloudFormationConnection(AWSQueryConnection):
             `StackPolicyBody` is used.
 
         """
-        params = {'ContentType': "JSON", 'StackName': stack_name_or_id, }
+        params = {
+            "ContentType": "JSON",
+            "StackName": stack_name_or_id,
+        }
         if stack_policy_body is not None:
-            params['StackPolicyBody'] = stack_policy_body
+            params["StackPolicyBody"] = stack_policy_body
         if stack_policy_url is not None:
-            params['StackPolicyURL'] = stack_policy_url
+            params["StackPolicyURL"] = stack_policy_url
 
-        response = self._do_request('SetStackPolicy', params, '/', 'POST')
-        return response['SetStackPolicyResponse']
+        response = self._do_request("SetStackPolicy", params, "/", "POST")
+        return response["SetStackPolicyResponse"]

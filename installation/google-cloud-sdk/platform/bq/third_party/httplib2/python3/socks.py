@@ -175,7 +175,7 @@ class socksocket(socket.socket):
         return data
 
     def sendall(self, content, *args):
-        """ override socket.socket.sendall method to rewrite the header
+        """override socket.socket.sendall method to rewrite the header
         for non-tunneling proxies if needed
         """
         if not self.__httptunnel:
@@ -183,7 +183,7 @@ class socksocket(socket.socket):
         return super(socksocket, self).sendall(content, *args)
 
     def __rewriteproxy(self, header):
-        """ rewrite HTTP request headers to support non-tunneling proxies
+        """rewrite HTTP request headers to support non-tunneling proxies
         (i.e. those which do not support the CONNECT method).
         This only works for HTTP (not HTTPS) since HTTPS requires tunneling.
         """

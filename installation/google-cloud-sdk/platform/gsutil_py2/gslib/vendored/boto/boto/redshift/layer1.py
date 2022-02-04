@@ -57,6 +57,7 @@ class RedshiftConnection(AWSQueryConnection):
     Developer Guide`_ explains how to design, build, query, and
     maintain the databases that make up your data warehouse.
     """
+
     APIVersion = "2012-12-01"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "redshift.us-east-1.amazonaws.com"
@@ -135,27 +136,29 @@ class RedshiftConnection(AWSQueryConnection):
         "IncompatibleOrderableOptions": exceptions.IncompatibleOrderableOptions,
     }
 
-
     def __init__(self, **kwargs):
-        region = kwargs.pop('region', None)
+        region = kwargs.pop("region", None)
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
 
-        if 'host' not in kwargs or kwargs['host'] is None:
-            kwargs['host'] = region.endpoint
+        if "host" not in kwargs or kwargs["host"] is None:
+            kwargs["host"] = region.endpoint
 
         super(RedshiftConnection, self).__init__(**kwargs)
         self.region = region
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
-    def authorize_cluster_security_group_ingress(self,
-                                                 cluster_security_group_name,
-                                                 cidrip=None,
-                                                 ec2_security_group_name=None,
-                                                 ec2_security_group_owner_id=None):
+    def authorize_cluster_security_group_ingress(
+        self,
+        cluster_security_group_name,
+        cidrip=None,
+        ec2_security_group_name=None,
+        ec2_security_group_owner_id=None,
+    ):
         """
         Adds an inbound (ingress) rule to an Amazon Redshift security
         group. Depending on whether the application accessing your
@@ -194,22 +197,27 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'ClusterSecurityGroupName': cluster_security_group_name,
+            "ClusterSecurityGroupName": cluster_security_group_name,
         }
         if cidrip is not None:
-            params['CIDRIP'] = cidrip
+            params["CIDRIP"] = cidrip
         if ec2_security_group_name is not None:
-            params['EC2SecurityGroupName'] = ec2_security_group_name
+            params["EC2SecurityGroupName"] = ec2_security_group_name
         if ec2_security_group_owner_id is not None:
-            params['EC2SecurityGroupOwnerId'] = ec2_security_group_owner_id
+            params["EC2SecurityGroupOwnerId"] = ec2_security_group_owner_id
         return self._make_request(
-            action='AuthorizeClusterSecurityGroupIngress',
-            verb='POST',
-            path='/', params=params)
+            action="AuthorizeClusterSecurityGroupIngress",
+            verb="POST",
+            path="/",
+            params=params,
+        )
 
-    def authorize_snapshot_access(self, snapshot_identifier,
-                                  account_with_restore_access,
-                                  snapshot_cluster_identifier=None):
+    def authorize_snapshot_access(
+        self,
+        snapshot_identifier,
+        account_with_restore_access,
+        snapshot_cluster_identifier=None,
+    ):
         """
         Authorizes the specified AWS customer account to restore the
         specified snapshot.
@@ -234,19 +242,21 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'SnapshotIdentifier': snapshot_identifier,
-            'AccountWithRestoreAccess': account_with_restore_access,
+            "SnapshotIdentifier": snapshot_identifier,
+            "AccountWithRestoreAccess": account_with_restore_access,
         }
         if snapshot_cluster_identifier is not None:
-            params['SnapshotClusterIdentifier'] = snapshot_cluster_identifier
+            params["SnapshotClusterIdentifier"] = snapshot_cluster_identifier
         return self._make_request(
-            action='AuthorizeSnapshotAccess',
-            verb='POST',
-            path='/', params=params)
+            action="AuthorizeSnapshotAccess", verb="POST", path="/", params=params
+        )
 
-    def copy_cluster_snapshot(self, source_snapshot_identifier,
-                              target_snapshot_identifier,
-                              source_snapshot_cluster_identifier=None):
+    def copy_cluster_snapshot(
+        self,
+        source_snapshot_identifier,
+        target_snapshot_identifier,
+        source_snapshot_cluster_identifier=None,
+    ):
         """
         Copies the specified automated cluster snapshot to a new
         manual cluster snapshot. The source must be an automated
@@ -300,30 +310,42 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'SourceSnapshotIdentifier': source_snapshot_identifier,
-            'TargetSnapshotIdentifier': target_snapshot_identifier,
+            "SourceSnapshotIdentifier": source_snapshot_identifier,
+            "TargetSnapshotIdentifier": target_snapshot_identifier,
         }
         if source_snapshot_cluster_identifier is not None:
-            params['SourceSnapshotClusterIdentifier'] = source_snapshot_cluster_identifier
+            params[
+                "SourceSnapshotClusterIdentifier"
+            ] = source_snapshot_cluster_identifier
         return self._make_request(
-            action='CopyClusterSnapshot',
-            verb='POST',
-            path='/', params=params)
+            action="CopyClusterSnapshot", verb="POST", path="/", params=params
+        )
 
-    def create_cluster(self, cluster_identifier, node_type, master_username,
-                       master_user_password, db_name=None, cluster_type=None,
-                       cluster_security_groups=None,
-                       vpc_security_group_ids=None,
-                       cluster_subnet_group_name=None,
-                       availability_zone=None,
-                       preferred_maintenance_window=None,
-                       cluster_parameter_group_name=None,
-                       automated_snapshot_retention_period=None, port=None,
-                       cluster_version=None, allow_version_upgrade=None,
-                       number_of_nodes=None, publicly_accessible=None,
-                       encrypted=None,
-                       hsm_client_certificate_identifier=None,
-                       hsm_configuration_identifier=None, elastic_ip=None):
+    def create_cluster(
+        self,
+        cluster_identifier,
+        node_type,
+        master_username,
+        master_user_password,
+        db_name=None,
+        cluster_type=None,
+        cluster_security_groups=None,
+        vpc_security_group_ids=None,
+        cluster_subnet_group_name=None,
+        availability_zone=None,
+        preferred_maintenance_window=None,
+        cluster_parameter_group_name=None,
+        automated_snapshot_retention_period=None,
+        port=None,
+        cluster_version=None,
+        allow_version_upgrade=None,
+        number_of_nodes=None,
+        publicly_accessible=None,
+        encrypted=None,
+        hsm_client_certificate_identifier=None,
+        hsm_configuration_identifier=None,
+        elastic_ip=None,
+    ):
         """
         Creates a new cluster. To create the cluster in virtual
         private cloud (VPC), you must provide cluster subnet group
@@ -571,61 +593,60 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'ClusterIdentifier': cluster_identifier,
-            'NodeType': node_type,
-            'MasterUsername': master_username,
-            'MasterUserPassword': master_user_password,
+            "ClusterIdentifier": cluster_identifier,
+            "NodeType": node_type,
+            "MasterUsername": master_username,
+            "MasterUserPassword": master_user_password,
         }
         if db_name is not None:
-            params['DBName'] = db_name
+            params["DBName"] = db_name
         if cluster_type is not None:
-            params['ClusterType'] = cluster_type
+            params["ClusterType"] = cluster_type
         if cluster_security_groups is not None:
-            self.build_list_params(params,
-                                   cluster_security_groups,
-                                   'ClusterSecurityGroups.member')
+            self.build_list_params(
+                params, cluster_security_groups, "ClusterSecurityGroups.member"
+            )
         if vpc_security_group_ids is not None:
-            self.build_list_params(params,
-                                   vpc_security_group_ids,
-                                   'VpcSecurityGroupIds.member')
+            self.build_list_params(
+                params, vpc_security_group_ids, "VpcSecurityGroupIds.member"
+            )
         if cluster_subnet_group_name is not None:
-            params['ClusterSubnetGroupName'] = cluster_subnet_group_name
+            params["ClusterSubnetGroupName"] = cluster_subnet_group_name
         if availability_zone is not None:
-            params['AvailabilityZone'] = availability_zone
+            params["AvailabilityZone"] = availability_zone
         if preferred_maintenance_window is not None:
-            params['PreferredMaintenanceWindow'] = preferred_maintenance_window
+            params["PreferredMaintenanceWindow"] = preferred_maintenance_window
         if cluster_parameter_group_name is not None:
-            params['ClusterParameterGroupName'] = cluster_parameter_group_name
+            params["ClusterParameterGroupName"] = cluster_parameter_group_name
         if automated_snapshot_retention_period is not None:
-            params['AutomatedSnapshotRetentionPeriod'] = automated_snapshot_retention_period
+            params[
+                "AutomatedSnapshotRetentionPeriod"
+            ] = automated_snapshot_retention_period
         if port is not None:
-            params['Port'] = port
+            params["Port"] = port
         if cluster_version is not None:
-            params['ClusterVersion'] = cluster_version
+            params["ClusterVersion"] = cluster_version
         if allow_version_upgrade is not None:
-            params['AllowVersionUpgrade'] = str(
-                allow_version_upgrade).lower()
+            params["AllowVersionUpgrade"] = str(allow_version_upgrade).lower()
         if number_of_nodes is not None:
-            params['NumberOfNodes'] = number_of_nodes
+            params["NumberOfNodes"] = number_of_nodes
         if publicly_accessible is not None:
-            params['PubliclyAccessible'] = str(
-                publicly_accessible).lower()
+            params["PubliclyAccessible"] = str(publicly_accessible).lower()
         if encrypted is not None:
-            params['Encrypted'] = str(
-                encrypted).lower()
+            params["Encrypted"] = str(encrypted).lower()
         if hsm_client_certificate_identifier is not None:
-            params['HsmClientCertificateIdentifier'] = hsm_client_certificate_identifier
+            params["HsmClientCertificateIdentifier"] = hsm_client_certificate_identifier
         if hsm_configuration_identifier is not None:
-            params['HsmConfigurationIdentifier'] = hsm_configuration_identifier
+            params["HsmConfigurationIdentifier"] = hsm_configuration_identifier
         if elastic_ip is not None:
-            params['ElasticIp'] = elastic_ip
+            params["ElasticIp"] = elastic_ip
         return self._make_request(
-            action='CreateCluster',
-            verb='POST',
-            path='/', params=params)
+            action="CreateCluster", verb="POST", path="/", params=params
+        )
 
-    def create_cluster_parameter_group(self, parameter_group_name,
-                                       parameter_group_family, description):
+    def create_cluster_parameter_group(
+        self, parameter_group_name, parameter_group_family, description
+    ):
         """
         Creates an Amazon Redshift parameter group.
 
@@ -672,17 +693,15 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'ParameterGroupName': parameter_group_name,
-            'ParameterGroupFamily': parameter_group_family,
-            'Description': description,
+            "ParameterGroupName": parameter_group_name,
+            "ParameterGroupFamily": parameter_group_family,
+            "Description": description,
         }
         return self._make_request(
-            action='CreateClusterParameterGroup',
-            verb='POST',
-            path='/', params=params)
+            action="CreateClusterParameterGroup", verb="POST", path="/", params=params
+        )
 
-    def create_cluster_security_group(self, cluster_security_group_name,
-                                      description):
+    def create_cluster_security_group(self, cluster_security_group_name, description):
         """
         Creates a new Amazon Redshift security group. You use security
         groups to control access to non-VPC clusters.
@@ -710,16 +729,14 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'ClusterSecurityGroupName': cluster_security_group_name,
-            'Description': description,
+            "ClusterSecurityGroupName": cluster_security_group_name,
+            "Description": description,
         }
         return self._make_request(
-            action='CreateClusterSecurityGroup',
-            verb='POST',
-            path='/', params=params)
+            action="CreateClusterSecurityGroup", verb="POST", path="/", params=params
+        )
 
-    def create_cluster_snapshot(self, snapshot_identifier,
-                                cluster_identifier):
+    def create_cluster_snapshot(self, snapshot_identifier, cluster_identifier):
         """
         Creates a manual snapshot of the specified cluster. The
         cluster must be in the `available` state.
@@ -749,16 +766,16 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'SnapshotIdentifier': snapshot_identifier,
-            'ClusterIdentifier': cluster_identifier,
+            "SnapshotIdentifier": snapshot_identifier,
+            "ClusterIdentifier": cluster_identifier,
         }
         return self._make_request(
-            action='CreateClusterSnapshot',
-            verb='POST',
-            path='/', params=params)
+            action="CreateClusterSnapshot", verb="POST", path="/", params=params
+        )
 
-    def create_cluster_subnet_group(self, cluster_subnet_group_name,
-                                    description, subnet_ids):
+    def create_cluster_subnet_group(
+        self, cluster_subnet_group_name, description, subnet_ids
+    ):
         """
         Creates a new Amazon Redshift subnet group. You must provide a
         list of one or more subnets in your existing Amazon Virtual
@@ -792,21 +809,24 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'ClusterSubnetGroupName': cluster_subnet_group_name,
-            'Description': description,
+            "ClusterSubnetGroupName": cluster_subnet_group_name,
+            "Description": description,
         }
-        self.build_list_params(params,
-                               subnet_ids,
-                               'SubnetIds.member')
+        self.build_list_params(params, subnet_ids, "SubnetIds.member")
         return self._make_request(
-            action='CreateClusterSubnetGroup',
-            verb='POST',
-            path='/', params=params)
+            action="CreateClusterSubnetGroup", verb="POST", path="/", params=params
+        )
 
-    def create_event_subscription(self, subscription_name, sns_topic_arn,
-                                  source_type=None, source_ids=None,
-                                  event_categories=None, severity=None,
-                                  enabled=None):
+    def create_event_subscription(
+        self,
+        subscription_name,
+        sns_topic_arn,
+        source_type=None,
+        source_ids=None,
+        event_categories=None,
+        severity=None,
+        enabled=None,
+    ):
         """
         Creates an Amazon Redshift event notification subscription.
         This action requires an ARN (Amazon Resource Name) of an
@@ -892,31 +912,24 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'SubscriptionName': subscription_name,
-            'SnsTopicArn': sns_topic_arn,
+            "SubscriptionName": subscription_name,
+            "SnsTopicArn": sns_topic_arn,
         }
         if source_type is not None:
-            params['SourceType'] = source_type
+            params["SourceType"] = source_type
         if source_ids is not None:
-            self.build_list_params(params,
-                                   source_ids,
-                                   'SourceIds.member')
+            self.build_list_params(params, source_ids, "SourceIds.member")
         if event_categories is not None:
-            self.build_list_params(params,
-                                   event_categories,
-                                   'EventCategories.member')
+            self.build_list_params(params, event_categories, "EventCategories.member")
         if severity is not None:
-            params['Severity'] = severity
+            params["Severity"] = severity
         if enabled is not None:
-            params['Enabled'] = str(
-                enabled).lower()
+            params["Enabled"] = str(enabled).lower()
         return self._make_request(
-            action='CreateEventSubscription',
-            verb='POST',
-            path='/', params=params)
+            action="CreateEventSubscription", verb="POST", path="/", params=params
+        )
 
-    def create_hsm_client_certificate(self,
-                                      hsm_client_certificate_identifier):
+    def create_hsm_client_certificate(self, hsm_client_certificate_identifier):
         """
         Creates an HSM client certificate that an Amazon Redshift
         cluster will use to connect to the client's HSM in order to
@@ -937,17 +950,21 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'HsmClientCertificateIdentifier': hsm_client_certificate_identifier,
+            "HsmClientCertificateIdentifier": hsm_client_certificate_identifier,
         }
         return self._make_request(
-            action='CreateHsmClientCertificate',
-            verb='POST',
-            path='/', params=params)
+            action="CreateHsmClientCertificate", verb="POST", path="/", params=params
+        )
 
-    def create_hsm_configuration(self, hsm_configuration_identifier,
-                                 description, hsm_ip_address,
-                                 hsm_partition_name, hsm_partition_password,
-                                 hsm_server_public_certificate):
+    def create_hsm_configuration(
+        self,
+        hsm_configuration_identifier,
+        description,
+        hsm_ip_address,
+        hsm_partition_name,
+        hsm_partition_password,
+        hsm_server_public_certificate,
+    ):
         """
         Creates an HSM configuration that contains the information
         required by an Amazon Redshift cluster to store and use
@@ -988,21 +1005,23 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'HsmConfigurationIdentifier': hsm_configuration_identifier,
-            'Description': description,
-            'HsmIpAddress': hsm_ip_address,
-            'HsmPartitionName': hsm_partition_name,
-            'HsmPartitionPassword': hsm_partition_password,
-            'HsmServerPublicCertificate': hsm_server_public_certificate,
+            "HsmConfigurationIdentifier": hsm_configuration_identifier,
+            "Description": description,
+            "HsmIpAddress": hsm_ip_address,
+            "HsmPartitionName": hsm_partition_name,
+            "HsmPartitionPassword": hsm_partition_password,
+            "HsmServerPublicCertificate": hsm_server_public_certificate,
         }
         return self._make_request(
-            action='CreateHsmConfiguration',
-            verb='POST',
-            path='/', params=params)
+            action="CreateHsmConfiguration", verb="POST", path="/", params=params
+        )
 
-    def delete_cluster(self, cluster_identifier,
-                       skip_final_cluster_snapshot=None,
-                       final_cluster_snapshot_identifier=None):
+    def delete_cluster(
+        self,
+        cluster_identifier,
+        skip_final_cluster_snapshot=None,
+        final_cluster_snapshot_identifier=None,
+    ):
         """
         Deletes a previously provisioned cluster. A successful
         response from the web service indicates that the request was
@@ -1049,16 +1068,18 @@ class RedshiftConnection(AWSQueryConnection):
         + Cannot end with a hyphen or contain two consecutive hyphens.
 
         """
-        params = {'ClusterIdentifier': cluster_identifier, }
+        params = {
+            "ClusterIdentifier": cluster_identifier,
+        }
         if skip_final_cluster_snapshot is not None:
-            params['SkipFinalClusterSnapshot'] = str(
-                skip_final_cluster_snapshot).lower()
+            params["SkipFinalClusterSnapshot"] = str(
+                skip_final_cluster_snapshot
+            ).lower()
         if final_cluster_snapshot_identifier is not None:
-            params['FinalClusterSnapshotIdentifier'] = final_cluster_snapshot_identifier
+            params["FinalClusterSnapshotIdentifier"] = final_cluster_snapshot_identifier
         return self._make_request(
-            action='DeleteCluster',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteCluster", verb="POST", path="/", params=params
+        )
 
     def delete_cluster_parameter_group(self, parameter_group_name):
         """
@@ -1075,11 +1096,12 @@ class RedshiftConnection(AWSQueryConnection):
         + Cannot delete a default cluster parameter group.
 
         """
-        params = {'ParameterGroupName': parameter_group_name, }
+        params = {
+            "ParameterGroupName": parameter_group_name,
+        }
         return self._make_request(
-            action='DeleteClusterParameterGroup',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteClusterParameterGroup", verb="POST", path="/", params=params
+        )
 
     def delete_cluster_security_group(self, cluster_security_group_name):
         """
@@ -1095,15 +1117,15 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'ClusterSecurityGroupName': cluster_security_group_name,
+            "ClusterSecurityGroupName": cluster_security_group_name,
         }
         return self._make_request(
-            action='DeleteClusterSecurityGroup',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteClusterSecurityGroup", verb="POST", path="/", params=params
+        )
 
-    def delete_cluster_snapshot(self, snapshot_identifier,
-                                snapshot_cluster_identifier=None):
+    def delete_cluster_snapshot(
+        self, snapshot_identifier, snapshot_cluster_identifier=None
+    ):
         """
         Deletes the specified manual snapshot. The snapshot must be in
         the `available` state, with no other users authorized to
@@ -1130,13 +1152,14 @@ class RedshiftConnection(AWSQueryConnection):
         Constraints: Must be the name of valid cluster.
 
         """
-        params = {'SnapshotIdentifier': snapshot_identifier, }
+        params = {
+            "SnapshotIdentifier": snapshot_identifier,
+        }
         if snapshot_cluster_identifier is not None:
-            params['SnapshotClusterIdentifier'] = snapshot_cluster_identifier
+            params["SnapshotClusterIdentifier"] = snapshot_cluster_identifier
         return self._make_request(
-            action='DeleteClusterSnapshot',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteClusterSnapshot", verb="POST", path="/", params=params
+        )
 
     def delete_cluster_subnet_group(self, cluster_subnet_group_name):
         """
@@ -1148,12 +1171,11 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'ClusterSubnetGroupName': cluster_subnet_group_name,
+            "ClusterSubnetGroupName": cluster_subnet_group_name,
         }
         return self._make_request(
-            action='DeleteClusterSubnetGroup',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteClusterSubnetGroup", verb="POST", path="/", params=params
+        )
 
     def delete_event_subscription(self, subscription_name):
         """
@@ -1164,14 +1186,14 @@ class RedshiftConnection(AWSQueryConnection):
             notification subscription to be deleted.
 
         """
-        params = {'SubscriptionName': subscription_name, }
+        params = {
+            "SubscriptionName": subscription_name,
+        }
         return self._make_request(
-            action='DeleteEventSubscription',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteEventSubscription", verb="POST", path="/", params=params
+        )
 
-    def delete_hsm_client_certificate(self,
-                                      hsm_client_certificate_identifier):
+    def delete_hsm_client_certificate(self, hsm_client_certificate_identifier):
         """
         Deletes the specified HSM client certificate.
 
@@ -1181,12 +1203,11 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'HsmClientCertificateIdentifier': hsm_client_certificate_identifier,
+            "HsmClientCertificateIdentifier": hsm_client_certificate_identifier,
         }
         return self._make_request(
-            action='DeleteHsmClientCertificate',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteHsmClientCertificate", verb="POST", path="/", params=params
+        )
 
     def delete_hsm_configuration(self, hsm_configuration_identifier):
         """
@@ -1198,15 +1219,15 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'HsmConfigurationIdentifier': hsm_configuration_identifier,
+            "HsmConfigurationIdentifier": hsm_configuration_identifier,
         }
         return self._make_request(
-            action='DeleteHsmConfiguration',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteHsmConfiguration", verb="POST", path="/", params=params
+        )
 
-    def describe_cluster_parameter_groups(self, parameter_group_name=None,
-                                          max_records=None, marker=None):
+    def describe_cluster_parameter_groups(
+        self, parameter_group_name=None, max_records=None, marker=None
+    ):
         """
         Returns a list of Amazon Redshift parameter groups, including
         parameter groups you created and the default parameter group.
@@ -1246,18 +1267,21 @@ class RedshiftConnection(AWSQueryConnection):
         """
         params = {}
         if parameter_group_name is not None:
-            params['ParameterGroupName'] = parameter_group_name
+            params["ParameterGroupName"] = parameter_group_name
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeClusterParameterGroups',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeClusterParameterGroups",
+            verb="POST",
+            path="/",
+            params=params,
+        )
 
-    def describe_cluster_parameters(self, parameter_group_name, source=None,
-                                    max_records=None, marker=None):
+    def describe_cluster_parameters(
+        self, parameter_group_name, source=None, max_records=None, marker=None
+    ):
         """
         Returns a detailed list of parameters contained within the
         specified Amazon Redshift parameter group. For each parameter
@@ -1308,21 +1332,22 @@ class RedshiftConnection(AWSQueryConnection):
             retrying the request.
 
         """
-        params = {'ParameterGroupName': parameter_group_name, }
+        params = {
+            "ParameterGroupName": parameter_group_name,
+        }
         if source is not None:
-            params['Source'] = source
+            params["Source"] = source
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeClusterParameters',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeClusterParameters", verb="POST", path="/", params=params
+        )
 
-    def describe_cluster_security_groups(self,
-                                         cluster_security_group_name=None,
-                                         max_records=None, marker=None):
+    def describe_cluster_security_groups(
+        self, cluster_security_group_name=None, max_records=None, marker=None
+    ):
         """
         Returns information about Amazon Redshift security groups. If
         the name of a security group is specified, the response will
@@ -1363,21 +1388,26 @@ class RedshiftConnection(AWSQueryConnection):
         """
         params = {}
         if cluster_security_group_name is not None:
-            params['ClusterSecurityGroupName'] = cluster_security_group_name
+            params["ClusterSecurityGroupName"] = cluster_security_group_name
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeClusterSecurityGroups',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeClusterSecurityGroups", verb="POST", path="/", params=params
+        )
 
-    def describe_cluster_snapshots(self, cluster_identifier=None,
-                                   snapshot_identifier=None,
-                                   snapshot_type=None, start_time=None,
-                                   end_time=None, max_records=None,
-                                   marker=None, owner_account=None):
+    def describe_cluster_snapshots(
+        self,
+        cluster_identifier=None,
+        snapshot_identifier=None,
+        snapshot_type=None,
+        start_time=None,
+        end_time=None,
+        max_records=None,
+        marker=None,
+        owner_account=None,
+    ):
         """
         Returns one or more snapshot objects, which contain metadata
         about your cluster snapshots. By default, this operation
@@ -1443,28 +1473,28 @@ class RedshiftConnection(AWSQueryConnection):
         """
         params = {}
         if cluster_identifier is not None:
-            params['ClusterIdentifier'] = cluster_identifier
+            params["ClusterIdentifier"] = cluster_identifier
         if snapshot_identifier is not None:
-            params['SnapshotIdentifier'] = snapshot_identifier
+            params["SnapshotIdentifier"] = snapshot_identifier
         if snapshot_type is not None:
-            params['SnapshotType'] = snapshot_type
+            params["SnapshotType"] = snapshot_type
         if start_time is not None:
-            params['StartTime'] = start_time
+            params["StartTime"] = start_time
         if end_time is not None:
-            params['EndTime'] = end_time
+            params["EndTime"] = end_time
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if owner_account is not None:
-            params['OwnerAccount'] = owner_account
+            params["OwnerAccount"] = owner_account
         return self._make_request(
-            action='DescribeClusterSnapshots',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeClusterSnapshots", verb="POST", path="/", params=params
+        )
 
-    def describe_cluster_subnet_groups(self, cluster_subnet_group_name=None,
-                                       max_records=None, marker=None):
+    def describe_cluster_subnet_groups(
+        self, cluster_subnet_group_name=None, max_records=None, marker=None
+    ):
         """
         Returns one or more cluster subnet group objects, which
         contain metadata about your cluster subnet groups. By default,
@@ -1497,19 +1527,22 @@ class RedshiftConnection(AWSQueryConnection):
         """
         params = {}
         if cluster_subnet_group_name is not None:
-            params['ClusterSubnetGroupName'] = cluster_subnet_group_name
+            params["ClusterSubnetGroupName"] = cluster_subnet_group_name
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeClusterSubnetGroups',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeClusterSubnetGroups", verb="POST", path="/", params=params
+        )
 
-    def describe_cluster_versions(self, cluster_version=None,
-                                  cluster_parameter_group_family=None,
-                                  max_records=None, marker=None):
+    def describe_cluster_versions(
+        self,
+        cluster_version=None,
+        cluster_parameter_group_family=None,
+        max_records=None,
+        marker=None,
+    ):
         """
         Returns descriptions of the available Amazon Redshift cluster
         versions. You can call this operation even before creating any
@@ -1555,20 +1588,18 @@ class RedshiftConnection(AWSQueryConnection):
         """
         params = {}
         if cluster_version is not None:
-            params['ClusterVersion'] = cluster_version
+            params["ClusterVersion"] = cluster_version
         if cluster_parameter_group_family is not None:
-            params['ClusterParameterGroupFamily'] = cluster_parameter_group_family
+            params["ClusterParameterGroupFamily"] = cluster_parameter_group_family
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeClusterVersions',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeClusterVersions", verb="POST", path="/", params=params
+        )
 
-    def describe_clusters(self, cluster_identifier=None, max_records=None,
-                          marker=None):
+    def describe_clusters(self, cluster_identifier=None, max_records=None, marker=None):
         """
         Returns properties of provisioned clusters including general
         cluster properties, cluster database properties, maintenance
@@ -1606,18 +1637,18 @@ class RedshiftConnection(AWSQueryConnection):
         """
         params = {}
         if cluster_identifier is not None:
-            params['ClusterIdentifier'] = cluster_identifier
+            params["ClusterIdentifier"] = cluster_identifier
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeClusters',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeClusters", verb="POST", path="/", params=params
+        )
 
-    def describe_default_cluster_parameters(self, parameter_group_family,
-                                            max_records=None, marker=None):
+    def describe_default_cluster_parameters(
+        self, parameter_group_family, max_records=None, marker=None
+    ):
         """
         Returns a list of parameter settings for the specified
         parameter group family.
@@ -1650,15 +1681,19 @@ class RedshiftConnection(AWSQueryConnection):
             retrying the request.
 
         """
-        params = {'ParameterGroupFamily': parameter_group_family, }
+        params = {
+            "ParameterGroupFamily": parameter_group_family,
+        }
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeDefaultClusterParameters',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeDefaultClusterParameters",
+            verb="POST",
+            path="/",
+            params=params,
+        )
 
     def describe_event_categories(self, source_type=None):
         """
@@ -1675,14 +1710,14 @@ class RedshiftConnection(AWSQueryConnection):
         """
         params = {}
         if source_type is not None:
-            params['SourceType'] = source_type
+            params["SourceType"] = source_type
         return self._make_request(
-            action='DescribeEventCategories',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeEventCategories", verb="POST", path="/", params=params
+        )
 
-    def describe_event_subscriptions(self, subscription_name=None,
-                                     max_records=None, marker=None):
+    def describe_event_subscriptions(
+        self, subscription_name=None, max_records=None, marker=None
+    ):
         """
         Lists descriptions of all the Amazon Redshift event
         notifications subscription for a customer account. If you
@@ -1715,19 +1750,25 @@ class RedshiftConnection(AWSQueryConnection):
         """
         params = {}
         if subscription_name is not None:
-            params['SubscriptionName'] = subscription_name
+            params["SubscriptionName"] = subscription_name
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeEventSubscriptions',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeEventSubscriptions", verb="POST", path="/", params=params
+        )
 
-    def describe_events(self, source_identifier=None, source_type=None,
-                        start_time=None, end_time=None, duration=None,
-                        max_records=None, marker=None):
+    def describe_events(
+        self,
+        source_identifier=None,
+        source_type=None,
+        start_time=None,
+        end_time=None,
+        duration=None,
+        max_records=None,
+        marker=None,
+    ):
         """
         Returns events related to clusters, security groups,
         snapshots, and parameter groups for the past 14 days. Events
@@ -1812,27 +1853,26 @@ class RedshiftConnection(AWSQueryConnection):
         """
         params = {}
         if source_identifier is not None:
-            params['SourceIdentifier'] = source_identifier
+            params["SourceIdentifier"] = source_identifier
         if source_type is not None:
-            params['SourceType'] = source_type
+            params["SourceType"] = source_type
         if start_time is not None:
-            params['StartTime'] = start_time
+            params["StartTime"] = start_time
         if end_time is not None:
-            params['EndTime'] = end_time
+            params["EndTime"] = end_time
         if duration is not None:
-            params['Duration'] = duration
+            params["Duration"] = duration
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeEvents',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeEvents", verb="POST", path="/", params=params
+        )
 
-    def describe_hsm_client_certificates(self,
-                                         hsm_client_certificate_identifier=None,
-                                         max_records=None, marker=None):
+    def describe_hsm_client_certificates(
+        self, hsm_client_certificate_identifier=None, max_records=None, marker=None
+    ):
         """
         Returns information about the specified HSM client
         certificate. If no certificate ID is specified, returns
@@ -1867,18 +1907,18 @@ class RedshiftConnection(AWSQueryConnection):
         """
         params = {}
         if hsm_client_certificate_identifier is not None:
-            params['HsmClientCertificateIdentifier'] = hsm_client_certificate_identifier
+            params["HsmClientCertificateIdentifier"] = hsm_client_certificate_identifier
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeHsmClientCertificates',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeHsmClientCertificates", verb="POST", path="/", params=params
+        )
 
-    def describe_hsm_configurations(self, hsm_configuration_identifier=None,
-                                    max_records=None, marker=None):
+    def describe_hsm_configurations(
+        self, hsm_configuration_identifier=None, max_records=None, marker=None
+    ):
         """
         Returns information about the specified Amazon Redshift HSM
         configuration. If no configuration ID is specified, returns
@@ -1913,15 +1953,14 @@ class RedshiftConnection(AWSQueryConnection):
         """
         params = {}
         if hsm_configuration_identifier is not None:
-            params['HsmConfigurationIdentifier'] = hsm_configuration_identifier
+            params["HsmConfigurationIdentifier"] = hsm_configuration_identifier
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeHsmConfigurations',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeHsmConfigurations", verb="POST", path="/", params=params
+        )
 
     def describe_logging_status(self, cluster_identifier):
         """
@@ -1935,15 +1974,16 @@ class RedshiftConnection(AWSQueryConnection):
         Example: `examplecluster`
 
         """
-        params = {'ClusterIdentifier': cluster_identifier, }
+        params = {
+            "ClusterIdentifier": cluster_identifier,
+        }
         return self._make_request(
-            action='DescribeLoggingStatus',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeLoggingStatus", verb="POST", path="/", params=params
+        )
 
-    def describe_orderable_cluster_options(self, cluster_version=None,
-                                           node_type=None, max_records=None,
-                                           marker=None):
+    def describe_orderable_cluster_options(
+        self, cluster_version=None, node_type=None, max_records=None, marker=None
+    ):
         """
         Returns a list of orderable cluster options. Before you create
         a new cluster you can use this operation to find what options
@@ -1991,21 +2031,23 @@ class RedshiftConnection(AWSQueryConnection):
         """
         params = {}
         if cluster_version is not None:
-            params['ClusterVersion'] = cluster_version
+            params["ClusterVersion"] = cluster_version
         if node_type is not None:
-            params['NodeType'] = node_type
+            params["NodeType"] = node_type
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeOrderableClusterOptions',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeOrderableClusterOptions",
+            verb="POST",
+            path="/",
+            params=params,
+        )
 
-    def describe_reserved_node_offerings(self,
-                                         reserved_node_offering_id=None,
-                                         max_records=None, marker=None):
+    def describe_reserved_node_offerings(
+        self, reserved_node_offering_id=None, max_records=None, marker=None
+    ):
         """
         Returns a list of the available reserved node offerings by
         Amazon Redshift with their descriptions including the node
@@ -2046,18 +2088,18 @@ class RedshiftConnection(AWSQueryConnection):
         """
         params = {}
         if reserved_node_offering_id is not None:
-            params['ReservedNodeOfferingId'] = reserved_node_offering_id
+            params["ReservedNodeOfferingId"] = reserved_node_offering_id
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeReservedNodeOfferings',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeReservedNodeOfferings", verb="POST", path="/", params=params
+        )
 
-    def describe_reserved_nodes(self, reserved_node_id=None,
-                                max_records=None, marker=None):
+    def describe_reserved_nodes(
+        self, reserved_node_id=None, max_records=None, marker=None
+    ):
         """
         Returns the descriptions of the reserved nodes.
 
@@ -2086,15 +2128,14 @@ class RedshiftConnection(AWSQueryConnection):
         """
         params = {}
         if reserved_node_id is not None:
-            params['ReservedNodeId'] = reserved_node_id
+            params["ReservedNodeId"] = reserved_node_id
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeReservedNodes',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeReservedNodes", verb="POST", path="/", params=params
+        )
 
     def describe_resize(self, cluster_identifier):
         """
@@ -2117,11 +2158,12 @@ class RedshiftConnection(AWSQueryConnection):
             account are returned.
 
         """
-        params = {'ClusterIdentifier': cluster_identifier, }
+        params = {
+            "ClusterIdentifier": cluster_identifier,
+        }
         return self._make_request(
-            action='DescribeResize',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeResize", verb="POST", path="/", params=params
+        )
 
     def disable_logging(self, cluster_identifier):
         """
@@ -2134,11 +2176,12 @@ class RedshiftConnection(AWSQueryConnection):
         Example: `examplecluster`
 
         """
-        params = {'ClusterIdentifier': cluster_identifier, }
+        params = {
+            "ClusterIdentifier": cluster_identifier,
+        }
         return self._make_request(
-            action='DisableLogging',
-            verb='POST',
-            path='/', params=params)
+            action="DisableLogging", verb="POST", path="/", params=params
+        )
 
     def disable_snapshot_copy(self, cluster_identifier):
         """
@@ -2153,14 +2196,14 @@ class RedshiftConnection(AWSQueryConnection):
             cross-region snapshot copy enabled.
 
         """
-        params = {'ClusterIdentifier': cluster_identifier, }
+        params = {
+            "ClusterIdentifier": cluster_identifier,
+        }
         return self._make_request(
-            action='DisableSnapshotCopy',
-            verb='POST',
-            path='/', params=params)
+            action="DisableSnapshotCopy", verb="POST", path="/", params=params
+        )
 
-    def enable_logging(self, cluster_identifier, bucket_name,
-                       s3_key_prefix=None):
+    def enable_logging(self, cluster_identifier, bucket_name, s3_key_prefix=None):
         """
         Starts logging information, such as queries and connection
         attempts, for the specified Amazon Redshift cluster.
@@ -2200,18 +2243,18 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'ClusterIdentifier': cluster_identifier,
-            'BucketName': bucket_name,
+            "ClusterIdentifier": cluster_identifier,
+            "BucketName": bucket_name,
         }
         if s3_key_prefix is not None:
-            params['S3KeyPrefix'] = s3_key_prefix
+            params["S3KeyPrefix"] = s3_key_prefix
         return self._make_request(
-            action='EnableLogging',
-            verb='POST',
-            path='/', params=params)
+            action="EnableLogging", verb="POST", path="/", params=params
+        )
 
-    def enable_snapshot_copy(self, cluster_identifier, destination_region,
-                             retention_period=None):
+    def enable_snapshot_copy(
+        self, cluster_identifier, destination_region, retention_period=None
+    ):
         """
         Enables the automatic copy of snapshots from one region to
         another region for a specified cluster.
@@ -2239,28 +2282,33 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'ClusterIdentifier': cluster_identifier,
-            'DestinationRegion': destination_region,
+            "ClusterIdentifier": cluster_identifier,
+            "DestinationRegion": destination_region,
         }
         if retention_period is not None:
-            params['RetentionPeriod'] = retention_period
+            params["RetentionPeriod"] = retention_period
         return self._make_request(
-            action='EnableSnapshotCopy',
-            verb='POST',
-            path='/', params=params)
+            action="EnableSnapshotCopy", verb="POST", path="/", params=params
+        )
 
-    def modify_cluster(self, cluster_identifier, cluster_type=None,
-                       node_type=None, number_of_nodes=None,
-                       cluster_security_groups=None,
-                       vpc_security_group_ids=None,
-                       master_user_password=None,
-                       cluster_parameter_group_name=None,
-                       automated_snapshot_retention_period=None,
-                       preferred_maintenance_window=None,
-                       cluster_version=None, allow_version_upgrade=None,
-                       hsm_client_certificate_identifier=None,
-                       hsm_configuration_identifier=None,
-                       new_cluster_identifier=None):
+    def modify_cluster(
+        self,
+        cluster_identifier,
+        cluster_type=None,
+        node_type=None,
+        number_of_nodes=None,
+        cluster_security_groups=None,
+        vpc_security_group_ids=None,
+        master_user_password=None,
+        cluster_parameter_group_name=None,
+        automated_snapshot_retention_period=None,
+        preferred_maintenance_window=None,
+        cluster_version=None,
+        allow_version_upgrade=None,
+        hsm_client_certificate_identifier=None,
+        hsm_configuration_identifier=None,
+        new_cluster_identifier=None,
+    ):
         """
         Modifies the settings for a cluster. For example, you can add
         another security or parameter group, update the preferred
@@ -2449,47 +2497,48 @@ class RedshiftConnection(AWSQueryConnection):
         Example: `examplecluster`
 
         """
-        params = {'ClusterIdentifier': cluster_identifier, }
+        params = {
+            "ClusterIdentifier": cluster_identifier,
+        }
         if cluster_type is not None:
-            params['ClusterType'] = cluster_type
+            params["ClusterType"] = cluster_type
         if node_type is not None:
-            params['NodeType'] = node_type
+            params["NodeType"] = node_type
         if number_of_nodes is not None:
-            params['NumberOfNodes'] = number_of_nodes
+            params["NumberOfNodes"] = number_of_nodes
         if cluster_security_groups is not None:
-            self.build_list_params(params,
-                                   cluster_security_groups,
-                                   'ClusterSecurityGroups.member')
+            self.build_list_params(
+                params, cluster_security_groups, "ClusterSecurityGroups.member"
+            )
         if vpc_security_group_ids is not None:
-            self.build_list_params(params,
-                                   vpc_security_group_ids,
-                                   'VpcSecurityGroupIds.member')
+            self.build_list_params(
+                params, vpc_security_group_ids, "VpcSecurityGroupIds.member"
+            )
         if master_user_password is not None:
-            params['MasterUserPassword'] = master_user_password
+            params["MasterUserPassword"] = master_user_password
         if cluster_parameter_group_name is not None:
-            params['ClusterParameterGroupName'] = cluster_parameter_group_name
+            params["ClusterParameterGroupName"] = cluster_parameter_group_name
         if automated_snapshot_retention_period is not None:
-            params['AutomatedSnapshotRetentionPeriod'] = automated_snapshot_retention_period
+            params[
+                "AutomatedSnapshotRetentionPeriod"
+            ] = automated_snapshot_retention_period
         if preferred_maintenance_window is not None:
-            params['PreferredMaintenanceWindow'] = preferred_maintenance_window
+            params["PreferredMaintenanceWindow"] = preferred_maintenance_window
         if cluster_version is not None:
-            params['ClusterVersion'] = cluster_version
+            params["ClusterVersion"] = cluster_version
         if allow_version_upgrade is not None:
-            params['AllowVersionUpgrade'] = str(
-                allow_version_upgrade).lower()
+            params["AllowVersionUpgrade"] = str(allow_version_upgrade).lower()
         if hsm_client_certificate_identifier is not None:
-            params['HsmClientCertificateIdentifier'] = hsm_client_certificate_identifier
+            params["HsmClientCertificateIdentifier"] = hsm_client_certificate_identifier
         if hsm_configuration_identifier is not None:
-            params['HsmConfigurationIdentifier'] = hsm_configuration_identifier
+            params["HsmConfigurationIdentifier"] = hsm_configuration_identifier
         if new_cluster_identifier is not None:
-            params['NewClusterIdentifier'] = new_cluster_identifier
+            params["NewClusterIdentifier"] = new_cluster_identifier
         return self._make_request(
-            action='ModifyCluster',
-            verb='POST',
-            path='/', params=params)
+            action="ModifyCluster", verb="POST", path="/", params=params
+        )
 
-    def modify_cluster_parameter_group(self, parameter_group_name,
-                                       parameters):
+    def modify_cluster_parameter_group(self, parameter_group_name, parameters):
         """
         Modifies the parameters of a parameter group.
 
@@ -2512,18 +2561,31 @@ class RedshiftConnection(AWSQueryConnection):
             the name-value pairs in the wlm_json_configuration parameter.
 
         """
-        params = {'ParameterGroupName': parameter_group_name, }
+        params = {
+            "ParameterGroupName": parameter_group_name,
+        }
         self.build_complex_list_params(
-            params, parameters,
-            'Parameters.member',
-            ('ParameterName', 'ParameterValue', 'Description', 'Source', 'DataType', 'AllowedValues', 'IsModifiable', 'MinimumEngineVersion'))
+            params,
+            parameters,
+            "Parameters.member",
+            (
+                "ParameterName",
+                "ParameterValue",
+                "Description",
+                "Source",
+                "DataType",
+                "AllowedValues",
+                "IsModifiable",
+                "MinimumEngineVersion",
+            ),
+        )
         return self._make_request(
-            action='ModifyClusterParameterGroup',
-            verb='POST',
-            path='/', params=params)
+            action="ModifyClusterParameterGroup", verb="POST", path="/", params=params
+        )
 
-    def modify_cluster_subnet_group(self, cluster_subnet_group_name,
-                                    subnet_ids, description=None):
+    def modify_cluster_subnet_group(
+        self, cluster_subnet_group_name, subnet_ids, description=None
+    ):
         """
         Modifies a cluster subnet group to include the specified list
         of VPC subnets. The operation replaces the existing list of
@@ -2543,22 +2605,25 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'ClusterSubnetGroupName': cluster_subnet_group_name,
+            "ClusterSubnetGroupName": cluster_subnet_group_name,
         }
-        self.build_list_params(params,
-                               subnet_ids,
-                               'SubnetIds.member')
+        self.build_list_params(params, subnet_ids, "SubnetIds.member")
         if description is not None:
-            params['Description'] = description
+            params["Description"] = description
         return self._make_request(
-            action='ModifyClusterSubnetGroup',
-            verb='POST',
-            path='/', params=params)
+            action="ModifyClusterSubnetGroup", verb="POST", path="/", params=params
+        )
 
-    def modify_event_subscription(self, subscription_name,
-                                  sns_topic_arn=None, source_type=None,
-                                  source_ids=None, event_categories=None,
-                                  severity=None, enabled=None):
+    def modify_event_subscription(
+        self,
+        subscription_name,
+        sns_topic_arn=None,
+        source_type=None,
+        source_ids=None,
+        event_categories=None,
+        severity=None,
+        enabled=None,
+    ):
         """
         Modifies an existing Amazon Redshift event notification
         subscription.
@@ -2607,31 +2672,28 @@ class RedshiftConnection(AWSQueryConnection):
             enabled. `True` indicates the subscription is enabled
 
         """
-        params = {'SubscriptionName': subscription_name, }
+        params = {
+            "SubscriptionName": subscription_name,
+        }
         if sns_topic_arn is not None:
-            params['SnsTopicArn'] = sns_topic_arn
+            params["SnsTopicArn"] = sns_topic_arn
         if source_type is not None:
-            params['SourceType'] = source_type
+            params["SourceType"] = source_type
         if source_ids is not None:
-            self.build_list_params(params,
-                                   source_ids,
-                                   'SourceIds.member')
+            self.build_list_params(params, source_ids, "SourceIds.member")
         if event_categories is not None:
-            self.build_list_params(params,
-                                   event_categories,
-                                   'EventCategories.member')
+            self.build_list_params(params, event_categories, "EventCategories.member")
         if severity is not None:
-            params['Severity'] = severity
+            params["Severity"] = severity
         if enabled is not None:
-            params['Enabled'] = str(
-                enabled).lower()
+            params["Enabled"] = str(enabled).lower()
         return self._make_request(
-            action='ModifyEventSubscription',
-            verb='POST',
-            path='/', params=params)
+            action="ModifyEventSubscription", verb="POST", path="/", params=params
+        )
 
-    def modify_snapshot_copy_retention_period(self, cluster_identifier,
-                                              retention_period):
+    def modify_snapshot_copy_retention_period(
+        self, cluster_identifier, retention_period
+    ):
         """
         Modifies the number of days to retain automated snapshots in
         the destination region after they are copied from the source
@@ -2657,16 +2719,19 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'ClusterIdentifier': cluster_identifier,
-            'RetentionPeriod': retention_period,
+            "ClusterIdentifier": cluster_identifier,
+            "RetentionPeriod": retention_period,
         }
         return self._make_request(
-            action='ModifySnapshotCopyRetentionPeriod',
-            verb='POST',
-            path='/', params=params)
+            action="ModifySnapshotCopyRetentionPeriod",
+            verb="POST",
+            path="/",
+            params=params,
+        )
 
-    def purchase_reserved_node_offering(self, reserved_node_offering_id,
-                                        node_count=None):
+    def purchase_reserved_node_offering(
+        self, reserved_node_offering_id, node_count=None
+    ):
         """
         Allows you to purchase reserved nodes. Amazon Redshift offers
         a predefined set of reserved node offerings. You can purchase
@@ -2690,14 +2755,13 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'ReservedNodeOfferingId': reserved_node_offering_id,
+            "ReservedNodeOfferingId": reserved_node_offering_id,
         }
         if node_count is not None:
-            params['NodeCount'] = node_count
+            params["NodeCount"] = node_count
         return self._make_request(
-            action='PurchaseReservedNodeOffering',
-            verb='POST',
-            path='/', params=params)
+            action="PurchaseReservedNodeOffering", verb="POST", path="/", params=params
+        )
 
     def reboot_cluster(self, cluster_identifier):
         """
@@ -2713,15 +2777,16 @@ class RedshiftConnection(AWSQueryConnection):
         :param cluster_identifier: The cluster identifier.
 
         """
-        params = {'ClusterIdentifier': cluster_identifier, }
+        params = {
+            "ClusterIdentifier": cluster_identifier,
+        }
         return self._make_request(
-            action='RebootCluster',
-            verb='POST',
-            path='/', params=params)
+            action="RebootCluster", verb="POST", path="/", params=params
+        )
 
-    def reset_cluster_parameter_group(self, parameter_group_name,
-                                      reset_all_parameters=None,
-                                      parameters=None):
+    def reset_cluster_parameter_group(
+        self, parameter_group_name, reset_all_parameters=None, parameters=None
+    ):
         """
         Sets one or more parameters of the specified parameter group
         to their default values and sets the source values of the
@@ -2747,36 +2812,51 @@ class RedshiftConnection(AWSQueryConnection):
             request.
 
         """
-        params = {'ParameterGroupName': parameter_group_name, }
+        params = {
+            "ParameterGroupName": parameter_group_name,
+        }
         if reset_all_parameters is not None:
-            params['ResetAllParameters'] = str(
-                reset_all_parameters).lower()
+            params["ResetAllParameters"] = str(reset_all_parameters).lower()
         if parameters is not None:
             self.build_complex_list_params(
-                params, parameters,
-                'Parameters.member',
-                ('ParameterName', 'ParameterValue', 'Description', 'Source', 'DataType', 'AllowedValues', 'IsModifiable', 'MinimumEngineVersion'))
+                params,
+                parameters,
+                "Parameters.member",
+                (
+                    "ParameterName",
+                    "ParameterValue",
+                    "Description",
+                    "Source",
+                    "DataType",
+                    "AllowedValues",
+                    "IsModifiable",
+                    "MinimumEngineVersion",
+                ),
+            )
         return self._make_request(
-            action='ResetClusterParameterGroup',
-            verb='POST',
-            path='/', params=params)
+            action="ResetClusterParameterGroup", verb="POST", path="/", params=params
+        )
 
-    def restore_from_cluster_snapshot(self, cluster_identifier,
-                                      snapshot_identifier,
-                                      snapshot_cluster_identifier=None,
-                                      port=None, availability_zone=None,
-                                      allow_version_upgrade=None,
-                                      cluster_subnet_group_name=None,
-                                      publicly_accessible=None,
-                                      owner_account=None,
-                                      hsm_client_certificate_identifier=None,
-                                      hsm_configuration_identifier=None,
-                                      elastic_ip=None,
-                                      cluster_parameter_group_name=None,
-                                      cluster_security_groups=None,
-                                      vpc_security_group_ids=None,
-                                      preferred_maintenance_window=None,
-                                      automated_snapshot_retention_period=None):
+    def restore_from_cluster_snapshot(
+        self,
+        cluster_identifier,
+        snapshot_identifier,
+        snapshot_cluster_identifier=None,
+        port=None,
+        availability_zone=None,
+        allow_version_upgrade=None,
+        cluster_subnet_group_name=None,
+        publicly_accessible=None,
+        owner_account=None,
+        hsm_client_certificate_identifier=None,
+        hsm_configuration_identifier=None,
+        elastic_ip=None,
+        cluster_parameter_group_name=None,
+        cluster_security_groups=None,
+        vpc_security_group_ids=None,
+        preferred_maintenance_window=None,
+        automated_snapshot_retention_period=None,
+    ):
         """
         Creates a new cluster from a snapshot. Amazon Redshift creates
         the resulting cluster with the same configuration as the
@@ -2930,55 +3010,56 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'ClusterIdentifier': cluster_identifier,
-            'SnapshotIdentifier': snapshot_identifier,
+            "ClusterIdentifier": cluster_identifier,
+            "SnapshotIdentifier": snapshot_identifier,
         }
         if snapshot_cluster_identifier is not None:
-            params['SnapshotClusterIdentifier'] = snapshot_cluster_identifier
+            params["SnapshotClusterIdentifier"] = snapshot_cluster_identifier
         if port is not None:
-            params['Port'] = port
+            params["Port"] = port
         if availability_zone is not None:
-            params['AvailabilityZone'] = availability_zone
+            params["AvailabilityZone"] = availability_zone
         if allow_version_upgrade is not None:
-            params['AllowVersionUpgrade'] = str(
-                allow_version_upgrade).lower()
+            params["AllowVersionUpgrade"] = str(allow_version_upgrade).lower()
         if cluster_subnet_group_name is not None:
-            params['ClusterSubnetGroupName'] = cluster_subnet_group_name
+            params["ClusterSubnetGroupName"] = cluster_subnet_group_name
         if publicly_accessible is not None:
-            params['PubliclyAccessible'] = str(
-                publicly_accessible).lower()
+            params["PubliclyAccessible"] = str(publicly_accessible).lower()
         if owner_account is not None:
-            params['OwnerAccount'] = owner_account
+            params["OwnerAccount"] = owner_account
         if hsm_client_certificate_identifier is not None:
-            params['HsmClientCertificateIdentifier'] = hsm_client_certificate_identifier
+            params["HsmClientCertificateIdentifier"] = hsm_client_certificate_identifier
         if hsm_configuration_identifier is not None:
-            params['HsmConfigurationIdentifier'] = hsm_configuration_identifier
+            params["HsmConfigurationIdentifier"] = hsm_configuration_identifier
         if elastic_ip is not None:
-            params['ElasticIp'] = elastic_ip
+            params["ElasticIp"] = elastic_ip
         if cluster_parameter_group_name is not None:
-            params['ClusterParameterGroupName'] = cluster_parameter_group_name
+            params["ClusterParameterGroupName"] = cluster_parameter_group_name
         if cluster_security_groups is not None:
-            self.build_list_params(params,
-                                   cluster_security_groups,
-                                   'ClusterSecurityGroups.member')
+            self.build_list_params(
+                params, cluster_security_groups, "ClusterSecurityGroups.member"
+            )
         if vpc_security_group_ids is not None:
-            self.build_list_params(params,
-                                   vpc_security_group_ids,
-                                   'VpcSecurityGroupIds.member')
+            self.build_list_params(
+                params, vpc_security_group_ids, "VpcSecurityGroupIds.member"
+            )
         if preferred_maintenance_window is not None:
-            params['PreferredMaintenanceWindow'] = preferred_maintenance_window
+            params["PreferredMaintenanceWindow"] = preferred_maintenance_window
         if automated_snapshot_retention_period is not None:
-            params['AutomatedSnapshotRetentionPeriod'] = automated_snapshot_retention_period
+            params[
+                "AutomatedSnapshotRetentionPeriod"
+            ] = automated_snapshot_retention_period
         return self._make_request(
-            action='RestoreFromClusterSnapshot',
-            verb='POST',
-            path='/', params=params)
+            action="RestoreFromClusterSnapshot", verb="POST", path="/", params=params
+        )
 
-    def revoke_cluster_security_group_ingress(self,
-                                              cluster_security_group_name,
-                                              cidrip=None,
-                                              ec2_security_group_name=None,
-                                              ec2_security_group_owner_id=None):
+    def revoke_cluster_security_group_ingress(
+        self,
+        cluster_security_group_name,
+        cidrip=None,
+        ec2_security_group_name=None,
+        ec2_security_group_owner_id=None,
+    ):
         """
         Revokes an ingress rule in an Amazon Redshift security group
         for a previously authorized IP range or Amazon EC2 security
@@ -3013,22 +3094,27 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'ClusterSecurityGroupName': cluster_security_group_name,
+            "ClusterSecurityGroupName": cluster_security_group_name,
         }
         if cidrip is not None:
-            params['CIDRIP'] = cidrip
+            params["CIDRIP"] = cidrip
         if ec2_security_group_name is not None:
-            params['EC2SecurityGroupName'] = ec2_security_group_name
+            params["EC2SecurityGroupName"] = ec2_security_group_name
         if ec2_security_group_owner_id is not None:
-            params['EC2SecurityGroupOwnerId'] = ec2_security_group_owner_id
+            params["EC2SecurityGroupOwnerId"] = ec2_security_group_owner_id
         return self._make_request(
-            action='RevokeClusterSecurityGroupIngress',
-            verb='POST',
-            path='/', params=params)
+            action="RevokeClusterSecurityGroupIngress",
+            verb="POST",
+            path="/",
+            params=params,
+        )
 
-    def revoke_snapshot_access(self, snapshot_identifier,
-                               account_with_restore_access,
-                               snapshot_cluster_identifier=None):
+    def revoke_snapshot_access(
+        self,
+        snapshot_identifier,
+        account_with_restore_access,
+        snapshot_cluster_identifier=None,
+    ):
         """
         Removes the ability of the specified AWS customer account to
         restore the specified snapshot. If the account is currently
@@ -3054,15 +3140,14 @@ class RedshiftConnection(AWSQueryConnection):
 
         """
         params = {
-            'SnapshotIdentifier': snapshot_identifier,
-            'AccountWithRestoreAccess': account_with_restore_access,
+            "SnapshotIdentifier": snapshot_identifier,
+            "AccountWithRestoreAccess": account_with_restore_access,
         }
         if snapshot_cluster_identifier is not None:
-            params['SnapshotClusterIdentifier'] = snapshot_cluster_identifier
+            params["SnapshotClusterIdentifier"] = snapshot_cluster_identifier
         return self._make_request(
-            action='RevokeSnapshotAccess',
-            verb='POST',
-            path='/', params=params)
+            action="RevokeSnapshotAccess", verb="POST", path="/", params=params
+        )
 
     def rotate_encryption_key(self, cluster_identifier):
         """
@@ -3075,23 +3160,24 @@ class RedshiftConnection(AWSQueryConnection):
             enabled.
 
         """
-        params = {'ClusterIdentifier': cluster_identifier, }
+        params = {
+            "ClusterIdentifier": cluster_identifier,
+        }
         return self._make_request(
-            action='RotateEncryptionKey',
-            verb='POST',
-            path='/', params=params)
+            action="RotateEncryptionKey", verb="POST", path="/", params=params
+        )
 
     def _make_request(self, action, verb, path, params):
-        params['ContentType'] = 'JSON'
-        response = self.make_request(action=action, verb='POST',
-                                     path='/', params=params)
-        body = response.read().decode('utf-8')
+        params["ContentType"] = "JSON"
+        response = self.make_request(
+            action=action, verb="POST", path="/", params=params
+        )
+        body = response.read().decode("utf-8")
         boto.log.debug(body)
         if response.status == 200:
             return json.loads(body)
         else:
             json_body = json.loads(body)
-            fault_name = json_body.get('Error', {}).get('Code', None)
+            fault_name = json_body.get("Error", {}).get("Code", None)
             exception_class = self._faults.get(fault_name, self.ResponseError)
-            raise exception_class(response.status, response.reason,
-                                  body=json_body)
+            raise exception_class(response.status, response.reason, body=json_body)

@@ -30,9 +30,9 @@ class Group(object):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'groupId':
+        if name == "groupId":
             self.id = value
-        elif name == 'groupName':
+        elif name == "groupName":
             self.name = value
         else:
             setattr(self, name, value)

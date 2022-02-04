@@ -16,10 +16,11 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 # OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
 # ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
+
 
 class SourceAttribute(object):
     """
@@ -29,13 +30,13 @@ class SourceAttribute(object):
 
     :ivar default: Optional default value if the source attribute
         is not specified in a document.
-        
+
     :ivar name: The name of the document source field to add
         to this ``IndexField``.
 
     :ivar data_function: Identifies the transformation to apply
         when copying data from a source attribute.
-        
+
     :ivar data_map: The value is a dict with the following keys:
         * cases - A dict that translates source field values
             to custom values.
@@ -54,7 +55,7 @@ class SourceAttribute(object):
         * name - The name of the document source field to add.
     """
 
-    ValidDataFunctions = ('Copy', 'TrimTitle', 'Map')
+    ValidDataFunctions = ("Copy", "TrimTitle", "Map")
 
     def __init__(self):
         self.data_copy = {}
@@ -69,6 +70,6 @@ class SourceAttribute(object):
     @data_function.setter
     def data_function(self, value):
         if value not in self.ValidDataFunctions:
-            valid = '|'.join(self.ValidDataFunctions)
-            raise ValueError('data_function must be one of: %s' % valid)
+            valid = "|".join(self.ValidDataFunctions)
+            raise ValueError("data_function must be one of: %s" % valid)
         self._data_function = value

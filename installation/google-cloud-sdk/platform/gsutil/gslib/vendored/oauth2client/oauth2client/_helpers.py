@@ -28,17 +28,18 @@ from six.moves import urllib
 
 logger = logging.getLogger(__name__)
 
-POSITIONAL_WARNING = 'WARNING'
-POSITIONAL_EXCEPTION = 'EXCEPTION'
-POSITIONAL_IGNORE = 'IGNORE'
-POSITIONAL_SET = frozenset([POSITIONAL_WARNING, POSITIONAL_EXCEPTION,
-                            POSITIONAL_IGNORE])
+POSITIONAL_WARNING = "WARNING"
+POSITIONAL_EXCEPTION = "EXCEPTION"
+POSITIONAL_IGNORE = "IGNORE"
+POSITIONAL_SET = frozenset(
+    [POSITIONAL_WARNING, POSITIONAL_EXCEPTION, POSITIONAL_IGNORE]
+)
 
 positional_parameters_enforcement = POSITIONAL_WARNING
 
-_SYM_LINK_MESSAGE = 'File: {0}: Is a symbolic link.'
-_IS_DIR_MESSAGE = '{0}: Is a directory'
-_MISSING_FILE_MESSAGE = 'Cannot access {0}: No such file or directory'
+_SYM_LINK_MESSAGE = "File: {0}: Is a symbolic link."
+_IS_DIR_MESSAGE = "{0}: Is a directory"
+_MISSING_FILE_MESSAGE = "Cannot access {0}: No such file or directory"
 
 
 def positional(max_positional_args):
@@ -117,20 +118,24 @@ def positional(max_positional_args):
         @functools.wraps(wrapped)
         def positional_wrapper(*args, **kwargs):
             if len(args) > max_positional_args:
-                plural_s = ''
+                plural_s = ""
                 if max_positional_args != 1:
-                    plural_s = 's'
-                message = ('{function}() takes at most {args_max} positional '
-                           'argument{plural} ({args_given} given)'.format(
-                               function=wrapped.__name__,
-                               args_max=max_positional_args,
-                               args_given=len(args),
-                               plural=plural_s))
+                    plural_s = "s"
+                message = (
+                    "{function}() takes at most {args_max} positional "
+                    "argument{plural} ({args_given} given)".format(
+                        function=wrapped.__name__,
+                        args_max=max_positional_args,
+                        args_given=len(args),
+                        plural=plural_s,
+                    )
+                )
                 if positional_parameters_enforcement == POSITIONAL_EXCEPTION:
                     raise TypeError(message)
                 elif positional_parameters_enforcement == POSITIONAL_WARNING:
                     logger.warning(message)
             return wrapped(*args, **kwargs)
+
         return positional_wrapper
 
     if isinstance(max_positional_args, six.integer_types):
@@ -156,7 +161,7 @@ def scopes_to_string(scopes):
     if isinstance(scopes, six.string_types):
         return scopes
     else:
-        return ' '.join(scopes)
+        return " ".join(scopes)
 
 
 def string_to_scopes(scopes):
@@ -174,7 +179,7 @@ def string_to_scopes(scopes):
     if not scopes:
         return []
     elif isinstance(scopes, six.string_types):
-        return scopes.split(' ')
+        return scopes.split(" ")
     else:
         return scopes
 
@@ -195,8 +200,10 @@ def parse_unique_urlencoded(content):
     params = {}
     for key, value in six.iteritems(urlencoded_params):
         if len(value) != 1:
-            msg = ('URL-encoded content contains a repeated value:'
-                   '%s -> %s' % (key, ', '.join(value)))
+            msg = "URL-encoded content contains a repeated value:" "%s -> %s" % (
+                key,
+                ", ".join(value),
+            )
             raise ValueError(msg)
         params[key] = value[0]
     return params
@@ -269,16 +276,16 @@ def _parse_pem_key(raw_key_input):
         string, The actual key if the contents are from a PEM file, or
         else None.
     """
-    offset = raw_key_input.find(b'-----BEGIN ')
+    offset = raw_key_input.find(b"-----BEGIN ")
     if offset != -1:
         return raw_key_input[offset:]
 
 
 def _json_encode(data):
-    return json.dumps(data, separators=(',', ':'))
+    return json.dumps(data, separators=(",", ":"))
 
 
-def _to_bytes(value, encoding='ascii'):
+def _to_bytes(value, encoding="ascii"):
     """Converts a string value to bytes, if necessary.
 
     Unfortunately, ``six.b`` is insufficient for this task since in
@@ -299,12 +306,11 @@ def _to_bytes(value, encoding='ascii'):
     Raises:
         ValueError if the value could not be converted to bytes.
     """
-    result = (value.encode(encoding)
-              if isinstance(value, six.text_type) else value)
+    result = value.encode(encoding) if isinstance(value, six.text_type) else value
     if isinstance(result, six.binary_type):
         return result
     else:
-        raise ValueError('{0!r} could not be converted to bytes'.format(value))
+        raise ValueError("{0!r} could not be converted to bytes".format(value))
 
 
 def _from_bytes(value):
@@ -320,22 +326,20 @@ def _from_bytes(value):
     Raises:
         ValueError if the value could not be converted to unicode.
     """
-    result = (value.decode('utf-8')
-              if isinstance(value, six.binary_type) else value)
+    result = value.decode("utf-8") if isinstance(value, six.binary_type) else value
     if isinstance(result, six.text_type):
         return result
     else:
-        raise ValueError(
-            '{0!r} could not be converted to unicode'.format(value))
+        raise ValueError("{0!r} could not be converted to unicode".format(value))
 
 
 def _urlsafe_b64encode(raw_bytes):
-    raw_bytes = _to_bytes(raw_bytes, encoding='utf-8')
-    return base64.urlsafe_b64encode(raw_bytes).rstrip(b'=')
+    raw_bytes = _to_bytes(raw_bytes, encoding="utf-8")
+    return base64.urlsafe_b64encode(raw_bytes).rstrip(b"=")
 
 
 def _urlsafe_b64decode(b64string):
     # Guard against unicode strings, which base64 can't handle.
     b64string = _to_bytes(b64string)
-    padded = b64string + b'=' * (4 - len(b64string) % 4)
+    padded = b64string + b"=" * (4 - len(b64string) % 4)
     return base64.urlsafe_b64decode(padded)

@@ -48,8 +48,7 @@ class Plugin(object):
 
     @classmethod
     def is_capable(cls, requested_capability):
-        """Returns true if the requested capability is supported by this plugin
-        """
+        """Returns true if the requested capability is supported by this plugin"""
         for c in requested_capability:
             if c not in cls.capability:
                 return False
@@ -77,6 +76,7 @@ def _import_module(filename):
         if file:
             file.close()
 
+
 _plugin_loaded = False
 
 
@@ -86,8 +86,8 @@ def load_plugins(config):
         return
     _plugin_loaded = True
 
-    if not config.has_option('Plugin', 'plugin_directory'):
+    if not config.has_option("Plugin", "plugin_directory"):
         return
-    directory = config.get('Plugin', 'plugin_directory')
-    for file in glob.glob(os.path.join(directory, '*.py')):
+    directory = config.get("Plugin", "plugin_directory")
+    for file in glob.glob(os.path.join(directory, "*.py")):
         _import_module(file)

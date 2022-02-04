@@ -32,8 +32,9 @@ class MachineLearningConnection(AWSQueryConnection):
     """
     Definition of the public APIs exposed by Amazon Machine Learning
     """
+
     APIVersion = "2014-12-12"
-    AuthServiceName = 'machinelearning'
+    AuthServiceName = "machinelearning"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "machinelearning.us-east-1.amazonaws.com"
     ServiceName = "MachineLearning"
@@ -49,26 +50,31 @@ class MachineLearningConnection(AWSQueryConnection):
         "InvalidInputException": exceptions.InvalidInputException,
     }
 
-
     def __init__(self, **kwargs):
-        region = kwargs.pop('region', None)
+        region = kwargs.pop("region", None)
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
 
-        if 'host' not in kwargs or kwargs['host'] is None:
-            kwargs['host'] = region.endpoint
+        if "host" not in kwargs or kwargs["host"] is None:
+            kwargs["host"] = region.endpoint
 
         super(MachineLearningConnection, self).__init__(**kwargs)
         self.region = region
         self.auth_region_name = self.region.name
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
-    def create_batch_prediction(self, batch_prediction_id, ml_model_id,
-                                batch_prediction_data_source_id, output_uri,
-                                batch_prediction_name=None):
+    def create_batch_prediction(
+        self,
+        batch_prediction_id,
+        ml_model_id,
+        batch_prediction_data_source_id,
+        output_uri,
+        batch_prediction_name=None,
+    ):
         """
         Generates predictions for a group of observations. The
         observations to process exist in one or more data files
@@ -116,19 +122,25 @@ class MachineLearningConnection(AWSQueryConnection):
 
         """
         params = {
-            'BatchPredictionId': batch_prediction_id,
-            'MLModelId': ml_model_id,
-            'BatchPredictionDataSourceId': batch_prediction_data_source_id,
-            'OutputUri': output_uri,
+            "BatchPredictionId": batch_prediction_id,
+            "MLModelId": ml_model_id,
+            "BatchPredictionDataSourceId": batch_prediction_data_source_id,
+            "OutputUri": output_uri,
         }
         if batch_prediction_name is not None:
-            params['BatchPredictionName'] = batch_prediction_name
-        return self.make_request(action='CreateBatchPrediction',
-                                 body=json.dumps(params))
+            params["BatchPredictionName"] = batch_prediction_name
+        return self.make_request(
+            action="CreateBatchPrediction", body=json.dumps(params)
+        )
 
-    def create_data_source_from_rds(self, data_source_id, rds_data, role_arn,
-                                    data_source_name=None,
-                                    compute_statistics=None):
+    def create_data_source_from_rds(
+        self,
+        data_source_id,
+        rds_data,
+        role_arn,
+        data_source_name=None,
+        compute_statistics=None,
+    ):
         """
         Creates a `DataSource` object from an ` Amazon Relational
         Database Service`_ (Amazon RDS). A `DataSource` references
@@ -212,20 +224,26 @@ class MachineLearningConnection(AWSQueryConnection):
 
         """
         params = {
-            'DataSourceId': data_source_id,
-            'RDSData': rds_data,
-            'RoleARN': role_arn,
+            "DataSourceId": data_source_id,
+            "RDSData": rds_data,
+            "RoleARN": role_arn,
         }
         if data_source_name is not None:
-            params['DataSourceName'] = data_source_name
+            params["DataSourceName"] = data_source_name
         if compute_statistics is not None:
-            params['ComputeStatistics'] = compute_statistics
-        return self.make_request(action='CreateDataSourceFromRDS',
-                                 body=json.dumps(params))
+            params["ComputeStatistics"] = compute_statistics
+        return self.make_request(
+            action="CreateDataSourceFromRDS", body=json.dumps(params)
+        )
 
-    def create_data_source_from_redshift(self, data_source_id, data_spec,
-                                         role_arn, data_source_name=None,
-                                         compute_statistics=None):
+    def create_data_source_from_redshift(
+        self,
+        data_source_id,
+        data_spec,
+        role_arn,
+        data_source_name=None,
+        compute_statistics=None,
+    ):
         """
         Creates a `DataSource` from `Amazon Redshift`_. A `DataSource`
         references data that can be used to perform either
@@ -319,20 +337,21 @@ class MachineLearningConnection(AWSQueryConnection):
 
         """
         params = {
-            'DataSourceId': data_source_id,
-            'DataSpec': data_spec,
-            'RoleARN': role_arn,
+            "DataSourceId": data_source_id,
+            "DataSpec": data_spec,
+            "RoleARN": role_arn,
         }
         if data_source_name is not None:
-            params['DataSourceName'] = data_source_name
+            params["DataSourceName"] = data_source_name
         if compute_statistics is not None:
-            params['ComputeStatistics'] = compute_statistics
-        return self.make_request(action='CreateDataSourceFromRedshift',
-                                 body=json.dumps(params))
+            params["ComputeStatistics"] = compute_statistics
+        return self.make_request(
+            action="CreateDataSourceFromRedshift", body=json.dumps(params)
+        )
 
-    def create_data_source_from_s3(self, data_source_id, data_spec,
-                                   data_source_name=None,
-                                   compute_statistics=None):
+    def create_data_source_from_s3(
+        self, data_source_id, data_spec, data_source_name=None, compute_statistics=None
+    ):
         """
         Creates a `DataSource` object. A `DataSource` references data
         that can be used to perform CreateMLModel, CreateEvaluation,
@@ -406,18 +425,24 @@ class MachineLearningConnection(AWSQueryConnection):
 
         """
         params = {
-            'DataSourceId': data_source_id,
-            'DataSpec': data_spec,
+            "DataSourceId": data_source_id,
+            "DataSpec": data_spec,
         }
         if data_source_name is not None:
-            params['DataSourceName'] = data_source_name
+            params["DataSourceName"] = data_source_name
         if compute_statistics is not None:
-            params['ComputeStatistics'] = compute_statistics
-        return self.make_request(action='CreateDataSourceFromS3',
-                                 body=json.dumps(params))
+            params["ComputeStatistics"] = compute_statistics
+        return self.make_request(
+            action="CreateDataSourceFromS3", body=json.dumps(params)
+        )
 
-    def create_evaluation(self, evaluation_id, ml_model_id,
-                          evaluation_data_source_id, evaluation_name=None):
+    def create_evaluation(
+        self,
+        evaluation_id,
+        ml_model_id,
+        evaluation_data_source_id,
+        evaluation_name=None,
+    ):
         """
         Creates a new `Evaluation` of an `MLModel`. An `MLModel` is
         evaluated on a set of observations associated to a
@@ -460,18 +485,24 @@ class MachineLearningConnection(AWSQueryConnection):
 
         """
         params = {
-            'EvaluationId': evaluation_id,
-            'MLModelId': ml_model_id,
-            'EvaluationDataSourceId': evaluation_data_source_id,
+            "EvaluationId": evaluation_id,
+            "MLModelId": ml_model_id,
+            "EvaluationDataSourceId": evaluation_data_source_id,
         }
         if evaluation_name is not None:
-            params['EvaluationName'] = evaluation_name
-        return self.make_request(action='CreateEvaluation',
-                                 body=json.dumps(params))
+            params["EvaluationName"] = evaluation_name
+        return self.make_request(action="CreateEvaluation", body=json.dumps(params))
 
-    def create_ml_model(self, ml_model_id, ml_model_type,
-                        training_data_source_id, ml_model_name=None,
-                        parameters=None, recipe=None, recipe_uri=None):
+    def create_ml_model(
+        self,
+        ml_model_id,
+        ml_model_type,
+        training_data_source_id,
+        ml_model_name=None,
+        parameters=None,
+        recipe=None,
+        recipe_uri=None,
+    ):
         """
         Creates a new `MLModel` using the data files and the recipe as
         information sources.
@@ -565,20 +596,19 @@ class MachineLearningConnection(AWSQueryConnection):
 
         """
         params = {
-            'MLModelId': ml_model_id,
-            'MLModelType': ml_model_type,
-            'TrainingDataSourceId': training_data_source_id,
+            "MLModelId": ml_model_id,
+            "MLModelType": ml_model_type,
+            "TrainingDataSourceId": training_data_source_id,
         }
         if ml_model_name is not None:
-            params['MLModelName'] = ml_model_name
+            params["MLModelName"] = ml_model_name
         if parameters is not None:
-            params['Parameters'] = parameters
+            params["Parameters"] = parameters
         if recipe is not None:
-            params['Recipe'] = recipe
+            params["Recipe"] = recipe
         if recipe_uri is not None:
-            params['RecipeUri'] = recipe_uri
-        return self.make_request(action='CreateMLModel',
-                                 body=json.dumps(params))
+            params["RecipeUri"] = recipe_uri
+        return self.make_request(action="CreateMLModel", body=json.dumps(params))
 
     def create_realtime_endpoint(self, ml_model_id):
         """
@@ -591,9 +621,12 @@ class MachineLearningConnection(AWSQueryConnection):
         :param ml_model_id: The ID assigned to the `MLModel` during creation.
 
         """
-        params = {'MLModelId': ml_model_id, }
-        return self.make_request(action='CreateRealtimeEndpoint',
-                                 body=json.dumps(params))
+        params = {
+            "MLModelId": ml_model_id,
+        }
+        return self.make_request(
+            action="CreateRealtimeEndpoint", body=json.dumps(params)
+        )
 
     def delete_batch_prediction(self, batch_prediction_id):
         """
@@ -612,9 +645,12 @@ class MachineLearningConnection(AWSQueryConnection):
             the `BatchPrediction`.
 
         """
-        params = {'BatchPredictionId': batch_prediction_id, }
-        return self.make_request(action='DeleteBatchPrediction',
-                                 body=json.dumps(params))
+        params = {
+            "BatchPredictionId": batch_prediction_id,
+        }
+        return self.make_request(
+            action="DeleteBatchPrediction", body=json.dumps(params)
+        )
 
     def delete_data_source(self, data_source_id):
         """
@@ -633,9 +669,10 @@ class MachineLearningConnection(AWSQueryConnection):
             `DataSource`.
 
         """
-        params = {'DataSourceId': data_source_id, }
-        return self.make_request(action='DeleteDataSource',
-                                 body=json.dumps(params))
+        params = {
+            "DataSourceId": data_source_id,
+        }
+        return self.make_request(action="DeleteDataSource", body=json.dumps(params))
 
     def delete_evaluation(self, evaluation_id):
         """
@@ -654,9 +691,10 @@ class MachineLearningConnection(AWSQueryConnection):
             `Evaluation` to delete.
 
         """
-        params = {'EvaluationId': evaluation_id, }
-        return self.make_request(action='DeleteEvaluation',
-                                 body=json.dumps(params))
+        params = {
+            "EvaluationId": evaluation_id,
+        }
+        return self.make_request(action="DeleteEvaluation", body=json.dumps(params))
 
     def delete_ml_model(self, ml_model_id):
         """
@@ -674,9 +712,10 @@ class MachineLearningConnection(AWSQueryConnection):
             `MLModel`.
 
         """
-        params = {'MLModelId': ml_model_id, }
-        return self.make_request(action='DeleteMLModel',
-                                 body=json.dumps(params))
+        params = {
+            "MLModelId": ml_model_id,
+        }
+        return self.make_request(action="DeleteMLModel", body=json.dumps(params))
 
     def delete_realtime_endpoint(self, ml_model_id):
         """
@@ -686,14 +725,27 @@ class MachineLearningConnection(AWSQueryConnection):
         :param ml_model_id: The ID assigned to the `MLModel` during creation.
 
         """
-        params = {'MLModelId': ml_model_id, }
-        return self.make_request(action='DeleteRealtimeEndpoint',
-                                 body=json.dumps(params))
+        params = {
+            "MLModelId": ml_model_id,
+        }
+        return self.make_request(
+            action="DeleteRealtimeEndpoint", body=json.dumps(params)
+        )
 
-    def describe_batch_predictions(self, filter_variable=None, eq=None,
-                                   gt=None, lt=None, ge=None, le=None,
-                                   ne=None, prefix=None, sort_order=None,
-                                   next_token=None, limit=None):
+    def describe_batch_predictions(
+        self,
+        filter_variable=None,
+        eq=None,
+        gt=None,
+        lt=None,
+        ge=None,
+        le=None,
+        ne=None,
+        prefix=None,
+        sort_order=None,
+        next_token=None,
+        limit=None,
+    ):
         """
         Returns a list of `BatchPrediction` operations that match the
         search criteria in the request.
@@ -785,34 +837,45 @@ class MachineLearningConnection(AWSQueryConnection):
         """
         params = {}
         if filter_variable is not None:
-            params['FilterVariable'] = filter_variable
+            params["FilterVariable"] = filter_variable
         if eq is not None:
-            params['EQ'] = eq
+            params["EQ"] = eq
         if gt is not None:
-            params['GT'] = gt
+            params["GT"] = gt
         if lt is not None:
-            params['LT'] = lt
+            params["LT"] = lt
         if ge is not None:
-            params['GE'] = ge
+            params["GE"] = ge
         if le is not None:
-            params['LE'] = le
+            params["LE"] = le
         if ne is not None:
-            params['NE'] = ne
+            params["NE"] = ne
         if prefix is not None:
-            params['Prefix'] = prefix
+            params["Prefix"] = prefix
         if sort_order is not None:
-            params['SortOrder'] = sort_order
+            params["SortOrder"] = sort_order
         if next_token is not None:
-            params['NextToken'] = next_token
+            params["NextToken"] = next_token
         if limit is not None:
-            params['Limit'] = limit
-        return self.make_request(action='DescribeBatchPredictions',
-                                 body=json.dumps(params))
+            params["Limit"] = limit
+        return self.make_request(
+            action="DescribeBatchPredictions", body=json.dumps(params)
+        )
 
-    def describe_data_sources(self, filter_variable=None, eq=None, gt=None,
-                              lt=None, ge=None, le=None, ne=None,
-                              prefix=None, sort_order=None, next_token=None,
-                              limit=None):
+    def describe_data_sources(
+        self,
+        filter_variable=None,
+        eq=None,
+        gt=None,
+        lt=None,
+        ge=None,
+        le=None,
+        ne=None,
+        prefix=None,
+        sort_order=None,
+        next_token=None,
+        limit=None,
+    ):
         """
         Returns a list of `DataSource` that match the search criteria
         in the request.
@@ -898,33 +961,43 @@ class MachineLearningConnection(AWSQueryConnection):
         """
         params = {}
         if filter_variable is not None:
-            params['FilterVariable'] = filter_variable
+            params["FilterVariable"] = filter_variable
         if eq is not None:
-            params['EQ'] = eq
+            params["EQ"] = eq
         if gt is not None:
-            params['GT'] = gt
+            params["GT"] = gt
         if lt is not None:
-            params['LT'] = lt
+            params["LT"] = lt
         if ge is not None:
-            params['GE'] = ge
+            params["GE"] = ge
         if le is not None:
-            params['LE'] = le
+            params["LE"] = le
         if ne is not None:
-            params['NE'] = ne
+            params["NE"] = ne
         if prefix is not None:
-            params['Prefix'] = prefix
+            params["Prefix"] = prefix
         if sort_order is not None:
-            params['SortOrder'] = sort_order
+            params["SortOrder"] = sort_order
         if next_token is not None:
-            params['NextToken'] = next_token
+            params["NextToken"] = next_token
         if limit is not None:
-            params['Limit'] = limit
-        return self.make_request(action='DescribeDataSources',
-                                 body=json.dumps(params))
+            params["Limit"] = limit
+        return self.make_request(action="DescribeDataSources", body=json.dumps(params))
 
-    def describe_evaluations(self, filter_variable=None, eq=None, gt=None,
-                             lt=None, ge=None, le=None, ne=None, prefix=None,
-                             sort_order=None, next_token=None, limit=None):
+    def describe_evaluations(
+        self,
+        filter_variable=None,
+        eq=None,
+        gt=None,
+        lt=None,
+        ge=None,
+        le=None,
+        ne=None,
+        prefix=None,
+        sort_order=None,
+        next_token=None,
+        limit=None,
+    ):
         """
         Returns a list of `DescribeEvaluations` that match the search
         criteria in the request.
@@ -1015,33 +1088,43 @@ class MachineLearningConnection(AWSQueryConnection):
         """
         params = {}
         if filter_variable is not None:
-            params['FilterVariable'] = filter_variable
+            params["FilterVariable"] = filter_variable
         if eq is not None:
-            params['EQ'] = eq
+            params["EQ"] = eq
         if gt is not None:
-            params['GT'] = gt
+            params["GT"] = gt
         if lt is not None:
-            params['LT'] = lt
+            params["LT"] = lt
         if ge is not None:
-            params['GE'] = ge
+            params["GE"] = ge
         if le is not None:
-            params['LE'] = le
+            params["LE"] = le
         if ne is not None:
-            params['NE'] = ne
+            params["NE"] = ne
         if prefix is not None:
-            params['Prefix'] = prefix
+            params["Prefix"] = prefix
         if sort_order is not None:
-            params['SortOrder'] = sort_order
+            params["SortOrder"] = sort_order
         if next_token is not None:
-            params['NextToken'] = next_token
+            params["NextToken"] = next_token
         if limit is not None:
-            params['Limit'] = limit
-        return self.make_request(action='DescribeEvaluations',
-                                 body=json.dumps(params))
+            params["Limit"] = limit
+        return self.make_request(action="DescribeEvaluations", body=json.dumps(params))
 
-    def describe_ml_models(self, filter_variable=None, eq=None, gt=None,
-                           lt=None, ge=None, le=None, ne=None, prefix=None,
-                           sort_order=None, next_token=None, limit=None):
+    def describe_ml_models(
+        self,
+        filter_variable=None,
+        eq=None,
+        gt=None,
+        lt=None,
+        ge=None,
+        le=None,
+        ne=None,
+        prefix=None,
+        sort_order=None,
+        next_token=None,
+        limit=None,
+    ):
         """
         Returns a list of `MLModel` that match the search criteria in
         the request.
@@ -1134,29 +1217,28 @@ class MachineLearningConnection(AWSQueryConnection):
         """
         params = {}
         if filter_variable is not None:
-            params['FilterVariable'] = filter_variable
+            params["FilterVariable"] = filter_variable
         if eq is not None:
-            params['EQ'] = eq
+            params["EQ"] = eq
         if gt is not None:
-            params['GT'] = gt
+            params["GT"] = gt
         if lt is not None:
-            params['LT'] = lt
+            params["LT"] = lt
         if ge is not None:
-            params['GE'] = ge
+            params["GE"] = ge
         if le is not None:
-            params['LE'] = le
+            params["LE"] = le
         if ne is not None:
-            params['NE'] = ne
+            params["NE"] = ne
         if prefix is not None:
-            params['Prefix'] = prefix
+            params["Prefix"] = prefix
         if sort_order is not None:
-            params['SortOrder'] = sort_order
+            params["SortOrder"] = sort_order
         if next_token is not None:
-            params['NextToken'] = next_token
+            params["NextToken"] = next_token
         if limit is not None:
-            params['Limit'] = limit
-        return self.make_request(action='DescribeMLModels',
-                                 body=json.dumps(params))
+            params["Limit"] = limit
+        return self.make_request(action="DescribeMLModels", body=json.dumps(params))
 
     def get_batch_prediction(self, batch_prediction_id):
         """
@@ -1169,9 +1251,10 @@ class MachineLearningConnection(AWSQueryConnection):
             creation.
 
         """
-        params = {'BatchPredictionId': batch_prediction_id, }
-        return self.make_request(action='GetBatchPrediction',
-                                 body=json.dumps(params))
+        params = {
+            "BatchPredictionId": batch_prediction_id,
+        }
+        return self.make_request(action="GetBatchPrediction", body=json.dumps(params))
 
     def get_data_source(self, data_source_id, verbose=None):
         """
@@ -1194,11 +1277,12 @@ class MachineLearningConnection(AWSQueryConnection):
         If false, `DataSourceSchema` is not returned.
 
         """
-        params = {'DataSourceId': data_source_id, }
+        params = {
+            "DataSourceId": data_source_id,
+        }
         if verbose is not None:
-            params['Verbose'] = verbose
-        return self.make_request(action='GetDataSource',
-                                 body=json.dumps(params))
+            params["Verbose"] = verbose
+        return self.make_request(action="GetDataSource", body=json.dumps(params))
 
     def get_evaluation(self, evaluation_id):
         """
@@ -1211,9 +1295,10 @@ class MachineLearningConnection(AWSQueryConnection):
             provides the means to access the information.
 
         """
-        params = {'EvaluationId': evaluation_id, }
-        return self.make_request(action='GetEvaluation',
-                                 body=json.dumps(params))
+        params = {
+            "EvaluationId": evaluation_id,
+        }
+        return self.make_request(action="GetEvaluation", body=json.dumps(params))
 
     def get_ml_model(self, ml_model_id, verbose=None):
         """
@@ -1234,11 +1319,12 @@ class MachineLearningConnection(AWSQueryConnection):
         If false, `Recipe` is not returned.
 
         """
-        params = {'MLModelId': ml_model_id, }
+        params = {
+            "MLModelId": ml_model_id,
+        }
         if verbose is not None:
-            params['Verbose'] = verbose
-        return self.make_request(action='GetMLModel',
-                                 body=json.dumps(params))
+            params["Verbose"] = verbose
+        return self.make_request(action="GetMLModel", body=json.dumps(params))
 
     def predict(self, ml_model_id, record, predict_endpoint):
         """
@@ -1260,21 +1346,20 @@ class MachineLearningConnection(AWSQueryConnection):
         :param predict_endpoint: The endpoint to send the predict request to.
 
         """
-        predict_host =  urlsplit(predict_endpoint).hostname
+        predict_host = urlsplit(predict_endpoint).hostname
         if predict_host is None:
             predict_host = predict_endpoint
 
         params = {
-            'MLModelId': ml_model_id,
-            'Record': record,
-            'PredictEndpoint': predict_host,
+            "MLModelId": ml_model_id,
+            "Record": record,
+            "PredictEndpoint": predict_host,
         }
-        return self.make_request(action='Predict',
-                                 body=json.dumps(params),
-                                 host=predict_host)
+        return self.make_request(
+            action="Predict", body=json.dumps(params), host=predict_host
+        )
 
-    def update_batch_prediction(self, batch_prediction_id,
-                                batch_prediction_name):
+    def update_batch_prediction(self, batch_prediction_id, batch_prediction_name):
         """
         Updates the `BatchPredictionName` of a `BatchPrediction`.
 
@@ -1291,11 +1376,12 @@ class MachineLearningConnection(AWSQueryConnection):
 
         """
         params = {
-            'BatchPredictionId': batch_prediction_id,
-            'BatchPredictionName': batch_prediction_name,
+            "BatchPredictionId": batch_prediction_id,
+            "BatchPredictionName": batch_prediction_name,
         }
-        return self.make_request(action='UpdateBatchPrediction',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="UpdateBatchPrediction", body=json.dumps(params)
+        )
 
     def update_data_source(self, data_source_id, data_source_name):
         """
@@ -1314,11 +1400,10 @@ class MachineLearningConnection(AWSQueryConnection):
 
         """
         params = {
-            'DataSourceId': data_source_id,
-            'DataSourceName': data_source_name,
+            "DataSourceId": data_source_id,
+            "DataSourceName": data_source_name,
         }
-        return self.make_request(action='UpdateDataSource',
-                                 body=json.dumps(params))
+        return self.make_request(action="UpdateDataSource", body=json.dumps(params))
 
     def update_evaluation(self, evaluation_id, evaluation_name):
         """
@@ -1337,14 +1422,12 @@ class MachineLearningConnection(AWSQueryConnection):
 
         """
         params = {
-            'EvaluationId': evaluation_id,
-            'EvaluationName': evaluation_name,
+            "EvaluationId": evaluation_id,
+            "EvaluationName": evaluation_name,
         }
-        return self.make_request(action='UpdateEvaluation',
-                                 body=json.dumps(params))
+        return self.make_request(action="UpdateEvaluation", body=json.dumps(params))
 
-    def update_ml_model(self, ml_model_id, ml_model_name=None,
-                        score_threshold=None):
+    def update_ml_model(self, ml_model_id, ml_model_name=None, score_threshold=None):
         """
         Updates the `MLModelName` and the `ScoreThreshold` of an
         `MLModel`.
@@ -1369,40 +1452,42 @@ class MachineLearningConnection(AWSQueryConnection):
             `MLModel`, such as `False`.
 
         """
-        params = {'MLModelId': ml_model_id, }
+        params = {
+            "MLModelId": ml_model_id,
+        }
         if ml_model_name is not None:
-            params['MLModelName'] = ml_model_name
+            params["MLModelName"] = ml_model_name
         if score_threshold is not None:
-            params['ScoreThreshold'] = score_threshold
-        return self.make_request(action='UpdateMLModel',
-                                 body=json.dumps(params))
+            params["ScoreThreshold"] = score_threshold
+        return self.make_request(action="UpdateMLModel", body=json.dumps(params))
 
     def make_request(self, action, body, host=None):
         headers = {
-            'X-Amz-Target': '%s.%s' % (self.TargetPrefix, action),
-            'Host': self.region.endpoint,
-            'Content-Type': 'application/x-amz-json-1.1',
-            'Content-Length': str(len(body)),
+            "X-Amz-Target": "%s.%s" % (self.TargetPrefix, action),
+            "Host": self.region.endpoint,
+            "Content-Type": "application/x-amz-json-1.1",
+            "Content-Length": str(len(body)),
         }
         http_request_kwargs = {
-            'method':'POST', 'path':'/', 'auth_path':'/', 'params':{},
-            'headers': headers, 'data':body
+            "method": "POST",
+            "path": "/",
+            "auth_path": "/",
+            "params": {},
+            "headers": headers,
+            "data": body,
         }
         if host is not None:
-            headers['Host'] = host
-            http_request_kwargs['host'] = host
+            headers["Host"] = host
+            http_request_kwargs["host"] = host
         http_request = self.build_base_http_request(**http_request_kwargs)
-        response = self._mexe(http_request, sender=None,
-                              override_num_retries=10)
-        response_body = response.read().decode('utf-8')
+        response = self._mexe(http_request, sender=None, override_num_retries=10)
+        response_body = response.read().decode("utf-8")
         boto.log.debug(response_body)
         if response.status == 200:
             if response_body:
                 return json.loads(response_body)
         else:
             json_body = json.loads(response_body)
-            fault_name = json_body.get('__type', None)
+            fault_name = json_body.get("__type", None)
             exception_class = self._faults.get(fault_name, self.ResponseError)
-            raise exception_class(response.status, response.reason,
-                                  body=json_body)
-
+            raise exception_class(response.status, response.reason, body=json_body)

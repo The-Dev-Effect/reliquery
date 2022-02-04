@@ -108,8 +108,8 @@ def _create_file_if_needed(filename):
         return False
     else:
         # Equivalent to "touch".
-        open(filename, 'a+b').close()
-        logger.info('Credential file {0} created'.format(filename))
+        open(filename, "a+b").close()
+        logger.info("Credential file {0} created".format(filename))
         return True
 
 
@@ -140,26 +140,25 @@ def _load_credentials_file(credentials_file):
         data = json.load(credentials_file)
     except Exception:
         logger.warning(
-            'Credentials file could not be loaded, will ignore and '
-            'overwrite.')
+            "Credentials file could not be loaded, will ignore and " "overwrite."
+        )
         return {}
 
-    if data.get('file_version') != 2:
+    if data.get("file_version") != 2:
         logger.warning(
-            'Credentials file is not version 2, will ignore and '
-            'overwrite.')
+            "Credentials file is not version 2, will ignore and " "overwrite."
+        )
         return {}
 
     credentials = {}
 
-    for key, encoded_credential in iteritems(data.get('credentials', {})):
+    for key, encoded_credential in iteritems(data.get("credentials", {})):
         try:
             credential_json = base64.b64decode(encoded_credential)
             credential = client.Credentials.new_from_json(credential_json)
             credentials[key] = credential
         except:
-            logger.warning(
-                'Invalid credential {0} in file, ignoring.'.format(key))
+            logger.warning("Invalid credential {0} in file, ignoring.".format(key))
 
     return credentials
 
@@ -174,13 +173,14 @@ def _write_credentials_file(credentials_file, credentials):
         credentials: A dictionary mapping user-defined keys to an instance of
             :class:`oauth2client_4_0.client.Credentials`.
     """
-    data = {'file_version': 2, 'credentials': {}}
+    data = {"file_version": 2, "credentials": {}}
 
     for key, credential in iteritems(credentials):
         credential_json = credential.to_json()
-        encoded_credential = _helpers._from_bytes(base64.b64encode(
-            _helpers._to_bytes(credential_json)))
-        data['credentials'][key] = encoded_credential
+        encoded_credential = _helpers._from_bytes(
+            base64.b64encode(_helpers._to_bytes(credential_json))
+        )
+        data["credentials"][key] = encoded_credential
 
     credentials_file.seek(0)
     json.dump(data, credentials_file)
@@ -198,8 +198,7 @@ class _MultiprocessStorageBackend(object):
     def __init__(self, filename):
         self._file = None
         self._filename = filename
-        self._process_lock = fasteners.InterProcessLock(
-            '{0}.lock'.format(filename))
+        self._process_lock = fasteners.InterProcessLock("{0}.lock".format(filename))
         self._thread_lock = threading.Lock()
         self._read_only = False
         self._credentials = {}
@@ -212,15 +211,15 @@ class _MultiprocessStorageBackend(object):
         loaded_credentials = _load_credentials_file(self._file)
         self._credentials.update(loaded_credentials)
 
-        logger.debug('Read credential file')
+        logger.debug("Read credential file")
 
     def _write_credentials(self):
         if self._read_only:
-            logger.debug('In read-only mode, not writing credentials.')
+            logger.debug("In read-only mode, not writing credentials.")
             return
 
         _write_credentials_file(self._file, self._credentials)
-        logger.debug('Wrote credential file {0}.'.format(self._filename))
+        logger.debug("Wrote credential file {0}.".format(self._filename))
 
     def acquire_lock(self):
         self._thread_lock.acquire()
@@ -228,16 +227,17 @@ class _MultiprocessStorageBackend(object):
 
         if locked:
             _create_file_if_needed(self._filename)
-            self._file = open(self._filename, 'r+')
+            self._file = open(self._filename, "r+")
             self._read_only = False
 
         else:
             logger.warn(
-                'Failed to obtain interprocess lock for credentials. '
-                'If a credential is being refreshed, other processes may '
-                'not see the updated access token and refresh as well.')
+                "Failed to obtain interprocess lock for credentials. "
+                "If a credential is being refreshed, other processes may "
+                "not see the updated access token and refresh as well."
+            )
             if os.path.exists(self._filename):
-                self._file = open(self._filename, 'r')
+                self._file = open(self._filename, "r")
             else:
                 self._file = None
             self._read_only = True
@@ -319,6 +319,7 @@ class MultiprocessFileStorage(client.Storage):
           credentials. For example, you may use the user's ID as the key or
           a combination of the client ID and user ID.
     """
+
     def __init__(self, filename, key):
         self._key = key
         self._backend = _get_backend(filename)

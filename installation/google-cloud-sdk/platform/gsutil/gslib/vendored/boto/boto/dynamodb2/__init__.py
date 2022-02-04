@@ -33,10 +33,13 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.dynamodb2.layer1 import DynamoDBConnection
-    return get_regions('dynamodb', connection_cls=DynamoDBConnection)
+
+    return get_regions("dynamodb", connection_cls=DynamoDBConnection)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.dynamodb2.layer1 import DynamoDBConnection
-    return connect('dynamodb', region_name, connection_cls=DynamoDBConnection,
-                   **kw_params)
+
+    return connect(
+        "dynamodb", region_name, connection_cls=DynamoDBConnection, **kw_params
+    )

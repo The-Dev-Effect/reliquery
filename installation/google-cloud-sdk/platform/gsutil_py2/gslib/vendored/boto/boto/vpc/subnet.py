@@ -25,8 +25,8 @@ Represents a Subnet
 
 from boto.ec2.ec2object import TaggedEC2Object
 
-class Subnet(TaggedEC2Object):
 
+class Subnet(TaggedEC2Object):
     def __init__(self, connection=None):
         super(Subnet, self).__init__(connection)
         self.id = None
@@ -37,21 +37,20 @@ class Subnet(TaggedEC2Object):
         self.availability_zone = None
 
     def __repr__(self):
-        return 'Subnet:%s' % self.id
+        return "Subnet:%s" % self.id
 
     def endElement(self, name, value, connection):
-        if name == 'subnetId':
+        if name == "subnetId":
             self.id = value
-        elif name == 'vpcId':
+        elif name == "vpcId":
             self.vpc_id = value
-        elif name == 'state':
+        elif name == "state":
             self.state = value
-        elif name == 'cidrBlock':
+        elif name == "cidrBlock":
             self.cidr_block = value
-        elif name == 'availableIpAddressCount':
+        elif name == "availableIpAddressCount":
             self.available_ip_address_count = int(value)
-        elif name == 'availabilityZone':
+        elif name == "availabilityZone":
             self.availability_zone = value
         else:
             setattr(self, name, value)
-

@@ -35,13 +35,13 @@ else:
     from collections import Iterable
 
 __all__ = [
-    'DateField',
-    'DateTimeMessage',
-    'JsonArray',
-    'JsonObject',
-    'JsonValue',
-    'JsonProtoEncoder',
-    'JsonProtoDecoder',
+    "DateField",
+    "DateTimeMessage",
+    "JsonArray",
+    "JsonObject",
+    "JsonValue",
+    "JsonProtoEncoder",
+    "JsonProtoDecoder",
 ]
 
 # pylint:disable=invalid-name
@@ -58,10 +58,11 @@ DateTimeMessage = message_types.DateTimeMessage
 #
 # pylint: disable=protected-access
 class _FieldMeta(messages._FieldMeta):
-
     def __init__(cls, name, bases, dct):  # pylint: disable=no-self-argument
         # pylint: disable=super-init-not-called,non-parent-init-called
         type.__init__(cls, name, bases, dct)
+
+
 # pylint: enable=protected-access
 
 
@@ -75,13 +76,12 @@ class DateField(six.with_metaclass(_FieldMeta, messages.Field)):
 
 
 def _ValidateJsonValue(json_value):
-    entries = [(f, json_value.get_assigned_value(f.name))
-               for f in json_value.all_fields()]
-    assigned_entries = [(f, value)
-                        for f, value in entries if value is not None]
+    entries = [
+        (f, json_value.get_assigned_value(f.name)) for f in json_value.all_fields()
+    ]
+    assigned_entries = [(f, value) for f, value in entries if value is not None]
     if len(assigned_entries) != 1:
-        raise exceptions.InvalidDataError(
-            'Malformed JsonValue: %s' % json_value)
+        raise exceptions.InvalidDataError("Malformed JsonValue: %s" % json_value)
 
 
 def _JsonValueToPythonValue(json_value):
@@ -90,10 +90,10 @@ def _JsonValueToPythonValue(json_value):
     _ValidateJsonValue(json_value)
     if json_value.is_null:
         return None
-    entries = [(f, json_value.get_assigned_value(f.name))
-               for f in json_value.all_fields()]
-    assigned_entries = [(f, value)
-                        for f, value in entries if value is not None]
+    entries = [
+        (f, json_value.get_assigned_value(f.name)) for f in json_value.all_fields()
+    ]
+    assigned_entries = [(f, value) for f, value in entries if value is not None]
     field, value = assigned_entries[0]
     if not isinstance(field, messages.MessageField):
         return value
@@ -105,8 +105,12 @@ def _JsonValueToPythonValue(json_value):
 
 def _JsonObjectToPythonValue(json_value):
     util.Typecheck(json_value, JsonObject)
-    return dict([(prop.key, _JsonValueToPythonValue(prop.value)) for prop
-                 in json_value.properties])
+    return dict(
+        [
+            (prop.key, _JsonValueToPythonValue(prop.value))
+            for prop in json_value.properties
+        ]
+    )
 
 
 def _JsonArrayToPythonValue(json_value):
@@ -135,8 +139,7 @@ def _PythonValueToJsonValue(py_value):
         return JsonValue(object_value=_PythonValueToJsonObject(py_value))
     if isinstance(py_value, Iterable):
         return JsonValue(array_value=_PythonValueToJsonArray(py_value))
-    raise exceptions.InvalidDataError(
-        'Cannot convert "%s" to JsonValue' % py_value)
+    raise exceptions.InvalidDataError('Cannot convert "%s" to JsonValue' % py_value)
 
 
 def _PythonValueToJsonObject(py_value):
@@ -144,7 +147,9 @@ def _PythonValueToJsonObject(py_value):
     return JsonObject(
         properties=[
             JsonObject.Property(key=key, value=_PythonValueToJsonValue(value))
-            for key, value in py_value.items()])
+            for key, value in py_value.items()
+        ]
+    )
 
 
 def _PythonValueToJsonArray(py_value):
@@ -154,6 +159,7 @@ def _PythonValueToJsonArray(py_value):
 class JsonValue(messages.Message):
 
     """Any valid JSON value."""
+
     # Is this JSON object `null`?
     is_null = messages.BooleanField(1, default=False)
 
@@ -165,8 +171,8 @@ class JsonValue(messages.Message):
     double_value = messages.FloatField(4, variant=messages.Variant.DOUBLE)
     integer_value = messages.IntegerField(5, variant=messages.Variant.INT64)
     # Compound types
-    object_value = messages.MessageField('JsonObject', 6)
-    array_value = messages.MessageField('JsonArray', 7)
+    object_value = messages.MessageField("JsonObject", 6)
+    array_value = messages.MessageField("JsonArray", 7)
 
 
 class JsonObject(messages.Message):
@@ -188,6 +194,7 @@ class JsonObject(messages.Message):
           key: Name of the property.
           value: A JsonValue attribute.
         """
+
         key = messages.StringField(1)
         value = messages.MessageField(JsonValue, 2)
 
@@ -197,6 +204,7 @@ class JsonObject(messages.Message):
 class JsonArray(messages.Message):
 
     """A JSON array value."""
+
     entries = messages.MessageField(JsonValue, 1, repeated=True)
 
 
@@ -216,8 +224,7 @@ def _JsonProtoToPythonValue(json_proto):
 def _PythonValueToJsonProto(py_value):
     if isinstance(py_value, dict):
         return _PythonValueToJsonObject(py_value)
-    if (isinstance(py_value, Iterable) and
-            not isinstance(py_value, six.string_types)):
+    if isinstance(py_value, Iterable) and not isinstance(py_value, six.string_types):
         return _PythonValueToJsonArray(py_value)
     return _PythonValueToJsonValue(py_value)
 
@@ -239,20 +246,22 @@ def _JsonToJsonValue(json_data, unused_decoder=None):
     elif isinstance(result, JsonArray):
         return JsonValue(array_value=result)
     else:
-        raise exceptions.InvalidDataError(
-            'Malformed JsonValue: %s' % json_data)
+        raise exceptions.InvalidDataError("Malformed JsonValue: %s" % json_data)
 
 
 # pylint:disable=invalid-name
 JsonProtoEncoder = _JsonProtoToJson
 JsonProtoDecoder = _JsonToJsonProto
 # pylint:enable=invalid-name
-encoding.RegisterCustomMessageCodec(
-    encoder=JsonProtoEncoder, decoder=_JsonToJsonValue)(JsonValue)
-encoding.RegisterCustomMessageCodec(
-    encoder=JsonProtoEncoder, decoder=JsonProtoDecoder)(JsonObject)
-encoding.RegisterCustomMessageCodec(
-    encoder=JsonProtoEncoder, decoder=JsonProtoDecoder)(JsonArray)
+encoding.RegisterCustomMessageCodec(encoder=JsonProtoEncoder, decoder=_JsonToJsonValue)(
+    JsonValue
+)
+encoding.RegisterCustomMessageCodec(encoder=JsonProtoEncoder, decoder=JsonProtoDecoder)(
+    JsonObject
+)
+encoding.RegisterCustomMessageCodec(encoder=JsonProtoEncoder, decoder=JsonProtoDecoder)(
+    JsonArray
+)
 
 
 def _EncodeDateTimeField(field, value):
@@ -261,13 +270,13 @@ def _EncodeDateTimeField(field, value):
 
 
 def _DecodeDateTimeField(unused_field, value):
-    result = protojson.ProtoJson().decode_field(
-        message_types.DateTimeField(1), value)
+    result = protojson.ProtoJson().decode_field(message_types.DateTimeField(1), value)
     return encoding.CodecResult(value=result, complete=True)
 
 
 encoding.RegisterFieldTypeCodec(_EncodeDateTimeField, _DecodeDateTimeField)(
-    message_types.DateTimeField)
+    message_types.DateTimeField
+)
 
 
 def _EncodeInt64Field(field, value):
@@ -292,7 +301,8 @@ def _DecodeInt64Field(unused_field, value):
 
 
 encoding.RegisterFieldTypeCodec(_EncodeInt64Field, _DecodeInt64Field)(
-    messages.IntegerField)
+    messages.IntegerField
+)
 
 
 def _EncodeDateField(field, value):
@@ -305,7 +315,7 @@ def _EncodeDateField(field, value):
 
 
 def _DecodeDateField(unused_field, value):
-    date = datetime.datetime.strptime(value, '%Y-%m-%d').date()
+    date = datetime.datetime.strptime(value, "%Y-%m-%d").date()
     return encoding.CodecResult(value=date, complete=True)
 
 

@@ -57,11 +57,17 @@ class CORSRule(object):
         want customers to be able to access from their applications
         (for example, from a JavaScript XMLHttpRequest object).  You
         add one ExposeHeader element in the rule for each header.
-        """
+    """
 
-    def __init__(self, allowed_method=None, allowed_origin=None,
-                 id=None, allowed_header=None, max_age_seconds=None,
-                 expose_header=None):
+    def __init__(
+        self,
+        allowed_method=None,
+        allowed_origin=None,
+        id=None,
+        allowed_header=None,
+        max_age_seconds=None,
+        expose_header=None,
+    ):
         if allowed_method is None:
             allowed_method = []
         self.allowed_method = allowed_method
@@ -78,42 +84,42 @@ class CORSRule(object):
         self.expose_header = expose_header
 
     def __repr__(self):
-        return '<Rule: %s>' % self.id
+        return "<Rule: %s>" % self.id
 
     def startElement(self, name, attrs, connection):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'ID':
+        if name == "ID":
             self.id = value
-        elif name == 'AllowedMethod':
+        elif name == "AllowedMethod":
             self.allowed_method.append(value)
-        elif name == 'AllowedOrigin':
+        elif name == "AllowedOrigin":
             self.allowed_origin.append(value)
-        elif name == 'AllowedHeader':
+        elif name == "AllowedHeader":
             self.allowed_header.append(value)
-        elif name == 'MaxAgeSeconds':
+        elif name == "MaxAgeSeconds":
             self.max_age_seconds = int(value)
-        elif name == 'ExposeHeader':
+        elif name == "ExposeHeader":
             self.expose_header.append(value)
         else:
             setattr(self, name, value)
 
     def to_xml(self):
-        s = '<CORSRule>'
+        s = "<CORSRule>"
         for allowed_method in self.allowed_method:
-            s += '<AllowedMethod>%s</AllowedMethod>' % allowed_method
+            s += "<AllowedMethod>%s</AllowedMethod>" % allowed_method
         for allowed_origin in self.allowed_origin:
-            s += '<AllowedOrigin>%s</AllowedOrigin>' % allowed_origin
+            s += "<AllowedOrigin>%s</AllowedOrigin>" % allowed_origin
         for allowed_header in self.allowed_header:
-            s += '<AllowedHeader>%s</AllowedHeader>' % allowed_header
+            s += "<AllowedHeader>%s</AllowedHeader>" % allowed_header
         for expose_header in self.expose_header:
-            s += '<ExposeHeader>%s</ExposeHeader>' % expose_header
+            s += "<ExposeHeader>%s</ExposeHeader>" % expose_header
         if self.max_age_seconds:
-            s += '<MaxAgeSeconds>%d</MaxAgeSeconds>' % self.max_age_seconds
+            s += "<MaxAgeSeconds>%d</MaxAgeSeconds>" % self.max_age_seconds
         if self.id:
-            s += '<ID>%s</ID>' % self.id
-        s += '</CORSRule>'
+            s += "<ID>%s</ID>" % self.id
+        s += "</CORSRule>"
         return s
 
 
@@ -123,7 +129,7 @@ class CORSConfiguration(list):
     """
 
     def startElement(self, name, attrs, connection):
-        if name == 'CORSRule':
+        if name == "CORSRule":
             rule = CORSRule()
             self.append(rule)
             return rule
@@ -137,15 +143,21 @@ class CORSConfiguration(list):
         Returns a string containing the XML version of the Lifecycle
         configuration as defined by S3.
         """
-        s = '<CORSConfiguration>'
+        s = "<CORSConfiguration>"
         for rule in self:
             s += rule.to_xml()
-        s += '</CORSConfiguration>'
+        s += "</CORSConfiguration>"
         return s
 
-    def add_rule(self, allowed_method, allowed_origin,
-                 id=None, allowed_header=None, max_age_seconds=None,
-                 expose_header=None):
+    def add_rule(
+        self,
+        allowed_method,
+        allowed_origin,
+        id=None,
+        allowed_header=None,
+        max_age_seconds=None,
+        expose_header=None,
+    ):
         """
         Add a rule to this CORS configuration.  This only adds
         the rule to the local copy.  To install the new rule(s) on
@@ -205,6 +217,12 @@ class CORSConfiguration(list):
                 expose_header = []
             else:
                 expose_header = [expose_header]
-        rule = CORSRule(allowed_method, allowed_origin, id, allowed_header,
-                        max_age_seconds, expose_header)
+        rule = CORSRule(
+            allowed_method,
+            allowed_origin,
+            id,
+            allowed_header,
+            max_age_seconds,
+            expose_header,
+        )
         self.append(rule)

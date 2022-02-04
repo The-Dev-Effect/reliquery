@@ -32,17 +32,15 @@ from boto.ec2.instance import SubParse
 
 
 class GroupList(list):
-
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'groupId':
+        if name == "groupId":
             self.append(value)
 
 
 class LaunchSpecification(EC2Object):
-
     def __init__(self, connection=None):
         super(LaunchSpecification, self).__init__(connection)
         self.key_name = None
@@ -60,46 +58,46 @@ class LaunchSpecification(EC2Object):
         self.ebs_optimized = False
 
     def __repr__(self):
-        return 'LaunchSpecification(%s)' % self.image_id
+        return "LaunchSpecification(%s)" % self.image_id
 
     def startElement(self, name, attrs, connection):
-        if name == 'groupSet':
-            self.groups = ResultSet([('item', Group)])
+        if name == "groupSet":
+            self.groups = ResultSet([("item", Group)])
             return self.groups
-        elif name == 'monitoring':
+        elif name == "monitoring":
             self._in_monitoring_element = True
-        elif name == 'blockDeviceMapping':
+        elif name == "blockDeviceMapping":
             self.block_device_mapping = BlockDeviceMapping()
             return self.block_device_mapping
-        elif name == 'iamInstanceProfile':
-            self.instance_profile = SubParse('iamInstanceProfile')
+        elif name == "iamInstanceProfile":
+            self.instance_profile = SubParse("iamInstanceProfile")
             return self.instance_profile
         else:
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'imageId':
+        if name == "imageId":
             self.image_id = value
-        elif name == 'keyName':
+        elif name == "keyName":
             self.key_name = value
-        elif name == 'instanceType':
+        elif name == "instanceType":
             self.instance_type = value
-        elif name == 'availabilityZone':
+        elif name == "availabilityZone":
             self.placement = value
-        elif name == 'placement':
+        elif name == "placement":
             pass
-        elif name == 'kernelId':
+        elif name == "kernelId":
             self.kernel = value
-        elif name == 'ramdiskId':
+        elif name == "ramdiskId":
             self.ramdisk = value
-        elif name == 'subnetId':
+        elif name == "subnetId":
             self.subnet_id = value
-        elif name == 'state':
+        elif name == "state":
             if self._in_monitoring_element:
-                if value == 'enabled':
+                if value == "enabled":
                     self.monitored = True
                 self._in_monitoring_element = False
-        elif name == 'ebsOptimized':
-            self.ebs_optimized = (value == 'true')
+        elif name == "ebsOptimized":
+            self.ebs_optimized = value == "true"
         else:
             setattr(self, name, value)

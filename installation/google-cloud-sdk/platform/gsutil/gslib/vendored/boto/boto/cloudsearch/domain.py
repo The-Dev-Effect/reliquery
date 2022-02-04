@@ -31,8 +31,9 @@ from boto.cloudsearch.optionstatus import RankExpressionStatus
 from boto.cloudsearch.document import DocumentServiceConnection
 from boto.cloudsearch.search import SearchConnection
 
+
 def handle_bool(value):
-    if value in [True, 'true', 'True', 'TRUE', 1]:
+    if value in [True, "true", "True", "TRUE", 1]:
         return True
     return False
 
@@ -82,34 +83,34 @@ class Domain(object):
         self.update_from_data(data)
 
     def update_from_data(self, data):
-        self.created = data['created']
-        self.deleted = data['deleted']
-        self.processing = data['processing']
-        self.requires_index_documents = data['requires_index_documents']
-        self.domain_id = data['domain_id']
-        self.domain_name = data['domain_name']
-        self.num_searchable_docs = data['num_searchable_docs']
-        self.search_instance_count = data['search_instance_count']
-        self.search_instance_type = data.get('search_instance_type', None)
-        self.search_partition_count = data['search_partition_count']
-        self._doc_service = data['doc_service']
-        self._search_service = data['search_service']
+        self.created = data["created"]
+        self.deleted = data["deleted"]
+        self.processing = data["processing"]
+        self.requires_index_documents = data["requires_index_documents"]
+        self.domain_id = data["domain_id"]
+        self.domain_name = data["domain_name"]
+        self.num_searchable_docs = data["num_searchable_docs"]
+        self.search_instance_count = data["search_instance_count"]
+        self.search_instance_type = data.get("search_instance_type", None)
+        self.search_partition_count = data["search_partition_count"]
+        self._doc_service = data["doc_service"]
+        self._search_service = data["search_service"]
 
     @property
     def doc_service_arn(self):
-        return self._doc_service['arn']
+        return self._doc_service["arn"]
 
     @property
     def doc_service_endpoint(self):
-        return self._doc_service['endpoint']
+        return self._doc_service["endpoint"]
 
     @property
     def search_service_arn(self):
-        return self._search_service['arn']
+        return self._search_service["arn"]
 
     @property
     def search_service_endpoint(self):
-        return self._search_service['endpoint']
+        return self._search_service["endpoint"]
 
     @property
     def created(self):
@@ -187,9 +188,12 @@ class Domain(object):
         representing the currently defined stemming options for
         the domain.
         """
-        return OptionStatus(self, None,
-                            self.layer1.describe_stemming_options,
-                            self.layer1.update_stemming_options)
+        return OptionStatus(
+            self,
+            None,
+            self.layer1.describe_stemming_options,
+            self.layer1.update_stemming_options,
+        )
 
     def get_stopwords(self):
         """
@@ -197,9 +201,12 @@ class Domain(object):
         representing the currently defined stopword options for
         the domain.
         """
-        return OptionStatus(self, None,
-                            self.layer1.describe_stopword_options,
-                            self.layer1.update_stopword_options)
+        return OptionStatus(
+            self,
+            None,
+            self.layer1.describe_stopword_options,
+            self.layer1.update_stopword_options,
+        )
 
     def get_synonyms(self):
         """
@@ -207,9 +214,12 @@ class Domain(object):
         representing the currently defined synonym options for
         the domain.
         """
-        return OptionStatus(self, None,
-                            self.layer1.describe_synonym_options,
-                            self.layer1.update_synonym_options)
+        return OptionStatus(
+            self,
+            None,
+            self.layer1.describe_synonym_options,
+            self.layer1.update_synonym_options,
+        )
 
     def get_access_policies(self):
         """
@@ -217,9 +227,12 @@ class Domain(object):
         representing the currently defined access policies for
         the domain.
         """
-        return ServicePoliciesStatus(self, None,
-                                     self.layer1.describe_service_access_policies,
-                                     self.layer1.update_service_access_policies)
+        return ServicePoliciesStatus(
+            self,
+            None,
+            self.layer1.describe_service_access_policies,
+            self.layer1.update_service_access_policies,
+        )
 
     def index_documents(self):
         """
@@ -238,9 +251,16 @@ class Domain(object):
         data = self.layer1.describe_index_fields(self.name, field_names)
         return [IndexFieldStatus(self, d) for d in data]
 
-    def create_index_field(self, field_name, field_type,
-        default='', facet=False, result=False, searchable=False,
-        source_attributes=[]):
+    def create_index_field(
+        self,
+        field_name,
+        field_type,
+        default="",
+        facet=False,
+        result=False,
+        searchable=False,
+        source_attributes=[],
+    ):
         """
         Defines an ``IndexField``, either replacing an existing
         definition or creating a new one.
@@ -307,13 +327,17 @@ class Domain(object):
         :raises: BaseException, InternalException, LimitExceededException,
             InvalidTypeException, ResourceNotFoundException
         """
-        data = self.layer1.define_index_field(self.name, field_name,
-                                              field_type, default=default,
-                                              facet=facet, result=result,
-                                              searchable=searchable,
-                                              source_attributes=source_attributes)
-        return IndexFieldStatus(self, data,
-                                self.layer1.describe_index_fields)
+        data = self.layer1.define_index_field(
+            self.name,
+            field_name,
+            field_type,
+            default=default,
+            facet=facet,
+            result=result,
+            searchable=searchable,
+            source_attributes=source_attributes,
+        )
+        return IndexFieldStatus(self, data, self.layer1.describe_index_fields)
 
     def get_rank_expressions(self, rank_names=None):
         """
@@ -326,7 +350,7 @@ class Domain(object):
     def create_rank_expression(self, name, expression):
         """
         Create a new rank expression.
-        
+
         :type rank_name: string
         :param rank_name: The name of an expression computed for ranking
             while processing a search request.
@@ -380,8 +404,7 @@ class Domain(object):
             InvalidTypeException, ResourceNotFoundException
         """
         data = self.layer1.define_rank_expression(self.name, name, expression)
-        return RankExpressionStatus(self, data,
-                                    self.layer1.describe_rank_expressions)
+        return RankExpressionStatus(self, data, self.layer1.describe_rank_expressions)
 
     def get_document_service(self):
         return DocumentServiceConnection(domain=self)
@@ -390,5 +413,4 @@ class Domain(object):
         return SearchConnection(domain=self)
 
     def __repr__(self):
-        return '<Domain: %s>' % self.domain_name
-
+        return "<Domain: %s>" % self.domain_name

@@ -30,46 +30,46 @@ from tests.contrib.django_util import models as tests_models
 
 
 class TestCredentialsField(unittest.TestCase):
-
     def setUp(self):
         self.fake_model = tests_models.CredentialsModel()
-        self.fake_model_field = self.fake_model._meta.get_field('credentials')
+        self.fake_model_field = self.fake_model._meta.get_field("credentials")
         self.field = models.CredentialsField(null=True)
         self.credentials = client.Credentials()
         self.pickle_str = _helpers._from_bytes(
-            base64.b64encode(pickle.dumps(self.credentials)))
+            base64.b64encode(pickle.dumps(self.credentials))
+        )
         self.jsonpickle_str = _helpers._from_bytes(
-            base64.b64encode(jsonpickle.encode(self.credentials).encode()))
+            base64.b64encode(jsonpickle.encode(self.credentials).encode())
+        )
 
     def test_field_is_text(self):
-        self.assertEqual(self.field.get_internal_type(), 'BinaryField')
+        self.assertEqual(self.field.get_internal_type(), "BinaryField")
 
     def test_field_unpickled(self):
-        self.assertIsInstance(
-            self.field.to_python(self.pickle_str), client.Credentials)
+        self.assertIsInstance(self.field.to_python(self.pickle_str), client.Credentials)
 
     def test_field_jsonunpickled(self):
         self.assertIsInstance(
-            self.field.to_python(self.jsonpickle_str), client.Credentials)
+            self.field.to_python(self.jsonpickle_str), client.Credentials
+        )
 
     def test_field_already_unpickled(self):
         self.assertIsInstance(
-            self.field.to_python(self.credentials), client.Credentials)
+            self.field.to_python(self.credentials), client.Credentials
+        )
 
     def test_none_field_unpickled(self):
         self.assertIsNone(self.field.to_python(None))
 
     def test_from_db_value(self):
-        value = self.field.from_db_value(
-            self.pickle_str, None, None, None)
+        value = self.field.from_db_value(self.pickle_str, None, None, None)
         self.assertIsInstance(value, client.Credentials)
 
     def test_field_unpickled_none(self):
         self.assertEqual(self.field.to_python(None), None)
 
     def test_field_pickled(self):
-        prep_value = self.field.get_db_prep_value(self.credentials,
-                                                  connection=None)
+        prep_value = self.field.get_db_prep_value(self.credentials, connection=None)
         self.assertEqual(prep_value, self.jsonpickle_str)
 
     def test_field_value_to_string(self):

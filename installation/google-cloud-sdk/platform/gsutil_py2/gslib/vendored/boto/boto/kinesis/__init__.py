@@ -32,10 +32,13 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.kinesis.layer1 import KinesisConnection
-    return get_regions('kinesis', connection_cls=KinesisConnection)
+
+    return get_regions("kinesis", connection_cls=KinesisConnection)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.kinesis.layer1 import KinesisConnection
-    return connect('kinesis', region_name,
-                   connection_cls=KinesisConnection, **kw_params)
+
+    return connect(
+        "kinesis", region_name, connection_cls=KinesisConnection, **kw_params
+    )

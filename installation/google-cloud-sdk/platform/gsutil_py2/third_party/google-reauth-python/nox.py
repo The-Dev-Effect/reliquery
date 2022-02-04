@@ -18,25 +18,24 @@ import nox
 
 
 @nox.session
-@nox.parametrize('py', ['2.7', '3.4'])
+@nox.parametrize("py", ["2.7", "3.4"])
 def tests(session, py):
-    session.interpreter = 'python{}'.format(py)
-    session.install('mock', 'pytest', 'pytest-cov')
-    session.install('-e', '.[oauth2client]')
+    session.interpreter = "python{}".format(py)
+    session.install("mock", "pytest", "pytest-cov")
+    session.install("-e", ".[oauth2client]")
 
     session.run(
-        'py.test',
-        '--quiet',
-        '--cov=google_reauth',
-        '--cov-config=.coveragerc',
-        'tests',
+        "py.test",
+        "--quiet",
+        "--cov=google_reauth",
+        "--cov-config=.coveragerc",
+        "tests",
         *session.posargs
     )
 
 
 @nox.session
 def lint(session):
-    session.install('flake8', 'docutils', 'pygments')
-    session.run('flake8', 'google_reauth')
-    session.run(
-        'python', 'setup.py', 'check', '--restructuredtext', '--strict')
+    session.install("flake8", "docutils", "pygments")
+    session.run("flake8", "google_reauth")
+    session.run("python", "setup.py", "check", "--restructuredtext", "--strict")

@@ -37,17 +37,15 @@ class CloudSearchLayer1Test(unittest.TestCase):
     def setUp(self):
         super(CloudSearchLayer1Test, self).setUp()
         self.layer1 = CloudSearchConnection()
-        self.domain_name = 'test-%d' % int(time.time())
+        self.domain_name = "test-%d" % int(time.time())
 
     def test_create_domain(self):
         resp = self.layer1.create_domain(self.domain_name)
 
-        resp = (resp['CreateDomainResponse']
-                    ['CreateDomainResult']
-                    ['DomainStatus'])
+        resp = resp["CreateDomainResponse"]["CreateDomainResult"]["DomainStatus"]
 
         self.addCleanup(self.layer1.delete_domain, self.domain_name)
-        self.assertTrue(resp.get('Created', False))
+        self.assertTrue(resp.get("Created", False))
 
 
 class CloudSearchLayer2Test(unittest.TestCase):
@@ -56,7 +54,7 @@ class CloudSearchLayer2Test(unittest.TestCase):
     def setUp(self):
         super(CloudSearchLayer2Test, self).setUp()
         self.layer2 = Layer2()
-        self.domain_name = 'test-%d' % int(time.time())
+        self.domain_name = "test-%d" % int(time.time())
 
     def test_create_domain(self):
         domain = self.layer2.create_domain(self.domain_name)
@@ -66,14 +64,9 @@ class CloudSearchLayer2Test(unittest.TestCase):
 
     def test_initialization_regression(self):
         us_west_2 = RegionInfo(
-            name='us-west-2',
-            endpoint='cloudsearch.us-west-2.amazonaws.com'
+            name="us-west-2", endpoint="cloudsearch.us-west-2.amazonaws.com"
         )
         self.layer2 = Layer2(
-            region=us_west_2,
-            host='cloudsearch.us-west-2.amazonaws.com'
+            region=us_west_2, host="cloudsearch.us-west-2.amazonaws.com"
         )
-        self.assertEqual(
-            self.layer2.layer1.host,
-            'cloudsearch.us-west-2.amazonaws.com'
-        )
+        self.assertEqual(self.layer2.layer1.host, "cloudsearch.us-west-2.amazonaws.com")

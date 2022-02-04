@@ -30,11 +30,13 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.awslambda.layer1 import AWSLambdaConnection
-    return get_regions('awslambda',
-                       connection_cls=AWSLambdaConnection)
+
+    return get_regions("awslambda", connection_cls=AWSLambdaConnection)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.awslambda.layer1 import AWSLambdaConnection
-    return connect('awslambda', region_name,
-                   connection_cls=AWSLambdaConnection, **kw_params)
+
+    return connect(
+        "awslambda", region_name, connection_cls=AWSLambdaConnection, **kw_params
+    )

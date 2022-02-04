@@ -11,7 +11,7 @@ from pyasn1.compat.octets import str2octs, null
 from pyasn1.type import univ
 from pyasn1.type import useful
 
-__all__ = ['encode']
+__all__ = ["encode"]
 
 
 class BooleanEncoder(encoder.IntegerEncoder):
@@ -31,11 +31,12 @@ class RealEncoder(encoder.RealEncoder):
 
 # specialized GeneralStringEncoder here
 
+
 class TimeEncoderMixIn(object):
-    zchar, = str2octs('Z')
-    pluschar, = str2octs('+')
-    minuschar, = str2octs('-')
-    commachar, = str2octs(',')
+    (zchar,) = str2octs("Z")
+    (pluschar,) = str2octs("+")
+    (minuschar,) = str2octs("-")
+    (commachar,) = str2octs(",")
     minLength = 12
     maxLength = 19
 
@@ -53,16 +54,16 @@ class TimeEncoderMixIn(object):
         octets = value.asOctets()
 
         if not self.minLength < len(octets) < self.maxLength:
-            raise error.PyAsn1Error('Length constraint violated: %r' % value)
+            raise error.PyAsn1Error("Length constraint violated: %r" % value)
 
         if self.pluschar in octets or self.minuschar in octets:
-            raise error.PyAsn1Error('Must be UTC time: %r' % octets)
+            raise error.PyAsn1Error("Must be UTC time: %r" % octets)
 
         if octets[-1] != self.zchar:
             raise error.PyAsn1Error('Missing "Z" time zone specifier: %r' % octets)
 
         if self.commachar in octets:
-            raise error.PyAsn1Error('Comma in fractions disallowed: %r' % value)
+            raise error.PyAsn1Error("Comma in fractions disallowed: %r" % value)
 
         options.update(maxChunkSize=1000)
 
@@ -119,10 +120,10 @@ class SetEncoder(encoder.SequenceEncoder):
                     namedType = namedTypes[idx]
 
                     if namedType.isOptional and not component.isValue:
-                            continue
+                        continue
 
                     if namedType.isDefaulted and component == namedType.asn1Object:
-                            continue
+                        continue
 
                     compsMap[id(component)] = namedType
 
@@ -139,7 +140,9 @@ class SetEncoder(encoder.SequenceEncoder):
                     component = value[namedType.name]
 
                 except KeyError:
-                    raise error.PyAsn1Error('Component name "%s" not found in %r' % (namedType.name, value))
+                    raise error.PyAsn1Error(
+                        'Component name "%s" not found in %r' % (namedType.name, value)
+                    )
 
                 if namedType.isOptional and namedType.name not in value:
                     continue
@@ -176,16 +179,13 @@ class SetOfEncoder(encoder.SequenceOfEncoder):
         else:
             asn1Spec = asn1Spec.componentType
 
-        components = [encodeFun(x, asn1Spec, **options)
-                      for x in value]
+        components = [encodeFun(x, asn1Spec, **options) for x in value]
 
         # sort by serialised and padded components
         if len(components) > 1:
-            zero = str2octs('\x00')
+            zero = str2octs("\x00")
             maxLen = max(map(len, components))
-            paddedComponents = [
-                (x.ljust(maxLen, zero), x) for x in components
-                ]
+            paddedComponents = [(x.ljust(maxLen, zero), x) for x in components]
             paddedComponents.sort(key=lambda x: x[0])
 
             components = [x[1] for x in paddedComponents]
@@ -202,7 +202,7 @@ class SequenceEncoder(encoder.SequenceEncoder):
 class SequenceOfEncoder(encoder.SequenceOfEncoder):
     def encodeValue(self, value, asn1Spec, encodeFun, **options):
 
-        if options.get('ifNotEmpty', False) and not len(value):
+        if options.get("ifNotEmpty", False) and not len(value):
             return null, True, True
 
         if asn1Spec is None:
@@ -219,33 +219,38 @@ class SequenceOfEncoder(encoder.SequenceOfEncoder):
 
 
 tagMap = encoder.tagMap.copy()
-tagMap.update({
-    univ.Boolean.tagSet: BooleanEncoder(),
-    univ.Real.tagSet: RealEncoder(),
-    useful.GeneralizedTime.tagSet: GeneralizedTimeEncoder(),
-    useful.UTCTime.tagSet: UTCTimeEncoder(),
-    # Sequence & Set have same tags as SequenceOf & SetOf
-    univ.SetOf.tagSet: SetOfEncoder(),
-    univ.Sequence.typeId: SequenceEncoder()
-})
+tagMap.update(
+    {
+        univ.Boolean.tagSet: BooleanEncoder(),
+        univ.Real.tagSet: RealEncoder(),
+        useful.GeneralizedTime.tagSet: GeneralizedTimeEncoder(),
+        useful.UTCTime.tagSet: UTCTimeEncoder(),
+        # Sequence & Set have same tags as SequenceOf & SetOf
+        univ.SetOf.tagSet: SetOfEncoder(),
+        univ.Sequence.typeId: SequenceEncoder(),
+    }
+)
 
 typeMap = encoder.typeMap.copy()
-typeMap.update({
-    univ.Boolean.typeId: BooleanEncoder(),
-    univ.Real.typeId: RealEncoder(),
-    useful.GeneralizedTime.typeId: GeneralizedTimeEncoder(),
-    useful.UTCTime.typeId: UTCTimeEncoder(),
-    # Sequence & Set have same tags as SequenceOf & SetOf
-    univ.Set.typeId: SetEncoder(),
-    univ.SetOf.typeId: SetOfEncoder(),
-    univ.Sequence.typeId: SequenceEncoder(),
-    univ.SequenceOf.typeId: SequenceOfEncoder()
-})
+typeMap.update(
+    {
+        univ.Boolean.typeId: BooleanEncoder(),
+        univ.Real.typeId: RealEncoder(),
+        useful.GeneralizedTime.typeId: GeneralizedTimeEncoder(),
+        useful.UTCTime.typeId: UTCTimeEncoder(),
+        # Sequence & Set have same tags as SequenceOf & SetOf
+        univ.Set.typeId: SetEncoder(),
+        univ.SetOf.typeId: SetOfEncoder(),
+        univ.Sequence.typeId: SequenceEncoder(),
+        univ.SequenceOf.typeId: SequenceOfEncoder(),
+    }
+)
 
 
 class Encoder(encoder.Encoder):
     fixedDefLengthMode = False
     fixedChunkSize = 1000
+
 
 #: Turns ASN.1 object into CER octet stream.
 #:

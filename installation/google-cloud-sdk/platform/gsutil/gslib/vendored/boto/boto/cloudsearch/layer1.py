@@ -26,30 +26,45 @@ import boto.jsonresponse
 from boto.connection import AWSQueryConnection
 from boto.regioninfo import RegionInfo
 
-#boto.set_stream_logger('cloudsearch')
+# boto.set_stream_logger('cloudsearch')
 
 
 def do_bool(val):
-    return 'true' if val in [True, 1, '1', 'true'] else 'false'
+    return "true" if val in [True, 1, "1", "true"] else "false"
 
 
 class Layer1(AWSQueryConnection):
 
-    APIVersion = '2011-02-01'
-    DefaultRegionName = boto.config.get('Boto', 'cs_region_name', 'us-east-1')
-    DefaultRegionEndpoint = boto.config.get('Boto', 'cs_region_endpoint',
-                                            'cloudsearch.us-east-1.amazonaws.com')
+    APIVersion = "2011-02-01"
+    DefaultRegionName = boto.config.get("Boto", "cs_region_name", "us-east-1")
+    DefaultRegionEndpoint = boto.config.get(
+        "Boto", "cs_region_endpoint", "cloudsearch.us-east-1.amazonaws.com"
+    )
 
-    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None,
-                 is_secure=True, host=None, port=None,
-                 proxy=None, proxy_port=None,
-                 proxy_user=None, proxy_pass=None, debug=0,
-                 https_connection_factory=None, region=None, path='/',
-                 api_version=None, security_token=None,
-                 validate_certs=True, profile_name=None):
+    def __init__(
+        self,
+        aws_access_key_id=None,
+        aws_secret_access_key=None,
+        is_secure=True,
+        host=None,
+        port=None,
+        proxy=None,
+        proxy_port=None,
+        proxy_user=None,
+        proxy_pass=None,
+        debug=0,
+        https_connection_factory=None,
+        region=None,
+        path="/",
+        api_version=None,
+        security_token=None,
+        validate_certs=True,
+        profile_name=None,
+    ):
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
         self.region = region
         AWSQueryConnection.__init__(
             self,
@@ -67,13 +82,22 @@ class Layer1(AWSQueryConnection):
             path=path,
             security_token=security_token,
             validate_certs=validate_certs,
-            profile_name=profile_name)
+            profile_name=profile_name,
+        )
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
-    def get_response(self, doc_path, action, params, path='/',
-                     parent=None, verb='GET', list_marker=None):
+    def get_response(
+        self,
+        doc_path,
+        action,
+        params,
+        path="/",
+        parent=None,
+        verb="GET",
+        list_marker=None,
+    ):
         if not parent:
             parent = self
         response = self.make_request(action, params, path, verb)
@@ -81,8 +105,8 @@ class Layer1(AWSQueryConnection):
         boto.log.debug(body)
         if response.status == 200:
             e = boto.jsonresponse.Element(
-                list_marker=list_marker if list_marker else 'Set',
-                pythonize_name=True)
+                list_marker=list_marker if list_marker else "Set", pythonize_name=True
+            )
             h = boto.jsonresponse.XmlHandler(e, parent)
             h.parse(body)
             inner = e
@@ -112,16 +136,21 @@ class Layer1(AWSQueryConnection):
 
         :raises: BaseException, InternalException, LimitExceededException
         """
-        doc_path = ('create_domain_response',
-                    'create_domain_result',
-                    'domain_status')
-        params = {'DomainName': domain_name}
-        return self.get_response(doc_path, 'CreateDomain',
-                                 params, verb='POST')
+        doc_path = ("create_domain_response", "create_domain_result", "domain_status")
+        params = {"DomainName": domain_name}
+        return self.get_response(doc_path, "CreateDomain", params, verb="POST")
 
-    def define_index_field(self, domain_name, field_name, field_type,
-                           default='', facet=False, result=False,
-                           searchable=False, source_attributes=None):
+    def define_index_field(
+        self,
+        domain_name,
+        field_name,
+        field_type,
+        default="",
+        facet=False,
+        result=False,
+        searchable=False,
+        source_attributes=None,
+    ):
         """
         Defines an ``IndexField``, either replacing an existing
         definition or creating a new one.
@@ -197,26 +226,29 @@ class Layer1(AWSQueryConnection):
         :raises: BaseException, InternalException, LimitExceededException,
             InvalidTypeException, ResourceNotFoundException
         """
-        doc_path = ('define_index_field_response',
-                    'define_index_field_result',
-                    'index_field')
-        params = {'DomainName': domain_name,
-                  'IndexField.IndexFieldName': field_name,
-                  'IndexField.IndexFieldType': field_type}
-        if field_type == 'literal':
-            params['IndexField.LiteralOptions.DefaultValue'] = default
-            params['IndexField.LiteralOptions.FacetEnabled'] = do_bool(facet)
-            params['IndexField.LiteralOptions.ResultEnabled'] = do_bool(result)
-            params['IndexField.LiteralOptions.SearchEnabled'] = do_bool(searchable)
-        elif field_type == 'uint':
-            params['IndexField.UIntOptions.DefaultValue'] = default
-        elif field_type == 'text':
-            params['IndexField.TextOptions.DefaultValue'] = default
-            params['IndexField.TextOptions.FacetEnabled'] = do_bool(facet)
-            params['IndexField.TextOptions.ResultEnabled'] = do_bool(result)
+        doc_path = (
+            "define_index_field_response",
+            "define_index_field_result",
+            "index_field",
+        )
+        params = {
+            "DomainName": domain_name,
+            "IndexField.IndexFieldName": field_name,
+            "IndexField.IndexFieldType": field_type,
+        }
+        if field_type == "literal":
+            params["IndexField.LiteralOptions.DefaultValue"] = default
+            params["IndexField.LiteralOptions.FacetEnabled"] = do_bool(facet)
+            params["IndexField.LiteralOptions.ResultEnabled"] = do_bool(result)
+            params["IndexField.LiteralOptions.SearchEnabled"] = do_bool(searchable)
+        elif field_type == "uint":
+            params["IndexField.UIntOptions.DefaultValue"] = default
+        elif field_type == "text":
+            params["IndexField.TextOptions.DefaultValue"] = default
+            params["IndexField.TextOptions.FacetEnabled"] = do_bool(facet)
+            params["IndexField.TextOptions.ResultEnabled"] = do_bool(result)
 
-        return self.get_response(doc_path, 'DefineIndexField',
-                                 params, verb='POST')
+        return self.get_response(doc_path, "DefineIndexField", params, verb="POST")
 
     def define_rank_expression(self, domain_name, rank_name, rank_expression):
         """
@@ -284,14 +316,17 @@ class Layer1(AWSQueryConnection):
         :raises: BaseException, InternalException, LimitExceededException,
             InvalidTypeException, ResourceNotFoundException
         """
-        doc_path = ('define_rank_expression_response',
-                    'define_rank_expression_result',
-                    'rank_expression')
-        params = {'DomainName': domain_name,
-                  'RankExpression.RankExpression': rank_expression,
-                  'RankExpression.RankName': rank_name}
-        return self.get_response(doc_path, 'DefineRankExpression',
-                                 params, verb='POST')
+        doc_path = (
+            "define_rank_expression_response",
+            "define_rank_expression_result",
+            "rank_expression",
+        )
+        params = {
+            "DomainName": domain_name,
+            "RankExpression.RankExpression": rank_expression,
+            "RankExpression.RankName": rank_name,
+        }
+        return self.get_response(doc_path, "DefineRankExpression", params, verb="POST")
 
     def delete_domain(self, domain_name):
         """
@@ -308,12 +343,9 @@ class Layer1(AWSQueryConnection):
 
         :raises: BaseException, InternalException
         """
-        doc_path = ('delete_domain_response',
-                    'delete_domain_result',
-                    'domain_status')
-        params = {'DomainName': domain_name}
-        return self.get_response(doc_path, 'DeleteDomain',
-                                 params, verb='POST')
+        doc_path = ("delete_domain_response", "delete_domain_result", "domain_status")
+        params = {"DomainName": domain_name}
+        return self.get_response(doc_path, "DeleteDomain", params, verb="POST")
 
     def delete_index_field(self, domain_name, field_name):
         """
@@ -339,13 +371,13 @@ class Layer1(AWSQueryConnection):
 
         :raises: BaseException, InternalException, ResourceNotFoundException
         """
-        doc_path = ('delete_index_field_response',
-                    'delete_index_field_result',
-                    'index_field')
-        params = {'DomainName': domain_name,
-                  'IndexFieldName': field_name}
-        return self.get_response(doc_path, 'DeleteIndexField',
-                                 params, verb='POST')
+        doc_path = (
+            "delete_index_field_response",
+            "delete_index_field_result",
+            "index_field",
+        )
+        params = {"DomainName": domain_name, "IndexFieldName": field_name}
+        return self.get_response(doc_path, "DeleteIndexField", params, verb="POST")
 
     def delete_rank_expression(self, domain_name, rank_name):
         """
@@ -365,12 +397,13 @@ class Layer1(AWSQueryConnection):
 
         :raises: BaseException, InternalException, ResourceNotFoundException
         """
-        doc_path = ('delete_rank_expression_response',
-                    'delete_rank_expression_result',
-                    'rank_expression')
-        params = {'DomainName': domain_name, 'RankName': rank_name}
-        return self.get_response(doc_path, 'DeleteRankExpression',
-                                 params, verb='POST')
+        doc_path = (
+            "delete_rank_expression_response",
+            "delete_rank_expression_result",
+            "rank_expression",
+        )
+        params = {"DomainName": domain_name, "RankName": rank_name}
+        return self.get_response(doc_path, "DeleteRankExpression", params, verb="POST")
 
     def describe_default_search_field(self, domain_name):
         """
@@ -388,12 +421,15 @@ class Layer1(AWSQueryConnection):
 
         :raises: BaseException, InternalException, ResourceNotFoundException
         """
-        doc_path = ('describe_default_search_field_response',
-                    'describe_default_search_field_result',
-                    'default_search_field')
-        params = {'DomainName': domain_name}
-        return self.get_response(doc_path, 'DescribeDefaultSearchField',
-                                 params, verb='POST')
+        doc_path = (
+            "describe_default_search_field_response",
+            "describe_default_search_field_result",
+            "default_search_field",
+        )
+        params = {"DomainName": domain_name}
+        return self.get_response(
+            doc_path, "DescribeDefaultSearchField", params, verb="POST"
+        )
 
     def describe_domains(self, domain_names=None):
         """
@@ -405,16 +441,22 @@ class Layer1(AWSQueryConnection):
 
         :raises: BaseException, InternalException
         """
-        doc_path = ('describe_domains_response',
-                    'describe_domains_result',
-                    'domain_status_list')
+        doc_path = (
+            "describe_domains_response",
+            "describe_domains_result",
+            "domain_status_list",
+        )
         params = {}
         if domain_names:
             for i, domain_name in enumerate(domain_names, 1):
-                params['DomainNames.member.%d' % i] = domain_name
-        return self.get_response(doc_path, 'DescribeDomains',
-                                 params, verb='POST',
-                                 list_marker='DomainStatusList')
+                params["DomainNames.member.%d" % i] = domain_name
+        return self.get_response(
+            doc_path,
+            "DescribeDomains",
+            params,
+            verb="POST",
+            list_marker="DomainStatusList",
+        )
 
     def describe_index_fields(self, domain_name, field_names=None):
         """
@@ -435,16 +477,22 @@ class Layer1(AWSQueryConnection):
 
         :raises: BaseException, InternalException, ResourceNotFoundException
         """
-        doc_path = ('describe_index_fields_response',
-                    'describe_index_fields_result',
-                    'index_fields')
-        params = {'DomainName': domain_name}
+        doc_path = (
+            "describe_index_fields_response",
+            "describe_index_fields_result",
+            "index_fields",
+        )
+        params = {"DomainName": domain_name}
         if field_names:
             for i, field_name in enumerate(field_names, 1):
-                params['FieldNames.member.%d' % i] = field_name
-        return self.get_response(doc_path, 'DescribeIndexFields',
-                                 params, verb='POST',
-                                 list_marker='IndexFields')
+                params["FieldNames.member.%d" % i] = field_name
+        return self.get_response(
+            doc_path,
+            "DescribeIndexFields",
+            params,
+            verb="POST",
+            list_marker="IndexFields",
+        )
 
     def describe_rank_expressions(self, domain_name, rank_names=None):
         """
@@ -465,16 +513,22 @@ class Layer1(AWSQueryConnection):
 
         :raises: BaseException, InternalException, ResourceNotFoundException
         """
-        doc_path = ('describe_rank_expressions_response',
-                    'describe_rank_expressions_result',
-                    'rank_expressions')
-        params = {'DomainName': domain_name}
+        doc_path = (
+            "describe_rank_expressions_response",
+            "describe_rank_expressions_result",
+            "rank_expressions",
+        )
+        params = {"DomainName": domain_name}
         if rank_names:
             for i, rank_name in enumerate(rank_names, 1):
-                params['RankNames.member.%d' % i] = rank_name
-        return self.get_response(doc_path, 'DescribeRankExpressions',
-                                 params, verb='POST',
-                                 list_marker='RankExpressions')
+                params["RankNames.member.%d" % i] = rank_name
+        return self.get_response(
+            doc_path,
+            "DescribeRankExpressions",
+            params,
+            verb="POST",
+            list_marker="RankExpressions",
+        )
 
     def describe_service_access_policies(self, domain_name):
         """
@@ -492,12 +546,15 @@ class Layer1(AWSQueryConnection):
 
         :raises: BaseException, InternalException, ResourceNotFoundException
         """
-        doc_path = ('describe_service_access_policies_response',
-                    'describe_service_access_policies_result',
-                    'access_policies')
-        params = {'DomainName': domain_name}
-        return self.get_response(doc_path, 'DescribeServiceAccessPolicies',
-                                 params, verb='POST')
+        doc_path = (
+            "describe_service_access_policies_response",
+            "describe_service_access_policies_result",
+            "access_policies",
+        )
+        params = {"DomainName": domain_name}
+        return self.get_response(
+            doc_path, "DescribeServiceAccessPolicies", params, verb="POST"
+        )
 
     def describe_stemming_options(self, domain_name):
         """
@@ -514,12 +571,15 @@ class Layer1(AWSQueryConnection):
 
         :raises: BaseException, InternalException, ResourceNotFoundException
         """
-        doc_path = ('describe_stemming_options_response',
-                    'describe_stemming_options_result',
-                    'stems')
-        params = {'DomainName': domain_name}
-        return self.get_response(doc_path, 'DescribeStemmingOptions',
-                                 params, verb='POST')
+        doc_path = (
+            "describe_stemming_options_response",
+            "describe_stemming_options_result",
+            "stems",
+        )
+        params = {"DomainName": domain_name}
+        return self.get_response(
+            doc_path, "DescribeStemmingOptions", params, verb="POST"
+        )
 
     def describe_stopword_options(self, domain_name):
         """
@@ -536,12 +596,15 @@ class Layer1(AWSQueryConnection):
 
         :raises: BaseException, InternalException, ResourceNotFoundException
         """
-        doc_path = ('describe_stopword_options_response',
-                    'describe_stopword_options_result',
-                    'stopwords')
-        params = {'DomainName': domain_name}
-        return self.get_response(doc_path, 'DescribeStopwordOptions',
-                                 params, verb='POST')
+        doc_path = (
+            "describe_stopword_options_response",
+            "describe_stopword_options_result",
+            "stopwords",
+        )
+        params = {"DomainName": domain_name}
+        return self.get_response(
+            doc_path, "DescribeStopwordOptions", params, verb="POST"
+        )
 
     def describe_synonym_options(self, domain_name):
         """
@@ -558,12 +621,15 @@ class Layer1(AWSQueryConnection):
 
         :raises: BaseException, InternalException, ResourceNotFoundException
         """
-        doc_path = ('describe_synonym_options_response',
-                    'describe_synonym_options_result',
-                    'synonyms')
-        params = {'DomainName': domain_name}
-        return self.get_response(doc_path, 'DescribeSynonymOptions',
-                                 params, verb='POST')
+        doc_path = (
+            "describe_synonym_options_response",
+            "describe_synonym_options_result",
+            "synonyms",
+        )
+        params = {"DomainName": domain_name}
+        return self.get_response(
+            doc_path, "DescribeSynonymOptions", params, verb="POST"
+        )
 
     def index_documents(self, domain_name):
         """
@@ -584,12 +650,11 @@ class Layer1(AWSQueryConnection):
 
         :raises: BaseException, InternalException, ResourceNotFoundException
         """
-        doc_path = ('index_documents_response',
-                    'index_documents_result',
-                    'field_names')
-        params = {'DomainName': domain_name}
-        return self.get_response(doc_path, 'IndexDocuments', params,
-                                 verb='POST', list_marker='FieldNames')
+        doc_path = ("index_documents_response", "index_documents_result", "field_names")
+        params = {"DomainName": domain_name}
+        return self.get_response(
+            doc_path, "IndexDocuments", params, verb="POST", list_marker="FieldNames"
+        )
 
     def update_default_search_field(self, domain_name, default_search_field):
         """
@@ -614,13 +679,15 @@ class Layer1(AWSQueryConnection):
         :raises: BaseException, InternalException, InvalidTypeException,
             ResourceNotFoundException
         """
-        doc_path = ('update_default_search_field_response',
-                    'update_default_search_field_result',
-                    'default_search_field')
-        params = {'DomainName': domain_name,
-                  'DefaultSearchField': default_search_field}
-        return self.get_response(doc_path, 'UpdateDefaultSearchField',
-                                 params, verb='POST')
+        doc_path = (
+            "update_default_search_field_response",
+            "update_default_search_field_result",
+            "default_search_field",
+        )
+        params = {"DomainName": domain_name, "DefaultSearchField": default_search_field}
+        return self.get_response(
+            doc_path, "UpdateDefaultSearchField", params, verb="POST"
+        )
 
     def update_service_access_policies(self, domain_name, access_policies):
         """
@@ -645,13 +712,15 @@ class Layer1(AWSQueryConnection):
         :raises: BaseException, InternalException, LimitExceededException,
             ResourceNotFoundException, InvalidTypeException
         """
-        doc_path = ('update_service_access_policies_response',
-                    'update_service_access_policies_result',
-                    'access_policies')
-        params = {'AccessPolicies': access_policies,
-                  'DomainName': domain_name}
-        return self.get_response(doc_path, 'UpdateServiceAccessPolicies',
-                                 params, verb='POST')
+        doc_path = (
+            "update_service_access_policies_response",
+            "update_service_access_policies_result",
+            "access_policies",
+        )
+        params = {"AccessPolicies": access_policies, "DomainName": domain_name}
+        return self.get_response(
+            doc_path, "UpdateServiceAccessPolicies", params, verb="POST"
+        )
 
     def update_stemming_options(self, domain_name, stems):
         """
@@ -676,13 +745,13 @@ class Layer1(AWSQueryConnection):
         :raises: BaseException, InternalException, InvalidTypeException,
             LimitExceededException, ResourceNotFoundException
         """
-        doc_path = ('update_stemming_options_response',
-                    'update_stemming_options_result',
-                    'stems')
-        params = {'DomainName': domain_name,
-                  'Stems': stems}
-        return self.get_response(doc_path, 'UpdateStemmingOptions',
-                                 params, verb='POST')
+        doc_path = (
+            "update_stemming_options_response",
+            "update_stemming_options_result",
+            "stems",
+        )
+        params = {"DomainName": domain_name, "Stems": stems}
+        return self.get_response(doc_path, "UpdateStemmingOptions", params, verb="POST")
 
     def update_stopword_options(self, domain_name, stopwords):
         """
@@ -706,13 +775,13 @@ class Layer1(AWSQueryConnection):
         :raises: BaseException, InternalException, InvalidTypeException,
             LimitExceededException, ResourceNotFoundException
         """
-        doc_path = ('update_stopword_options_response',
-                    'update_stopword_options_result',
-                    'stopwords')
-        params = {'DomainName': domain_name,
-                  'Stopwords': stopwords}
-        return self.get_response(doc_path, 'UpdateStopwordOptions',
-                                 params, verb='POST')
+        doc_path = (
+            "update_stopword_options_response",
+            "update_stopword_options_result",
+            "stopwords",
+        )
+        params = {"DomainName": domain_name, "Stopwords": stopwords}
+        return self.get_response(doc_path, "UpdateStopwordOptions", params, verb="POST")
 
     def update_synonym_options(self, domain_name, synonyms):
         """
@@ -738,10 +807,10 @@ class Layer1(AWSQueryConnection):
         :raises: BaseException, InternalException, InvalidTypeException,
             LimitExceededException, ResourceNotFoundException
         """
-        doc_path = ('update_synonym_options_response',
-                    'update_synonym_options_result',
-                    'synonyms')
-        params = {'DomainName': domain_name,
-                  'Synonyms': synonyms}
-        return self.get_response(doc_path, 'UpdateSynonymOptions',
-                                 params, verb='POST')
+        doc_path = (
+            "update_synonym_options_response",
+            "update_synonym_options_result",
+            "synonyms",
+        )
+        params = {"DomainName": domain_name, "Synonyms": synonyms}
+        return self.get_response(doc_path, "UpdateSynonymOptions", params, verb="POST")

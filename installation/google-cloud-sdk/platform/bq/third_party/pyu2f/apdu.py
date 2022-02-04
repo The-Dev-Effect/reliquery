@@ -33,116 +33,118 @@ CMD_VERSION = 0x03
 
 
 class CommandApdu(object):
-  """Represents a Command APDU.
+    """Represents a Command APDU.
 
-  Represents a Command APDU sent to the security key.  Encoding
-  is specified in FIDO U2F standards.
-  """
-  cla = None
-  ins = None
-  p1 = None
-  p2 = None
-  data = None
-
-  def __init__(self, cla, ins, p1, p2, data=None):
-    self.cla = cla
-    self.ins = ins
-    self.p1 = p1
-    self.p2 = p2
-    if data and len(data) > 65535:
-      raise errors.InvalidCommandError()
-    if data:
-      self.data = data
-
-  def ToByteArray(self):
-    """Serialize the command.
-
-    Encodes the command as per the U2F specs, using the standard
-    ISO 7816-4 extended encoding.  All Commands expect data, so
-    Le is always present.
-
-    Returns:
-      Python bytearray of the encoded command.
-    """
-    lc = self.InternalEncodeLc()
-    out = bytearray(4)  # will extend
-
-    out[0] = self.cla
-    out[1] = self.ins
-    out[2] = self.p1
-    out[3] = self.p2
-    if self.data:
-      out.extend(lc)
-      out.extend(self.data)
-      out.extend([0x00, 0x00])  # Le
-    else:
-      out.extend([0x00, 0x00, 0x00])  # Le
-    return out
-
-  def ToLegacyU2FByteArray(self):
-    """Serialize the command in the legacy format.
-
-    Encodes the command as per the U2F specs, using the legacy
-    encoding in which LC is always present.
-
-    Returns:
-      Python bytearray of the encoded command.
+    Represents a Command APDU sent to the security key.  Encoding
+    is specified in FIDO U2F standards.
     """
 
-    lc = self.InternalEncodeLc()
-    out = bytearray(4)  # will extend
+    cla = None
+    ins = None
+    p1 = None
+    p2 = None
+    data = None
 
-    out[0] = self.cla
-    out[1] = self.ins
-    out[2] = self.p1
-    out[3] = self.p2
-    out.extend(lc)
-    if self.data:
-      out.extend(self.data)
-    out.extend([0x00, 0x00])  # Le
+    def __init__(self, cla, ins, p1, p2, data=None):
+        self.cla = cla
+        self.ins = ins
+        self.p1 = p1
+        self.p2 = p2
+        if data and len(data) > 65535:
+            raise errors.InvalidCommandError()
+        if data:
+            self.data = data
 
-    return out
+    def ToByteArray(self):
+        """Serialize the command.
 
-  def InternalEncodeLc(self):
-    dl = 0
-    if self.data:
-      dl = len(self.data)
-    # The top two bytes are guaranteed to be 0 by the assertion
-    # in the constructor.
-    fourbyte = struct.pack('>I', dl)
-    return bytearray(fourbyte[1:])
+        Encodes the command as per the U2F specs, using the standard
+        ISO 7816-4 extended encoding.  All Commands expect data, so
+        Le is always present.
+
+        Returns:
+          Python bytearray of the encoded command.
+        """
+        lc = self.InternalEncodeLc()
+        out = bytearray(4)  # will extend
+
+        out[0] = self.cla
+        out[1] = self.ins
+        out[2] = self.p1
+        out[3] = self.p2
+        if self.data:
+            out.extend(lc)
+            out.extend(self.data)
+            out.extend([0x00, 0x00])  # Le
+        else:
+            out.extend([0x00, 0x00, 0x00])  # Le
+        return out
+
+    def ToLegacyU2FByteArray(self):
+        """Serialize the command in the legacy format.
+
+        Encodes the command as per the U2F specs, using the legacy
+        encoding in which LC is always present.
+
+        Returns:
+          Python bytearray of the encoded command.
+        """
+
+        lc = self.InternalEncodeLc()
+        out = bytearray(4)  # will extend
+
+        out[0] = self.cla
+        out[1] = self.ins
+        out[2] = self.p1
+        out[3] = self.p2
+        out.extend(lc)
+        if self.data:
+            out.extend(self.data)
+        out.extend([0x00, 0x00])  # Le
+
+        return out
+
+    def InternalEncodeLc(self):
+        dl = 0
+        if self.data:
+            dl = len(self.data)
+        # The top two bytes are guaranteed to be 0 by the assertion
+        # in the constructor.
+        fourbyte = struct.pack(">I", dl)
+        return bytearray(fourbyte[1:])
 
 
 class ResponseApdu(object):
-  """Represents a Response APDU.
+    """Represents a Response APDU.
 
-  Represents a Response APU sent by the security key.  Encoding
-  is specified in FIDO U2F standards.
-  """
-  body = None
-  sw1 = None
-  sw2 = None
+    Represents a Response APU sent by the security key.  Encoding
+    is specified in FIDO U2F standards.
+    """
 
-  def __init__(self, data):
-    self.dbg_full_packet = data
-    if not data or len(data) < 2:
-      raise errors.InvalidResponseError()
+    body = None
+    sw1 = None
+    sw2 = None
 
-    if len(data) > 2:
-      self.body = data[:-2]
+    def __init__(self, data):
+        self.dbg_full_packet = data
+        if not data or len(data) < 2:
+            raise errors.InvalidResponseError()
 
-    self.sw1 = data[-2]
-    self.sw2 = data[-1]
+        if len(data) > 2:
+            self.body = data[:-2]
 
-  def IsSuccess(self):
-    return self.sw1 == 0x90 and self.sw2 == 0x00
+        self.sw1 = data[-2]
+        self.sw2 = data[-1]
 
-  def CheckSuccessOrRaise(self):
-    if self.sw1 == 0x69 and self.sw2 == 0x85:  # SW_CONDITIONS_NOT_SATISFIED
-      raise errors.TUPRequiredError()
-    elif self.sw1 == 0x6a and self.sw2 == 0x80:  # SW_WRONG_DATA
-      raise errors.InvalidKeyHandleError()
-    elif self.sw1 == 0x67 and self.sw2 == 0x00:  # SW_WRONG_LENGTH
-      raise errors.InvalidKeyHandleError()
-    elif not self.IsSuccess():
-      raise errors.ApduError(self.sw1, self.sw2)
+    def IsSuccess(self):
+        return self.sw1 == 0x90 and self.sw2 == 0x00
+
+    def CheckSuccessOrRaise(self):
+        if self.sw1 == 0x69 and self.sw2 == 0x85:  # SW_CONDITIONS_NOT_SATISFIED
+            raise errors.TUPRequiredError()
+        elif self.sw1 == 0x6A and self.sw2 == 0x80:  # SW_WRONG_DATA
+            raise errors.InvalidKeyHandleError()
+        elif self.sw1 == 0x67 and self.sw2 == 0x00:  # SW_WRONG_LENGTH
+            raise errors.InvalidKeyHandleError()
+        elif not self.IsSuccess():
+            raise errors.ApduError(self.sw1, self.sw2)

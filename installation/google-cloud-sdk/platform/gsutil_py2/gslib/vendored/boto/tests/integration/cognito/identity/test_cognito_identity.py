@@ -29,24 +29,27 @@ class TestCognitoIdentity(CognitoTest):
     Test Cognitoy identity pools operations since individual Cognito identities
     require an AWS account ID.
     """
+
     def test_cognito_identity(self):
         # Ensure the identity pool is in the list of pools.
         response = self.cognito_identity.list_identity_pools(max_results=5)
-        expected_identity = {'IdentityPoolId': self.identity_pool_id,
-                             'IdentityPoolName': self.identity_pool_name}
-        self.assertIn(expected_identity, response['IdentityPools'])
+        expected_identity = {
+            "IdentityPoolId": self.identity_pool_id,
+            "IdentityPoolName": self.identity_pool_name,
+        }
+        self.assertIn(expected_identity, response["IdentityPools"])
 
         # Ensure the pool's attributes are as expected.
         response = self.cognito_identity.describe_identity_pool(
             identity_pool_id=self.identity_pool_id
         )
-        self.assertEqual(response['IdentityPoolName'], self.identity_pool_name)
-        self.assertEqual(response['IdentityPoolId'], self.identity_pool_id)
-        self.assertFalse(response['AllowUnauthenticatedIdentities'])
+        self.assertEqual(response["IdentityPoolName"], self.identity_pool_name)
+        self.assertEqual(response["IdentityPoolId"], self.identity_pool_id)
+        self.assertFalse(response["AllowUnauthenticatedIdentities"])
 
     def test_resource_not_found_exception(self):
         with self.assertRaises(ResourceNotFoundException):
             # Note the region is us-east-0 which is an invalid region name.
             self.cognito_identity.describe_identity_pool(
-                identity_pool_id='us-east-0:c09e640-b014-4822-86b9-ec77c40d8d6f'
+                identity_pool_id="us-east-0:c09e640-b014-4822-86b9-ec77c40d8d6f"
             )

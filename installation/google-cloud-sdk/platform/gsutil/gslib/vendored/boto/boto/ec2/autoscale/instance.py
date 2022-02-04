@@ -31,29 +31,31 @@ class Instance(object):
         self.group_name = None
 
     def __repr__(self):
-        r = 'Instance<id:%s, state:%s, health:%s' % (self.instance_id,
-                                                     self.lifecycle_state,
-                                                     self.health_status)
+        r = "Instance<id:%s, state:%s, health:%s" % (
+            self.instance_id,
+            self.lifecycle_state,
+            self.health_status,
+        )
         if self.group_name:
-            r += ' group:%s' % self.group_name
-        r += '>'
+            r += " group:%s" % self.group_name
+        r += ">"
         return r
 
     def startElement(self, name, attrs, connection):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'InstanceId':
+        if name == "InstanceId":
             self.instance_id = value
-        elif name == 'HealthStatus':
+        elif name == "HealthStatus":
             self.health_status = value
-        elif name == 'LaunchConfigurationName':
+        elif name == "LaunchConfigurationName":
             self.launch_config_name = value
-        elif name == 'LifecycleState':
+        elif name == "LifecycleState":
             self.lifecycle_state = value
-        elif name == 'AvailabilityZone':
+        elif name == "AvailabilityZone":
             self.availability_zone = value
-        elif name == 'AutoScalingGroupName':
+        elif name == "AutoScalingGroupName":
             self.group_name = value
         else:
             setattr(self, name, value)

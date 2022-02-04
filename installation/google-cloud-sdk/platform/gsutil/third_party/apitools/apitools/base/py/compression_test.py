@@ -25,10 +25,9 @@ import six
 
 
 class CompressionTest(unittest.TestCase):
-
     def setUp(self):
         # Sample highly compressible data (~50MB).
-        self.sample_data = b'abc' * 16777216
+        self.sample_data = b"abc" * 16777216
         # Stream of the sample data.
         self.stream = six.BytesIO()
         self.stream.write(self.sample_data)
@@ -41,9 +40,8 @@ class CompressionTest(unittest.TestCase):
         Test that highly compressible data is actually compressed in entirety.
         """
         output, read, exhausted = compression.CompressStream(
-            self.stream,
-            self.length,
-            9)
+            self.stream, self.length, 9
+        )
         # Ensure the compressed buffer is smaller than the input buffer.
         self.assertLess(output.length, self.length)
         # Ensure we read the entire input stream.
@@ -56,10 +54,7 @@ class CompressionTest(unittest.TestCase):
 
         Test that the input stream is exhausted when length is none.
         """
-        output, read, exhausted = compression.CompressStream(
-            self.stream,
-            None,
-            9)
+        output, read, exhausted = compression.CompressStream(self.stream, None, 9)
         # Ensure the compressed buffer is smaller than the input buffer.
         self.assertLess(output.length, self.length)
         # Ensure we read the entire input stream.
@@ -74,10 +69,7 @@ class CompressionTest(unittest.TestCase):
         that's compressed can be greater than or equal to the requested length.
         """
         output_length = 40
-        output, _, exhausted = compression.CompressStream(
-            self.stream,
-            output_length,
-            9)
+        output, _, exhausted = compression.CompressStream(self.stream, output_length, 9)
         # Ensure the requested read size is <= the compressed buffer size.
         self.assertLessEqual(output_length, output.length)
         # Ensure the input stream was not exhausted.
@@ -86,9 +78,8 @@ class CompressionTest(unittest.TestCase):
     def testCompressionIntegrity(self):
         """Test that compressed data can be decompressed."""
         output, read, exhausted = compression.CompressStream(
-            self.stream,
-            self.length,
-            9)
+            self.stream, self.length, 9
+        )
         # Ensure uncompressed data matches the sample data.
         with gzip.GzipFile(fileobj=output) as f:
             original = f.read()
@@ -100,7 +91,6 @@ class CompressionTest(unittest.TestCase):
 
 
 class StreamingBufferTest(unittest.TestCase):
-
     def setUp(self):
         self.stream = compression.StreamingBuffer()
 
@@ -113,11 +103,11 @@ class StreamingBufferTest(unittest.TestCase):
         # Ensure the stream is empty.
         self.assertEqual(self.stream.length, 0)
         # Ensure data is correctly written.
-        self.stream.write(b'Sample data')
+        self.stream.write(b"Sample data")
         self.assertEqual(self.stream.length, 11)
         # Ensure data can be read and the read data is purged from the stream.
         data = self.stream.read(11)
-        self.assertEqual(data, b'Sample data')
+        self.assertEqual(data, b"Sample data")
         self.assertEqual(self.stream.length, 0)
 
     def testPartialReads(self):
@@ -126,14 +116,14 @@ class StreamingBufferTest(unittest.TestCase):
         Test that the stream can be read in chunks while perserving the
         consumption mechanics.
         """
-        self.stream.write(b'Sample data')
+        self.stream.write(b"Sample data")
         # Ensure data can be read and the read data is purged from the stream.
         data = self.stream.read(6)
-        self.assertEqual(data, b'Sample')
+        self.assertEqual(data, b"Sample")
         self.assertEqual(self.stream.length, 5)
         # Ensure the remaining data can be read.
         data = self.stream.read(5)
-        self.assertEqual(data, b' data')
+        self.assertEqual(data, b" data")
         self.assertEqual(self.stream.length, 0)
 
     def testTooShort(self):
@@ -142,9 +132,9 @@ class StreamingBufferTest(unittest.TestCase):
         Test that more data can be requested from the stream than available
         without raising an exception.
         """
-        self.stream.write(b'Sample')
+        self.stream.write(b"Sample")
         # Ensure requesting more data than available does not raise an
         # exception.
         data = self.stream.read(100)
-        self.assertEqual(data, b'Sample')
+        self.assertEqual(data, b"Sample")
         self.assertEqual(self.stream.length, 0)

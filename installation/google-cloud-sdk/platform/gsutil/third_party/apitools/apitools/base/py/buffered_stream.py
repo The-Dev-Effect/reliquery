@@ -36,9 +36,12 @@ class BufferedStream(object):
         self.__end_pos = self.__start_pos + len(self.__buffered_data)
 
     def __str__(self):
-        return ('Buffered stream %s from position %s-%s with %s '
-                'bytes remaining' % (self.__stream, self.__start_pos,
-                                     self.__end_pos, self._bytes_remaining))
+        return "Buffered stream %s from position %s-%s with %s " "bytes remaining" % (
+            self.__stream,
+            self.__start_pos,
+            self.__end_pos,
+            self._bytes_remaining,
+        )
 
     def __len__(self):
         return len(self.__buffered_data)
@@ -59,16 +62,21 @@ class BufferedStream(object):
         """Reads from the buffer."""
         if size is None or size < 0:
             raise exceptions.NotYetImplementedError(
-                'Illegal read of size %s requested on BufferedStream. '
-                'Wrapped stream %s is at position %s-%s, '
-                '%s bytes remaining.' %
-                (size, self.__stream, self.__start_pos, self.__end_pos,
-                 self._bytes_remaining))
+                "Illegal read of size %s requested on BufferedStream. "
+                "Wrapped stream %s is at position %s-%s, "
+                "%s bytes remaining."
+                % (
+                    size,
+                    self.__stream,
+                    self.__start_pos,
+                    self.__end_pos,
+                    self._bytes_remaining,
+                )
+            )
 
-        data = ''
+        data = ""
         if self._bytes_remaining:
             size = min(size, self._bytes_remaining)
-            data = self.__buffered_data[
-                self.__buffer_pos:self.__buffer_pos + size]
+            data = self.__buffered_data[self.__buffer_pos : self.__buffer_pos + size]
             self.__buffer_pos += size
         return data

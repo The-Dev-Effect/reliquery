@@ -24,8 +24,7 @@
 import codecs
 from boto.glacier.exceptions import UploadArchiveError
 from boto.glacier.job import Job
-from boto.glacier.writer import compute_hashes_from_fileobj, \
-                                resume_file_upload, Writer
+from boto.glacier.writer import compute_hashes_from_fileobj, resume_file_upload, Writer
 from boto.glacier.concurrent import ConcurrentUploader
 from boto.glacier.utils import minimum_part_size, DEFAULT_PART_SIZE
 import os.path
@@ -43,12 +42,14 @@ class Vault(object):
     DefaultPartSize = DEFAULT_PART_SIZE
     SingleOperationThreshold = 100 * _MEGABYTE
 
-    ResponseDataElements = (('VaultName', 'name', None),
-                            ('VaultARN', 'arn', None),
-                            ('CreationDate', 'creation_date', None),
-                            ('LastInventoryDate', 'last_inventory_date', None),
-                            ('SizeInBytes', 'size', 0),
-                            ('NumberOfArchives', 'number_of_archives', 0))
+    ResponseDataElements = (
+        ("VaultName", "name", None),
+        ("VaultARN", "arn", None),
+        ("CreationDate", "creation_date", None),
+        ("LastInventoryDate", "last_inventory_date", None),
+        ("SizeInBytes", "size", 0),
+        ("NumberOfArchives", "number_of_archives", 0),
+    )
 
     def __init__(self, layer1, response_data=None):
         self.layer1 = layer1
@@ -101,16 +102,15 @@ class Vault(object):
         :rtype: str
         :return: The archive id of the newly created archive
         """
-        with open(filename, 'rb') as fileobj:
+        with open(filename, "rb") as fileobj:
             linear_hash, tree_hash = compute_hashes_from_fileobj(fileobj)
             fileobj.seek(0)
-            response = self.layer1.upload_archive(self.name, fileobj,
-                                                  linear_hash, tree_hash,
-                                                  description)
-        return response['ArchiveId']
+            response = self.layer1.upload_archive(
+                self.name, fileobj, linear_hash, tree_hash, description
+            )
+        return response["ArchiveId"]
 
-    def create_archive_writer(self, part_size=DefaultPartSize,
-                              description=None):
+    def create_archive_writer(self, part_size=DefaultPartSize, description=None):
         """
         Create a new archive and begin a multi-part upload to it.
         Returns a file-like object to which the data for the archive
@@ -128,13 +128,14 @@ class Vault(object):
         :return: A Writer object that to which the archive data
             should be written.
         """
-        response = self.layer1.initiate_multipart_upload(self.name,
-                                                         part_size,
-                                                         description)
-        return Writer(self, response['UploadId'], part_size=part_size)
+        response = self.layer1.initiate_multipart_upload(
+            self.name, part_size, description
+        )
+        return Writer(self, response["UploadId"], part_size=part_size)
 
-    def create_archive_from_file(self, filename=None, file_obj=None,
-                                 description=None, upload_id_callback=None):
+    def create_archive_from_file(
+        self, filename=None, file_obj=None, description=None, upload_id_callback=None
+    ):
         """
         Create a new archive and upload the data from the given file
         or file-like object.
@@ -162,12 +163,14 @@ class Vault(object):
             try:
                 part_size = minimum_part_size(file_size, part_size)
             except ValueError:
-                raise UploadArchiveError("File size of %s bytes exceeds "
-                                         "40,000 GB archive limit of Glacier.")
+                raise UploadArchiveError(
+                    "File size of %s bytes exceeds "
+                    "40,000 GB archive limit of Glacier."
+                )
             file_obj = open(filename, "rb")
         writer = self.create_archive_writer(
-            description=description,
-            part_size=part_size)
+            description=description, part_size=part_size
+        )
         if upload_id_callback:
             upload_id_callback(writer.upload_id)
         while True:
@@ -180,7 +183,7 @@ class Vault(object):
 
     @staticmethod
     def _range_string_to_part_index(range_string, part_size):
-        start, inside_end = [int(value) for value in range_string.split('-')]
+        start, inside_end = [int(value) for value in range_string.split("-")]
         end = inside_end + 1
         length = end - start
         if length == part_size + 1:
@@ -190,13 +193,13 @@ class Vault(object):
             end -= 1
             inside_end -= 1
             length -= 1
-        assert not (start % part_size), (
-            "upload part start byte is not on a part boundary")
-        assert (length <= part_size), "upload part is bigger than part size"
+        assert not (
+            start % part_size
+        ), "upload part start byte is not on a part boundary"
+        assert length <= part_size, "upload part is bigger than part size"
         return start // part_size
 
-    def resume_archive_from_file(self, upload_id, filename=None,
-                                 file_obj=None):
+    def resume_archive_from_file(self, upload_id, filename=None, file_obj=None):
         """Resume upload of a file already part-uploaded to Glacier.
 
         The resumption of an upload where the part-uploaded section is empty
@@ -220,23 +223,22 @@ class Vault(object):
 
         """
         part_list_response = self.list_all_parts(upload_id)
-        part_size = part_list_response['PartSizeInBytes']
+        part_size = part_list_response["PartSizeInBytes"]
 
         part_hash_map = {}
-        for part_desc in part_list_response['Parts']:
+        for part_desc in part_list_response["Parts"]:
             part_index = self._range_string_to_part_index(
-                part_desc['RangeInBytes'], part_size)
-            part_tree_hash = codecs.decode(part_desc['SHA256TreeHash'], 'hex_codec')
+                part_desc["RangeInBytes"], part_size
+            )
+            part_tree_hash = codecs.decode(part_desc["SHA256TreeHash"], "hex_codec")
             part_hash_map[part_index] = part_tree_hash
 
         if not file_obj:
             file_obj = open(filename, "rb")
 
-        return resume_file_upload(
-            self, upload_id, part_size, file_obj, part_hash_map)
+        return resume_file_upload(self, upload_id, part_size, file_obj, part_hash_map)
 
-    def concurrent_create_archive_from_file(self, filename, description,
-                                            **kwargs):
+    def concurrent_create_archive_from_file(self, filename, description, **kwargs):
         """
         Create a new archive from a file and upload the given
         file.
@@ -266,8 +268,7 @@ class Vault(object):
         archive_id = uploader.upload(filename, description)
         return archive_id
 
-    def retrieve_archive(self, archive_id, sns_topic=None,
-                         description=None):
+    def retrieve_archive(self, archive_id, sns_topic=None, description=None):
         """
         Initiate a archive retrieval job to download the data from an
         archive. You will need to wait for the notification from
@@ -288,20 +289,24 @@ class Vault(object):
         :rtype: :class:`boto.glacier.job.Job`
         :return: A Job object representing the retrieval job.
         """
-        job_data = {'Type': 'archive-retrieval',
-                    'ArchiveId': archive_id}
+        job_data = {"Type": "archive-retrieval", "ArchiveId": archive_id}
         if sns_topic is not None:
-            job_data['SNSTopic'] = sns_topic
+            job_data["SNSTopic"] = sns_topic
         if description is not None:
-            job_data['Description'] = description
+            job_data["Description"] = description
 
         response = self.layer1.initiate_job(self.name, job_data)
-        return self.get_job(response['JobId'])
+        return self.get_job(response["JobId"])
 
-    def retrieve_inventory(self, sns_topic=None,
-                           description=None, byte_range=None,
-                           start_date=None, end_date=None,
-                           limit=None):
+    def retrieve_inventory(
+        self,
+        sns_topic=None,
+        description=None,
+        byte_range=None,
+        start_date=None,
+        end_date=None,
+        limit=None,
+    ):
         """
         Initiate a inventory retrieval job to list the items in the
         vault. You will need to wait for the notification from
@@ -331,27 +336,27 @@ class Vault(object):
         :rtype: str
         :return: The ID of the job
         """
-        job_data = {'Type': 'inventory-retrieval'}
+        job_data = {"Type": "inventory-retrieval"}
         if sns_topic is not None:
-            job_data['SNSTopic'] = sns_topic
+            job_data["SNSTopic"] = sns_topic
         if description is not None:
-            job_data['Description'] = description
+            job_data["Description"] = description
         if byte_range is not None:
-            job_data['RetrievalByteRange'] = byte_range
+            job_data["RetrievalByteRange"] = byte_range
         if start_date is not None or end_date is not None or limit is not None:
             rparams = {}
 
             if start_date is not None:
-                rparams['StartDate'] = start_date.strftime('%Y-%m-%dT%H:%M:%S%Z')
+                rparams["StartDate"] = start_date.strftime("%Y-%m-%dT%H:%M:%S%Z")
             if end_date is not None:
-                rparams['EndDate'] = end_date.strftime('%Y-%m-%dT%H:%M:%S%Z')
+                rparams["EndDate"] = end_date.strftime("%Y-%m-%dT%H:%M:%S%Z")
             if limit is not None:
-                rparams['Limit'] = limit
+                rparams["Limit"] = limit
 
-            job_data['InventoryRetrievalParameters'] = rparams
+            job_data["InventoryRetrievalParameters"] = rparams
 
         response = self.layer1.initiate_job(self.name, job_data)
-        return response['JobId']
+        return response["JobId"]
 
     def retrieve_inventory_job(self, **kwargs):
         """
@@ -425,9 +430,8 @@ class Vault(object):
         :rtype: list of :class:`boto.glacier.job.Job`
         :return: A list of Job objects related to this vault.
         """
-        response_data = self.layer1.list_jobs(self.name, completed,
-                                              status_code)
-        return [Job(self, jd) for jd in response_data['JobList']]
+        response_data = self.layer1.list_jobs(self.name, completed, status_code)
+        return [Job(self, jd) for jd in response_data["JobList"]]
 
     def list_all_parts(self, upload_id):
         """Automatically make and combine multiple calls to list_parts.
@@ -437,14 +441,15 @@ class Vault(object):
 
         """
         result = self.layer1.list_parts(self.name, upload_id)
-        marker = result['Marker']
+        marker = result["Marker"]
         while marker:
             additional_result = self.layer1.list_parts(
-                self.name, upload_id, marker=marker)
-            result['Parts'].extend(additional_result['Parts'])
-            marker = additional_result['Marker']
+                self.name, upload_id, marker=marker
+            )
+            result["Parts"].extend(additional_result["Parts"])
+            marker = additional_result["Marker"]
         # The marker makes no sense in an unpaginated result, and clearing it
         # makes testing easier. This also has the nice property that the result
         # is a normal (but expanded) response.
-        result['Marker'] = None
+        result["Marker"] = None
         return result

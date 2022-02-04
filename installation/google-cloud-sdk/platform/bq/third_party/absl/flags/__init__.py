@@ -135,16 +135,21 @@ doc_to_help = _helpers.doc_to_help
 _helpers.SPECIAL_FLAGS = FlagValues()
 
 DEFINE_string(
-    'flagfile', '',
-    'Insert flag definitions from the given file into the command line.',
-    _helpers.SPECIAL_FLAGS)  # pytype: disable=wrong-arg-types
+    "flagfile",
+    "",
+    "Insert flag definitions from the given file into the command line.",
+    _helpers.SPECIAL_FLAGS,
+)  # pytype: disable=wrong-arg-types
 
-DEFINE_string('undefok', '',
-              'comma-separated list of flag names that it is okay to specify '
-              'on the command line even if the program does not define a flag '
-              'with that name.  IMPORTANT: flags in this list that have '
-              'arguments MUST use the --flag=value format.',
-              _helpers.SPECIAL_FLAGS)  # pytype: disable=wrong-arg-types
+DEFINE_string(
+    "undefok",
+    "",
+    "comma-separated list of flag names that it is okay to specify "
+    "on the command line even if the program does not define a flag "
+    "with that name.  IMPORTANT: flags in this list that have "
+    "arguments MUST use the --flag=value format.",
+    _helpers.SPECIAL_FLAGS,
+)  # pytype: disable=wrong-arg-types
 
 # The global FlagValues instance.
 FLAGS = _flagvalues.FLAGS

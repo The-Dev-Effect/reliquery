@@ -42,7 +42,7 @@ class TestBigMessage(unittest.TestCase):
         c = boto.connect_sqs()
 
         # create a queue so we can test BigMessage
-        queue_name = 'test%d' % int(time.time())
+        queue_name = "test%d" % int(time.time())
         timeout = 60
         queue = c.create_queue(queue_name, timeout)
         self.addCleanup(c.delete_queue, queue, True)
@@ -55,21 +55,21 @@ class TestBigMessage(unittest.TestCase):
         time.sleep(30)
 
         # now add a message
-        msg_body = 'This is a test of the big message'
+        msg_body = "This is a test of the big message"
         fp = StringIO(msg_body)
-        s3_url = 's3://%s' % queue_name
+        s3_url = "s3://%s" % queue_name
         message = queue.new_message(fp, s3_url=s3_url)
 
         queue.write(message)
         time.sleep(30)
 
-        s3_object_name = message.s3_url.split('/')[-1]
+        s3_object_name = message.s3_url.split("/")[-1]
 
         # Make sure msg body is in bucket
         self.assertTrue(bucket.lookup(s3_object_name))
 
         m = queue.read()
-        self.assertEqual(m.get_body().decode('utf-8'), msg_body)
+        self.assertEqual(m.get_body().decode("utf-8"), msg_body)
 
         m.delete()
         time.sleep(30)

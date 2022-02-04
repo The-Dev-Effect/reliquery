@@ -28,15 +28,22 @@ import logging
 from boto.compat import Queue
 import binascii
 
-from boto.glacier.utils import DEFAULT_PART_SIZE, minimum_part_size, \
-                               chunk_hashes, tree_hash, bytes_to_hex
-from boto.glacier.exceptions import UploadArchiveError, \
-                                    DownloadArchiveError, \
-                                    TreeHashDoesNotMatchError
+from boto.glacier.utils import (
+    DEFAULT_PART_SIZE,
+    minimum_part_size,
+    chunk_hashes,
+    tree_hash,
+    bytes_to_hex,
+)
+from boto.glacier.exceptions import (
+    UploadArchiveError,
+    DownloadArchiveError,
+    TreeHashDoesNotMatchError,
+)
 
 
 _END_SENTINEL = object()
-log = logging.getLogger('boto.glacier.concurrent')
+log = logging.getLogger("boto.glacier.concurrent")
 
 
 class ConcurrentTransferer(object):
@@ -51,9 +58,13 @@ class ConcurrentTransferer(object):
             part_size = self._part_size
         else:
             part_size = min_part_size_required
-            log.debug("The part size specified (%s) is smaller than "
-                      "the minimum required part size.  Using a part "
-                      "size of: %s", self._part_size, part_size)
+            log.debug(
+                "The part size specified (%s) is smaller than "
+                "the minimum required part size.  Using a part "
+                "size of: %s",
+                self._part_size,
+                part_size,
+            )
         total_parts = int(math.ceil(total_size / float(part_size)))
         return total_parts, part_size
 
@@ -83,8 +94,8 @@ class ConcurrentUploader(ConcurrentTransferer):
     transparent to the users of this class.
 
     """
-    def __init__(self, api, vault_name, part_size=DEFAULT_PART_SIZE,
-                 num_threads=10):
+
+    def __init__(self, api, vault_name, part_size=DEFAULT_PART_SIZE, num_threads=10):
         """
         :type api: :class:`boto.glacier.layer1.Layer1`
         :param api: A layer1 glacier object.
@@ -131,41 +142,48 @@ class ConcurrentUploader(ConcurrentTransferer):
         hash_chunks = [None] * total_parts
         worker_queue = Queue()
         result_queue = Queue()
-        response = self._api.initiate_multipart_upload(self._vault_name,
-                                                       part_size,
-                                                       description)
-        upload_id = response['UploadId']
+        response = self._api.initiate_multipart_upload(
+            self._vault_name, part_size, description
+        )
+        upload_id = response["UploadId"]
         # The basic idea is to add the chunks (the offsets not the actual
         # contents) to a work queue, start up a thread pool, let the crank
         # through the items in the work queue, and then place their results
         # in a result queue which we use to complete the multipart upload.
         self._add_work_items_to_queue(total_parts, worker_queue, part_size)
-        self._start_upload_threads(result_queue, upload_id,
-                                   worker_queue, filename)
+        self._start_upload_threads(result_queue, upload_id, worker_queue, filename)
         try:
-            self._wait_for_upload_threads(hash_chunks, result_queue,
-                                          total_parts)
+            self._wait_for_upload_threads(hash_chunks, result_queue, total_parts)
         except UploadArchiveError as e:
-            log.debug("An error occurred while uploading an archive, "
-                      "aborting multipart upload.")
+            log.debug(
+                "An error occurred while uploading an archive, "
+                "aborting multipart upload."
+            )
             self._api.abort_multipart_upload(self._vault_name, upload_id)
             raise e
         log.debug("Completing upload.")
         response = self._api.complete_multipart_upload(
-            self._vault_name, upload_id, bytes_to_hex(tree_hash(hash_chunks)),
-            total_size)
+            self._vault_name,
+            upload_id,
+            bytes_to_hex(tree_hash(hash_chunks)),
+            total_size,
+        )
         log.debug("Upload finished.")
-        return response['ArchiveId']
+        return response["ArchiveId"]
 
     def _wait_for_upload_threads(self, hash_chunks, result_queue, total_parts):
         for _ in range(total_parts):
             result = result_queue.get()
             if isinstance(result, Exception):
-                log.debug("An error was found in the result queue, terminating "
-                          "threads: %s", result)
+                log.debug(
+                    "An error was found in the result queue, terminating "
+                    "threads: %s",
+                    result,
+                )
                 self._shutdown_threads()
-                raise UploadArchiveError("An error occurred while uploading "
-                                         "an archive: %s" % result)
+                raise UploadArchiveError(
+                    "An error occurred while uploading " "an archive: %s" % result
+                )
             # Each unit of work returns the tree hash for the given part
             # number, which we use at the end to compute the tree hash of
             # the entire archive.
@@ -173,12 +191,17 @@ class ConcurrentUploader(ConcurrentTransferer):
             hash_chunks[part_number] = tree_sha256
         self._shutdown_threads()
 
-    def _start_upload_threads(self, result_queue, upload_id, worker_queue,
-                              filename):
+    def _start_upload_threads(self, result_queue, upload_id, worker_queue, filename):
         log.debug("Starting threads.")
         for _ in range(self._num_threads):
-            thread = UploadWorkerThread(self._api, self._vault_name, filename,
-                                        upload_id, worker_queue, result_queue)
+            thread = UploadWorkerThread(
+                self._api,
+                self._vault_name,
+                filename,
+                upload_id,
+                worker_queue,
+                result_queue,
+            )
             time.sleep(0.2)
             thread.start()
             self._threads.append(thread)
@@ -214,15 +237,23 @@ class TransferThread(threading.Thread):
 
 
 class UploadWorkerThread(TransferThread):
-    def __init__(self, api, vault_name, filename, upload_id,
-                 worker_queue, result_queue, num_retries=5,
-                 time_between_retries=5,
-                 retry_exceptions=Exception):
+    def __init__(
+        self,
+        api,
+        vault_name,
+        filename,
+        upload_id,
+        worker_queue,
+        result_queue,
+        num_retries=5,
+        time_between_retries=5,
+        retry_exceptions=Exception,
+    ):
         super(UploadWorkerThread, self).__init__(worker_queue, result_queue)
         self._api = api
         self._vault_name = vault_name
         self._filename = filename
-        self._fileobj = open(filename, 'rb')
+        self._fileobj = open(filename, "rb")
         self._upload_id = upload_id
         self._num_retries = num_retries
         self._time_between_retries = time_between_retries
@@ -235,11 +266,18 @@ class UploadWorkerThread(TransferThread):
                 result = self._upload_chunk(work)
                 break
             except self._retry_exceptions as e:
-                log.error("Exception caught uploading part number %s for "
-                          "vault %s, attempt: (%s / %s), filename: %s, "
-                          "exception: %s, msg: %s",
-                          work[0], self._vault_name, i + 1, self._num_retries + 1,
-                          self._filename, e.__class__, e)
+                log.error(
+                    "Exception caught uploading part number %s for "
+                    "vault %s, attempt: (%s / %s), filename: %s, "
+                    "exception: %s, msg: %s",
+                    work[0],
+                    self._vault_name,
+                    i + 1,
+                    self._num_retries + 1,
+                    self._filename,
+                    e.__class__,
+                    e,
+                )
                 time.sleep(self._time_between_retries)
                 result = e
         return result
@@ -253,10 +291,14 @@ class UploadWorkerThread(TransferThread):
         tree_hash_bytes = tree_hash(chunk_hashes(contents))
         byte_range = (start_byte, start_byte + len(contents) - 1)
         log.debug("Uploading chunk %s of size %s", part_number, part_size)
-        response = self._api.upload_part(self._vault_name, self._upload_id,
-                                         linear_hash,
-                                         bytes_to_hex(tree_hash_bytes),
-                                         byte_range, contents)
+        response = self._api.upload_part(
+            self._vault_name,
+            self._upload_id,
+            linear_hash,
+            bytes_to_hex(tree_hash_bytes),
+            byte_range,
+            contents,
+        )
         # Reading the response allows the connection to be reused.
         response.read()
         return (part_number, tree_hash_bytes)
@@ -276,8 +318,8 @@ class ConcurrentDownloader(ConcurrentTransferer):
     transparent to the users of this class.
 
     """
-    def __init__(self, job, part_size=DEFAULT_PART_SIZE,
-                 num_threads=10):
+
+    def __init__(self, job, part_size=DEFAULT_PART_SIZE, num_threads=10):
         """
         :param job: A layer2 job object for archive retrieval object.
 
@@ -326,12 +368,15 @@ class ConcurrentDownloader(ConcurrentTransferer):
             for _ in range(total_parts):
                 result = result_queue.get()
                 if isinstance(result, Exception):
-                    log.debug("An error was found in the result queue, "
-                              "terminating threads: %s", result)
+                    log.debug(
+                        "An error was found in the result queue, "
+                        "terminating threads: %s",
+                        result,
+                    )
                     self._shutdown_threads()
                     raise DownloadArchiveError(
-                        "An error occurred while uploading "
-                        "an archive: %s" % result)
+                        "An error occurred while uploading " "an archive: %s" % result
+                    )
                 part_number, part_size, actual_hash, data = result
                 hash_chunks[part_number] = actual_hash
                 start_byte = part_number * part_size
@@ -339,14 +384,17 @@ class ConcurrentDownloader(ConcurrentTransferer):
                 f.write(data)
                 f.flush()
         final_hash = bytes_to_hex(tree_hash(hash_chunks))
-        log.debug("Verifying final tree hash of archive, expecting: %s, "
-                  "actual: %s", self._job.sha256_treehash, final_hash)
+        log.debug(
+            "Verifying final tree hash of archive, expecting: %s, " "actual: %s",
+            self._job.sha256_treehash,
+            final_hash,
+        )
         if self._job.sha256_treehash != final_hash:
             self._shutdown_threads()
             raise TreeHashDoesNotMatchError(
                 "Tree hash for entire archive does not match, "
-                "expected: %s, got: %s" % (self._job.sha256_treehash,
-                                           final_hash))
+                "expected: %s, got: %s" % (self._job.sha256_treehash, final_hash)
+            )
         self._shutdown_threads()
 
     def _start_download_threads(self, result_queue, worker_queue):
@@ -359,11 +407,15 @@ class ConcurrentDownloader(ConcurrentTransferer):
 
 
 class DownloadWorkerThread(TransferThread):
-    def __init__(self, job,
-                 worker_queue, result_queue,
-                 num_retries=5,
-                 time_between_retries=5,
-                 retry_exceptions=Exception):
+    def __init__(
+        self,
+        job,
+        worker_queue,
+        result_queue,
+        num_retries=5,
+        time_between_retries=5,
+        retry_exceptions=Exception,
+    ):
         """
         Individual download thread that will download parts of the file from Glacier. Parts
         to download stored in work queue.
@@ -397,8 +449,11 @@ class DownloadWorkerThread(TransferThread):
                 result = self._download_chunk(work)
                 break
             except self._retry_exceptions as e:
-                log.error("Exception caught downloading part number %s for "
-                          "job %s", work[0], self._job,)
+                log.error(
+                    "Exception caught downloading part number %s for " "job %s",
+                    work[0],
+                    self._job,
+                )
                 time.sleep(self._time_between_retries)
                 result = e
         return result
@@ -417,9 +472,10 @@ class DownloadWorkerThread(TransferThread):
         response = self._job.get_output(byte_range)
         data = response.read()
         actual_hash = bytes_to_hex(tree_hash(chunk_hashes(data)))
-        if response['TreeHash'] != actual_hash:
+        if response["TreeHash"] != actual_hash:
             raise TreeHashDoesNotMatchError(
                 "Tree hash for part number %s does not match, "
-                "expected: %s, got: %s" % (part_number, response['TreeHash'],
-                                           actual_hash))
+                "expected: %s, got: %s"
+                % (part_number, response["TreeHash"], actual_hash)
+            )
         return (part_number, part_size, binascii.unhexlify(actual_hash), data)

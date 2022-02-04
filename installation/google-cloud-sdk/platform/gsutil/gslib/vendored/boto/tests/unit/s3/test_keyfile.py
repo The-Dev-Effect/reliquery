@@ -28,12 +28,11 @@ from tests.integration.s3.mock_storage_service import MockBucket
 
 
 class KeyfileTest(unittest.TestCase):
-
     def setUp(self):
         service_connection = MockConnection()
-        self.contents = '0123456789'
-        bucket = MockBucket(service_connection, 'mybucket')
-        key = bucket.new_key('mykey')
+        self.contents = "0123456789"
+        bucket = MockBucket(service_connection, "mybucket")
+        key = bucket.new_key("mykey")
         key.set_contents_from_string(self.contents)
         self.keyfile = KeyFile(key)
 
@@ -57,7 +56,7 @@ class KeyfileTest(unittest.TestCase):
         try:
             self.keyfile.tell()
         except ValueError as e:
-            self.assertEqual(str(e), 'I/O operation on closed file')
+            self.assertEqual(str(e), "I/O operation on closed file")
 
     def testSeek(self):
         self.assertEqual(self.keyfile.read(4), self.contents[:4])
@@ -70,29 +69,29 @@ class KeyfileTest(unittest.TestCase):
         try:
             self.keyfile.seek(-5)
         except IOError as e:
-            self.assertEqual(str(e), 'Invalid argument')
+            self.assertEqual(str(e), "Invalid argument")
 
         # Reading past end of file is supposed to return empty string.
         self.keyfile.read(10)
-        self.assertEqual(self.keyfile.read(20), '')
+        self.assertEqual(self.keyfile.read(20), "")
 
         # Seeking past end of file is supposed to silently work.
         self.keyfile.seek(50)
         self.assertEqual(self.keyfile.tell(), 50)
-        self.assertEqual(self.keyfile.read(1), '')
+        self.assertEqual(self.keyfile.read(1), "")
 
     def testSeekEnd(self):
         self.assertEqual(self.keyfile.read(4), self.contents[:4])
         self.keyfile.seek(0, os.SEEK_END)
-        self.assertEqual(self.keyfile.read(1), '')
+        self.assertEqual(self.keyfile.read(1), "")
         self.keyfile.seek(-1, os.SEEK_END)
         self.assertEqual(self.keyfile.tell(), 9)
-        self.assertEqual(self.keyfile.read(1), '9')
+        self.assertEqual(self.keyfile.read(1), "9")
         # Test attempt to seek backwards past the start from the end.
         try:
             self.keyfile.seek(-100, os.SEEK_END)
         except IOError as e:
-            self.assertEqual(str(e), 'Invalid argument')
+            self.assertEqual(str(e), "Invalid argument")
 
     def testSeekCur(self):
         self.assertEqual(self.keyfile.read(1), self.contents[0])
@@ -104,11 +103,11 @@ class KeyfileTest(unittest.TestCase):
         # Make sure both bytes and strings work as contents. This is one of the
         # very few places Boto uses the mock key object.
         # https://github.com/GoogleCloudPlatform/gsutil/issues/214#issuecomment-49906044
-        self.keyfile.key.data = b'test'
+        self.keyfile.key.data = b"test"
         self.keyfile.key.set_etag()
-        self.assertEqual(self.keyfile.key.etag, '098f6bcd4621d373cade4e832627b4f6')
+        self.assertEqual(self.keyfile.key.etag, "098f6bcd4621d373cade4e832627b4f6")
 
         self.keyfile.key.etag = None
-        self.keyfile.key.data = 'test'
+        self.keyfile.key.data = "test"
         self.keyfile.key.set_etag()
-        self.assertEqual(self.keyfile.key.etag, '098f6bcd4621d373cade4e832627b4f6')
+        self.assertEqual(self.keyfile.key.etag, "098f6bcd4621d373cade4e832627b4f6")

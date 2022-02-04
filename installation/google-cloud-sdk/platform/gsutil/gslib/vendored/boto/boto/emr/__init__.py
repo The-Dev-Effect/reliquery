@@ -40,9 +40,10 @@ def regions():
     :rtype: list
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
-    return get_regions('elasticmapreduce', connection_cls=EmrConnection)
+    return get_regions("elasticmapreduce", connection_cls=EmrConnection)
 
 
 def connect_to_region(region_name, **kw_params):
-    return connect('elasticmapreduce', region_name,
-                   connection_cls=EmrConnection, **kw_params)
+    return connect(
+        "elasticmapreduce", region_name, connection_cls=EmrConnection, **kw_params
+    )

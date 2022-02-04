@@ -24,6 +24,7 @@ import xml.sax
 import cgi
 from boto.compat import six, StringIO
 
+
 class ResponseGroup(xml.sax.ContentHandler):
     """A Generic "Response Group", which can
     be anything from the entire list of Items to
@@ -38,7 +39,7 @@ class ResponseGroup(xml.sax.ContentHandler):
         self._xml = StringIO()
 
     def __repr__(self):
-        return '<%s: %s>' % (self.__class__.__name__, self.__dict__)
+        return "<%s: %s>" % (self.__class__.__name__, self.__dict__)
 
     #
     # Attribute Functions
@@ -67,7 +68,9 @@ class ResponseGroup(xml.sax.ContentHandler):
         return None
 
     def endElement(self, name, value, connection):
-        self._xml.write("%s</%s>" % (cgi.escape(value).replace("&amp;amp;", "&amp;"), name))
+        self._xml.write(
+            "%s</%s>" % (cgi.escape(value).replace("&amp;amp;", "&amp;"), name)
+        )
         if len(self._nodepath) == 0:
             return
         obj = None
@@ -77,8 +80,8 @@ class ResponseGroup(xml.sax.ContentHandler):
                 self.set(name, value)
             if self._curobj:
                 self._curobj = None
-        #elif len(self._nodepath) == 2:
-            #self._curobj = None
+        # elif len(self._nodepath) == 2:
+        # self._curobj = None
         elif self._curobj:
             self._curobj.endElement(name, value, connection)
         self._nodepath.pop()
@@ -91,6 +94,7 @@ class Item(ResponseGroup):
     def __init__(self, connection=None):
         """Initialize this Item"""
         ResponseGroup.__init__(self, connection, "Item")
+
 
 class ItemSet(ResponseGroup):
     """A special ResponseGroup that has built-in paging, and
@@ -117,18 +121,18 @@ class ItemSet(ResponseGroup):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'TotalResults':
+        if name == "TotalResults":
             self.total_results = value
-        elif name == 'TotalPages':
+        elif name == "TotalPages":
             self.total_pages = value
-        elif name == 'IsValid':
-            if value == 'True':
+        elif name == "IsValid":
+            if value == "True":
                 self.is_valid = True
-        elif name == 'Code':
-            self.errors.append({'Code': value, 'Message': None})
-        elif name == 'Message':
-            self.errors[-1]['Message'] = value
-        elif name == 'Item':
+        elif name == "Code":
+            self.errors.append({"Code": value, "Message": None})
+        elif name == "Message":
+            self.errors[-1]["Message"] = value
+        elif name == "Item":
             self.objs.append(self.curItem)
             self._xml.write(self.curItem.to_xml())
             self.curItem = None

@@ -192,14 +192,14 @@ class SecurityGroupTest(unittest.TestCase):
 
         # Regression: ``dry_run`` was being passed (but unhandled) before.
         sg.add_rule(
-            ip_protocol='http',
-            from_port='80',
-            to_port='8080',
-            src_group_name='groupy',
-            src_group_owner_id='12345',
-            cidr_ip='10.0.0.1',
-            src_group_group_id='54321',
-            dry_run=False
+            ip_protocol="http",
+            from_port="80",
+            to_port="8080",
+            src_group_name="groupy",
+            src_group_owner_id="12345",
+            cidr_ip="10.0.0.1",
+            src_group_group_id="54321",
+            dry_run=False,
         )
         self.assertEqual(len(sg.rules), 1)
 
@@ -208,4 +208,4 @@ class SecurityGroupTest(unittest.TestCase):
         sg = SecurityGroup()
 
         with self.assertRaises(ValueError):
-            sg.remove_rule('ip', 80, 80, None, None, None, None)
+            sg.remove_rule("ip", 80, 80, None, None, None, None)

@@ -27,7 +27,6 @@ from boto.sqs.message import Message
 
 
 class Queue(object):
-
     def __init__(self, connection=None, url=None, message_class=Message):
         self.connection = connection
         self.url = url
@@ -35,7 +34,7 @@ class Queue(object):
         self.visibility_timeout = None
 
     def __repr__(self):
-        return 'Queue(%s)' % self.url
+        return "Queue(%s)" % self.url
 
     def _id(self):
         if self.url:
@@ -43,33 +42,40 @@ class Queue(object):
         else:
             val = self.url
         return val
+
     id = property(_id)
 
     def _name(self):
         if self.url:
-            val = urllib.parse.urlparse(self.url)[2].split('/')[2]
+            val = urllib.parse.urlparse(self.url)[2].split("/")[2]
         else:
             val = self.url
-        return  val
+        return val
+
     name = property(_name)
 
     def _arn(self):
-        parts = self.id.split('/')
-        if self.connection.region.name == 'cn-north-1':
-            partition = 'aws-cn'
+        parts = self.id.split("/")
+        if self.connection.region.name == "cn-north-1":
+            partition = "aws-cn"
         else:
-            partition = 'aws'
-        return 'arn:%s:sqs:%s:%s:%s' % (
-            partition, self.connection.region.name, parts[1], parts[2])
+            partition = "aws"
+        return "arn:%s:sqs:%s:%s:%s" % (
+            partition,
+            self.connection.region.name,
+            parts[1],
+            parts[2],
+        )
+
     arn = property(_arn)
 
     def startElement(self, name, attrs, connection):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'QueueUrl':
+        if name == "QueueUrl":
             self.url = value
-        elif name == 'VisibilityTimeout':
+        elif name == "VisibilityTimeout":
             self.visibility_timeout = int(value)
         else:
             setattr(self, name, value)
@@ -86,7 +92,7 @@ class Queue(object):
         """
         self.message_class = message_class
 
-    def get_attributes(self, attributes='All'):
+    def get_attributes(self, attributes="All"):
         """
         Retrieves attributes about this queue object and returns
         them in an Attribute instance (subclass of a Dictionary).
@@ -175,8 +181,8 @@ class Queue(object):
         :rtype: int
         :return: The number of seconds as an integer.
         """
-        a = self.get_attributes('VisibilityTimeout')
-        return int(a['VisibilityTimeout'])
+        a = self.get_attributes("VisibilityTimeout")
+        return int(a["VisibilityTimeout"])
 
     def set_timeout(self, visibility_timeout):
         """
@@ -185,7 +191,7 @@ class Queue(object):
         :type visibility_timeout: int
         :param visibility_timeout: The desired timeout in seconds
         """
-        retval = self.set_attribute('VisibilityTimeout', visibility_timeout)
+        retval = self.set_attribute("VisibilityTimeout", visibility_timeout)
         if retval:
             self.visibility_timeout = visibility_timeout
         return retval
@@ -214,8 +220,7 @@ class Queue(object):
         :return: True if successful, False otherwise.
 
         """
-        return self.connection.add_permission(self, label, aws_account_id,
-                                              action_name)
+        return self.connection.add_permission(self, label, aws_account_id, action_name)
 
     def remove_permission(self, label):
         """
@@ -230,8 +235,9 @@ class Queue(object):
         """
         return self.connection.remove_permission(self, label)
 
-    def read(self, visibility_timeout=None, wait_time_seconds=None,
-             message_attributes=None):
+    def read(
+        self, visibility_timeout=None, wait_time_seconds=None, message_attributes=None
+    ):
         """
         Read a single message from the queue.
 
@@ -252,9 +258,12 @@ class Queue(object):
         :rtype: :class:`boto.sqs.message.Message`
         :return: A single message or None if queue is empty
         """
-        rs = self.get_messages(1, visibility_timeout,
-                               wait_time_seconds=wait_time_seconds,
-                               message_attributes=message_attributes)
+        rs = self.get_messages(
+            1,
+            visibility_timeout,
+            wait_time_seconds=wait_time_seconds,
+            message_attributes=message_attributes,
+        )
         if len(rs) == 1:
             return rs[0]
         else:
@@ -270,9 +279,12 @@ class Queue(object):
         :rtype: :class:`boto.sqs.message.Message`
         :return: The :class:`boto.sqs.message.Message` object that was written.
         """
-        new_msg = self.connection.send_message(self,
-            message.get_body_encoded(), delay_seconds=delay_seconds,
-            message_attributes=message.message_attributes)
+        new_msg = self.connection.send_message(
+            self,
+            message.get_body_encoded(),
+            delay_seconds=delay_seconds,
+            message_attributes=message.message_attributes,
+        )
         message.id = new_msg.id
         message.md5 = new_msg.md5
         return message
@@ -295,7 +307,7 @@ class Queue(object):
         """
         return self.connection.send_message_batch(self, messages)
 
-    def new_message(self, body='', **kwargs):
+    def new_message(self, body="", **kwargs):
         """
         Create new message of appropriate class.
 
@@ -310,9 +322,14 @@ class Queue(object):
         return m
 
     # get a variable number of messages, returns a list of messages
-    def get_messages(self, num_messages=1, visibility_timeout=None,
-                     attributes=None, wait_time_seconds=None,
-                     message_attributes=None):
+    def get_messages(
+        self,
+        num_messages=1,
+        visibility_timeout=None,
+        attributes=None,
+        wait_time_seconds=None,
+        message_attributes=None,
+    ):
         """
         Get a variable number of messages.
 
@@ -345,10 +362,13 @@ class Queue(object):
         :return: A list of :class:`boto.sqs.message.Message` objects.
         """
         return self.connection.receive_message(
-            self, number_messages=num_messages,
-            visibility_timeout=visibility_timeout, attributes=attributes,
+            self,
+            number_messages=num_messages,
+            visibility_timeout=visibility_timeout,
+            attributes=attributes,
             wait_time_seconds=wait_time_seconds,
-            message_attributes=message_attributes)
+            message_attributes=message_attributes,
+        )
 
     def delete_message(self, message):
         """
@@ -405,8 +425,8 @@ class Queue(object):
         Note: This function now calls GetQueueAttributes to obtain
         an 'approximate' count of the number of messages in a queue.
         """
-        a = self.get_attributes('ApproximateNumberOfMessages')
-        return int(a['ApproximateNumberOfMessages'])
+        a = self.get_attributes("ApproximateNumberOfMessages")
+        return int(a["ApproximateNumberOfMessages"])
 
     def count_slow(self, page_size=10, vtimeout=10):
         """
@@ -425,10 +445,10 @@ class Queue(object):
             l = self.get_messages(page_size, vtimeout)
         return n
 
-    def dump(self, file_name, page_size=10, vtimeout=10, sep='\n'):
+    def dump(self, file_name, page_size=10, vtimeout=10, sep="\n"):
         """Utility function to dump the messages in a queue to a file
         NOTE: Page size must be < 10 else SQS errors"""
-        fp = open(file_name, 'wb')
+        fp = open(file_name, "wb")
         n = 0
         l = self.get_messages(page_size, vtimeout)
         while l:
@@ -441,7 +461,7 @@ class Queue(object):
         fp.close()
         return n
 
-    def save_to_file(self, fp, sep='\n'):
+    def save_to_file(self, fp, sep="\n"):
         """
         Read all messages from the queue and persist them to file-like object.
         Messages are written to the file and the 'sep' string is written
@@ -460,7 +480,7 @@ class Queue(object):
             m = self.read()
         return n
 
-    def save_to_filename(self, file_name, sep='\n'):
+    def save_to_filename(self, file_name, sep="\n"):
         """
         Read all messages from the queue and persist them to local file.
         Messages are written to the file and the 'sep' string is written
@@ -468,7 +488,7 @@ class Queue(object):
         being written to the file.
         Returns the number of messages saved.
         """
-        fp = open(file_name, 'wb')
+        fp = open(file_name, "wb")
         n = self.save_to_file(fp, sep)
         fp.close()
         return n
@@ -490,7 +510,7 @@ class Queue(object):
         m = self.read()
         while m:
             n += 1
-            key = bucket.new_key('%s/%s' % (self.id, m.id))
+            key = bucket.new_key("%s/%s" % (self.id, m.id))
             key.set_contents_from_string(m.get_body())
             self.delete_message(m)
             m = self.read()
@@ -502,9 +522,9 @@ class Queue(object):
         """
         n = 0
         if prefix:
-            prefix = '%s/' % prefix
+            prefix = "%s/" % prefix
         else:
-            prefix = '%s/' % self.id[1:]
+            prefix = "%s/" % self.id[1:]
         rs = bucket.list(prefix=prefix)
         for key in rs:
             n += 1
@@ -512,30 +532,29 @@ class Queue(object):
             self.write(m)
         return n
 
-    def load_from_file(self, fp, sep='\n'):
+    def load_from_file(self, fp, sep="\n"):
         """Utility function to load messages from a file-like object to a queue"""
         n = 0
-        body = ''
+        body = ""
         l = fp.readline()
         while l:
             if l == sep:
                 m = Message(self, body)
                 self.write(m)
                 n += 1
-                print('writing message %d' % n)
-                body = ''
+                print("writing message %d" % n)
+                body = ""
             else:
                 body = body + l
             l = fp.readline()
         return n
 
-    def load_from_filename(self, file_name, sep='\n'):
+    def load_from_filename(self, file_name, sep="\n"):
         """Utility function to load messages from a local filename to a queue"""
-        fp = open(file_name, 'rb')
+        fp = open(file_name, "rb")
         n = self.load_from_file(fp, sep)
         fp.close()
         return n
 
     # for backward compatibility
     load = load_from_filename
-

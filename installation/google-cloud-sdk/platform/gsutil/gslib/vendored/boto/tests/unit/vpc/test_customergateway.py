@@ -29,23 +29,32 @@ class TestDescribeCustomerGateways(AWSMockServiceTestCase):
     def test_get_all_customer_gateways(self):
         self.set_http_response(status_code=200)
         api_response = self.service_connection.get_all_customer_gateways(
-            'cgw-b4dc3961',
-            filters=OrderedDict([('state', ['pending', 'available']),
-                     ('ip-address', '12.1.2.3')]))
-        self.assert_request_parameters({
-            'Action': 'DescribeCustomerGateways',
-            'CustomerGatewayId.1': 'cgw-b4dc3961',
-            'Filter.1.Name': 'state',
-            'Filter.1.Value.1': 'pending',
-            'Filter.1.Value.2': 'available',
-            'Filter.2.Name': 'ip-address',
-            'Filter.2.Value.1': '12.1.2.3'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp',
-                                  'Version'])
+            "cgw-b4dc3961",
+            filters=OrderedDict(
+                [("state", ["pending", "available"]), ("ip-address", "12.1.2.3")]
+            ),
+        )
+        self.assert_request_parameters(
+            {
+                "Action": "DescribeCustomerGateways",
+                "CustomerGatewayId.1": "cgw-b4dc3961",
+                "Filter.1.Name": "state",
+                "Filter.1.Value.1": "pending",
+                "Filter.1.Value.2": "available",
+                "Filter.2.Name": "ip-address",
+                "Filter.2.Value.1": "12.1.2.3",
+            },
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
         self.assertEquals(len(api_response), 1)
         self.assertIsInstance(api_response[0], CustomerGateway)
-        self.assertEqual(api_response[0].id, 'cgw-b4dc3961')
+        self.assertEqual(api_response[0].id, "cgw-b4dc3961")
 
 
 class TestCreateCustomerGateway(AWSMockServiceTestCase):
@@ -70,20 +79,28 @@ class TestCreateCustomerGateway(AWSMockServiceTestCase):
     def test_create_customer_gateway(self):
         self.set_http_response(status_code=200)
         api_response = self.service_connection.create_customer_gateway(
-            'ipsec.1', '12.1.2.3', 65534)
-        self.assert_request_parameters({
-            'Action': 'CreateCustomerGateway',
-            'Type': 'ipsec.1',
-            'IpAddress': '12.1.2.3',
-            'BgpAsn': 65534},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp',
-                                  'Version'])
+            "ipsec.1", "12.1.2.3", 65534
+        )
+        self.assert_request_parameters(
+            {
+                "Action": "CreateCustomerGateway",
+                "Type": "ipsec.1",
+                "IpAddress": "12.1.2.3",
+                "BgpAsn": 65534,
+            },
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
         self.assertIsInstance(api_response, CustomerGateway)
-        self.assertEquals(api_response.id, 'cgw-b4dc3961')
-        self.assertEquals(api_response.state, 'pending')
-        self.assertEquals(api_response.type, 'ipsec.1')
-        self.assertEquals(api_response.ip_address, '12.1.2.3')
+        self.assertEquals(api_response.id, "cgw-b4dc3961")
+        self.assertEquals(api_response.state, "pending")
+        self.assertEquals(api_response.type, "ipsec.1")
+        self.assertEquals(api_response.ip_address, "12.1.2.3")
         self.assertEquals(api_response.bgp_asn, 65534)
 
 
@@ -101,15 +118,19 @@ class TestDeleteCustomerGateway(AWSMockServiceTestCase):
 
     def test_delete_customer_gateway(self):
         self.set_http_response(status_code=200)
-        api_response = self.service_connection.delete_customer_gateway('cgw-b4dc3961')
-        self.assert_request_parameters({
-            'Action': 'DeleteCustomerGateway',
-            'CustomerGatewayId': 'cgw-b4dc3961'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp',
-                                  'Version'])
+        api_response = self.service_connection.delete_customer_gateway("cgw-b4dc3961")
+        self.assert_request_parameters(
+            {"Action": "DeleteCustomerGateway", "CustomerGatewayId": "cgw-b4dc3961"},
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
         self.assertEquals(api_response, True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -35,17 +35,17 @@ class TagSet(dict):
         self._current_value = None
 
     def startElement(self, name, attrs, connection):
-        if name == 'item':
+        if name == "item":
             self._current_key = None
             self._current_value = None
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'key':
+        if name == "key":
             self._current_key = value
-        elif name == 'value':
+        elif name == "value":
             self._current_value = value
-        elif name == 'item':
+        elif name == "item":
             self[self._current_key] = self._current_value
 
 
@@ -57,8 +57,9 @@ class Tag(object):
     as well as the type of the resource.
     """
 
-    def __init__(self, connection=None, res_id=None, res_type=None,
-                 name=None, value=None):
+    def __init__(
+        self, connection=None, res_id=None, res_type=None, name=None, value=None
+    ):
         self.connection = connection
         self.res_id = res_id
         self.res_type = res_type
@@ -66,19 +67,19 @@ class Tag(object):
         self.value = value
 
     def __repr__(self):
-        return 'Tag:%s' % self.name
+        return "Tag:%s" % self.name
 
     def startElement(self, name, attrs, connection):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'resourceId':
+        if name == "resourceId":
             self.res_id = value
-        elif name == 'resourceType':
+        elif name == "resourceType":
             self.res_type = value
-        elif name == 'key':
+        elif name == "key":
             self.name = value
-        elif name == 'value':
+        elif name == "value":
             self.value = value
         else:
             setattr(self, name, value)

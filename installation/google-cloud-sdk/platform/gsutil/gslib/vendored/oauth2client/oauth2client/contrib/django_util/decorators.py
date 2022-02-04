@@ -34,7 +34,7 @@ from oauth2client.contrib import django_util
 
 
 def oauth_required(decorated_function=None, scopes=None, **decorator_kwargs):
-    """ Decorator to require OAuth2 credentials for a view.
+    """Decorator to require OAuth2 credentials for a view.
 
 
     .. code-block:: python
@@ -67,23 +67,24 @@ def oauth_required(decorated_function=None, scopes=None, **decorator_kwargs):
         credentials are missing the required scopes. Otherwise,
         the decorated view.
     """
+
     def curry_wrapper(wrapped_function):
         @wraps(wrapped_function)
         def required_wrapper(request, *args, **kwargs):
-            if not (django_util.oauth2_settings.storage_model is None or
-                    request.user.is_authenticated()):
-                redirect_str = '{0}?next={1}'.format(
-                    django.conf.settings.LOGIN_URL,
-                    parse.quote(request.path))
+            if not (
+                django_util.oauth2_settings.storage_model is None
+                or request.user.is_authenticated()
+            ):
+                redirect_str = "{0}?next={1}".format(
+                    django.conf.settings.LOGIN_URL, parse.quote(request.path)
+                )
                 return shortcuts.redirect(redirect_str)
 
-            return_url = decorator_kwargs.pop('return_url',
-                                              request.get_full_path())
+            return_url = decorator_kwargs.pop("return_url", request.get_full_path())
             user_oauth = django_util.UserOAuth2(request, scopes, return_url)
             if not user_oauth.has_credentials():
                 return shortcuts.redirect(user_oauth.get_authorize_redirect())
-            setattr(request, django_util.oauth2_settings.request_prefix,
-                    user_oauth)
+            setattr(request, django_util.oauth2_settings.request_prefix, user_oauth)
             return wrapped_function(request, *args, **kwargs)
 
         return required_wrapper
@@ -95,7 +96,7 @@ def oauth_required(decorated_function=None, scopes=None, **decorator_kwargs):
 
 
 def oauth_enabled(decorated_function=None, scopes=None, **decorator_kwargs):
-    """ Decorator to enable OAuth Credentials if authorized, and setup
+    """Decorator to enable OAuth Credentials if authorized, and setup
     the oauth object on the request object to provide helper functions
     to start the flow otherwise.
 
@@ -127,14 +128,13 @@ def oauth_enabled(decorated_function=None, scopes=None, **decorator_kwargs):
     Returns:
          The decorated view function.
     """
+
     def curry_wrapper(wrapped_function):
         @wraps(wrapped_function)
         def enabled_wrapper(request, *args, **kwargs):
-            return_url = decorator_kwargs.pop('return_url',
-                                              request.get_full_path())
+            return_url = decorator_kwargs.pop("return_url", request.get_full_path())
             user_oauth = django_util.UserOAuth2(request, scopes, return_url)
-            setattr(request, django_util.oauth2_settings.request_prefix,
-                    user_oauth)
+            setattr(request, django_util.oauth2_settings.request_prefix, user_oauth)
             return wrapped_function(request, *args, **kwargs)
 
         return enabled_wrapper

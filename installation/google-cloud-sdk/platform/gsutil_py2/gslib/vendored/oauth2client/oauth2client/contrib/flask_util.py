@@ -178,7 +178,7 @@ try:
     from flask import url_for
     import markupsafe
 except ImportError:  # pragma: NO COVER
-    raise ImportError('The flask utilities require flask 0.9 or newer.')
+    raise ImportError("The flask utilities require flask 0.9 or newer.")
 
 import six.moves.http_client as httplib
 
@@ -188,17 +188,16 @@ from oauth2client import transport
 from oauth2client.contrib import dictionary_storage
 
 
-_DEFAULT_SCOPES = ('email',)
-_CREDENTIALS_KEY = 'google_oauth2_credentials'
-_FLOW_KEY = 'google_oauth2_flow_{0}'
-_CSRF_KEY = 'google_oauth2_csrf_token'
+_DEFAULT_SCOPES = ("email",)
+_CREDENTIALS_KEY = "google_oauth2_credentials"
+_FLOW_KEY = "google_oauth2_flow_{0}"
+_CSRF_KEY = "google_oauth2_csrf_token"
 
 
 def _get_flow_for_token(csrf_token):
     """Retrieves the flow instance associated with a given CSRF token from
     the Flask session."""
-    flow_pickle = session.pop(
-        _FLOW_KEY.format(csrf_token), None)
+    flow_pickle = session.pop(_FLOW_KEY.format(csrf_token), None)
 
     if flow_pickle is None:
         return None
@@ -232,9 +231,17 @@ class UserOAuth2(object):
         if app is not None:
             self.init_app(app, *args, **kwargs)
 
-    def init_app(self, app, scopes=None, client_secrets_file=None,
-                 client_id=None, client_secret=None, authorize_callback=None,
-                 storage=None, **kwargs):
+    def init_app(
+        self,
+        app,
+        scopes=None,
+        client_secrets_file=None,
+        client_id=None,
+        client_secret=None,
+        authorize_callback=None,
+        storage=None,
+        **kwargs
+    ):
         """Initialize this extension for the given app.
 
         Arguments:
@@ -262,11 +269,12 @@ class UserOAuth2(object):
 
         if storage is None:
             storage = dictionary_storage.DictionaryStorage(
-                session, key=_CREDENTIALS_KEY)
+                session, key=_CREDENTIALS_KEY
+            )
         self.storage = storage
 
         if scopes is None:
-            scopes = app.config.get('GOOGLE_OAUTH2_SCOPES', _DEFAULT_SCOPES)
+            scopes = app.config.get("GOOGLE_OAUTH2_SCOPES", _DEFAULT_SCOPES)
         self.scopes = scopes
 
         self._load_config(client_secrets_file, client_id, client_secret)
@@ -294,33 +302,36 @@ class UserOAuth2(object):
             self._load_client_secrets(client_secrets_file)
             return
 
-        if 'GOOGLE_OAUTH2_CLIENT_SECRETS_FILE' in self.app.config:
+        if "GOOGLE_OAUTH2_CLIENT_SECRETS_FILE" in self.app.config:
             self._load_client_secrets(
-                self.app.config['GOOGLE_OAUTH2_CLIENT_SECRETS_FILE'])
+                self.app.config["GOOGLE_OAUTH2_CLIENT_SECRETS_FILE"]
+            )
             return
 
         try:
             self.client_id, self.client_secret = (
-                self.app.config['GOOGLE_OAUTH2_CLIENT_ID'],
-                self.app.config['GOOGLE_OAUTH2_CLIENT_SECRET'])
+                self.app.config["GOOGLE_OAUTH2_CLIENT_ID"],
+                self.app.config["GOOGLE_OAUTH2_CLIENT_SECRET"],
+            )
         except KeyError:
             raise ValueError(
-                'OAuth2 configuration could not be found. Either specify the '
-                'client_secrets_file or client_id and client_secret or set '
-                'the app configuration variables '
-                'GOOGLE_OAUTH2_CLIENT_SECRETS_FILE or '
-                'GOOGLE_OAUTH2_CLIENT_ID and GOOGLE_OAUTH2_CLIENT_SECRET.')
+                "OAuth2 configuration could not be found. Either specify the "
+                "client_secrets_file or client_id and client_secret or set "
+                "the app configuration variables "
+                "GOOGLE_OAUTH2_CLIENT_SECRETS_FILE or "
+                "GOOGLE_OAUTH2_CLIENT_ID and GOOGLE_OAUTH2_CLIENT_SECRET."
+            )
 
     def _load_client_secrets(self, filename):
         """Loads client secrets from the given filename."""
         client_type, client_info = clientsecrets.loadfile(filename)
         if client_type != clientsecrets.TYPE_WEB:
             raise ValueError(
-                'The flow specified in {0} is not supported.'.format(
-                    client_type))
+                "The flow specified in {0} is not supported.".format(client_type)
+            )
 
-        self.client_id = client_info['client_id']
-        self.client_secret = client_info['client_secret']
+        self.client_id = client_info["client_id"]
+        self.client_secret = client_info["client_secret"]
 
     def _make_flow(self, return_url=None, **kwargs):
         """Creates a Web Server Flow"""
@@ -329,15 +340,12 @@ class UserOAuth2(object):
 
         session[_CSRF_KEY] = csrf_token
 
-        state = json.dumps({
-            'csrf_token': csrf_token,
-            'return_url': return_url
-        })
+        state = json.dumps({"csrf_token": csrf_token, "return_url": return_url})
 
         kw = self.flow_kwargs.copy()
         kw.update(kwargs)
 
-        extra_scopes = kw.pop('scopes', [])
+        extra_scopes = kw.pop("scopes", [])
         scopes = set(self.scopes).union(set(extra_scopes))
 
         flow = client.OAuth2WebServerFlow(
@@ -345,8 +353,9 @@ class UserOAuth2(object):
             client_secret=self.client_secret,
             scope=scopes,
             state=state,
-            redirect_uri=url_for('oauth2.callback', _external=True),
-            **kw)
+            redirect_uri=url_for("oauth2.callback", _external=True),
+            **kw
+        )
 
         flow_key = _FLOW_KEY.format(csrf_token)
         session[flow_key] = pickle.dumps(flow)
@@ -354,9 +363,9 @@ class UserOAuth2(object):
         return flow
 
     def _create_blueprint(self):
-        bp = Blueprint('oauth2', __name__)
-        bp.add_url_rule('/oauth2authorize', 'authorize', self.authorize_view)
-        bp.add_url_rule('/oauth2callback', 'callback', self.callback_view)
+        bp = Blueprint("oauth2", __name__)
+        bp.add_url_rule("/oauth2authorize", "authorize", self.authorize_view)
+        bp.add_url_rule("/oauth2callback", "callback", self.callback_view)
 
         return bp
 
@@ -369,11 +378,11 @@ class UserOAuth2(object):
 
         # Scopes will be passed as mutliple args, and to_dict() will only
         # return one. So, we use getlist() to get all of the scopes.
-        args['scopes'] = request.args.getlist('scopes')
+        args["scopes"] = request.args.getlist("scopes")
 
-        return_url = args.pop('return_url', None)
+        return_url = args.pop("return_url", None)
         if return_url is None:
-            return_url = request.referrer or '/'
+            return_url = request.referrer or "/"
 
         flow = self._make_flow(return_url=return_url, **args)
         auth_url = flow.step1_get_authorize_url()
@@ -386,41 +395,41 @@ class UserOAuth2(object):
         On return, exchanges the authorization code for credentials and stores
         the credentials.
         """
-        if 'error' in request.args:
+        if "error" in request.args:
             reason = request.args.get(
-                'error_description', request.args.get('error', ''))
+                "error_description", request.args.get("error", "")
+            )
             reason = markupsafe.escape(reason)
-            return ('Authorization failed: {0}'.format(reason),
-                    httplib.BAD_REQUEST)
+            return ("Authorization failed: {0}".format(reason), httplib.BAD_REQUEST)
 
         try:
-            encoded_state = request.args['state']
+            encoded_state = request.args["state"]
             server_csrf = session[_CSRF_KEY]
-            code = request.args['code']
+            code = request.args["code"]
         except KeyError:
-            return 'Invalid request', httplib.BAD_REQUEST
+            return "Invalid request", httplib.BAD_REQUEST
 
         try:
             state = json.loads(encoded_state)
-            client_csrf = state['csrf_token']
-            return_url = state['return_url']
+            client_csrf = state["csrf_token"]
+            return_url = state["return_url"]
         except (ValueError, KeyError):
-            return 'Invalid request state', httplib.BAD_REQUEST
+            return "Invalid request state", httplib.BAD_REQUEST
 
         if client_csrf != server_csrf:
-            return 'Invalid request state', httplib.BAD_REQUEST
+            return "Invalid request state", httplib.BAD_REQUEST
 
         flow = _get_flow_for_token(server_csrf)
 
         if flow is None:
-            return 'Invalid request state', httplib.BAD_REQUEST
+            return "Invalid request state", httplib.BAD_REQUEST
 
         # Exchange the auth code for credentials.
         try:
             credentials = flow.step2_exchange(code)
         except client.FlowExchangeError as exchange_error:
             current_app.logger.exception(exchange_error)
-            content = 'An error occurred: {0}'.format(exchange_error)
+            content = "An error occurred: {0}".format(exchange_error)
             return content, httplib.BAD_REQUEST
 
         # Save the credentials to the storage.
@@ -446,8 +455,9 @@ class UserOAuth2(object):
         if not self.credentials:
             return False
         # Is the access token expired? If so, do we have an refresh token?
-        elif (self.credentials.access_token_expired and
-                not self.credentials.refresh_token):
+        elif (
+            self.credentials.access_token_expired and not self.credentials.refresh_token
+        ):
             return False
         else:
             return True
@@ -463,10 +473,11 @@ class UserOAuth2(object):
         if not self.credentials:
             return None
         try:
-            return self.credentials.id_token['email']
+            return self.credentials.id_token["email"]
         except KeyError:
             current_app.logger.error(
-                'Invalid id_token {0}'.format(self.credentials.id_token))
+                "Invalid id_token {0}".format(self.credentials.id_token)
+            )
 
     @property
     def user_id(self):
@@ -479,10 +490,11 @@ class UserOAuth2(object):
         if not self.credentials:
             return None
         try:
-            return self.credentials.id_token['sub']
+            return self.credentials.id_token["sub"]
         except KeyError:
             current_app.logger.error(
-                'Invalid id_token {0}'.format(self.credentials.id_token))
+                "Invalid id_token {0}".format(self.credentials.id_token)
+            )
 
     def authorize_url(self, return_url, **kwargs):
         """Creates a URL that can be used to start the authorization flow.
@@ -493,10 +505,9 @@ class UserOAuth2(object):
 
         Any kwargs are passed into the flow constructor.
         """
-        return url_for('oauth2.authorize', return_url=return_url, **kwargs)
+        return url_for("oauth2.authorize", return_url=return_url, **kwargs)
 
-    def required(self, decorated_function=None, scopes=None,
-                 **decorator_kwargs):
+    def required(self, decorated_function=None, scopes=None, **decorator_kwargs):
         """Decorator to require OAuth2 credentials for a view.
 
         If credentials are not available for the current user, then they will
@@ -507,7 +518,7 @@ class UserOAuth2(object):
         def curry_wrapper(wrapped_function):
             @wraps(wrapped_function)
             def required_wrapper(*args, **kwargs):
-                return_url = decorator_kwargs.pop('return_url', request.url)
+                return_url = decorator_kwargs.pop("return_url", request.url)
 
                 requested_scopes = set(self.scopes)
                 if scopes is not None:
@@ -519,15 +530,15 @@ class UserOAuth2(object):
 
                 # Does the user have credentials and does the credentials have
                 # all of the needed scopes?
-                if (self.has_credentials() and
-                        self.credentials.has_scopes(requested_scopes)):
+                if self.has_credentials() and self.credentials.has_scopes(
+                    requested_scopes
+                ):
                     return wrapped_function(*args, **kwargs)
                 # Otherwise, redirect to authorization
                 else:
                     auth_url = self.authorize_url(
-                        return_url,
-                        scopes=requested_scopes,
-                        **decorator_kwargs)
+                        return_url, scopes=requested_scopes, **decorator_kwargs
+                    )
 
                     return redirect(auth_url)
 
@@ -552,6 +563,5 @@ class UserOAuth2(object):
             ValueError if no credentials are available.
         """
         if not self.credentials:
-            raise ValueError('No credentials available.')
-        return self.credentials.authorize(
-            transport.get_http_object(*args, **kwargs))
+            raise ValueError("No credentials available.")
+        return self.credentials.authorize(transport.get_http_object(*args, **kwargs))

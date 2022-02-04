@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 from boto.mws.connection import MWSConnection
-from boto.mws.response import (ResponseFactory, ResponseElement, Element,
-                               MemberList, ElementList, SimpleList)
+from boto.mws.response import (
+    ResponseFactory,
+    ResponseElement,
+    Element,
+    MemberList,
+    ElementList,
+    SimpleList,
+)
 
 
 from tests.unit import AWSMockServiceTestCase
@@ -33,12 +39,12 @@ class TestMWSResponse(AWSMockServiceTestCase):
                   </Test9Result></Test9Response>"""
         obj = self.check_issue(Test9Result, text)
         Item = obj._result.Item
-        useful = lambda x: not x[0].startswith('_')
+        useful = lambda x: not x[0].startswith("_")
         nest = dict(filter(useful, Item.Nest.__dict__.items()))
-        self.assertEqual(nest, dict(Zip='Zap', Zam='Zoo'))
-        useful = lambda x: not x[0].startswith('_') and not x[0] == 'Nest'
+        self.assertEqual(nest, dict(Zip="Zap", Zam="Zoo"))
+        useful = lambda x: not x[0].startswith("_") and not x[0] == "Nest"
         item = dict(filter(useful, Item.__dict__.items()))
-        self.assertEqual(item, dict(Foo='Bar', Bif='Bam', Zoom=None))
+        self.assertEqual(item, dict(Foo="Bar", Bif="Bam", Zoom=None))
 
     def test_parsing_member_list_specification(self):
         class Test8extra(ResponseElement):
@@ -73,8 +79,7 @@ class TestMWSResponse(AWSMockServiceTestCase):
 
     def test_parsing_nested_lists(self):
         class Test7Result(ResponseElement):
-            Item = MemberList(Nest=MemberList(),
-                              List=ElementList(Simple=SimpleList()))
+            Item = MemberList(Nest=MemberList(), List=ElementList(Simple=SimpleList()))
 
         text = b"""<Test7Response><Test7Result>
                   <Item>
@@ -124,20 +129,20 @@ class TestMWSResponse(AWSMockServiceTestCase):
         nests = [z.Nest for z in filter(lambda x: x.Nest, item)]
         self.assertSequenceEqual(
             [[y.Data for y in nest] for nest in nests],
-            [[u'2', u'4', u'6'], [u'1', u'3', u'5']],
+            [[u"2", u"4", u"6"], [u"1", u"3", u"5"]],
         )
         self.assertSequenceEqual(
             [element.Simple for element in item[1].List],
-            [[u'4', u'5', u'6'], [u'7', u'8', u'9']],
+            [[u"4", u"5", u"6"], [u"7", u"8", u"9"]],
         )
         self.assertSequenceEqual(
             item[-1].List[0].Simple,
-            ['1', '2', '3'],
+            ["1", "2", "3"],
         )
         self.assertEqual(item[-1].List[1].Simple, [])
         self.assertSequenceEqual(
             [e.Value for e in obj._result.Item],
-            ['One', 'Two', 'Six'],
+            ["One", "Two", "Six"],
         )
 
     def test_parsing_member_list(self):
@@ -156,9 +161,9 @@ class TestMWSResponse(AWSMockServiceTestCase):
         obj = self.check_issue(Test6Result, text)
         self.assertSequenceEqual(
             [e.Value for e in obj._result.Item],
-            ['One', 'Two', 'Six'],
+            ["One", "Two", "Six"],
         )
-        self.assertTrue(obj._result.Item[1].Error == 'Four')
+        self.assertTrue(obj._result.Item[1].Error == "Four")
         with self.assertRaises(AttributeError) as e:
             obj._result.Item[2].Error
 
@@ -193,9 +198,9 @@ class TestMWSResponse(AWSMockServiceTestCase):
         </Test1Result></Test1Response>"""
         obj = self.check_issue(Test1Result, text)
         self.assertTrue(len(obj._result.Item) == 3)
-        elements = lambda x: getattr(x, 'Foo', getattr(x, 'Zip', '?'))
+        elements = lambda x: getattr(x, "Foo", getattr(x, "Zip", "?"))
         elements = list(map(elements, obj._result.Item))
-        self.assertSequenceEqual(elements, ['Bar', 'Bif', 'Baz'])
+        self.assertSequenceEqual(elements, ["Bar", "Bif", "Baz"])
 
     def test_parsing_missing_lists(self):
         class Test2Result(ResponseElement):
@@ -216,13 +221,13 @@ class TestMWSResponse(AWSMockServiceTestCase):
             <Item>Baz</Item>
         </Test3Result></Test3Response>"""
         obj = self.check_issue(Test3Result, text)
-        self.assertSequenceEqual(obj._result.Item, ['Bar', 'Bif', 'Baz'])
+        self.assertSequenceEqual(obj._result.Item, ["Bar", "Bif", "Baz"])
 
     def check_issue(self, klass, text):
-        action = klass.__name__[:-len('Result')]
+        action = klass.__name__[: -len("Result")]
         factory = ResponseFactory(scopes=[{klass.__name__: klass}])
         parser = factory(action, connection=self.service_connection)
-        return self.service_connection._parse_response(parser, 'text/xml', text)
+        return self.service_connection._parse_response(parser, "text/xml", text)
 
 
 if __name__ == "__main__":

@@ -29,43 +29,43 @@ from gslib.tests.util import unittest
 
 from six import add_move, MovedModule
 
-add_move(MovedModule('mock', 'mock', 'unittest.mock'))
+add_move(MovedModule("mock", "mock", "unittest.mock"))
 from six.moves import mock
 
 
 class TestGcsJsonApi(testcase.GsUtilUnitTestCase):
-  """Test logic for interacting with GCS JSON API."""
+    """Test logic for interacting with GCS JSON API."""
 
-  @mock.patch.object(context_config, 'get_context_config')
-  def testSetsHostBaseToMtlsIfClientCertificateEnabled(self,
-                                                       mock_get_context_config):
-    mock_context_config = mock.Mock()
-    mock_context_config.use_client_certificate = True
-    mock_get_context_config.return_value = mock_context_config
+    @mock.patch.object(context_config, "get_context_config")
+    def testSetsHostBaseToMtlsIfClientCertificateEnabled(self, mock_get_context_config):
+        mock_context_config = mock.Mock()
+        mock_context_config.use_client_certificate = True
+        mock_get_context_config.return_value = mock_context_config
 
-    with SetBotoConfigForTest([('Credentials', 'gs_json_host', None),
-                               ('Credentials', 'gs_host', None)]):
-      client = gcs_json_api.GcsJsonApi(None, None, None, None)
-      self.assertEqual(client.host_base, gcs_json_api.MTLS_HOST)
+        with SetBotoConfigForTest(
+            [("Credentials", "gs_json_host", None), ("Credentials", "gs_host", None)]
+        ):
+            client = gcs_json_api.GcsJsonApi(None, None, None, None)
+            self.assertEqual(client.host_base, gcs_json_api.MTLS_HOST)
 
-  @mock.patch.object(context_config, 'get_context_config')
-  def testRaisesErrorIfConflictingJsonAndMtlsHost(self,
-                                                  mock_get_context_config):
-    mock_context_config = mock.Mock()
-    mock_context_config.use_client_certificate = True
-    mock_get_context_config.return_value = mock_context_config
+    @mock.patch.object(context_config, "get_context_config")
+    def testRaisesErrorIfConflictingJsonAndMtlsHost(self, mock_get_context_config):
+        mock_context_config = mock.Mock()
+        mock_context_config.use_client_certificate = True
+        mock_get_context_config.return_value = mock_context_config
 
-    with SetBotoConfigForTest([('Credentials', 'gs_json_host', 'host')]):
-      with self.assertRaises(cloud_api.ArgumentException):
-        gcs_json_api.GcsJsonApi(None, None, None, None)
+        with SetBotoConfigForTest([("Credentials", "gs_json_host", "host")]):
+            with self.assertRaises(cloud_api.ArgumentException):
+                gcs_json_api.GcsJsonApi(None, None, None, None)
 
-  def testSetsCustomJsonHost(self):
-    with SetBotoConfigForTest([('Credentials', 'gs_json_host', 'host')]):
-      client = gcs_json_api.GcsJsonApi(None, None, None, None)
-      self.assertEqual(client.host_base, 'host')
+    def testSetsCustomJsonHost(self):
+        with SetBotoConfigForTest([("Credentials", "gs_json_host", "host")]):
+            client = gcs_json_api.GcsJsonApi(None, None, None, None)
+            self.assertEqual(client.host_base, "host")
 
-  def testSetsDefaultHost(self):
-    with SetBotoConfigForTest([('Credentials', 'gs_json_host', None),
-                               ('Credentials', 'gs_host', None)]):
-      client = gcs_json_api.GcsJsonApi(None, None, None, None)
-      self.assertEqual(client.host_base, gcs_json_api.DEFAULT_HOST)
+    def testSetsDefaultHost(self):
+        with SetBotoConfigForTest(
+            [("Credentials", "gs_json_host", None), ("Credentials", "gs_host", None)]
+        ):
+            client = gcs_json_api.GcsJsonApi(None, None, None, None)
+            self.assertEqual(client.host_base, gcs_json_api.DEFAULT_HOST)

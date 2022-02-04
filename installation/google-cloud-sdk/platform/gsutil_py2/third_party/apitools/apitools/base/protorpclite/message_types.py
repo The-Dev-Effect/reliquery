@@ -26,9 +26,9 @@ from apitools.base.protorpclite import messages
 from apitools.base.protorpclite import util
 
 __all__ = [
-    'DateTimeField',
-    'DateTimeMessage',
-    'VoidMessage',
+    "DateTimeField",
+    "DateTimeMessage",
+    "VoidMessage",
 ]
 
 
@@ -43,6 +43,7 @@ class DateTimeMessage(messages.Message):
       milliseconds: Milliseconds since Jan 1st 1970 local time.
       time_zone_offset: Optional time zone offset, in minutes from UTC.
     """
+
     milliseconds = messages.IntegerField(1, required=True)
     time_zone_offset = messages.IntegerField(2)
 
@@ -60,12 +61,8 @@ class DateTimeField(messages.MessageField):
     message_type = DateTimeMessage
 
     @util.positional(3)
-    def __init__(self,
-                 number,
-                 **kwargs):
-        super(DateTimeField, self).__init__(self.message_type,
-                                            number,
-                                            **kwargs)
+    def __init__(self, number, **kwargs):
+        super(DateTimeField, self).__init__(self.message_type, number, **kwargs)
 
     def value_from_message(self, message):
         """Convert DateTimeMessage to a datetime.
@@ -78,18 +75,15 @@ class DateTimeField(messages.MessageField):
         """
         message = super(DateTimeField, self).value_from_message(message)
         if message.time_zone_offset is None:
-            return datetime.datetime.utcfromtimestamp(
-                message.milliseconds / 1000.0)
+            return datetime.datetime.utcfromtimestamp(message.milliseconds / 1000.0)
 
         # Need to subtract the time zone offset, because when we call
         # datetime.fromtimestamp, it will add the time zone offset to the
         # value we pass.
-        milliseconds = (message.milliseconds -
-                        60000 * message.time_zone_offset)
+        milliseconds = message.milliseconds - 60000 * message.time_zone_offset
 
         timezone = util.TimeZoneOffset(message.time_zone_offset)
-        return datetime.datetime.fromtimestamp(milliseconds / 1000.0,
-                                               tz=timezone)
+        return datetime.datetime.fromtimestamp(milliseconds / 1000.0, tz=timezone)
 
     def value_to_message(self, value):
         value = super(DateTimeField, self).value_to_message(value)
@@ -99,11 +93,11 @@ class DateTimeField(messages.MessageField):
             time_zone_offset = 0
             local_epoch = datetime.datetime.utcfromtimestamp(0)
         else:
-            time_zone_offset = util.total_seconds(
-                value.tzinfo.utcoffset(value))
+            time_zone_offset = util.total_seconds(value.tzinfo.utcoffset(value))
             # Determine Jan 1, 1970 local time.
-            local_epoch = datetime.datetime.fromtimestamp(-time_zone_offset,
-                                                          tz=value.tzinfo)
+            local_epoch = datetime.datetime.fromtimestamp(
+                -time_zone_offset, tz=value.tzinfo
+            )
         delta = value - local_epoch
 
         # Create and fill in the DateTimeMessage, including time zone if
@@ -114,6 +108,7 @@ class DateTimeField(messages.MessageField):
             utc_offset = value.tzinfo.utcoffset(value)
             if utc_offset is not None:
                 message.time_zone_offset = int(
-                    util.total_seconds(value.tzinfo.utcoffset(value)) / 60)
+                    util.total_seconds(value.tzinfo.utcoffset(value)) / 60
+                )
 
         return message

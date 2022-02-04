@@ -4,7 +4,7 @@ from tests.unit import AWSMockServiceTestCase
 
 from boto.vpc import VPCConnection, VpnConnection
 
-DESCRIBE_VPNCONNECTIONS = b'''<?xml version="1.0" encoding="UTF-8"?>
+DESCRIBE_VPNCONNECTIONS = b"""<?xml version="1.0" encoding="UTF-8"?>
 <DescribeVpnConnectionsResponse xmlns="http://ec2.amazonaws.com/doc/2013-02-01/">
     <requestId>12345678-asdf-ghjk-zxcv-0987654321nb</requestId>
     <vpnConnectionSet>
@@ -87,7 +87,7 @@ DESCRIBE_VPNCONNECTIONS = b'''<?xml version="1.0" encoding="UTF-8"?>
             </routes>
         </item>
     </vpnConnectionSet>
-</DescribeVpnConnectionsResponse>'''
+</DescribeVpnConnectionsResponse>"""
 
 
 class TestDescribeVPNConnections(AWSMockServiceTestCase):
@@ -101,35 +101,44 @@ class TestDescribeVPNConnections(AWSMockServiceTestCase):
         self.set_http_response(status_code=200)
 
         api_response = self.service_connection.get_all_vpn_connections(
-            ['vpn-12qw34er56ty', 'vpn-qwerty12'], filters=[('state', ['pending', 'available'])])
-        self.assert_request_parameters({
-            'Action': 'DescribeVpnConnections',
-            'VpnConnectionId.1': 'vpn-12qw34er56ty',
-            'VpnConnectionId.2': 'vpn-qwerty12',
-            'Filter.1.Name': 'state',
-            'Filter.1.Value.1': 'pending',
-            'Filter.1.Value.2': 'available'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp',
-                                  'Version'])
+            ["vpn-12qw34er56ty", "vpn-qwerty12"],
+            filters=[("state", ["pending", "available"])],
+        )
+        self.assert_request_parameters(
+            {
+                "Action": "DescribeVpnConnections",
+                "VpnConnectionId.1": "vpn-12qw34er56ty",
+                "VpnConnectionId.2": "vpn-qwerty12",
+                "Filter.1.Name": "state",
+                "Filter.1.Value.1": "pending",
+                "Filter.1.Value.2": "available",
+            },
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
         self.assertEqual(len(api_response), 2)
 
         vpn0 = api_response[0]
-        self.assertEqual(vpn0.type, 'ipsec.1')
-        self.assertEqual(vpn0.customer_gateway_id, 'cgw-1234qwe9')
-        self.assertEqual(vpn0.vpn_gateway_id, 'vgw-lkjh1234')
+        self.assertEqual(vpn0.type, "ipsec.1")
+        self.assertEqual(vpn0.customer_gateway_id, "cgw-1234qwe9")
+        self.assertEqual(vpn0.vpn_gateway_id, "vgw-lkjh1234")
         self.assertEqual(len(vpn0.tunnels), 2)
-        self.assertDictEqual(vpn0.tags, {'Name': 'VPN 1'})
+        self.assertDictEqual(vpn0.tags, {"Name": "VPN 1"})
 
         vpn1 = api_response[1]
-        self.assertEqual(vpn1.state, 'pending')
+        self.assertEqual(vpn1.state, "pending")
         self.assertEqual(len(vpn1.static_routes), 1)
         self.assertTrue(vpn1.options.static_routes_only)
-        self.assertEqual(vpn1.tunnels[0].status, 'UP')
-        self.assertEqual(vpn1.tunnels[1].status, 'UP')
+        self.assertEqual(vpn1.tunnels[0].status, "UP")
+        self.assertEqual(vpn1.tunnels[1].status, "UP")
         self.assertDictEqual(vpn1.tags, {})
-        self.assertEqual(vpn1.static_routes[0].source, 'static')
-        self.assertEqual(vpn1.static_routes[0].state, 'pending')
+        self.assertEqual(vpn1.static_routes[0].source, "static")
+        self.assertEqual(vpn1.static_routes[0].state, "pending")
 
 
 class TestCreateVPNConnection(AWSMockServiceTestCase):
@@ -159,19 +168,27 @@ class TestCreateVPNConnection(AWSMockServiceTestCase):
     def test_create_vpn_connection(self):
         self.set_http_response(status_code=200)
         api_response = self.service_connection.create_vpn_connection(
-            'ipsec.1', 'cgw-b4dc3961', 'vgw-8db04f81', static_routes_only=True)
-        self.assert_request_parameters({
-            'Action': 'CreateVpnConnection',
-            'Type': 'ipsec.1',
-            'CustomerGatewayId': 'cgw-b4dc3961',
-            'VpnGatewayId': 'vgw-8db04f81',
-            'Options.StaticRoutesOnly': 'true'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp',
-                                  'Version'])
+            "ipsec.1", "cgw-b4dc3961", "vgw-8db04f81", static_routes_only=True
+        )
+        self.assert_request_parameters(
+            {
+                "Action": "CreateVpnConnection",
+                "Type": "ipsec.1",
+                "CustomerGatewayId": "cgw-b4dc3961",
+                "VpnGatewayId": "vgw-8db04f81",
+                "Options.StaticRoutesOnly": "true",
+            },
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
         self.assertIsInstance(api_response, VpnConnection)
-        self.assertEquals(api_response.id, 'vpn-83ad48ea')
-        self.assertEquals(api_response.customer_gateway_id, 'cgw-b4dc3961')
+        self.assertEquals(api_response.id, "vpn-83ad48ea")
+        self.assertEquals(api_response.customer_gateway_id, "cgw-b4dc3961")
         self.assertEquals(api_response.options.static_routes_only, True)
 
 
@@ -189,13 +206,17 @@ class TestDeleteVPNConnection(AWSMockServiceTestCase):
 
     def test_delete_vpn_connection(self):
         self.set_http_response(status_code=200)
-        api_response = self.service_connection.delete_vpn_connection('vpn-44a8938f')
-        self.assert_request_parameters({
-            'Action': 'DeleteVpnConnection',
-            'VpnConnectionId': 'vpn-44a8938f'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp',
-                                  'Version'])
+        api_response = self.service_connection.delete_vpn_connection("vpn-44a8938f")
+        self.assert_request_parameters(
+            {"Action": "DeleteVpnConnection", "VpnConnectionId": "vpn-44a8938f"},
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
         self.assertEquals(api_response, True)
 
 
@@ -214,14 +235,22 @@ class TestCreateVPNConnectionRoute(AWSMockServiceTestCase):
     def test_create_vpn_connection_route(self):
         self.set_http_response(status_code=200)
         api_response = self.service_connection.create_vpn_connection_route(
-            '11.12.0.0/16', 'vpn-83ad48ea')
-        self.assert_request_parameters({
-            'Action': 'CreateVpnConnectionRoute',
-            'DestinationCidrBlock': '11.12.0.0/16',
-            'VpnConnectionId': 'vpn-83ad48ea'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp',
-                                  'Version'])
+            "11.12.0.0/16", "vpn-83ad48ea"
+        )
+        self.assert_request_parameters(
+            {
+                "Action": "CreateVpnConnectionRoute",
+                "DestinationCidrBlock": "11.12.0.0/16",
+                "VpnConnectionId": "vpn-83ad48ea",
+            },
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
         self.assertEquals(api_response, True)
 
 
@@ -240,15 +269,24 @@ class TestDeleteVPNConnectionRoute(AWSMockServiceTestCase):
     def test_delete_vpn_connection_route(self):
         self.set_http_response(status_code=200)
         api_response = self.service_connection.delete_vpn_connection_route(
-            '11.12.0.0/16', 'vpn-83ad48ea')
-        self.assert_request_parameters({
-            'Action': 'DeleteVpnConnectionRoute',
-            'DestinationCidrBlock': '11.12.0.0/16',
-            'VpnConnectionId': 'vpn-83ad48ea'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp',
-                                  'Version'])
+            "11.12.0.0/16", "vpn-83ad48ea"
+        )
+        self.assert_request_parameters(
+            {
+                "Action": "DeleteVpnConnectionRoute",
+                "DestinationCidrBlock": "11.12.0.0/16",
+                "VpnConnectionId": "vpn-83ad48ea",
+            },
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
         self.assertEquals(api_response, True)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

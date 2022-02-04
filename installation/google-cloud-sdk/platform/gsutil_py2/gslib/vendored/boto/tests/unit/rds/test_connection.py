@@ -32,6 +32,7 @@ from boto.rds.logfile import LogFile, LogFileObject
 
 import xml.sax.saxutils as saxutils
 
+
 class TestRDSConnection(AWSMockServiceTestCase):
     connection_class = RDSConnection
 
@@ -134,54 +135,56 @@ class TestRDSConnection(AWSMockServiceTestCase):
 
     def test_get_all_db_instances(self):
         self.set_http_response(status_code=200)
-        response = self.service_connection.get_all_dbinstances('instance_id')
+        response = self.service_connection.get_all_dbinstances("instance_id")
         self.assertEqual(len(response), 1)
-        self.assert_request_parameters({
-            'Action': 'DescribeDBInstances',
-            'DBInstanceIdentifier': 'instance_id',
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "DescribeDBInstances",
+                "DBInstanceIdentifier": "instance_id",
+            },
+            ignore_params_values=["Version"],
+        )
         db = response[0]
-        self.assertEqual(db.id, 'mydbinstance2')
-        self.assertEqual(db.create_time, '2012-10-03T22:01:51.047Z')
-        self.assertEqual(db.engine, 'mysql')
-        self.assertEqual(db.status, 'backing-up')
+        self.assertEqual(db.id, "mydbinstance2")
+        self.assertEqual(db.create_time, "2012-10-03T22:01:51.047Z")
+        self.assertEqual(db.engine, "mysql")
+        self.assertEqual(db.status, "backing-up")
         self.assertEqual(db.allocated_storage, 200)
         self.assertEqual(
             db.endpoint,
-            (u'mydbinstance2.c0hjqouvn9mf.us-west-2.rds.amazonaws.com', 3306))
-        self.assertEqual(db.instance_class, 'db.m1.large')
-        self.assertEqual(db.master_username, 'awsuser')
-        self.assertEqual(db.availability_zone, 'us-west-2b')
+            (u"mydbinstance2.c0hjqouvn9mf.us-west-2.rds.amazonaws.com", 3306),
+        )
+        self.assertEqual(db.instance_class, "db.m1.large")
+        self.assertEqual(db.master_username, "awsuser")
+        self.assertEqual(db.availability_zone, "us-west-2b")
         self.assertEqual(db.backup_retention_period, 1)
-        self.assertEqual(db.preferred_backup_window, '10:30-11:00')
-        self.assertEqual(db.preferred_maintenance_window,
-                         'wed:06:30-wed:07:00')
+        self.assertEqual(db.preferred_backup_window, "10:30-11:00")
+        self.assertEqual(db.preferred_maintenance_window, "wed:06:30-wed:07:00")
         self.assertEqual(db.latest_restorable_time, None)
         self.assertEqual(db.multi_az, False)
         self.assertEqual(db.iops, 2000)
         self.assertEqual(db.pending_modified_values, {})
 
-        self.assertEqual(db.parameter_group.name,
-                         'default.mysql5.5')
+        self.assertEqual(db.parameter_group.name, "default.mysql5.5")
         self.assertEqual(db.parameter_group.description, None)
         self.assertEqual(db.parameter_group.engine, None)
 
         self.assertEqual(db.security_group.owner_id, None)
-        self.assertEqual(db.security_group.name, 'default')
+        self.assertEqual(db.security_group.name, "default")
         self.assertEqual(db.security_group.description, None)
         self.assertEqual(db.security_group.ec2_groups, [])
         self.assertEqual(db.security_group.ip_ranges, [])
         self.assertEqual(len(db.status_infos), 1)
-        self.assertEqual(db.status_infos[0].message, '')
+        self.assertEqual(db.status_infos[0].message, "")
         self.assertEqual(db.status_infos[0].normal, True)
-        self.assertEqual(db.status_infos[0].status, 'replicating')
-        self.assertEqual(db.status_infos[0].status_type, 'read replication')
-        self.assertEqual(db.vpc_security_groups[0].status, 'active')
-        self.assertEqual(db.vpc_security_groups[0].vpc_group, 'sg-1')
-        self.assertEqual(db.license_model, 'general-public-license')
-        self.assertEqual(db.engine_version, '5.5.27')
+        self.assertEqual(db.status_infos[0].status, "replicating")
+        self.assertEqual(db.status_infos[0].status_type, "read replication")
+        self.assertEqual(db.vpc_security_groups[0].status, "active")
+        self.assertEqual(db.vpc_security_groups[0].vpc_group, "sg-1")
+        self.assertEqual(db.license_model, "general-public-license")
+        self.assertEqual(db.engine_version, "5.5.27")
         self.assertEqual(db.auto_minor_version_upgrade, True)
-        self.assertEqual(db.subnet_group.name, 'mydbsubnetgroup')
+        self.assertEqual(db.subnet_group.name, "mydbsubnetgroup")
 
 
 class TestRDSCCreateDBInstance(AWSMockServiceTestCase):
@@ -264,42 +267,44 @@ class TestRDSCCreateDBInstance(AWSMockServiceTestCase):
     def test_create_db_instance_param_group_name(self):
         self.set_http_response(status_code=200)
         db = self.service_connection.create_dbinstance(
-            'SimCoProd01',
+            "SimCoProd01",
             10,
-            'db.m1.large',
-            'master',
-            'Password01',
-            param_group='default.mysql5.1',
-            db_subnet_group_name='dbSubnetgroup01',
-            backup_retention_period=0)
+            "db.m1.large",
+            "master",
+            "Password01",
+            param_group="default.mysql5.1",
+            db_subnet_group_name="dbSubnetgroup01",
+            backup_retention_period=0,
+        )
 
-        self.assert_request_parameters({
-            'Action': 'CreateDBInstance',
-            'AllocatedStorage': 10,
-            'AutoMinorVersionUpgrade': 'true',
-            'BackupRetentionPeriod': 0,
-            'DBInstanceClass': 'db.m1.large',
-            'DBInstanceIdentifier': 'SimCoProd01',
-            'DBParameterGroupName': 'default.mysql5.1',
-            'DBSubnetGroupName': 'dbSubnetgroup01',
-            'Engine': 'MySQL5.1',
-            'MasterUsername': 'master',
-            'MasterUserPassword': 'Password01',
-            'Port': 3306
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "CreateDBInstance",
+                "AllocatedStorage": 10,
+                "AutoMinorVersionUpgrade": "true",
+                "BackupRetentionPeriod": 0,
+                "DBInstanceClass": "db.m1.large",
+                "DBInstanceIdentifier": "SimCoProd01",
+                "DBParameterGroupName": "default.mysql5.1",
+                "DBSubnetGroupName": "dbSubnetgroup01",
+                "Engine": "MySQL5.1",
+                "MasterUsername": "master",
+                "MasterUserPassword": "Password01",
+                "Port": 3306,
+            },
+            ignore_params_values=["Version"],
+        )
 
-        self.assertEqual(db.id, 'simcoprod01')
-        self.assertEqual(db.engine, 'mysql')
-        self.assertEqual(db.status, 'creating')
+        self.assertEqual(db.id, "simcoprod01")
+        self.assertEqual(db.engine, "mysql")
+        self.assertEqual(db.status, "creating")
         self.assertEqual(db.allocated_storage, 10)
-        self.assertEqual(db.instance_class, 'db.m1.large')
-        self.assertEqual(db.master_username, 'master')
+        self.assertEqual(db.instance_class, "db.m1.large")
+        self.assertEqual(db.master_username, "master")
         self.assertEqual(db.multi_az, False)
-        self.assertEqual(db.pending_modified_values,
-            {'MasterUserPassword': '****'})
+        self.assertEqual(db.pending_modified_values, {"MasterUserPassword": "****"})
 
-        self.assertEqual(db.parameter_group.name,
-                         'default.mysql5.1')
+        self.assertEqual(db.parameter_group.name, "default.mysql5.1")
         self.assertEqual(db.parameter_group.description, None)
         self.assertEqual(db.parameter_group.engine, None)
         self.assertEqual(db.backup_retention_period, 0)
@@ -307,41 +312,43 @@ class TestRDSCCreateDBInstance(AWSMockServiceTestCase):
     def test_create_db_instance_param_group_instance(self):
         self.set_http_response(status_code=200)
         param_group = ParameterGroup()
-        param_group.name = 'default.mysql5.1'
+        param_group.name = "default.mysql5.1"
         db = self.service_connection.create_dbinstance(
-            'SimCoProd01',
+            "SimCoProd01",
             10,
-            'db.m1.large',
-            'master',
-            'Password01',
+            "db.m1.large",
+            "master",
+            "Password01",
             param_group=param_group,
-            db_subnet_group_name='dbSubnetgroup01')
+            db_subnet_group_name="dbSubnetgroup01",
+        )
 
-        self.assert_request_parameters({
-            'Action': 'CreateDBInstance',
-            'AllocatedStorage': 10,
-            'AutoMinorVersionUpgrade': 'true',
-            'DBInstanceClass': 'db.m1.large',
-            'DBInstanceIdentifier': 'SimCoProd01',
-            'DBParameterGroupName': 'default.mysql5.1',
-            'DBSubnetGroupName': 'dbSubnetgroup01',
-            'Engine': 'MySQL5.1',
-            'MasterUsername': 'master',
-            'MasterUserPassword': 'Password01',
-            'Port': 3306,
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "CreateDBInstance",
+                "AllocatedStorage": 10,
+                "AutoMinorVersionUpgrade": "true",
+                "DBInstanceClass": "db.m1.large",
+                "DBInstanceIdentifier": "SimCoProd01",
+                "DBParameterGroupName": "default.mysql5.1",
+                "DBSubnetGroupName": "dbSubnetgroup01",
+                "Engine": "MySQL5.1",
+                "MasterUsername": "master",
+                "MasterUserPassword": "Password01",
+                "Port": 3306,
+            },
+            ignore_params_values=["Version"],
+        )
 
-        self.assertEqual(db.id, 'simcoprod01')
-        self.assertEqual(db.engine, 'mysql')
-        self.assertEqual(db.status, 'creating')
+        self.assertEqual(db.id, "simcoprod01")
+        self.assertEqual(db.engine, "mysql")
+        self.assertEqual(db.status, "creating")
         self.assertEqual(db.allocated_storage, 10)
-        self.assertEqual(db.instance_class, 'db.m1.large')
-        self.assertEqual(db.master_username, 'master')
+        self.assertEqual(db.instance_class, "db.m1.large")
+        self.assertEqual(db.master_username, "master")
         self.assertEqual(db.multi_az, False)
-        self.assertEqual(db.pending_modified_values,
-            {'MasterUserPassword': '****'})
-        self.assertEqual(db.parameter_group.name,
-                         'default.mysql5.1')
+        self.assertEqual(db.pending_modified_values, {"MasterUserPassword": "****"})
+        self.assertEqual(db.parameter_group.name, "default.mysql5.1")
         self.assertEqual(db.parameter_group.description, None)
         self.assertEqual(db.parameter_group.engine, None)
 
@@ -395,113 +402,125 @@ class TestRDSConnectionRestoreDBInstanceFromPointInTime(AWSMockServiceTestCase):
     def test_restore_dbinstance_from_point_in_time(self):
         self.set_http_response(status_code=200)
         db = self.service_connection.restore_dbinstance_from_point_in_time(
-            'simcoprod01',
-            'restored-db',
-            True)
+            "simcoprod01", "restored-db", True
+        )
 
-        self.assert_request_parameters({
-            'Action': 'RestoreDBInstanceToPointInTime',
-            'SourceDBInstanceIdentifier': 'simcoprod01',
-            'TargetDBInstanceIdentifier': 'restored-db',
-            'UseLatestRestorableTime': 'true',
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "RestoreDBInstanceToPointInTime",
+                "SourceDBInstanceIdentifier": "simcoprod01",
+                "TargetDBInstanceIdentifier": "restored-db",
+                "UseLatestRestorableTime": "true",
+            },
+            ignore_params_values=["Version"],
+        )
 
-        self.assertEqual(db.id, 'restored-db')
-        self.assertEqual(db.engine, 'mysql')
-        self.assertEqual(db.status, 'creating')
+        self.assertEqual(db.id, "restored-db")
+        self.assertEqual(db.engine, "mysql")
+        self.assertEqual(db.status, "creating")
         self.assertEqual(db.allocated_storage, 10)
-        self.assertEqual(db.instance_class, 'db.m1.large')
-        self.assertEqual(db.master_username, 'master')
+        self.assertEqual(db.instance_class, "db.m1.large")
+        self.assertEqual(db.master_username, "master")
         self.assertEqual(db.multi_az, False)
 
-        self.assertEqual(db.parameter_group.name,
-                         'default.mysql5.1')
+        self.assertEqual(db.parameter_group.name, "default.mysql5.1")
         self.assertEqual(db.parameter_group.description, None)
         self.assertEqual(db.parameter_group.engine, None)
 
     def test_restore_dbinstance_from_point_in_time__db_subnet_group_name(self):
         self.set_http_response(status_code=200)
         db = self.service_connection.restore_dbinstance_from_point_in_time(
-            'simcoprod01',
-            'restored-db',
-            True,
-            db_subnet_group_name='dbsubnetgroup')
+            "simcoprod01", "restored-db", True, db_subnet_group_name="dbsubnetgroup"
+        )
 
-        self.assert_request_parameters({
-            'Action': 'RestoreDBInstanceToPointInTime',
-            'SourceDBInstanceIdentifier': 'simcoprod01',
-            'TargetDBInstanceIdentifier': 'restored-db',
-            'UseLatestRestorableTime': 'true',
-            'DBSubnetGroupName': 'dbsubnetgroup',
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "RestoreDBInstanceToPointInTime",
+                "SourceDBInstanceIdentifier": "simcoprod01",
+                "TargetDBInstanceIdentifier": "restored-db",
+                "UseLatestRestorableTime": "true",
+                "DBSubnetGroupName": "dbsubnetgroup",
+            },
+            ignore_params_values=["Version"],
+        )
 
     def test_create_db_instance_vpc_sg_str(self):
         self.set_http_response(status_code=200)
         vpc_security_groups = [
-            VPCSecurityGroupMembership(self.service_connection, 'active', 'sg-1'),
-            VPCSecurityGroupMembership(self.service_connection, None, 'sg-2')]
+            VPCSecurityGroupMembership(self.service_connection, "active", "sg-1"),
+            VPCSecurityGroupMembership(self.service_connection, None, "sg-2"),
+        ]
 
         db = self.service_connection.create_dbinstance(
-            'SimCoProd01',
+            "SimCoProd01",
             10,
-            'db.m1.large',
-            'master',
-            'Password01',
-            param_group='default.mysql5.1',
-            db_subnet_group_name='dbSubnetgroup01',
-            vpc_security_groups=vpc_security_groups)
+            "db.m1.large",
+            "master",
+            "Password01",
+            param_group="default.mysql5.1",
+            db_subnet_group_name="dbSubnetgroup01",
+            vpc_security_groups=vpc_security_groups,
+        )
 
-        self.assert_request_parameters({
-            'Action': 'CreateDBInstance',
-            'AllocatedStorage': 10,
-            'AutoMinorVersionUpgrade': 'true',
-            'DBInstanceClass': 'db.m1.large',
-            'DBInstanceIdentifier': 'SimCoProd01',
-            'DBParameterGroupName': 'default.mysql5.1',
-            'DBSubnetGroupName': 'dbSubnetgroup01',
-            'Engine': 'MySQL5.1',
-            'MasterUsername': 'master',
-            'MasterUserPassword': 'Password01',
-            'Port': 3306,
-            'VpcSecurityGroupIds.member.1': 'sg-1',
-            'VpcSecurityGroupIds.member.2': 'sg-2'
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "CreateDBInstance",
+                "AllocatedStorage": 10,
+                "AutoMinorVersionUpgrade": "true",
+                "DBInstanceClass": "db.m1.large",
+                "DBInstanceIdentifier": "SimCoProd01",
+                "DBParameterGroupName": "default.mysql5.1",
+                "DBSubnetGroupName": "dbSubnetgroup01",
+                "Engine": "MySQL5.1",
+                "MasterUsername": "master",
+                "MasterUserPassword": "Password01",
+                "Port": 3306,
+                "VpcSecurityGroupIds.member.1": "sg-1",
+                "VpcSecurityGroupIds.member.2": "sg-2",
+            },
+            ignore_params_values=["Version"],
+        )
 
     def test_create_db_instance_vpc_sg_obj(self):
         self.set_http_response(status_code=200)
 
-        sg1 = SecurityGroup(name='sg-1')
-        sg2 = SecurityGroup(name='sg-2')
+        sg1 = SecurityGroup(name="sg-1")
+        sg2 = SecurityGroup(name="sg-2")
 
         vpc_security_groups = [
-            VPCSecurityGroupMembership(self.service_connection, 'active', sg1.name),
-            VPCSecurityGroupMembership(self.service_connection, None, sg2.name)]
+            VPCSecurityGroupMembership(self.service_connection, "active", sg1.name),
+            VPCSecurityGroupMembership(self.service_connection, None, sg2.name),
+        ]
 
         db = self.service_connection.create_dbinstance(
-            'SimCoProd01',
+            "SimCoProd01",
             10,
-            'db.m1.large',
-            'master',
-            'Password01',
-            param_group='default.mysql5.1',
-            db_subnet_group_name='dbSubnetgroup01',
-            vpc_security_groups=vpc_security_groups)
+            "db.m1.large",
+            "master",
+            "Password01",
+            param_group="default.mysql5.1",
+            db_subnet_group_name="dbSubnetgroup01",
+            vpc_security_groups=vpc_security_groups,
+        )
 
-        self.assert_request_parameters({
-            'Action': 'CreateDBInstance',
-            'AllocatedStorage': 10,
-            'AutoMinorVersionUpgrade': 'true',
-            'DBInstanceClass': 'db.m1.large',
-            'DBInstanceIdentifier': 'SimCoProd01',
-            'DBParameterGroupName': 'default.mysql5.1',
-            'DBSubnetGroupName': 'dbSubnetgroup01',
-            'Engine': 'MySQL5.1',
-            'MasterUsername': 'master',
-            'MasterUserPassword': 'Password01',
-            'Port': 3306,
-            'VpcSecurityGroupIds.member.1': 'sg-1',
-            'VpcSecurityGroupIds.member.2': 'sg-2'
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "CreateDBInstance",
+                "AllocatedStorage": 10,
+                "AutoMinorVersionUpgrade": "true",
+                "DBInstanceClass": "db.m1.large",
+                "DBInstanceIdentifier": "SimCoProd01",
+                "DBParameterGroupName": "default.mysql5.1",
+                "DBSubnetGroupName": "dbSubnetgroup01",
+                "Engine": "MySQL5.1",
+                "MasterUsername": "master",
+                "MasterUserPassword": "Password01",
+                "Port": 3306,
+                "VpcSecurityGroupIds.member.1": "sg-1",
+                "VpcSecurityGroupIds.member.2": "sg-2",
+            },
+            ignore_params_values=["Version"],
+        )
 
 
 class TestRDSOptionGroups(AWSMockServiceTestCase):
@@ -542,15 +561,16 @@ class TestRDSOptionGroups(AWSMockServiceTestCase):
         response = self.service_connection.describe_option_groups()
         self.assertEqual(len(response), 2)
         options = response[0]
-        self.assertEqual(options.name, 'myoptiongroup')
-        self.assertEqual(options.description, 'Test option group')
-        self.assertEqual(options.engine_name, 'oracle-se1')
-        self.assertEqual(options.major_engine_version, '11.2')
+        self.assertEqual(options.name, "myoptiongroup")
+        self.assertEqual(options.description, "Test option group")
+        self.assertEqual(options.engine_name, "oracle-se1")
+        self.assertEqual(options.major_engine_version, "11.2")
         options = response[1]
-        self.assertEqual(options.name, 'default:oracle-se1-11-2')
-        self.assertEqual(options.description, 'Default Option Group.')
-        self.assertEqual(options.engine_name, 'oracle-se1')
-        self.assertEqual(options.major_engine_version, '11.2')
+        self.assertEqual(options.name, "default:oracle-se1-11-2")
+        self.assertEqual(options.description, "Default Option Group.")
+        self.assertEqual(options.engine_name, "oracle-se1")
+        self.assertEqual(options.major_engine_version, "11.2")
+
 
 class TestRDSLogFile(AWSMockServiceTestCase):
     connection_class = RDSConnection
@@ -603,38 +623,51 @@ class TestRDSLogFile(AWSMockServiceTestCase):
 
     def test_get_all_logs_simple(self):
         self.set_http_response(status_code=200)
-        response = self.service_connection.get_all_logs('db1')
+        response = self.service_connection.get_all_logs("db1")
 
-        self.assert_request_parameters({
-            'Action': 'DescribeDBLogFiles',
-            'DBInstanceIdentifier': 'db1',
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "DescribeDBLogFiles",
+                "DBInstanceIdentifier": "db1",
+            },
+            ignore_params_values=["Version"],
+        )
 
         self.assertEqual(len(response), 6)
         self.assertTrue(isinstance(response[0], LogFile))
-        self.assertEqual(response[0].log_filename, 'error/mysql-error-running.log')
-        self.assertEqual(response[0].last_written, '1364403600000')
-        self.assertEqual(response[0].size, '0')
+        self.assertEqual(response[0].log_filename, "error/mysql-error-running.log")
+        self.assertEqual(response[0].last_written, "1364403600000")
+        self.assertEqual(response[0].size, "0")
 
     def test_get_all_logs_filtered(self):
         self.set_http_response(status_code=200)
-        response = self.service_connection.get_all_logs('db_instance_1', max_records=100, marker='error/mysql-error.log', file_size=2000000, filename_contains='error', file_last_written=12345678)
+        response = self.service_connection.get_all_logs(
+            "db_instance_1",
+            max_records=100,
+            marker="error/mysql-error.log",
+            file_size=2000000,
+            filename_contains="error",
+            file_last_written=12345678,
+        )
 
-        self.assert_request_parameters({
-            'Action': 'DescribeDBLogFiles',
-            'DBInstanceIdentifier': 'db_instance_1',
-            'MaxRecords': 100,
-            'Marker': 'error/mysql-error.log',
-            'FileSize': 2000000,
-            'FilenameContains': 'error',
-            'FileLastWritten': 12345678,
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "DescribeDBLogFiles",
+                "DBInstanceIdentifier": "db_instance_1",
+                "MaxRecords": 100,
+                "Marker": "error/mysql-error.log",
+                "FileSize": 2000000,
+                "FilenameContains": "error",
+                "FileLastWritten": 12345678,
+            },
+            ignore_params_values=["Version"],
+        )
 
         self.assertEqual(len(response), 6)
         self.assertTrue(isinstance(response[0], LogFile))
-        self.assertEqual(response[0].log_filename, 'error/mysql-error-running.log')
-        self.assertEqual(response[0].last_written, '1364403600000')
-        self.assertEqual(response[0].size, '0')
+        self.assertEqual(response[0].log_filename, "error/mysql-error-running.log")
+        self.assertEqual(response[0].last_written, "1364403600000")
+        self.assertEqual(response[0].size, "0")
 
 
 class TestRDSLogFileDownload(AWSMockServiceTestCase):
@@ -689,7 +722,8 @@ class TestRDSLogFileDownload(AWSMockServiceTestCase):
         super(TestRDSLogFileDownload, self).setUp()
 
     def default_body(self):
-        return """
+        return (
+            """
 <DownloadDBLogFilePortionResponse xmlns="http://rds.amazonaws.com/doc/2013-09-09/">
   <DownloadDBLogFilePortionResult>
     <Marker>0:4485</Marker>
@@ -700,38 +734,48 @@ class TestRDSLogFileDownload(AWSMockServiceTestCase):
     <RequestId>27143615-87ae-11e3-acc9-fb64b157268e</RequestId>
   </ResponseMetadata>
 </DownloadDBLogFilePortionResponse>
-        """ % self.logfile_sample
+        """
+            % self.logfile_sample
+        )
 
     def test_single_download(self):
         self.set_http_response(status_code=200)
-        response = self.service_connection.get_log_file('db1', 'foo.log')
+        response = self.service_connection.get_log_file("db1", "foo.log")
 
         self.assertTrue(isinstance(response, LogFileObject))
-        self.assertEqual(response.marker, '0:4485')
-        self.assertEqual(response.dbinstance_id, 'db1')
-        self.assertEqual(response.log_filename, 'foo.log')
+        self.assertEqual(response.marker, "0:4485")
+        self.assertEqual(response.dbinstance_id, "db1")
+        self.assertEqual(response.log_filename, "foo.log")
 
         self.assertEqual(response.data, saxutils.unescape(self.logfile_sample))
 
-        self.assert_request_parameters({
-            'Action': 'DownloadDBLogFilePortion',
-            'DBInstanceIdentifier': 'db1',
-            'LogFileName': 'foo.log',
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "DownloadDBLogFilePortion",
+                "DBInstanceIdentifier": "db1",
+                "LogFileName": "foo.log",
+            },
+            ignore_params_values=["Version"],
+        )
 
     def test_multi_args(self):
         self.set_http_response(status_code=200)
-        response = self.service_connection.get_log_file('db1', 'foo.log', marker='0:4485', number_of_lines=10)
+        response = self.service_connection.get_log_file(
+            "db1", "foo.log", marker="0:4485", number_of_lines=10
+        )
 
         self.assertTrue(isinstance(response, LogFileObject))
 
-        self.assert_request_parameters({
-            'Action': 'DownloadDBLogFilePortion',
-            'DBInstanceIdentifier': 'db1',
-            'Marker': '0:4485',
-            'NumberOfLines': 10,
-            'LogFileName': 'foo.log',
-        }, ignore_params_values=['Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "DownloadDBLogFilePortion",
+                "DBInstanceIdentifier": "db1",
+                "Marker": "0:4485",
+                "NumberOfLines": 10,
+                "LogFileName": "foo.log",
+            },
+            ignore_params_values=["Version"],
+        )
 
 
 class TestRDSOptionGroupOptions(AWSMockServiceTestCase):
@@ -770,11 +814,11 @@ class TestRDSOptionGroupOptions(AWSMockServiceTestCase):
         response = self.service_connection.describe_option_group_options()
         self.assertEqual(len(response), 1)
         options = response[0]
-        self.assertEqual(options.name, 'OEM')
-        self.assertEqual(options.description, 'Oracle Enterprise Manager')
-        self.assertEqual(options.engine_name, 'oracle-se1')
-        self.assertEqual(options.major_engine_version, '11.2')
-        self.assertEqual(options.min_minor_engine_version, '0.2.v3')
+        self.assertEqual(options.name, "OEM")
+        self.assertEqual(options.description, "Oracle Enterprise Manager")
+        self.assertEqual(options.engine_name, "oracle-se1")
+        self.assertEqual(options.major_engine_version, "11.2")
+        self.assertEqual(options.min_minor_engine_version, "0.2.v3")
         self.assertEqual(options.port_required, True)
         self.assertEqual(options.default_port, 1158)
         self.assertEqual(options.permanent, False)
@@ -782,6 +826,5 @@ class TestRDSOptionGroupOptions(AWSMockServiceTestCase):
         self.assertEqual(options.depends_on, [])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
-

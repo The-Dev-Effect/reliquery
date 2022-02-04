@@ -37,8 +37,9 @@ class Event(object):
         the event.
     """
 
-    def __init__(self, type=None, id=None, description=None,
-                 not_before=None, not_after=None):
+    def __init__(
+        self, type=None, id=None, description=None, not_before=None, not_after=None
+    ):
         self.type = type
         self.id = id
         self.description = description
@@ -46,30 +47,29 @@ class Event(object):
         self.not_after = not_after
 
     def __repr__(self):
-        return 'Event:%s' % self.type
+        return "Event:%s" % self.type
 
     def startElement(self, name, attrs, connection):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'eventType':
+        if name == "eventType":
             self.type = value
-        elif name == 'eventId':
+        elif name == "eventId":
             self.id = value
-        elif name == 'description':
+        elif name == "description":
             self.description = value
-        elif name == 'notBefore':
+        elif name == "notBefore":
             self.not_before = value
-        elif name == 'notAfter':
+        elif name == "notAfter":
             self.not_after = value
         else:
             setattr(self, name, value)
 
 
 class EventSet(list):
-
     def startElement(self, name, attrs, connection):
-        if name == 'item':
+        if name == "item":
             event = Event()
             self.append(event)
             return event
@@ -97,28 +97,27 @@ class Action(object):
         self.description = description
 
     def __repr__(self):
-        return 'Action:%s' % self.code
+        return "Action:%s" % self.code
 
     def startElement(self, name, attrs, connection):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'eventType':
+        if name == "eventType":
             self.type = value
-        elif name == 'eventId':
+        elif name == "eventId":
             self.id = value
-        elif name == 'description':
+        elif name == "description":
             self.description = value
-        elif name == 'code':
+        elif name == "code":
             self.code = value
         else:
             setattr(self, name, value)
 
 
 class ActionSet(list):
-
     def startElement(self, name, attrs, connection):
-        if name == 'item':
+        if name == "item":
             action = Action()
             self.append(action)
             return action
@@ -150,24 +149,24 @@ class VolumeStatus(object):
         self.actions = None
 
     def __repr__(self):
-        return 'VolumeStatus:%s' % self.id
+        return "VolumeStatus:%s" % self.id
 
     def startElement(self, name, attrs, connection):
-        if name == 'eventsSet':
+        if name == "eventsSet":
             self.events = EventSet()
             return self.events
-        elif name == 'actionsSet':
+        elif name == "actionsSet":
             self.actions = ActionSet()
             return self.actions
-        elif name == 'volumeStatus':
+        elif name == "volumeStatus":
             return self.volume_status
         else:
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'volumeId':
+        if name == "volumeId":
             self.id = value
-        elif name == 'availabilityZone':
+        elif name == "availabilityZone":
             self.zone = value
         else:
             setattr(self, name, value)
@@ -192,7 +191,7 @@ class VolumeStatusSet(list):
         self.next_token = None
 
     def startElement(self, name, attrs, connection):
-        if name == 'item':
+        if name == "item":
             status = VolumeStatus()
             self.append(status)
             return status
@@ -200,6 +199,6 @@ class VolumeStatusSet(list):
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'NextToken':
+        if name == "NextToken":
             self.next_token = value
         setattr(self, name, value)

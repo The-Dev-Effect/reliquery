@@ -25,8 +25,7 @@ import unittest
 import six
 
 
-SkipOnWindows = unittest.skipIf(
-    os.name == 'nt', 'Does not run on windows')
+SkipOnWindows = unittest.skipIf(os.name == "nt", "Does not run on windows")
 
 
 @contextlib.contextmanager

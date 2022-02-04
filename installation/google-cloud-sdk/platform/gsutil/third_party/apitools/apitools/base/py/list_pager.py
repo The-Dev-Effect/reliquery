@@ -20,7 +20,7 @@ from apitools.base.py import encoding
 import six
 
 __all__ = [
-    'YieldFromList',
+    "YieldFromList",
 ]
 
 
@@ -58,17 +58,23 @@ def _SetattrNested(message, attribute, value):
     elif len(attribute) == 1:
         return setattr(message, attribute[0], value)
     else:
-        return setattr(_GetattrNested(message, attribute[:-1]),
-                       attribute[-1], value)
+        return setattr(_GetattrNested(message, attribute[:-1]), attribute[-1], value)
 
 
 def YieldFromList(
-        service, request, global_params=None, limit=None, batch_size=100,
-        method='List', field='items', predicate=None,
-        current_token_attribute='pageToken',
-        next_token_attribute='nextPageToken',
-        batch_size_attribute='maxResults',
-        get_field_func=_GetattrNested):
+    service,
+    request,
+    global_params=None,
+    limit=None,
+    batch_size=100,
+    method="List",
+    field="items",
+    predicate=None,
+    current_token_attribute="pageToken",
+    next_token_attribute="nextPageToken",
+    batch_size_attribute="maxResults",
+    get_field_func=_GetattrNested,
+):
     """Make a series of List requests, keeping track of page tokens.
 
     Args:
@@ -117,8 +123,7 @@ def YieldFromList(
             else:
                 request_batch_size = min(batch_size, limit or batch_size)
             _SetattrNested(request, batch_size_attribute, request_batch_size)
-        response = getattr(service, method)(request,
-                                            global_params=global_params)
+        response = getattr(service, method)(request, global_params=global_params)
         items = get_field_func(response, field)
         if predicate:
             items = list(filter(predicate, items))

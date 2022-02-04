@@ -28,14 +28,25 @@ from boto.compat import six
 
 
 class Layer2(object):
-
-    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None,
-                 is_secure=True, port=None, proxy=None, proxy_port=None,
-                 host=None, debug=0, session_token=None, region=None,
-                 validate_certs=True, sign_request=False):
+    def __init__(
+        self,
+        aws_access_key_id=None,
+        aws_secret_access_key=None,
+        is_secure=True,
+        port=None,
+        proxy=None,
+        proxy_port=None,
+        host=None,
+        debug=0,
+        session_token=None,
+        region=None,
+        validate_certs=True,
+        sign_request=False,
+    ):
 
         if isinstance(region, six.string_types):
             import boto.cloudsearch2
+
             for region_info in boto.cloudsearch2.regions():
                 if region_info.name == region:
                     region = region_info
@@ -53,7 +64,8 @@ class Layer2(object):
             security_token=session_token,
             region=region,
             validate_certs=validate_certs,
-            sign_request=sign_request)
+            sign_request=sign_request,
+        )
 
     def list_domains(self, domain_names=None):
         """
@@ -63,9 +75,9 @@ class Layer2(object):
         """
         domain_data = self.layer1.describe_domains(domain_names)
 
-        domain_data = (domain_data['DescribeDomainsResponse']
-                                  ['DescribeDomainsResult']
-                                  ['DomainStatusList'])
+        domain_data = domain_data["DescribeDomainsResponse"]["DescribeDomainsResult"][
+            "DomainStatusList"
+        ]
 
         return [Domain(self.layer1, data) for data in domain_data]
 
@@ -76,9 +88,10 @@ class Layer2(object):
         :rtype: :class:`boto.cloudsearch2.domain.Domain`
         """
         data = self.layer1.create_domain(domain_name)
-        return Domain(self.layer1, data['CreateDomainResponse']
-                                       ['CreateDomainResult']
-                                       ['DomainStatus'])
+        return Domain(
+            self.layer1,
+            data["CreateDomainResponse"]["CreateDomainResult"]["DomainStatus"],
+        )
 
     def lookup(self, domain_name):
         """

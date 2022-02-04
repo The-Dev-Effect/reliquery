@@ -38,8 +38,7 @@ class TableBatchGenerator(object):
         generator.
     """
 
-    def __init__(self, table, keys, attributes_to_get=None,
-                 consistent_read=False):
+    def __init__(self, table, keys, attributes_to_get=None, consistent_read=False):
         self.table = table
         self.keys = keys
         self.consumed_units = 0
@@ -47,31 +46,32 @@ class TableBatchGenerator(object):
         self.consistent_read = consistent_read
 
     def _queue_unprocessed(self, res):
-        if u'UnprocessedKeys' not in res:
+        if u"UnprocessedKeys" not in res:
             return
-        if self.table.name not in res[u'UnprocessedKeys']:
+        if self.table.name not in res[u"UnprocessedKeys"]:
             return
 
-        keys = res[u'UnprocessedKeys'][self.table.name][u'Keys']
+        keys = res[u"UnprocessedKeys"][self.table.name][u"Keys"]
 
         for key in keys:
-            h = key[u'HashKeyElement']
-            r = key[u'RangeKeyElement'] if u'RangeKeyElement' in key else None
+            h = key[u"HashKeyElement"]
+            r = key[u"RangeKeyElement"] if u"RangeKeyElement" in key else None
             self.keys.append((h, r))
 
     def __iter__(self):
         while self.keys:
             # Build the next batch
             batch = BatchList(self.table.layer2)
-            batch.add_batch(self.table, self.keys[:100],
-                            self.attributes_to_get)
+            batch.add_batch(self.table, self.keys[:100], self.attributes_to_get)
             res = batch.submit()
 
             # parse the results
-            if self.table.name not in res[u'Responses']:
+            if self.table.name not in res[u"Responses"]:
                 continue
-            self.consumed_units += res[u'Responses'][self.table.name][u'ConsumedCapacityUnits']
-            for elem in res[u'Responses'][self.table.name][u'Items']:
+            self.consumed_units += res[u"Responses"][self.table.name][
+                u"ConsumedCapacityUnits"
+            ]
+            for elem in res[u"Responses"][self.table.name][u"Items"]:
                 yield elem
 
             # re-queue un processed keys
@@ -146,32 +146,32 @@ class Table(object):
         :return: A Table object representing the table.
 
         """
-        table = cls(layer2, {'Table': {'TableName': name}})
+        table = cls(layer2, {"Table": {"TableName": name}})
         table._schema = schema
         return table
 
     def __repr__(self):
-        return 'Table(%s)' % self.name
+        return "Table(%s)" % self.name
 
     @property
     def name(self):
-        return self._dict['TableName']
+        return self._dict["TableName"]
 
     @property
     def create_time(self):
-        return self._dict.get('CreationDateTime', None)
+        return self._dict.get("CreationDateTime", None)
 
     @property
     def status(self):
-        return self._dict.get('TableStatus', None)
+        return self._dict.get("TableStatus", None)
 
     @property
     def item_count(self):
-        return self._dict.get('ItemCount', 0)
+        return self._dict.get("ItemCount", 0)
 
     @property
     def size_bytes(self):
-        return self._dict.get('TableSizeBytes', 0)
+        return self._dict.get("TableSizeBytes", 0)
 
     @property
     def schema(self):
@@ -180,14 +180,14 @@ class Table(object):
     @property
     def read_units(self):
         try:
-            return self._dict['ProvisionedThroughput']['ReadCapacityUnits']
+            return self._dict["ProvisionedThroughput"]["ReadCapacityUnits"]
         except KeyError:
             return None
 
     @property
     def write_units(self):
         try:
-            return self._dict['ProvisionedThroughput']['WriteCapacityUnits']
+            return self._dict["ProvisionedThroughput"]["WriteCapacityUnits"]
         except KeyError:
             return None
 
@@ -197,13 +197,13 @@ class Table(object):
         data received from Amazon DynamoDB.
         """
         # 'Table' is from a describe_table call.
-        if 'Table' in response:
-            self._dict.update(response['Table'])
+        if "Table" in response:
+            self._dict.update(response["Table"])
         # 'TableDescription' is from a create_table call.
-        elif 'TableDescription' in response:
-            self._dict.update(response['TableDescription'])
-        if 'KeySchema' in self._dict:
-            self._schema = Schema(self._dict['KeySchema'])
+        elif "TableDescription" in response:
+            self._dict.update(response["TableDescription"])
+        if "KeySchema" in self._dict:
+            self._schema = Schema(self._dict["KeySchema"])
 
     def refresh(self, wait_for_active=False, retry_seconds=5):
         """
@@ -225,7 +225,7 @@ class Table(object):
             response = self.layer2.describe_table(self.name)
             self.update_from_response(response)
             if wait_for_active:
-                if self.status == 'ACTIVE':
+                if self.status == "ACTIVE":
                     done = True
                 else:
                     time.sleep(retry_seconds)
@@ -251,9 +251,14 @@ class Table(object):
         """
         self.layer2.delete_table(self)
 
-    def get_item(self, hash_key, range_key=None,
-                 attributes_to_get=None, consistent_read=False,
-                 item_class=Item):
+    def get_item(
+        self,
+        hash_key,
+        range_key=None,
+        attributes_to_get=None,
+        consistent_read=False,
+        item_class=Item,
+    ):
         """
         Retrieve an existing item from the table.
 
@@ -282,9 +287,10 @@ class Table(object):
             to generate the items. This should be a subclass of
             :class:`boto.dynamodb.item.Item`
         """
-        return self.layer2.get_item(self, hash_key, range_key,
-                                    attributes_to_get, consistent_read,
-                                    item_class)
+        return self.layer2.get_item(
+            self, hash_key, range_key, attributes_to_get, consistent_read, item_class
+        )
+
     lookup = get_item
 
     def has_item(self, hash_key, range_key=None, consistent_read=False):
@@ -316,17 +322,19 @@ class Table(object):
         try:
             # Attempt to get the key. If it can't be found, it'll raise
             # an exception.
-            self.get_item(hash_key, range_key=range_key,
-                          # This minimizes the size of the response body.
-                          attributes_to_get=[hash_key],
-                          consistent_read=consistent_read)
+            self.get_item(
+                hash_key,
+                range_key=range_key,
+                # This minimizes the size of the response body.
+                attributes_to_get=[hash_key],
+                consistent_read=consistent_read,
+            )
         except dynamodb_exceptions.DynamoDBKeyNotFoundError:
             # Key doesn't exist.
             return False
         return True
 
-    def new_item(self, hash_key=None, range_key=None, attrs=None,
-                 item_class=Item):
+    def new_item(self, hash_key=None, range_key=None, attrs=None, item_class=Item):
         """
         Return an new, unsaved Item which can later be PUT to
         Amazon DynamoDB.

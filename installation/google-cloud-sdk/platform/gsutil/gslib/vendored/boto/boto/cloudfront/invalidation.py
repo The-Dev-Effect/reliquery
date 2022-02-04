@@ -14,7 +14,7 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 # OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
 # ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
@@ -27,12 +27,14 @@ from boto.resultset import ResultSet
 
 class InvalidationBatch(object):
     """A simple invalidation request.
-        :see: http://docs.amazonwebservices.com/AmazonCloudFront/2010-08-01/APIReference/index.html?InvalidationBatchDatatype.html
+    :see: http://docs.amazonwebservices.com/AmazonCloudFront/2010-08-01/APIReference/index.html?InvalidationBatchDatatype.html
     """
 
-    def __init__(self, paths=None, connection=None, distribution=None, caller_reference=''):
+    def __init__(
+        self, paths=None, connection=None, distribution=None, caller_reference=""
+    ):
         """Create a new invalidation request:
-            :paths: An array of paths to invalidate
+        :paths: An array of paths to invalidate
         """
         self.paths = paths or []
         self.distribution = distribution
@@ -48,7 +50,7 @@ class InvalidationBatch(object):
             self.connection = connection
 
     def __repr__(self):
-        return '<InvalidationBatch: %s>' % self.id
+        return "<InvalidationBatch: %s>" % self.id
 
     def add(self, path):
         """Add another path to this invalidation request"""
@@ -71,17 +73,20 @@ class InvalidationBatch(object):
         """Escape a path, make sure it begins with a slash and contains no invalid characters. Retain literal wildcard characters."""
         if not p[0] == "/":
             p = "/%s" % p
-        return urllib.parse.quote(p, safe = "/*")
+        return urllib.parse.quote(p, safe="/*")
 
     def to_xml(self):
         """Get this batch as XML"""
         assert self.connection is not None
         s = '<?xml version="1.0" encoding="UTF-8"?>\n'
-        s += '<InvalidationBatch xmlns="http://cloudfront.amazonaws.com/doc/%s/">\n' % self.connection.Version
+        s += (
+            '<InvalidationBatch xmlns="http://cloudfront.amazonaws.com/doc/%s/">\n'
+            % self.connection.Version
+        )
         for p in self.paths:
-            s += '    <Path>%s</Path>\n' % self.escape(p)
-        s += '    <CallerReference>%s</CallerReference>\n' % self.caller_reference
-        s += '</InvalidationBatch>\n'
+            s += "    <Path>%s</Path>\n" % self.escape(p)
+        s += "    <CallerReference>%s</CallerReference>\n" % self.caller_reference
+        s += "</InvalidationBatch>\n"
         return s
 
     def startElement(self, name, attrs, connection):
@@ -90,7 +95,7 @@ class InvalidationBatch(object):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'Path':
+        if name == "Path":
             self.paths.append(value)
         elif name == "Status":
             self.status = value
@@ -111,9 +116,18 @@ class InvalidationListResultSet(object):
     distribution you can iterate over all invalidations in a reasonably
     efficient manner.
     """
-    def __init__(self, markers=None, connection=None, distribution_id=None,
-                 invalidations=None, marker='', next_marker=None,
-                 max_items=None, is_truncated=False):
+
+    def __init__(
+        self,
+        markers=None,
+        connection=None,
+        distribution_id=None,
+        invalidations=None,
+        marker="",
+        next_marker=None,
+        max_items=None,
+        is_truncated=False,
+    ):
         self.markers = markers or []
         self.connection = connection
         self.distribution_id = distribution_id
@@ -137,9 +151,11 @@ class InvalidationListResultSet(object):
         if not self.auto_paginate:
             return
         while result_set.is_truncated:
-            result_set = conn.get_invalidation_requests(distribution_id,
-                                                        marker=result_set.next_marker,
-                                                        max_items=result_set.max_items)
+            result_set = conn.get_invalidation_requests(
+                distribution_id,
+                marker=result_set.next_marker,
+                max_items=result_set.max_items,
+            )
             for i in result_set._inval_cache:
                 yield i
 
@@ -151,43 +167,44 @@ class InvalidationListResultSet(object):
                 return obj
 
     def endElement(self, name, value, connection):
-        if name == 'IsTruncated':
+        if name == "IsTruncated":
             self.is_truncated = self.to_boolean(value)
-        elif name == 'Marker':
+        elif name == "Marker":
             self.marker = value
-        elif name == 'NextMarker':
+        elif name == "NextMarker":
             self.next_marker = value
-        elif name == 'MaxItems':
+        elif name == "MaxItems":
             self.max_items = int(value)
 
-    def to_boolean(self, value, true_value='true'):
+    def to_boolean(self, value, true_value="true"):
         if value == true_value:
             return True
         else:
             return False
+
 
 class InvalidationSummary(object):
     """
     Represents InvalidationSummary complex type in CloudFront API that lists
     the id and status of a given invalidation request.
     """
-    def __init__(self, connection=None, distribution_id=None, id='',
-                 status=''):
+
+    def __init__(self, connection=None, distribution_id=None, id="", status=""):
         self.connection = connection
         self.distribution_id = distribution_id
         self.id = id
         self.status = status
 
     def __repr__(self):
-        return '<InvalidationSummary: %s>' % self.id
+        return "<InvalidationSummary: %s>" % self.id
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'Id':
+        if name == "Id":
             self.id = value
-        elif name == 'Status':
+        elif name == "Status":
             self.status = value
 
     def get_distribution(self):
@@ -213,4 +230,5 @@ class InvalidationSummary(object):
                   request referred to by the InvalidationSummary
         """
         return self.connection.invalidation_request_status(
-            self.distribution_id, self.id)
+            self.distribution_id, self.id
+        )

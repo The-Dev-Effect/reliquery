@@ -24,53 +24,52 @@ from pyu2f.convenience import baseauthenticator
 
 
 class LocalAuthenticator(baseauthenticator.BaseAuthenticator):
-  """Authenticator wrapper around the native python u2f implementation."""
+    """Authenticator wrapper around the native python u2f implementation."""
 
-  def __init__(self, origin):
-    self.origin = origin
+    def __init__(self, origin):
+        self.origin = origin
 
-  def Authenticate(self, app_id, challenge_data,
-                   print_callback=sys.stderr.write):
-    """See base class."""
-    # If authenticator is not plugged in, prompt
-    try:
-      device = u2f.GetLocalU2FInterface(origin=self.origin)
-    except errors.NoDeviceFoundError:
-      print_callback('Please insert your security key and press enter...')
-      six.moves.input()
-      device = u2f.GetLocalU2FInterface(origin=self.origin)
+    def Authenticate(self, app_id, challenge_data, print_callback=sys.stderr.write):
+        """See base class."""
+        # If authenticator is not plugged in, prompt
+        try:
+            device = u2f.GetLocalU2FInterface(origin=self.origin)
+        except errors.NoDeviceFoundError:
+            print_callback("Please insert your security key and press enter...")
+            six.moves.input()
+            device = u2f.GetLocalU2FInterface(origin=self.origin)
 
-    print_callback('Please touch your security key.\n')
+        print_callback("Please touch your security key.\n")
 
-    for challenge_item in challenge_data:
-      raw_challenge = challenge_item['challenge']
-      key = challenge_item['key']
+        for challenge_item in challenge_data:
+            raw_challenge = challenge_item["challenge"]
+            key = challenge_item["key"]
 
-      try:
-        result = device.Authenticate(app_id, raw_challenge, [key])
-      except errors.U2FError as e:
-        if e.code == errors.U2FError.DEVICE_INELIGIBLE:
-          continue
-        else:
-          raise
+            try:
+                result = device.Authenticate(app_id, raw_challenge, [key])
+            except errors.U2FError as e:
+                if e.code == errors.U2FError.DEVICE_INELIGIBLE:
+                    continue
+                else:
+                    raise
 
-      client_data = self._base64encode(result.client_data.GetJson().encode())
-      signature_data = self._base64encode(result.signature_data)
-      key_handle = self._base64encode(result.key_handle)
+            client_data = self._base64encode(result.client_data.GetJson().encode())
+            signature_data = self._base64encode(result.signature_data)
+            key_handle = self._base64encode(result.key_handle)
 
-      return {
-          'clientData': client_data,
-          'signatureData': signature_data,
-          'applicationId': app_id,
-          'keyHandle': key_handle,
-      }
+            return {
+                "clientData": client_data,
+                "signatureData": signature_data,
+                "applicationId": app_id,
+                "keyHandle": key_handle,
+            }
 
-    raise errors.U2FError(errors.U2FError.DEVICE_INELIGIBLE)
+        raise errors.U2FError(errors.U2FError.DEVICE_INELIGIBLE)
 
-  def IsAvailable(self):
-    """See base class."""
-    return True
+    def IsAvailable(self):
+        """See base class."""
+        return True
 
-  def _base64encode(self, bytes_data):
-      """Helper method to base64 encode and return str result."""
-      return base64.urlsafe_b64encode(bytes_data).decode()
+    def _base64encode(self, bytes_data):
+        """Helper method to base64 encode and return str result."""
+        return base64.urlsafe_b64encode(bytes_data).decode()

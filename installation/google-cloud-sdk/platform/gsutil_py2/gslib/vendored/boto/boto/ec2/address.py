@@ -50,24 +50,24 @@ class Address(EC2Object):
         self.private_ip_address = None
 
     def __repr__(self):
-        return 'Address:%s' % self.public_ip
+        return "Address:%s" % self.public_ip
 
     def endElement(self, name, value, connection):
-        if name == 'publicIp':
+        if name == "publicIp":
             self.public_ip = value
-        elif name == 'instanceId':
+        elif name == "instanceId":
             self.instance_id = value
-        elif name == 'domain':
+        elif name == "domain":
             self.domain = value
-        elif name == 'allocationId':
+        elif name == "allocationId":
             self.allocation_id = value
-        elif name == 'associationId':
+        elif name == "associationId":
             self.association_id = value
-        elif name == 'networkInterfaceId':
+        elif name == "networkInterfaceId":
             self.network_interface_id = value
-        elif name == 'networkInterfaceOwnerId':
+        elif name == "networkInterfaceOwnerId":
             self.network_interface_owner_id = value
-        elif name == 'privateIpAddress':
+        elif name == "privateIpAddress":
             self.private_ip_address = value
         else:
             setattr(self, name, value)
@@ -79,17 +79,23 @@ class Address(EC2Object):
         """
         if self.allocation_id:
             return self.connection.release_address(
-                allocation_id=self.allocation_id,
-                dry_run=dry_run)
+                allocation_id=self.allocation_id, dry_run=dry_run
+            )
         else:
             return self.connection.release_address(
-                public_ip=self.public_ip,
-                dry_run=dry_run
+                public_ip=self.public_ip, dry_run=dry_run
             )
 
     delete = release
 
-    def associate(self, instance_id=None, network_interface_id=None, private_ip_address=None, allow_reassociation=False, dry_run=False):
+    def associate(
+        self,
+        instance_id=None,
+        network_interface_id=None,
+        private_ip_address=None,
+        allow_reassociation=False,
+        dry_run=False,
+    ):
         """
         Associate this Elastic IP address with a currently running instance.
         :see: :meth:`boto.ec2.connection.EC2Connection.associate_address`
@@ -102,7 +108,7 @@ class Address(EC2Object):
                 network_interface_id=network_interface_id,
                 private_ip_address=private_ip_address,
                 allow_reassociation=allow_reassociation,
-                dry_run=dry_run
+                dry_run=dry_run,
             )
         return self.connection.associate_address(
             instance_id=instance_id,
@@ -110,7 +116,7 @@ class Address(EC2Object):
             network_interface_id=network_interface_id,
             private_ip_address=private_ip_address,
             allow_reassociation=allow_reassociation,
-            dry_run=dry_run
+            dry_run=dry_run,
         )
 
     def disassociate(self, dry_run=False):
@@ -120,11 +126,9 @@ class Address(EC2Object):
         """
         if self.association_id:
             return self.connection.disassociate_address(
-                association_id=self.association_id,
-                dry_run=dry_run
+                association_id=self.association_id, dry_run=dry_run
             )
         else:
             return self.connection.disassociate_address(
-                public_ip=self.public_ip,
-                dry_run=dry_run
+                public_ip=self.public_ip, dry_run=dry_run
             )

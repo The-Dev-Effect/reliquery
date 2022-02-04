@@ -45,6 +45,7 @@ class EncodingError(Exception):
     This usually happens when a document is marked as unicode but non-unicode
     characters are present.
     """
+
     pass
 
 
@@ -56,6 +57,7 @@ class ContentTooLongError(Exception):
     than the limit allowed per upload batch (5MB)
 
     """
+
     pass
 
 
@@ -99,9 +101,9 @@ class DocumentServiceConnection(object):
         self.sign_request = False
         if self.domain and self.domain.layer1:
             if self.domain.layer1.use_proxy:
-                self.proxy = {'http': self.domain.layer1.get_proxy_url_with_auth()}
+                self.proxy = {"http": self.domain.layer1.get_proxy_url_with_auth()}
 
-            self.sign_request = getattr(self.domain.layer1, 'sign_request', False)
+            self.sign_request = getattr(self.domain.layer1, "sign_request", False)
 
             if self.sign_request:
                 # Create a domain connection to send signed requests
@@ -111,7 +113,7 @@ class DocumentServiceConnection(object):
                     aws_access_key_id=layer1.aws_access_key_id,
                     aws_secret_access_key=layer1.aws_secret_access_key,
                     region=layer1.region,
-                    provider=layer1.provider
+                    provider=layer1.provider,
                 )
 
     def add(self, _id, fields):
@@ -127,7 +129,7 @@ class DocumentServiceConnection(object):
         :param fields: A dictionary of key-value pairs to be uploaded .
         """
 
-        d = {'type': 'add', 'id': _id, 'fields': fields}
+        d = {"type": "add", "id": _id, "fields": fields}
         self.documents_batch.append(d)
 
     def delete(self, _id):
@@ -141,7 +143,7 @@ class DocumentServiceConnection(object):
         :param _id: The unique ID of this document.
         """
 
-        d = {'type': 'delete', 'id': _id}
+        d = {"type": "delete", "id": _id}
         self.documents_batch.append(d)
 
     def get_sdf(self):
@@ -175,12 +177,12 @@ class DocumentServiceConnection(object):
         :type key_obj: :class:`boto.s3.key.Key`
         :param key_obj: An S3 key which contains an SDF
         """
-        #@todo:: (lucas) would be nice if this could just take an s3://uri..."
+        # @todo:: (lucas) would be nice if this could just take an s3://uri..."
 
         self._sdf = key_obj.get_contents_as_string()
 
     def _commit_with_auth(self, sdf, api_version):
-        return self.domain_connection.upload_documents(sdf, 'application/json')
+        return self.domain_connection.upload_documents(sdf, "application/json")
 
     def _commit_without_auth(self, sdf, api_version):
         url = "http://%s/%s/documents/batch" % (self.endpoint, api_version)
@@ -189,14 +191,12 @@ class DocumentServiceConnection(object):
         session = requests.Session()
         session.proxies = self.proxy
         adapter = requests.adapters.HTTPAdapter(
-            pool_connections=20,
-            pool_maxsize=50,
-            max_retries=5
+            pool_connections=20, pool_maxsize=50, max_retries=5
         )
-        session.mount('http://', adapter)
-        session.mount('https://', adapter)
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
 
-        resp = session.post(url, data=sdf, headers={'Content-Type': 'application/json'})
+        resp = session.post(url, data=sdf, headers={"Content-Type": "application/json"})
         return resp
 
     def commit(self):
@@ -212,13 +212,14 @@ class DocumentServiceConnection(object):
 
         sdf = self.get_sdf()
 
-        if ': null' in sdf:
-            boto.log.error('null value in sdf detected. This will probably '
-                           'raise 500 error.')
-            index = sdf.index(': null')
-            boto.log.error(sdf[index - 100:index + 100])
+        if ": null" in sdf:
+            boto.log.error(
+                "null value in sdf detected. This will probably " "raise 500 error."
+            )
+            index = sdf.index(": null")
+            boto.log.error(sdf[index - 100 : index + 100])
 
-        api_version = '2013-01-01'
+        api_version = "2013-01-01"
         if self.domain and self.domain.layer1:
             api_version = self.domain.layer1.APIVersion
 
@@ -245,6 +246,7 @@ class CommitResponse(object):
     :raises: :class:`boto.cloudsearch2.document.EncodingError`
     :raises: :class:`boto.cloudsearch2.document.ContentTooLongError`
     """
+
     def __init__(self, response, doc_service, sdf, signed_request=False):
         self.response = response
         self.doc_service = doc_service
@@ -254,20 +256,22 @@ class CommitResponse(object):
         if self.signed_request:
             self.content = response
         else:
-            _body = response.content.decode('utf-8')
+            _body = response.content.decode("utf-8")
 
             try:
                 self.content = json.loads(_body)
             except:
-                boto.log.error('Error indexing documents.\nResponse Content:\n{0}'
-                               '\n\nSDF:\n{1}'.format(_body, self.sdf))
-                raise boto.exception.BotoServerError(self.response.status_code, '',
-                                                     body=_body)
+                boto.log.error(
+                    "Error indexing documents.\nResponse Content:\n{0}"
+                    "\n\nSDF:\n{1}".format(_body, self.sdf)
+                )
+                raise boto.exception.BotoServerError(
+                    self.response.status_code, "", body=_body
+                )
 
-        self.status = self.content['status']
-        if self.status == 'error':
-            self.errors = [e.get('message') for e in self.content.get('errors',
-                                                                      [])]
+        self.status = self.content["status"]
+        if self.status == "error":
+            self.errors = [e.get("message") for e in self.content.get("errors", [])]
             for e in self.errors:
                 if "Illegal Unicode character" in e:
                     raise EncodingError("Illegal Unicode character in document")
@@ -276,10 +280,10 @@ class CommitResponse(object):
         else:
             self.errors = []
 
-        self.adds = self.content['adds']
-        self.deletes = self.content['deletes']
-        self._check_num_ops('add', self.adds)
-        self._check_num_ops('delete', self.deletes)
+        self.adds = self.content["adds"]
+        self.deletes = self.content["deletes"]
+        self._check_num_ops("add", self.adds)
+        self._check_num_ops("delete", self.deletes)
 
     def _check_num_ops(self, type_, response_num):
         """Raise exception if number of ops in response doesn't match commit
@@ -292,8 +296,9 @@ class CommitResponse(object):
 
         :raises: :class:`boto.cloudsearch2.document.CommitMismatchError`
         """
-        commit_num = len([d for d in self.doc_service.documents_batch
-                          if d['type'] == type_])
+        commit_num = len(
+            [d for d in self.doc_service.documents_batch if d["type"] == type_]
+        )
 
         if response_num != commit_num:
             if self.signed_request:
@@ -308,8 +313,9 @@ class CommitResponse(object):
             # attach the self.errors to the exceptions if we already spent
             # time and effort collecting them out of the response.
             exc = CommitMismatchError(
-                'Incorrect number of {0}s returned. Commit: {1} Response: {2}'
-                .format(type_, commit_num, response_num)
+                "Incorrect number of {0}s returned. Commit: {1} Response: {2}".format(
+                    type_, commit_num, response_num
+                )
             )
             exc.errors = self.errors
             raise exc

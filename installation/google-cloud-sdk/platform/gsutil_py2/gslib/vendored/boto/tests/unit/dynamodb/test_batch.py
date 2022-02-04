@@ -29,31 +29,32 @@ from boto.dynamodb.batch import BatchList
 
 
 DESCRIBE_TABLE_1 = {
-    'Table': {
-        'CreationDateTime': 1349910554.478,
-        'ItemCount': 1,
-        'KeySchema': {'HashKeyElement': {'AttributeName': u'foo',
-                                         'AttributeType': u'S'}},
-        'ProvisionedThroughput': {'ReadCapacityUnits': 10,
-                                  'WriteCapacityUnits': 10},
-        'TableName': 'testtable',
-        'TableSizeBytes': 54,
-        'TableStatus': 'ACTIVE'}
+    "Table": {
+        "CreationDateTime": 1349910554.478,
+        "ItemCount": 1,
+        "KeySchema": {
+            "HashKeyElement": {"AttributeName": u"foo", "AttributeType": u"S"}
+        },
+        "ProvisionedThroughput": {"ReadCapacityUnits": 10, "WriteCapacityUnits": 10},
+        "TableName": "testtable",
+        "TableSizeBytes": 54,
+        "TableStatus": "ACTIVE",
+    }
 }
 
 DESCRIBE_TABLE_2 = {
-    'Table': {
-        'CreationDateTime': 1349910554.478,
-        'ItemCount': 1,
-        'KeySchema': {'HashKeyElement': {'AttributeName': u'baz',
-                                         'AttributeType': u'S'},
-                      'RangeKeyElement': {'AttributeName': 'myrange',
-                                          'AttributeType': 'N'}},
-        'ProvisionedThroughput': {'ReadCapacityUnits': 10,
-                                  'WriteCapacityUnits': 10},
-        'TableName': 'testtable2',
-        'TableSizeBytes': 54,
-        'TableStatus': 'ACTIVE'}
+    "Table": {
+        "CreationDateTime": 1349910554.478,
+        "ItemCount": 1,
+        "KeySchema": {
+            "HashKeyElement": {"AttributeName": u"baz", "AttributeType": u"S"},
+            "RangeKeyElement": {"AttributeName": "myrange", "AttributeType": "N"},
+        },
+        "ProvisionedThroughput": {"ReadCapacityUnits": 10, "WriteCapacityUnits": 10},
+        "TableName": "testtable2",
+        "TableSizeBytes": 54,
+        "TableStatus": "ACTIVE",
+    }
 }
 
 
@@ -61,43 +62,55 @@ class TestBatchObjects(unittest.TestCase):
     maxDiff = None
 
     def setUp(self):
-        self.layer2 = Layer2('access_key', 'secret_key')
+        self.layer2 = Layer2("access_key", "secret_key")
         self.table = Table(self.layer2, DESCRIBE_TABLE_1)
         self.table2 = Table(self.layer2, DESCRIBE_TABLE_2)
 
     def test_batch_to_dict(self):
-        b = Batch(self.table, ['k1', 'k2'], attributes_to_get=['foo'],
-                  consistent_read=True)
+        b = Batch(
+            self.table, ["k1", "k2"], attributes_to_get=["foo"], consistent_read=True
+        )
         self.assertDictEqual(
             b.to_dict(),
-            {'AttributesToGet': ['foo'],
-             'Keys': [{'HashKeyElement': {'S': 'k1'}},
-                      {'HashKeyElement': {'S': 'k2'}}],
-             'ConsistentRead': True}
+            {
+                "AttributesToGet": ["foo"],
+                "Keys": [
+                    {"HashKeyElement": {"S": "k1"}},
+                    {"HashKeyElement": {"S": "k2"}},
+                ],
+                "ConsistentRead": True,
+            },
         )
 
     def test_batch_consistent_read_defaults_to_false(self):
-        b = Batch(self.table, ['k1'])
+        b = Batch(self.table, ["k1"])
         self.assertDictEqual(
             b.to_dict(),
-            {'Keys': [{'HashKeyElement': {'S': 'k1'}}],
-             'ConsistentRead': False}
+            {"Keys": [{"HashKeyElement": {"S": "k1"}}], "ConsistentRead": False},
         )
 
     def test_batch_list_consistent_read(self):
         b = BatchList(self.layer2)
-        b.add_batch(self.table, ['k1'], ['foo'], consistent_read=True)
-        b.add_batch(self.table2, [('k2', 54)], ['bar'], consistent_read=False)
+        b.add_batch(self.table, ["k1"], ["foo"], consistent_read=True)
+        b.add_batch(self.table2, [("k2", 54)], ["bar"], consistent_read=False)
         self.assertDictEqual(
             b.to_dict(),
-            {'testtable': {'AttributesToGet': ['foo'],
-                           'Keys': [{'HashKeyElement': {'S': 'k1'}}],
-                           'ConsistentRead': True},
-              'testtable2': {'AttributesToGet': ['bar'],
-                             'Keys': [{'HashKeyElement': {'S': 'k2'},
-                                       'RangeKeyElement': {'N': '54'}}],
-                             'ConsistentRead': False}})
+            {
+                "testtable": {
+                    "AttributesToGet": ["foo"],
+                    "Keys": [{"HashKeyElement": {"S": "k1"}}],
+                    "ConsistentRead": True,
+                },
+                "testtable2": {
+                    "AttributesToGet": ["bar"],
+                    "Keys": [
+                        {"HashKeyElement": {"S": "k2"}, "RangeKeyElement": {"N": "54"}}
+                    ],
+                    "ConsistentRead": False,
+                },
+            },
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

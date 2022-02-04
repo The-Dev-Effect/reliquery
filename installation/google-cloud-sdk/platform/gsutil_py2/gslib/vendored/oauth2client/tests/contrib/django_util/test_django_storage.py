@@ -24,55 +24,58 @@ import mock
 from oauth2client import GOOGLE_TOKEN_URI
 from oauth2client.client import OAuth2Credentials
 from oauth2client.contrib.django_util.models import CredentialsField
-from oauth2client.contrib.django_util.storage import (
-    DjangoORMStorage as Storage)
+from oauth2client.contrib.django_util.storage import DjangoORMStorage as Storage
 
 
 class TestStorage(unittest.TestCase):
     def setUp(self):
-        access_token = 'foo'
-        client_id = 'some_client_id'
-        client_secret = 'cOuDdkfjxxnv+'
-        refresh_token = '1/0/a.df219fjls0'
+        access_token = "foo"
+        client_id = "some_client_id"
+        client_secret = "cOuDdkfjxxnv+"
+        refresh_token = "1/0/a.df219fjls0"
         token_expiry = datetime.datetime.utcnow()
-        user_agent = 'refresh_checker/1.0'
+        user_agent = "refresh_checker/1.0"
 
         self.credentials = OAuth2Credentials(
-            access_token, client_id, client_secret,
-            refresh_token, token_expiry, GOOGLE_TOKEN_URI,
-            user_agent)
+            access_token,
+            client_id,
+            client_secret,
+            refresh_token,
+            token_expiry,
+            GOOGLE_TOKEN_URI,
+            user_agent,
+        )
 
-        self.key_name = 'id'
-        self.key_value = '1'
-        self.property_name = 'credentials'
+        self.key_name = "id"
+        self.key_value = "1"
+        self.property_name = "credentials"
 
     def test_constructor(self):
-        storage = Storage(FakeCredentialsModel, self.key_name,
-                          self.key_value, self.property_name)
+        storage = Storage(
+            FakeCredentialsModel, self.key_name, self.key_value, self.property_name
+        )
 
         self.assertEqual(storage.model_class, FakeCredentialsModel)
         self.assertEqual(storage.key_name, self.key_name)
         self.assertEqual(storage.key_value, self.key_value)
         self.assertEqual(storage.property_name, self.property_name)
 
-    @mock.patch('django.db.models')
+    @mock.patch("django.db.models")
     def test_locked_get(self, djangoModel):
         fake_model_with_credentials = FakeCredentialsModelMock()
-        entities = [
-            fake_model_with_credentials
-        ]
+        entities = [fake_model_with_credentials]
         filter_mock = mock.Mock(return_value=entities)
         object_mock = mock.Mock()
         object_mock.filter = filter_mock
         FakeCredentialsModelMock.objects = object_mock
 
-        storage = Storage(FakeCredentialsModelMock, self.key_name,
-                          self.key_value, self.property_name)
+        storage = Storage(
+            FakeCredentialsModelMock, self.key_name, self.key_value, self.property_name
+        )
         credential = storage.locked_get()
-        self.assertEqual(
-            credential, fake_model_with_credentials.credentials)
+        self.assertEqual(credential, fake_model_with_credentials.credentials)
 
-    @mock.patch('django.db.models')
+    @mock.patch("django.db.models")
     def test_locked_get_no_entities(self, djangoModel):
         entities = []
         filter_mock = mock.Mock(return_value=entities)
@@ -80,39 +83,41 @@ class TestStorage(unittest.TestCase):
         object_mock.filter = filter_mock
         FakeCredentialsModelMock.objects = object_mock
 
-        storage = Storage(FakeCredentialsModelMock, self.key_name,
-                          self.key_value, self.property_name)
+        storage = Storage(
+            FakeCredentialsModelMock, self.key_name, self.key_value, self.property_name
+        )
         credential = storage.locked_get()
         self.assertIsNone(credential)
 
-    @mock.patch('django.db.models')
+    @mock.patch("django.db.models")
     def test_locked_get_no_set_store(self, djangoModel):
         fake_model_with_credentials = FakeCredentialsModelMockNoSet()
-        entities = [
-            fake_model_with_credentials
-        ]
+        entities = [fake_model_with_credentials]
         filter_mock = mock.Mock(return_value=entities)
         object_mock = mock.Mock()
         object_mock.filter = filter_mock
         FakeCredentialsModelMockNoSet.objects = object_mock
 
-        storage = Storage(FakeCredentialsModelMockNoSet, self.key_name,
-                          self.key_value, self.property_name)
+        storage = Storage(
+            FakeCredentialsModelMockNoSet,
+            self.key_name,
+            self.key_value,
+            self.property_name,
+        )
         credential = storage.locked_get()
-        self.assertEqual(
-            credential, fake_model_with_credentials.credentials)
+        self.assertEqual(credential, fake_model_with_credentials.credentials)
 
-    @mock.patch('django.db.models')
+    @mock.patch("django.db.models")
     def test_locked_put(self, djangoModel):
         entity_mock = mock.Mock(credentials=None)
-        objects = mock.Mock(
-            get_or_create=mock.Mock(return_value=(entity_mock, None)))
+        objects = mock.Mock(get_or_create=mock.Mock(return_value=(entity_mock, None)))
         FakeCredentialsModelMock.objects = objects
-        storage = Storage(FakeCredentialsModelMock, self.key_name,
-                          self.key_value, self.property_name)
+        storage = Storage(
+            FakeCredentialsModelMock, self.key_name, self.key_value, self.property_name
+        )
         storage.locked_put(self.credentials)
 
-    @mock.patch('django.db.models')
+    @mock.patch("django.db.models")
     def test_locked_delete(self, djangoModel):
         class FakeEntities(object):
             def __init__(self):
@@ -128,8 +133,9 @@ class TestStorage(unittest.TestCase):
         object_mock = mock.Mock()
         object_mock.filter = filter_mock
         FakeCredentialsModelMock.objects = object_mock
-        storage = Storage(FakeCredentialsModelMock, self.key_name,
-                          self.key_value, self.property_name)
+        storage = Storage(
+            FakeCredentialsModelMock, self.key_name, self.key_value, self.property_name
+        )
         storage.locked_delete()
         self.assertTrue(fake_entities.deleted)
 

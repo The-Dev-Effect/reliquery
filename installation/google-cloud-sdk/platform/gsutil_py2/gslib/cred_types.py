@@ -21,9 +21,9 @@ from __future__ import unicode_literals
 
 
 class CredTypes(object):
-  HMAC = "HMAC"
-  IMPERSONATION = "Service Account Impersonation"
-  OAUTH2_SERVICE_ACCOUNT = "OAuth 2.0 Service Account"
-  OAUTH2_USER_ACCOUNT = "Oauth 2.0 User Account"
-  GCE = "GCE"
-  DEVSHELL = "Google Developer Shell"
+    HMAC = "HMAC"
+    IMPERSONATION = "Service Account Impersonation"
+    OAUTH2_SERVICE_ACCOUNT = "OAuth 2.0 Service Account"
+    OAUTH2_USER_ACCOUNT = "Oauth 2.0 User Account"
+    GCE = "GCE"
+    DEVSHELL = "Google Developer Shell"

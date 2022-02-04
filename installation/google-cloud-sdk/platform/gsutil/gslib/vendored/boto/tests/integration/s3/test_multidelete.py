@@ -34,12 +34,13 @@ from boto.s3.prefix import Prefix
 from boto.s3.connection import S3Connection
 from boto.exception import S3ResponseError
 
+
 class S3MultiDeleteTest(unittest.TestCase):
     s3 = True
 
     def setUp(self):
         self.conn = S3Connection()
-        self.bucket_name = 'multidelete-%d' % int(time.time())
+        self.bucket_name = "multidelete-%d" % int(time.time())
         self.bucket = self.conn.create_bucket(self.bucket_name)
 
     def tearDown(self):
@@ -54,18 +55,22 @@ class S3MultiDeleteTest(unittest.TestCase):
         self.assertEqual(len(result.errors), 0)
 
     def test_delete_illegal(self):
-        result = self.bucket.delete_keys([{"dict":"notallowed"}])
+        result = self.bucket.delete_keys([{"dict": "notallowed"}])
         self.assertEqual(len(result.deleted), 0)
         self.assertEqual(len(result.errors), 1)
 
     def test_delete_mix(self):
-        result = self.bucket.delete_keys(["king",
-                                          ("mice", None),
-                                          Key(name="regular"),
-                                          Key(),
-                                          Prefix(name="folder/"),
-                                          DeleteMarker(name="deleted"),
-                                          {"bad":"type"}])
+        result = self.bucket.delete_keys(
+            [
+                "king",
+                ("mice", None),
+                Key(name="regular"),
+                Key(),
+                Prefix(name="folder/"),
+                DeleteMarker(name="deleted"),
+                {"bad": "type"},
+            ]
+        )
         self.assertEqual(len(result.deleted), 4)
         self.assertEqual(len(result.errors), 3)
 
@@ -99,7 +104,7 @@ class S3MultiDeleteTest(unittest.TestCase):
     def test_delete_kanji_by_list(self):
         for key_name in [u"漢字", u"日本語", u"テスト"]:
             key = self.bucket.new_key(key_name)
-            key.set_contents_from_string('this is a test')
+            key.set_contents_from_string("this is a test")
         result = self.bucket.delete_keys(self.bucket.list())
         self.assertEqual(len(result.deleted), 3)
         self.assertEqual(len(result.errors), 0)
@@ -107,7 +112,7 @@ class S3MultiDeleteTest(unittest.TestCase):
     def test_delete_with_prefixes(self):
         for key_name in ["a", "a/b", "b"]:
             key = self.bucket.new_key(key_name)
-            key.set_contents_from_string('this is a test')
+            key.set_contents_from_string("this is a test")
 
         # First delete all "files": "a" and "b"
         result = self.bucket.delete_keys(self.bucket.list(delimiter="/"))
@@ -129,7 +134,7 @@ class S3MultiDeleteTest(unittest.TestCase):
 
         # Add 1000 initial versions as DMs by deleting them :-)
         # Adding 1000 objects is painful otherwise...
-        key_names = ['key-%03d' % i for i in range(0, 1000)]
+        key_names = ["key-%03d" % i for i in range(0, 1000)]
         result = self.bucket.delete_keys(key_names)
         self.assertEqual(len(result.deleted) + len(result.errors), 1000)
 
@@ -149,12 +154,12 @@ class S3MultiDeleteTest(unittest.TestCase):
         nkeys = 100
 
         # create a bunch of keynames
-        key_names = ['key-%03d' % i for i in range(0, nkeys)]
+        key_names = ["key-%03d" % i for i in range(0, nkeys)]
 
         # create the corresponding keys
         for key_name in key_names:
             key = self.bucket.new_key(key_name)
-            key.set_contents_from_string('this is a test')
+            key.set_contents_from_string("this is a test")
 
         # now count keys in bucket
         n = 0

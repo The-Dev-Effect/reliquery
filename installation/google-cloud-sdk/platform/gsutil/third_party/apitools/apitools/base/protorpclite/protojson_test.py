@@ -70,25 +70,22 @@ class MyMessage(messages.Message):
     a_nested_datetime = messages.MessageField(NestedDatetime, 14)
 
 
-class ModuleInterfaceTest(test_util.ModuleInterfaceTest,
-                          test_util.TestCase):
+class ModuleInterfaceTest(test_util.ModuleInterfaceTest, test_util.TestCase):
 
     MODULE = protojson
 
 
 # TODO(rafek): Convert this test to the compliance test in test_util.
-class ProtojsonTest(test_util.TestCase,
-                    test_util.ProtoConformanceTestBase):
+class ProtojsonTest(test_util.TestCase, test_util.ProtoConformanceTestBase):
     """Test JSON encoding and decoding."""
 
     PROTOLIB = protojson
 
     def CompareEncoded(self, expected_encoded, actual_encoded):
         """JSON encoding will be laundered to remove string differences."""
-        self.assertEquals(json.loads(expected_encoded),
-                          json.loads(actual_encoded))
+        self.assertEquals(json.loads(expected_encoded), json.loads(actual_encoded))
 
-    encoded_empty_message = '{}'
+    encoded_empty_message = "{}"
 
     encoded_partial = """{
     "double_value": 1.23,
@@ -167,30 +164,45 @@ class ProtojsonTest(test_util.TestCase,
 
     def testConvertStringToNumbers(self):
         """Test that strings passed to integer fields are converted."""
-        message = protojson.decode_message(MyMessage,
-                                           """{"an_integer": "10",
+        message = protojson.decode_message(
+            MyMessage,
+            """{"an_integer": "10",
                                            "a_float": "3.5",
                                            "a_repeated": ["1", "2"],
                                            "a_repeated_float": ["1.5", "2", 10]
-                                           }""")
+                                           }""",
+        )
 
-        self.assertEquals(MyMessage(an_integer=10,
-                                    a_float=3.5,
-                                    a_repeated=[1, 2],
-                                    a_repeated_float=[1.5, 2.0, 10.0]),
-                          message)
+        self.assertEquals(
+            MyMessage(
+                an_integer=10,
+                a_float=3.5,
+                a_repeated=[1, 2],
+                a_repeated_float=[1.5, 2.0, 10.0],
+            ),
+            message,
+        )
 
     def testWrongTypeAssignment(self):
         """Test when wrong type is assigned to a field."""
-        self.assertRaises(messages.ValidationError,
-                          protojson.decode_message,
-                          MyMessage, '{"a_string": 10}')
-        self.assertRaises(messages.ValidationError,
-                          protojson.decode_message,
-                          MyMessage, '{"an_integer": 10.2}')
-        self.assertRaises(messages.ValidationError,
-                          protojson.decode_message,
-                          MyMessage, '{"an_integer": "10.2"}')
+        self.assertRaises(
+            messages.ValidationError,
+            protojson.decode_message,
+            MyMessage,
+            '{"a_string": 10}',
+        )
+        self.assertRaises(
+            messages.ValidationError,
+            protojson.decode_message,
+            MyMessage,
+            '{"an_integer": 10.2}',
+        )
+        self.assertRaises(
+            messages.ValidationError,
+            protojson.decode_message,
+            MyMessage,
+            '{"an_integer": "10.2"}',
+        )
 
     def testNumericEnumeration(self):
         """Test that numbers work for enum values."""
@@ -204,8 +216,7 @@ class ProtojsonTest(test_util.TestCase,
     def testNumericEnumerationNegativeTest(self):
         """Test with an invalid number for the enum value."""
         # The message should successfully decode.
-        message = protojson.decode_message(MyMessage,
-                                           '{"an_enum": 89}')
+        message = protojson.decode_message(MyMessage, '{"an_enum": 89}')
 
         expected_message = MyMessage()
 
@@ -226,15 +237,15 @@ class ProtojsonTest(test_util.TestCase,
     def testAlphaEnumerationNegativeTest(self):
         """The alpha enum value is invalid."""
         # The message should successfully decode.
-        message = protojson.decode_message(MyMessage,
-                                           '{"an_enum": "IAMINVALID"}')
+        message = protojson.decode_message(MyMessage, '{"an_enum": "IAMINVALID"}')
 
         expected_message = MyMessage()
 
         self.assertEquals(expected_message, message)
         # The roundtrip should result in equivalent encoded message.
-        self.assertEquals('{"an_enum": "IAMINVALID"}',
-                          protojson.encode_message(message))
+        self.assertEquals(
+            '{"an_enum": "IAMINVALID"}', protojson.encode_message(message)
+        )
 
     def testEnumerationNegativeTestWithEmptyString(self):
         """The enum value is an empty string."""
@@ -249,25 +260,25 @@ class ProtojsonTest(test_util.TestCase,
 
     def testNullValues(self):
         """Test that null values overwrite existing values."""
-        self.assertEquals(MyMessage(),
-                          protojson.decode_message(MyMessage,
-                                                   ('{"an_integer": null,'
-                                                    ' "a_nested": null,'
-                                                    ' "an_enum": null'
-                                                    '}')))
+        self.assertEquals(
+            MyMessage(),
+            protojson.decode_message(
+                MyMessage,
+                ('{"an_integer": null,' ' "a_nested": null,' ' "an_enum": null' "}"),
+            ),
+        )
 
     def testEmptyList(self):
         """Test that empty lists are ignored."""
-        self.assertEquals(MyMessage(),
-                          protojson.decode_message(MyMessage,
-                                                   '{"a_repeated": []}'))
+        self.assertEquals(
+            MyMessage(), protojson.decode_message(MyMessage, '{"a_repeated": []}')
+        )
 
     def testNotJSON(self):
         """Test error when string is not valid JSON."""
         self.assertRaises(
-            ValueError,
-            protojson.decode_message, MyMessage,
-            '{this is not json}')
+            ValueError, protojson.decode_message, MyMessage, "{this is not json}"
+        )
 
     def testDoNotEncodeStrangeObjects(self):
         """Test trying to encode a strange object.
@@ -277,101 +288,111 @@ class ProtojsonTest(test_util.TestCase,
         preserved when someone tries to serialized an unexpected type.
 
         """
-        class BogusObject(object):
 
+        class BogusObject(object):
             def check_initialized(self):
                 pass
 
-        self.assertRaises(TypeError,
-                          protojson.encode_message,
-                          BogusObject())
+        self.assertRaises(TypeError, protojson.encode_message, BogusObject())
 
     def testMergeEmptyString(self):
         """Test merging the empty or space only string."""
-        message = protojson.decode_message(test_util.OptionalMessage, '')
+        message = protojson.decode_message(test_util.OptionalMessage, "")
         self.assertEquals(test_util.OptionalMessage(), message)
 
-        message = protojson.decode_message(test_util.OptionalMessage, ' ')
+        message = protojson.decode_message(test_util.OptionalMessage, " ")
         self.assertEquals(test_util.OptionalMessage(), message)
 
     def testProtojsonUnrecognizedFieldName(self):
         """Test that unrecognized fields are saved and can be accessed."""
         decoded = protojson.decode_message(
-            MyMessage,
-            ('{"an_integer": 1, "unknown_val": 2}'))
+            MyMessage, ('{"an_integer": 1, "unknown_val": 2}')
+        )
         self.assertEquals(decoded.an_integer, 1)
         self.assertEquals(1, len(decoded.all_unrecognized_fields()))
-        self.assertEquals('unknown_val', decoded.all_unrecognized_fields()[0])
-        self.assertEquals((2, messages.Variant.INT64),
-                          decoded.get_unrecognized_field_info('unknown_val'))
+        self.assertEquals("unknown_val", decoded.all_unrecognized_fields()[0])
+        self.assertEquals(
+            (2, messages.Variant.INT64),
+            decoded.get_unrecognized_field_info("unknown_val"),
+        )
 
     def testProtojsonUnrecognizedFieldNumber(self):
         """Test that unrecognized fields are saved and can be accessed."""
         decoded = protojson.decode_message(
             MyMessage,
             '{"an_integer": 1, "1001": "unknown", "-123": "negative", '
-            '"456_mixed": 2}')
+            '"456_mixed": 2}',
+        )
         self.assertEquals(decoded.an_integer, 1)
         self.assertEquals(3, len(decoded.all_unrecognized_fields()))
         self.assertFalse(1001 in decoded.all_unrecognized_fields())
-        self.assertTrue('1001' in decoded.all_unrecognized_fields())
-        self.assertEquals(('unknown', messages.Variant.STRING),
-                          decoded.get_unrecognized_field_info('1001'))
-        self.assertTrue('-123' in decoded.all_unrecognized_fields())
-        self.assertEquals(('negative', messages.Variant.STRING),
-                          decoded.get_unrecognized_field_info('-123'))
-        self.assertTrue('456_mixed' in decoded.all_unrecognized_fields())
-        self.assertEquals((2, messages.Variant.INT64),
-                          decoded.get_unrecognized_field_info('456_mixed'))
+        self.assertTrue("1001" in decoded.all_unrecognized_fields())
+        self.assertEquals(
+            ("unknown", messages.Variant.STRING),
+            decoded.get_unrecognized_field_info("1001"),
+        )
+        self.assertTrue("-123" in decoded.all_unrecognized_fields())
+        self.assertEquals(
+            ("negative", messages.Variant.STRING),
+            decoded.get_unrecognized_field_info("-123"),
+        )
+        self.assertTrue("456_mixed" in decoded.all_unrecognized_fields())
+        self.assertEquals(
+            (2, messages.Variant.INT64),
+            decoded.get_unrecognized_field_info("456_mixed"),
+        )
 
     def testProtojsonUnrecognizedNull(self):
         """Test that unrecognized fields that are None are skipped."""
         decoded = protojson.decode_message(
-            MyMessage,
-            '{"an_integer": 1, "unrecognized_null": null}')
+            MyMessage, '{"an_integer": 1, "unrecognized_null": null}'
+        )
         self.assertEquals(decoded.an_integer, 1)
         self.assertEquals(decoded.all_unrecognized_fields(), [])
 
     def testUnrecognizedFieldVariants(self):
         """Test that unrecognized fields are mapped to the right variants."""
         for encoded, expected_variant in (
-                ('{"an_integer": 1, "unknown_val": 2}',
-                 messages.Variant.INT64),
-                ('{"an_integer": 1, "unknown_val": 2.0}',
-                 messages.Variant.DOUBLE),
-                ('{"an_integer": 1, "unknown_val": "string value"}',
-                 messages.Variant.STRING),
-                ('{"an_integer": 1, "unknown_val": [1, 2, 3]}',
-                 messages.Variant.INT64),
-                ('{"an_integer": 1, "unknown_val": [1, 2.0, 3]}',
-                 messages.Variant.DOUBLE),
-                ('{"an_integer": 1, "unknown_val": [1, "foo", 3]}',
-                 messages.Variant.STRING),
-                ('{"an_integer": 1, "unknown_val": true}',
-                 messages.Variant.BOOL)):
+            ('{"an_integer": 1, "unknown_val": 2}', messages.Variant.INT64),
+            ('{"an_integer": 1, "unknown_val": 2.0}', messages.Variant.DOUBLE),
+            (
+                '{"an_integer": 1, "unknown_val": "string value"}',
+                messages.Variant.STRING,
+            ),
+            ('{"an_integer": 1, "unknown_val": [1, 2, 3]}', messages.Variant.INT64),
+            ('{"an_integer": 1, "unknown_val": [1, 2.0, 3]}', messages.Variant.DOUBLE),
+            (
+                '{"an_integer": 1, "unknown_val": [1, "foo", 3]}',
+                messages.Variant.STRING,
+            ),
+            ('{"an_integer": 1, "unknown_val": true}', messages.Variant.BOOL),
+        ):
             decoded = protojson.decode_message(MyMessage, encoded)
             self.assertEquals(decoded.an_integer, 1)
             self.assertEquals(1, len(decoded.all_unrecognized_fields()))
-            self.assertEquals(
-                'unknown_val', decoded.all_unrecognized_fields()[0])
-            _, decoded_variant = decoded.get_unrecognized_field_info(
-                'unknown_val')
+            self.assertEquals("unknown_val", decoded.all_unrecognized_fields()[0])
+            _, decoded_variant = decoded.get_unrecognized_field_info("unknown_val")
             self.assertEquals(expected_variant, decoded_variant)
 
     def testDecodeDateTime(self):
         for datetime_string, datetime_vals in (
-                ('2012-09-30T15:31:50.262', (2012, 9, 30, 15, 31, 50, 262000)),
-                ('2012-09-30T15:31:50', (2012, 9, 30, 15, 31, 50, 0))):
+            ("2012-09-30T15:31:50.262", (2012, 9, 30, 15, 31, 50, 262000)),
+            ("2012-09-30T15:31:50", (2012, 9, 30, 15, 31, 50, 0)),
+        ):
             message = protojson.decode_message(
-                MyMessage, '{"a_datetime": "%s"}' % datetime_string)
-            expected_message = MyMessage(
-                a_datetime=datetime.datetime(*datetime_vals))
+                MyMessage, '{"a_datetime": "%s"}' % datetime_string
+            )
+            expected_message = MyMessage(a_datetime=datetime.datetime(*datetime_vals))
 
             self.assertEquals(expected_message, message)
 
     def testDecodeInvalidDateTime(self):
-        self.assertRaises(messages.DecodeError, protojson.decode_message,
-                          MyMessage, '{"a_datetime": "invalid"}')
+        self.assertRaises(
+            messages.DecodeError,
+            protojson.decode_message,
+            MyMessage,
+            '{"a_datetime": "invalid"}',
+        )
 
     def testDecodeInvalidMessage(self):
         encoded = """{
@@ -380,19 +401,19 @@ class ProtojsonTest(test_util.TestCase,
           }
         }
         """
-        self.assertRaises(messages.DecodeError, protojson.decode_message,
-                          MyMessage, encoded)
+        self.assertRaises(
+            messages.DecodeError, protojson.decode_message, MyMessage, encoded
+        )
 
     def testEncodeDateTime(self):
         for datetime_string, datetime_vals in (
-                ('2012-09-30T15:31:50.262000',
-                 (2012, 9, 30, 15, 31, 50, 262000)),
-                ('2012-09-30T15:31:50.262123',
-                 (2012, 9, 30, 15, 31, 50, 262123)),
-                ('2012-09-30T15:31:50',
-                 (2012, 9, 30, 15, 31, 50, 0))):
+            ("2012-09-30T15:31:50.262000", (2012, 9, 30, 15, 31, 50, 262000)),
+            ("2012-09-30T15:31:50.262123", (2012, 9, 30, 15, 31, 50, 262123)),
+            ("2012-09-30T15:31:50", (2012, 9, 30, 15, 31, 50, 0)),
+        ):
             decoded_message = protojson.encode_message(
-                MyMessage(a_datetime=datetime.datetime(*datetime_vals)))
+                MyMessage(a_datetime=datetime.datetime(*datetime_vals))
+            )
             expected_decoding = '{"a_datetime": "%s"}' % datetime_string
             self.CompareEncoded(expected_decoding, decoded_message)
 
@@ -400,12 +421,15 @@ class ProtojsonTest(test_util.TestCase,
         message = protojson.decode_message(
             MyMessage,
             '{"a_repeated_datetime": ["2012-09-30T15:31:50.262", '
-            '"2010-01-21T09:52:00", "2000-01-01T01:00:59.999999"]}')
+            '"2010-01-21T09:52:00", "2000-01-01T01:00:59.999999"]}',
+        )
         expected_message = MyMessage(
             a_repeated_datetime=[
                 datetime.datetime(2012, 9, 30, 15, 31, 50, 262000),
                 datetime.datetime(2010, 1, 21, 9, 52),
-                datetime.datetime(2000, 1, 1, 1, 0, 59, 999999)])
+                datetime.datetime(2000, 1, 1, 1, 0, 59, 999999),
+            ]
+        )
 
         self.assertEquals(expected_message, message)
 
@@ -414,8 +438,12 @@ class ProtojsonTest(test_util.TestCase,
         self.assertEquals(MyMessage(a_custom=1), message)
 
     def testDecodeInvalidCustom(self):
-        self.assertRaises(messages.ValidationError, protojson.decode_message,
-                          MyMessage, '{"a_custom": "invalid"}')
+        self.assertRaises(
+            messages.ValidationError,
+            protojson.decode_message,
+            MyMessage,
+            '{"a_custom": "invalid"}',
+        )
 
     def testEncodeCustom(self):
         decoded_message = protojson.encode_message(MyMessage(a_custom=1))
@@ -423,36 +451,35 @@ class ProtojsonTest(test_util.TestCase,
 
     def testDecodeRepeatedCustom(self):
         message = protojson.decode_message(
-            MyMessage, '{"a_repeated_custom": [1, 2, 3]}')
+            MyMessage, '{"a_repeated_custom": [1, 2, 3]}'
+        )
         self.assertEquals(MyMessage(a_repeated_custom=[1, 2, 3]), message)
 
     def testDecodeRepeatedEmpty(self):
-        message = protojson.decode_message(
-            MyMessage, '{"a_repeated": []}')
+        message = protojson.decode_message(MyMessage, '{"a_repeated": []}')
         self.assertEquals(MyMessage(a_repeated=[]), message)
 
     def testDecodeNone(self):
-        message = protojson.decode_message(
-            MyMessage, '{"an_integer": []}')
+        message = protojson.decode_message(MyMessage, '{"an_integer": []}')
         self.assertEquals(MyMessage(an_integer=None), message)
 
     def testDecodeBadBase64BytesField(self):
         """Test decoding improperly encoded base64 bytes value."""
         self.assertRaisesWithRegexpMatch(
             messages.DecodeError,
-            'Base64 decoding error: Incorrect padding',
+            "Base64 decoding error: Incorrect padding",
             protojson.decode_message,
             test_util.OptionalMessage,
-            '{"bytes_value": "abcdefghijklmnopq"}')
+            '{"bytes_value": "abcdefghijklmnopq"}',
+        )
 
 
 class CustomProtoJson(protojson.ProtoJson):
-
     def encode_field(self, field, value):
-        return '{encoded}' + value
+        return "{encoded}" + value
 
     def decode_field(self, field, value):
-        return '{decoded}' + value
+        return "{decoded}" + value
 
 
 class CustomProtoJsonTest(test_util.TestCase):
@@ -464,26 +491,30 @@ class CustomProtoJsonTest(test_util.TestCase):
     def testEncode(self):
         self.assertEqual(
             '{"a_string": "{encoded}xyz"}',
-            self.protojson.encode_message(MyMessage(a_string='xyz')))
+            self.protojson.encode_message(MyMessage(a_string="xyz")),
+        )
 
     def testDecode(self):
         self.assertEqual(
-            MyMessage(a_string='{decoded}xyz'),
-            self.protojson.decode_message(MyMessage, '{"a_string": "xyz"}'))
+            MyMessage(a_string="{decoded}xyz"),
+            self.protojson.decode_message(MyMessage, '{"a_string": "xyz"}'),
+        )
 
     def testDecodeEmptyMessage(self):
         self.assertEqual(
-            MyMessage(a_string='{decoded}'),
-            self.protojson.decode_message(MyMessage, '{"a_string": ""}'))
+            MyMessage(a_string="{decoded}"),
+            self.protojson.decode_message(MyMessage, '{"a_string": ""}'),
+        )
 
     def testDefault(self):
-        self.assertTrue(protojson.ProtoJson.get_default(),
-                        protojson.ProtoJson.get_default())
+        self.assertTrue(
+            protojson.ProtoJson.get_default(), protojson.ProtoJson.get_default()
+        )
 
         instance = CustomProtoJson()
         protojson.ProtoJson.set_default(instance)
         self.assertTrue(instance is protojson.ProtoJson.get_default())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

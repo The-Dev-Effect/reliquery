@@ -22,25 +22,31 @@
 from boto.exception import InvalidLifecycleConfigError
 
 # Relevant tags for the lifecycle configuration XML document.
-LIFECYCLE_CONFIG      = 'LifecycleConfiguration'
-RULE                  = 'Rule'
-ACTION                = 'Action'
-DELETE                = 'Delete'
-SET_STORAGE_CLASS     = 'SetStorageClass'
-CONDITION             = 'Condition'
-AGE                   = 'Age'
-CREATED_BEFORE        = 'CreatedBefore'
-NUM_NEWER_VERSIONS    = 'NumberOfNewerVersions'
-IS_LIVE               = 'IsLive'
-MATCHES_STORAGE_CLASS = 'MatchesStorageClass'
+LIFECYCLE_CONFIG = "LifecycleConfiguration"
+RULE = "Rule"
+ACTION = "Action"
+DELETE = "Delete"
+SET_STORAGE_CLASS = "SetStorageClass"
+CONDITION = "Condition"
+AGE = "Age"
+CREATED_BEFORE = "CreatedBefore"
+NUM_NEWER_VERSIONS = "NumberOfNewerVersions"
+IS_LIVE = "IsLive"
+MATCHES_STORAGE_CLASS = "MatchesStorageClass"
 
 # List of all action elements.
 LEGAL_ACTIONS = [DELETE, SET_STORAGE_CLASS]
 # List of all condition elements.
-LEGAL_CONDITIONS = [AGE, CREATED_BEFORE, NUM_NEWER_VERSIONS, IS_LIVE,
-                    MATCHES_STORAGE_CLASS]
+LEGAL_CONDITIONS = [
+    AGE,
+    CREATED_BEFORE,
+    NUM_NEWER_VERSIONS,
+    IS_LIVE,
+    MATCHES_STORAGE_CLASS,
+]
 # List of conditions elements that may be repeated.
 LEGAL_REPEATABLE_CONDITIONS = [MATCHES_STORAGE_CLASS]
+
 
 class Rule(object):
     """
@@ -67,14 +73,15 @@ class Rule(object):
         """Verify parent of the start tag."""
         if self.current_tag != parent:
             raise InvalidLifecycleConfigError(
-                'Invalid tag %s found inside %s tag' % (tag, self.current_tag))
+                "Invalid tag %s found inside %s tag" % (tag, self.current_tag)
+            )
 
     def validateEndTag(self, tag):
         """Verify end tag against the start tag."""
         if tag != self.current_tag:
             raise InvalidLifecycleConfigError(
-                'Mismatched start and end tags (%s/%s)' %
-                (self.current_tag, tag))
+                "Mismatched start and end tags (%s/%s)" % (self.current_tag, tag)
+            )
 
     def startElement(self, name, attrs, connection):
         if name == ACTION:
@@ -84,19 +91,20 @@ class Rule(object):
             # Verify there is only one action tag in the rule.
             if self.action is not None:
                 raise InvalidLifecycleConfigError(
-                    'Only one action tag is allowed in each rule')
+                    "Only one action tag is allowed in each rule"
+                )
             self.action = name
         elif name == CONDITION:
             self.validateStartTag(name, RULE)
         elif name in LEGAL_CONDITIONS:
             self.validateStartTag(name, CONDITION)
             # Verify there is no duplicate conditions.
-            if (name in self.conditions and
-                name not in LEGAL_REPEATABLE_CONDITIONS):
+            if name in self.conditions and name not in LEGAL_REPEATABLE_CONDITIONS:
                 raise InvalidLifecycleConfigError(
-                    'Found duplicate non-repeatable conditions %s' % name)
+                    "Found duplicate non-repeatable conditions %s" % name
+                )
         else:
-            raise InvalidLifecycleConfigError('Unsupported tag ' + name)
+            raise InvalidLifecycleConfigError("Unsupported tag " + name)
         self.current_tag = name
 
     def endElement(self, name, value, connection):
@@ -123,29 +131,29 @@ class Rule(object):
             else:
                 self.conditions[name] = value.strip()
         else:
-            raise InvalidLifecycleConfigError('Unsupported end tag ' + name)
+            raise InvalidLifecycleConfigError("Unsupported end tag " + name)
 
     def validate(self):
         """Validate the rule."""
         if not self.action:
-            raise InvalidLifecycleConfigError(
-                'No action was specified in the rule')
+            raise InvalidLifecycleConfigError("No action was specified in the rule")
         if not self.conditions:
             raise InvalidLifecycleConfigError(
-                'No condition was specified for action %s' % self.action)
+                "No condition was specified for action %s" % self.action
+            )
 
     def to_xml(self):
         """Convert the rule into XML string representation."""
-        s = ['<' + RULE + '>']
-        s.append('<' + ACTION + '>')
+        s = ["<" + RULE + ">"]
+        s.append("<" + ACTION + ">")
         if self.action_text:
-            s.extend(['<' + self.action + '>',
-                      self.action_text,
-                      '</' + self.action + '>'])
+            s.extend(
+                ["<" + self.action + ">", self.action_text, "</" + self.action + ">"]
+            )
         else:
-            s.append('<' + self.action + '/>')
-        s.append('</' + ACTION + '>')
-        s.append('<' + CONDITION + '>')
+            s.append("<" + self.action + "/>")
+        s.append("</" + ACTION + ">")
+        s.append("<" + CONDITION + ">")
         for condition_name in self.conditions:
             if condition_name not in LEGAL_CONDITIONS:
                 continue
@@ -156,12 +164,17 @@ class Rule(object):
                 # all condition values using the same logic.
                 condition_values = [self.conditions[condition_name]]
             for condition_value in condition_values:
-                s.extend(['<' + condition_name + '>',
-                          condition_value,
-                          '</' + condition_name + '>'])
-        s.append('</' + CONDITION + '>')
-        s.append('</' + RULE + '>')
-        return ''.join(s)
+                s.extend(
+                    [
+                        "<" + condition_name + ">",
+                        condition_value,
+                        "</" + condition_name + ">",
+                    ]
+                )
+        s.append("</" + CONDITION + ">")
+        s.append("</" + RULE + ">")
+        return "".join(s)
+
 
 class LifecycleConfig(list):
     """
@@ -176,31 +189,32 @@ class LifecycleConfig(list):
         if name == LIFECYCLE_CONFIG:
             if self.has_root_tag:
                 raise InvalidLifecycleConfigError(
-                    'Only one root tag is allowed in the XML')
+                    "Only one root tag is allowed in the XML"
+                )
             self.has_root_tag = True
         elif name == RULE:
             if not self.has_root_tag:
-                raise InvalidLifecycleConfigError('Invalid root tag ' + name)
+                raise InvalidLifecycleConfigError("Invalid root tag " + name)
             rule = Rule()
             self.append(rule)
             return rule
         else:
-            raise InvalidLifecycleConfigError('Unsupported tag ' + name)
+            raise InvalidLifecycleConfigError("Unsupported tag " + name)
 
     def endElement(self, name, value, connection):
         if name == LIFECYCLE_CONFIG:
             pass
         else:
-            raise InvalidLifecycleConfigError('Unsupported end tag ' + name)
+            raise InvalidLifecycleConfigError("Unsupported end tag " + name)
 
     def to_xml(self):
         """Convert LifecycleConfig object into XML string representation."""
         s = ['<?xml version="1.0" encoding="UTF-8"?>']
-        s.append('<' + LIFECYCLE_CONFIG + '>')
+        s.append("<" + LIFECYCLE_CONFIG + ">")
         for rule in self:
             s.append(rule.to_xml())
-        s.append('</' + LIFECYCLE_CONFIG + '>')
-        return ''.join(s)
+        s.append("</" + LIFECYCLE_CONFIG + ">")
+        return "".join(s)
 
     def add_rule(self, action, action_text, conditions):
         """

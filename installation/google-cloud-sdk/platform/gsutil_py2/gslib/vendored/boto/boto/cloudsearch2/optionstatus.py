@@ -50,8 +50,9 @@ class OptionStatus(dict):
         option was last updated.
     """
 
-    def __init__(self, domain, data=None, refresh_fn=None, refresh_key=None,
-                 save_fn=None):
+    def __init__(
+        self, domain, data=None, refresh_fn=None, refresh_key=None, save_fn=None
+    ):
         self.domain = domain
         self.refresh_fn = refresh_fn
         self.refresh_key = refresh_key
@@ -59,10 +60,10 @@ class OptionStatus(dict):
         self.refresh(data)
 
     def _update_status(self, status):
-        self.creation_date = status['CreationDate']
-        self.status = status['State']
-        self.update_date = status['UpdateDate']
-        self.update_version = int(status['UpdateVersion'])
+        self.creation_date = status["CreationDate"]
+        self.status = status["State"]
+        self.update_date = status["UpdateDate"]
+        self.update_version = int(status["UpdateVersion"])
 
     def _update_options(self, options):
         if options:
@@ -83,8 +84,8 @@ class OptionStatus(dict):
                     for key in self.refresh_key:
                         data = data[key]
         if data:
-            self._update_status(data['Status'])
-            self._update_options(data['Options'])
+            self._update_status(data["Status"])
+            self._update_options(data["Options"])
 
     def to_json(self):
         """
@@ -121,7 +122,6 @@ class ExpressionStatus(IndexFieldStatus):
 
 
 class ServicePoliciesStatus(OptionStatus):
-
     def new_statement(self, arn, ip):
         """
         Returns a new policy statement that will allow
@@ -141,32 +141,28 @@ class ServicePoliciesStatus(OptionStatus):
             "Effect": "Allow",
             "Action": "*",  # Docs say use GET, but denies unless *
             "Resource": arn,
-            "Condition": {
-                "IpAddress": {
-                    "aws:SourceIp": [ip]
-                }
-            }
+            "Condition": {"IpAddress": {"aws:SourceIp": [ip]}},
         }
 
     def _allow_ip(self, arn, ip):
-        if 'Statement' not in self:
+        if "Statement" not in self:
             s = self.new_statement(arn, ip)
-            self['Statement'] = [s]
+            self["Statement"] = [s]
             self.save()
         else:
             add_statement = True
-            for statement in self['Statement']:
-                if statement['Resource'] == arn:
-                    for condition_name in statement['Condition']:
-                        if condition_name == 'IpAddress':
+            for statement in self["Statement"]:
+                if statement["Resource"] == arn:
+                    for condition_name in statement["Condition"]:
+                        if condition_name == "IpAddress":
                             add_statement = False
-                            condition = statement['Condition'][condition_name]
-                            if ip not in condition['aws:SourceIp']:
-                                condition['aws:SourceIp'].append(ip)
+                            condition = statement["Condition"][condition_name]
+                            if ip not in condition["aws:SourceIp"]:
+                                condition["aws:SourceIp"].append(ip)
 
             if add_statement:
                 s = self.new_statement(arn, ip)
-                self['Statement'].append(s)
+                self["Statement"].append(s)
             self.save()
 
     def allow_search_ip(self, ip):
@@ -194,16 +190,16 @@ class ServicePoliciesStatus(OptionStatus):
         self._allow_ip(arn, ip)
 
     def _disallow_ip(self, arn, ip):
-        if 'Statement' not in self:
+        if "Statement" not in self:
             return
         need_update = False
-        for statement in self['Statement']:
-            if statement['Resource'] == arn:
-                for condition_name in statement['Condition']:
-                    if condition_name == 'IpAddress':
-                        condition = statement['Condition'][condition_name]
-                        if ip in condition['aws:SourceIp']:
-                            condition['aws:SourceIp'].remove(ip)
+        for statement in self["Statement"]:
+            if statement["Resource"] == arn:
+                for condition_name in statement["Condition"]:
+                    if condition_name == "IpAddress":
+                        condition = statement["Condition"][condition_name]
+                        if ip in condition["aws:SourceIp"]:
+                            condition["aws:SourceIp"].remove(ip)
                             need_update = True
         if need_update:
             self.save()

@@ -31,7 +31,7 @@ class Route53TestCase(unittest.TestCase):
     def setUp(self):
         super(Route53TestCase, self).setUp()
         self.conn = Route53Connection()
-        self.base_domain = 'boto-test-%s.com' % str(int(time.time()))
+        self.base_domain = "boto-test-%s.com" % str(int(time.time()))
         self.zone = self.conn.create_zone(self.base_domain)
 
     def tearDown(self):

@@ -36,9 +36,9 @@ class Cache(base.Cache):
     def __init__(self, max_age):
         """Constructor.
 
-      Args:
-        max_age: Cache expiration in seconds.
-      """
+        Args:
+          max_age: Cache expiration in seconds.
+        """
         self._max_age = max_age
 
     def get(self, url):

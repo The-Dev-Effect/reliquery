@@ -32,7 +32,7 @@ def regions():
     :rtype: list
     :return: A list of :class:`boto.regioninfo.RegionInfo` instances
     """
-    return get_regions('sts', connection_cls=STSConnection)
+    return get_regions("sts", connection_cls=STSConnection)
 
 
 def connect_to_region(region_name, **kw_params):
@@ -47,5 +47,4 @@ def connect_to_region(region_name, **kw_params):
     :return: A connection to the given region, or None if an invalid region
              name is given
     """
-    return connect('sts', region_name, connection_cls=STSConnection,
-                   **kw_params)
+    return connect("sts", region_name, connection_cls=STSConnection, **kw_params)

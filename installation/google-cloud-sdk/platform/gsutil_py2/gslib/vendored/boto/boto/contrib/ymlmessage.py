@@ -42,7 +42,7 @@ class YAMLMessage(Message):
     This depends on the PyYAML package
     """
 
-    def __init__(self, queue=None, body='', xml_attrs=None):
+    def __init__(self, queue=None, body="", xml_attrs=None):
         self.data = None
         super(YAMLMessage, self).__init__(queue, body)
 

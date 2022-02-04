@@ -29,11 +29,11 @@ DISCOVERY_DOC_MAX_AGE = 60 * 60 * 24  # 1 day
 def autodetect():
     """Detects an appropriate cache module and returns it.
 
-  Returns:
-    googleapiclient.discovery_cache.base.Cache, a cache object which
-    is auto detected, or None if no cache object is available.
-  """
-    if 'APPENGINE_RUNTIME' in os.environ:
+    Returns:
+      googleapiclient.discovery_cache.base.Cache, a cache object which
+      is auto detected, or None if no cache object is available.
+    """
+    if "APPENGINE_RUNTIME" in os.environ:
         from google.appengine.api import memcache
         from . import appengine_memcache
 

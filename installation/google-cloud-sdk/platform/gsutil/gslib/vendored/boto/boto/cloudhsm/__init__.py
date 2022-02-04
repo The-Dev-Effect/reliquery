@@ -32,10 +32,13 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.cloudhsm.layer1 import CloudHSMConnection
-    return get_regions('cloudhsm', connection_cls=CloudHSMConnection)
+
+    return get_regions("cloudhsm", connection_cls=CloudHSMConnection)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.cloudhsm.layer1 import CloudHSMConnection
-    return connect('cloudhsm', region_name, connection_cls=CloudHSMConnection,
-                   **kw_params)
+
+    return connect(
+        "cloudhsm", region_name, connection_cls=CloudHSMConnection, **kw_params
+    )

@@ -45,12 +45,13 @@ class SiteXsrfSecretKeyNDB(ndb.Model):
     There should only be one instance stored of this model, the one used
     for the site.
     """
+
     secret = ndb.StringProperty()
 
     @classmethod
     def _get_kind(cls):
         """Return the kind name for this class."""
-        return 'SiteXsrfSecretKey'
+        return "SiteXsrfSecretKey"
 
 
 class FlowNDBProperty(ndb.PickleProperty):
@@ -74,11 +75,12 @@ class FlowNDBProperty(ndb.PickleProperty):
         Raises:
             TypeError if the value is not an instance of Flow.
         """
-        _LOGGER.info('validate: Got type %s', type(value))
+        _LOGGER.info("validate: Got type %s", type(value))
         if value is not None and not isinstance(value, client.Flow):
             raise TypeError(
-                'Property {0} must be convertible to a flow '
-                'instance; received: {1}.'.format(self._name, value))
+                "Property {0} must be convertible to a flow "
+                "instance; received: {1}.".format(self._name, value)
+            )
 
 
 class CredentialsNDBProperty(ndb.BlobProperty):
@@ -102,11 +104,12 @@ class CredentialsNDBProperty(ndb.BlobProperty):
         Raises:
             TypeError if the value is not an instance of Credentials.
         """
-        _LOGGER.info('validate: Got type %s', type(value))
+        _LOGGER.info("validate: Got type %s", type(value))
         if value is not None and not isinstance(value, client.Credentials):
             raise TypeError(
-                'Property {0} must be convertible to a credentials '
-                'instance; received: {1}.'.format(self._name, value))
+                "Property {0} must be convertible to a credentials "
+                "instance; received: {1}.".format(self._name, value)
+            )
 
     def _to_base_type(self, value):
         """Converts our validated value to a JSON serialized string.
@@ -119,7 +122,7 @@ class CredentialsNDBProperty(ndb.BlobProperty):
             is None.
         """
         if value is None:
-            return ''
+            return ""
         else:
             return value.to_json()
 
@@ -155,9 +158,10 @@ class CredentialsNDBModel(ndb.Model):
 
     Storage of the model is keyed by the user.user_id().
     """
+
     credentials = CredentialsNDBProperty()
 
     @classmethod
     def _get_kind(cls):
         """Return the kind name for this class."""
-        return 'CredentialsModel'
+        return "CredentialsModel"

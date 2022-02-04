@@ -31,8 +31,8 @@ class TestAWSLambda(unittest.TestCase):
 
     def test_list_functions(self):
         response = self.awslambda.list_functions()
-        self.assertIn('Functions', response)
+        self.assertIn("Functions", response)
 
     def test_resource_not_found_exceptions(self):
         with self.assertRaises(ResourceNotFoundException):
-            self.awslambda.get_function(function_name='non-existant-function')
+            self.awslambda.get_function(function_name="non-existant-function")

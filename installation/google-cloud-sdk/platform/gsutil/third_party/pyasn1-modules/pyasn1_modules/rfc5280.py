@@ -21,7 +21,7 @@ from pyasn1.type import tag
 from pyasn1.type import univ
 from pyasn1.type import useful
 
-MAX = float('inf')
+MAX = float("inf")
 
 
 def _buildOid(*components):
@@ -47,12 +47,12 @@ class TerminalType(univ.Integer):
 
 
 TerminalType.namedValues = namedval.NamedValues(
-    ('telex', 3),
-    ('teletex', 4),
-    ('g3-facsimile', 5),
-    ('g4-facsimile', 6),
-    ('ia5-terminal', 7),
-    ('videotex', 8)
+    ("telex", 3),
+    ("teletex", 4),
+    ("g3-facsimile", 5),
+    ("g4-facsimile", 6),
+    ("ia5-terminal", 7),
+    ("videotex", 8),
 )
 
 
@@ -61,9 +61,9 @@ class Extension(univ.Sequence):
 
 
 Extension.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('extnID', univ.ObjectIdentifier()),
-    namedtype.DefaultedNamedType('critical', univ.Boolean().subtype(value=0)),
-    namedtype.NamedType('extnValue', univ.OctetString())
+    namedtype.NamedType("extnID", univ.ObjectIdentifier()),
+    namedtype.DefaultedNamedType("critical", univ.Boolean().subtype(value=0)),
+    namedtype.NamedType("extnValue", univ.OctetString()),
 )
 
 
@@ -88,10 +88,20 @@ class UnformattedPostalAddress(univ.Set):
 
 
 UnformattedPostalAddress.componentType = namedtype.NamedTypes(
-    namedtype.OptionalNamedType('printable-address', univ.SequenceOf(componentType=char.PrintableString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_pds_parameter_length)))),
-    namedtype.OptionalNamedType('teletex-string', char.TeletexString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_unformatted_address_length)))
+    namedtype.OptionalNamedType(
+        "printable-address",
+        univ.SequenceOf(
+            componentType=char.PrintableString().subtype(
+                subtypeSpec=constraint.ValueSizeConstraint(1, ub_pds_parameter_length)
+            )
+        ),
+    ),
+    namedtype.OptionalNamedType(
+        "teletex-string",
+        char.TeletexString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_unformatted_address_length)
+        ),
+    ),
 )
 
 ub_organization_name = univ.Integer(64)
@@ -102,16 +112,36 @@ class X520OrganizationName(univ.Choice):
 
 
 X520OrganizationName.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('teletexString', char.TeletexString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_organization_name))),
-    namedtype.NamedType('printableString', char.PrintableString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_organization_name))),
-    namedtype.NamedType('universalString', char.UniversalString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_organization_name))),
-    namedtype.NamedType('utf8String',
-                        char.UTF8String().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_organization_name))),
-    namedtype.NamedType('bmpString',
-                        char.BMPString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_organization_name)))
+    namedtype.NamedType(
+        "teletexString",
+        char.TeletexString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_organization_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "printableString",
+        char.PrintableString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_organization_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "universalString",
+        char.UniversalString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_organization_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "utf8String",
+        char.UTF8String().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_organization_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "bmpString",
+        char.BMPString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_organization_name)
+        ),
+    ),
 )
 
 ub_x121_address_length = univ.Integer(16)
@@ -130,10 +160,18 @@ class PostalCode(univ.Choice):
 
 
 PostalCode.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('numeric-code', char.NumericString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_postal_code_length))),
-    namedtype.NamedType('printable-code', char.PrintableString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_postal_code_length)))
+    namedtype.NamedType(
+        "numeric-code",
+        char.NumericString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_postal_code_length)
+        ),
+    ),
+    namedtype.NamedType(
+        "printable-code",
+        char.PrintableString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_postal_code_length)
+        ),
+    ),
 )
 
 ub_generation_qualifier_length = univ.Integer(3)
@@ -166,10 +204,18 @@ class PDSParameter(univ.Set):
 
 
 PDSParameter.componentType = namedtype.NamedTypes(
-    namedtype.OptionalNamedType('printable-string', char.PrintableString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_pds_parameter_length))),
-    namedtype.OptionalNamedType('teletex-string', char.TeletexString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_pds_parameter_length)))
+    namedtype.OptionalNamedType(
+        "printable-string",
+        char.PrintableString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_pds_parameter_length)
+        ),
+    ),
+    namedtype.OptionalNamedType(
+        "teletex-string",
+        char.TeletexString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_pds_parameter_length)
+        ),
+    ),
 )
 
 
@@ -189,10 +235,22 @@ class TeletexDomainDefinedAttribute(univ.Sequence):
 
 
 TeletexDomainDefinedAttribute.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('type', char.TeletexString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_domain_defined_attribute_type_length))),
-    namedtype.NamedType('value', char.TeletexString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_domain_defined_attribute_value_length)))
+    namedtype.NamedType(
+        "type",
+        char.TeletexString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(
+                1, ub_domain_defined_attribute_type_length
+            )
+        ),
+    ),
+    namedtype.NamedType(
+        "value",
+        char.TeletexString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(
+                1, ub_domain_defined_attribute_value_length
+            )
+        ),
+    ),
 )
 
 ub_domain_defined_attributes = univ.Integer(4)
@@ -203,7 +261,9 @@ class TeletexDomainDefinedAttributes(univ.SequenceOf):
 
 
 TeletexDomainDefinedAttributes.componentType = TeletexDomainDefinedAttribute()
-TeletexDomainDefinedAttributes.subtypeSpec = constraint.ValueSizeConstraint(1, ub_domain_defined_attributes)
+TeletexDomainDefinedAttributes.subtypeSpec = constraint.ValueSizeConstraint(
+    1, ub_domain_defined_attributes
+)
 
 extended_network_address = univ.Integer(22)
 
@@ -215,16 +275,36 @@ class X520LocalityName(univ.Choice):
 
 
 X520LocalityName.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('teletexString',
-                        char.TeletexString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_locality_name))),
-    namedtype.NamedType('printableString', char.PrintableString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_locality_name))),
-    namedtype.NamedType('universalString', char.UniversalString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_locality_name))),
-    namedtype.NamedType('utf8String',
-                        char.UTF8String().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_locality_name))),
-    namedtype.NamedType('bmpString',
-                        char.BMPString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_locality_name)))
+    namedtype.NamedType(
+        "teletexString",
+        char.TeletexString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_locality_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "printableString",
+        char.PrintableString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_locality_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "universalString",
+        char.UniversalString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_locality_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "utf8String",
+        char.UTF8String().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_locality_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "bmpString",
+        char.BMPString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_locality_name)
+        ),
+    ),
 )
 
 teletex_organization_name = univ.Integer(3)
@@ -239,18 +319,34 @@ class PersonalName(univ.Set):
 
 
 PersonalName.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('surname', char.PrintableString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_surname_length)).subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0))),
-    namedtype.OptionalNamedType('given-name', char.PrintableString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_given_name_length)).subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1))),
-    namedtype.OptionalNamedType('initials', char.PrintableString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_initials_length)).subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 2))),
-    namedtype.OptionalNamedType('generation-qualifier', char.PrintableString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_generation_qualifier_length)).subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 3)))
+    namedtype.NamedType(
+        "surname",
+        char.PrintableString()
+        .subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_surname_length))
+        .subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0)),
+    ),
+    namedtype.OptionalNamedType(
+        "given-name",
+        char.PrintableString()
+        .subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_given_name_length))
+        .subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)),
+    ),
+    namedtype.OptionalNamedType(
+        "initials",
+        char.PrintableString()
+        .subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_initials_length))
+        .subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 2)),
+    ),
+    namedtype.OptionalNamedType(
+        "generation-qualifier",
+        char.PrintableString()
+        .subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(
+                1, ub_generation_qualifier_length
+            )
+        )
+        .subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 3)),
+    ),
 )
 
 ub_organizational_unit_name_length = univ.Integer(32)
@@ -260,7 +356,9 @@ class OrganizationalUnitName(char.PrintableString):
     pass
 
 
-OrganizationalUnitName.subtypeSpec = constraint.ValueSizeConstraint(1, ub_organizational_unit_name_length)
+OrganizationalUnitName.subtypeSpec = constraint.ValueSizeConstraint(
+    1, ub_organizational_unit_name_length
+)
 
 id_at_generationQualifier = _buildOid(id_at, 44)
 
@@ -269,11 +367,7 @@ class Version(univ.Integer):
     pass
 
 
-Version.namedValues = namedval.NamedValues(
-    ('v1', 0),
-    ('v2', 1),
-    ('v3', 2)
-)
+Version.namedValues = namedval.NamedValues(("v1", 0), ("v2", 1), ("v3", 2))
 
 
 class CertificateSerialNumber(univ.Integer):
@@ -282,8 +376,8 @@ class CertificateSerialNumber(univ.Integer):
 
 class AlgorithmIdentifier(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('algorithm', univ.ObjectIdentifier()),
-        namedtype.OptionalNamedType('parameters', univ.Any())
+        namedtype.NamedType("algorithm", univ.ObjectIdentifier()),
+        namedtype.OptionalNamedType("parameters", univ.Any()),
     )
 
 
@@ -292,8 +386,8 @@ class Time(univ.Choice):
 
 
 Time.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('utcTime', useful.UTCTime()),
-    namedtype.NamedType('generalTime', useful.GeneralizedTime())
+    namedtype.NamedType("utcTime", useful.UTCTime()),
+    namedtype.NamedType("generalTime", useful.GeneralizedTime()),
 )
 
 
@@ -306,11 +400,12 @@ certificateAttributesMap = {}
 
 class AttributeTypeAndValue(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('type', AttributeType()),
+        namedtype.NamedType("type", AttributeType()),
         namedtype.NamedType(
-            'value', AttributeValue(),
-            openType=opentype.OpenType('type', certificateAttributesMap)
-        )
+            "value",
+            AttributeValue(),
+            openType=opentype.OpenType("type", certificateAttributesMap),
+        ),
     )
 
 
@@ -334,7 +429,7 @@ class Name(univ.Choice):
 
 
 Name.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('rdnSequence', RDNSequence())
+    namedtype.NamedType("rdnSequence", RDNSequence())
 )
 
 
@@ -343,24 +438,29 @@ class TBSCertList(univ.Sequence):
 
 
 TBSCertList.componentType = namedtype.NamedTypes(
-    namedtype.OptionalNamedType('version', Version()),
-    namedtype.NamedType('signature', AlgorithmIdentifier()),
-    namedtype.NamedType('issuer', Name()),
-    namedtype.NamedType('thisUpdate', Time()),
-    namedtype.OptionalNamedType('nextUpdate', Time()),
+    namedtype.OptionalNamedType("version", Version()),
+    namedtype.NamedType("signature", AlgorithmIdentifier()),
+    namedtype.NamedType("issuer", Name()),
+    namedtype.NamedType("thisUpdate", Time()),
+    namedtype.OptionalNamedType("nextUpdate", Time()),
     namedtype.OptionalNamedType(
-        'revokedCertificates', univ.SequenceOf(
+        "revokedCertificates",
+        univ.SequenceOf(
             componentType=univ.Sequence(
                 componentType=namedtype.NamedTypes(
-                    namedtype.NamedType('userCertificate', CertificateSerialNumber()),
-                    namedtype.NamedType('revocationDate', Time()),
-                    namedtype.OptionalNamedType('crlEntryExtensions', Extensions())
+                    namedtype.NamedType("userCertificate", CertificateSerialNumber()),
+                    namedtype.NamedType("revocationDate", Time()),
+                    namedtype.OptionalNamedType("crlEntryExtensions", Extensions()),
                 )
             )
-        )
+        ),
     ),
     namedtype.OptionalNamedType(
-        'crlExtensions', Extensions().subtype(explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0)))
+        "crlExtensions",
+        Extensions().subtype(
+            explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0)
+        ),
+    ),
 )
 
 
@@ -369,9 +469,9 @@ class CertificateList(univ.Sequence):
 
 
 CertificateList.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('tbsCertList', TBSCertList()),
-    namedtype.NamedType('signatureAlgorithm', AlgorithmIdentifier()),
-    namedtype.NamedType('signature', univ.BitString())
+    namedtype.NamedType("tbsCertList", TBSCertList()),
+    namedtype.NamedType("signatureAlgorithm", AlgorithmIdentifier()),
+    namedtype.NamedType("signature", univ.BitString()),
 )
 
 
@@ -381,21 +481,28 @@ class PhysicalDeliveryOfficeName(PDSParameter):
 
 ub_extension_attributes = univ.Integer(256)
 
-certificateExtensionsMap = {
-
-}
+certificateExtensionsMap = {}
 
 
 class ExtensionAttribute(univ.Sequence):
     componentType = namedtype.NamedTypes(
         namedtype.NamedType(
-            'extension-attribute-type',
-            univ.Integer().subtype(subtypeSpec=constraint.ValueRangeConstraint(0, ub_extension_attributes)).subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0))),
+            "extension-attribute-type",
+            univ.Integer()
+            .subtype(
+                subtypeSpec=constraint.ValueRangeConstraint(0, ub_extension_attributes)
+            )
+            .subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0)),
+        ),
         namedtype.NamedType(
-            'extension-attribute-value',
-            univ.Any().subtype(explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)),
-            openType=opentype.OpenType('type', certificateExtensionsMap))
+            "extension-attribute-value",
+            univ.Any().subtype(
+                explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)
+            ),
+            openType=opentype.OpenType("type", certificateExtensionsMap),
+        ),
     )
+
 
 id_qt = _buildOid(id_pkix, 2)
 
@@ -428,8 +535,7 @@ class Validity(univ.Sequence):
 
 
 Validity.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('notBefore', Time()),
-    namedtype.NamedType('notAfter', Time())
+    namedtype.NamedType("notBefore", Time()), namedtype.NamedType("notAfter", Time())
 )
 
 
@@ -438,8 +544,8 @@ class SubjectPublicKeyInfo(univ.Sequence):
 
 
 SubjectPublicKeyInfo.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('algorithm', AlgorithmIdentifier()),
-    namedtype.NamedType('subjectPublicKey', univ.BitString())
+    namedtype.NamedType("algorithm", AlgorithmIdentifier()),
+    namedtype.NamedType("subjectPublicKey", univ.BitString()),
 )
 
 
@@ -448,21 +554,36 @@ class TBSCertificate(univ.Sequence):
 
 
 TBSCertificate.componentType = namedtype.NamedTypes(
-    namedtype.DefaultedNamedType('version',
-                                 Version().subtype(explicitTag=tag.Tag(tag.tagClassContext,
-                                                                       tag.tagFormatSimple, 0)).subtype(value="v1")),
-    namedtype.NamedType('serialNumber', CertificateSerialNumber()),
-    namedtype.NamedType('signature', AlgorithmIdentifier()),
-    namedtype.NamedType('issuer', Name()),
-    namedtype.NamedType('validity', Validity()),
-    namedtype.NamedType('subject', Name()),
-    namedtype.NamedType('subjectPublicKeyInfo', SubjectPublicKeyInfo()),
-    namedtype.OptionalNamedType('issuerUniqueID', UniqueIdentifier().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1))),
-    namedtype.OptionalNamedType('subjectUniqueID', UniqueIdentifier().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 2))),
-    namedtype.OptionalNamedType('extensions',
-                                Extensions().subtype(explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 3)))
+    namedtype.DefaultedNamedType(
+        "version",
+        Version()
+        .subtype(explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0))
+        .subtype(value="v1"),
+    ),
+    namedtype.NamedType("serialNumber", CertificateSerialNumber()),
+    namedtype.NamedType("signature", AlgorithmIdentifier()),
+    namedtype.NamedType("issuer", Name()),
+    namedtype.NamedType("validity", Validity()),
+    namedtype.NamedType("subject", Name()),
+    namedtype.NamedType("subjectPublicKeyInfo", SubjectPublicKeyInfo()),
+    namedtype.OptionalNamedType(
+        "issuerUniqueID",
+        UniqueIdentifier().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)
+        ),
+    ),
+    namedtype.OptionalNamedType(
+        "subjectUniqueID",
+        UniqueIdentifier().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 2)
+        ),
+    ),
+    namedtype.OptionalNamedType(
+        "extensions",
+        Extensions().subtype(
+            explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 3)
+        ),
+    ),
 )
 
 physical_delivery_office_name = univ.Integer(10)
@@ -475,15 +596,36 @@ class X520name(univ.Choice):
 
 
 X520name.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('teletexString',
-                        char.TeletexString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_name))),
-    namedtype.NamedType('printableString',
-                        char.PrintableString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_name))),
-    namedtype.NamedType('universalString',
-                        char.UniversalString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_name))),
-    namedtype.NamedType('utf8String',
-                        char.UTF8String().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_name))),
-    namedtype.NamedType('bmpString', char.BMPString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_name)))
+    namedtype.NamedType(
+        "teletexString",
+        char.TeletexString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "printableString",
+        char.PrintableString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "universalString",
+        char.UniversalString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "utf8String",
+        char.UTF8String().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "bmpString",
+        char.BMPString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_name)
+        ),
+    ),
 )
 
 id_at_dnQualifier = _buildOid(id_at, 46)
@@ -524,10 +666,22 @@ class PhysicalDeliveryCountryName(univ.Choice):
 
 
 PhysicalDeliveryCountryName.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('x121-dcc-code', char.NumericString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(ub_country_name_numeric_length, ub_country_name_numeric_length))),
-    namedtype.NamedType('iso-3166-alpha2-code', char.PrintableString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(ub_country_name_alpha_length, ub_country_name_alpha_length)))
+    namedtype.NamedType(
+        "x121-dcc-code",
+        char.NumericString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(
+                ub_country_name_numeric_length, ub_country_name_numeric_length
+            )
+        ),
+    ),
+    namedtype.NamedType(
+        "iso-3166-alpha2-code",
+        char.PrintableString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(
+                ub_country_name_alpha_length, ub_country_name_alpha_length
+            )
+        ),
+    ),
 )
 
 id_emailAddress = _buildOid(pkcs_9, 1)
@@ -540,16 +694,36 @@ class X520Pseudonym(univ.Choice):
 
 
 X520Pseudonym.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('teletexString',
-                        char.TeletexString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_pseudonym))),
-    namedtype.NamedType('printableString',
-                        char.PrintableString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_pseudonym))),
-    namedtype.NamedType('universalString',
-                        char.UniversalString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_pseudonym))),
-    namedtype.NamedType('utf8String',
-                        char.UTF8String().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_pseudonym))),
-    namedtype.NamedType('bmpString',
-                        char.BMPString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_pseudonym)))
+    namedtype.NamedType(
+        "teletexString",
+        char.TeletexString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_pseudonym)
+        ),
+    ),
+    namedtype.NamedType(
+        "printableString",
+        char.PrintableString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_pseudonym)
+        ),
+    ),
+    namedtype.NamedType(
+        "universalString",
+        char.UniversalString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_pseudonym)
+        ),
+    ),
+    namedtype.NamedType(
+        "utf8String",
+        char.UTF8String().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_pseudonym)
+        ),
+    ),
+    namedtype.NamedType(
+        "bmpString",
+        char.BMPString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_pseudonym)
+        ),
+    ),
 )
 
 ub_domain_name_length = univ.Integer(16)
@@ -560,12 +734,21 @@ class AdministrationDomainName(univ.Choice):
 
 
 AdministrationDomainName.tagSet = univ.Choice.tagSet.tagExplicitly(
-    tag.Tag(tag.tagClassApplication, tag.tagFormatConstructed, 2))
+    tag.Tag(tag.tagClassApplication, tag.tagFormatConstructed, 2)
+)
 AdministrationDomainName.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('numeric', char.NumericString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(0, ub_domain_name_length))),
-    namedtype.NamedType('printable', char.PrintableString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(0, ub_domain_name_length)))
+    namedtype.NamedType(
+        "numeric",
+        char.NumericString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(0, ub_domain_name_length)
+        ),
+    ),
+    namedtype.NamedType(
+        "printable",
+        char.PrintableString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(0, ub_domain_name_length)
+        ),
+    ),
 )
 
 
@@ -574,14 +757,30 @@ class PresentationAddress(univ.Sequence):
 
 
 PresentationAddress.componentType = namedtype.NamedTypes(
-    namedtype.OptionalNamedType('pSelector', univ.OctetString().subtype(
-        explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0))),
-    namedtype.OptionalNamedType('sSelector', univ.OctetString().subtype(
-        explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1))),
-    namedtype.OptionalNamedType('tSelector', univ.OctetString().subtype(
-        explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 2))),
-    namedtype.NamedType('nAddresses', univ.SetOf(componentType=univ.OctetString()).subtype(
-        explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 3)))
+    namedtype.OptionalNamedType(
+        "pSelector",
+        univ.OctetString().subtype(
+            explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0)
+        ),
+    ),
+    namedtype.OptionalNamedType(
+        "sSelector",
+        univ.OctetString().subtype(
+            explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)
+        ),
+    ),
+    namedtype.OptionalNamedType(
+        "tSelector",
+        univ.OctetString().subtype(
+            explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 2)
+        ),
+    ),
+    namedtype.NamedType(
+        "nAddresses",
+        univ.SetOf(componentType=univ.OctetString()).subtype(
+            explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 3)
+        ),
+    ),
 )
 
 
@@ -591,15 +790,42 @@ class ExtendedNetworkAddress(univ.Choice):
 
 ExtendedNetworkAddress.componentType = namedtype.NamedTypes(
     namedtype.NamedType(
-        'e163-4-address', univ.Sequence(
+        "e163-4-address",
+        univ.Sequence(
             componentType=namedtype.NamedTypes(
-                namedtype.NamedType('number', char.NumericString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_e163_4_number_length)).subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0))),
-                namedtype.OptionalNamedType('sub-address', char.NumericString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_e163_4_sub_address_length)).subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)))
+                namedtype.NamedType(
+                    "number",
+                    char.NumericString()
+                    .subtype(
+                        subtypeSpec=constraint.ValueSizeConstraint(
+                            1, ub_e163_4_number_length
+                        )
+                    )
+                    .subtype(
+                        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0)
+                    ),
+                ),
+                namedtype.OptionalNamedType(
+                    "sub-address",
+                    char.NumericString()
+                    .subtype(
+                        subtypeSpec=constraint.ValueSizeConstraint(
+                            1, ub_e163_4_sub_address_length
+                        )
+                    )
+                    .subtype(
+                        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)
+                    ),
+                ),
             )
-        )
+        ),
     ),
-    namedtype.NamedType('psap-address', PresentationAddress().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0)))
+    namedtype.NamedType(
+        "psap-address",
+        PresentationAddress().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0)
+        ),
+    ),
 )
 
 
@@ -607,7 +833,9 @@ class TeletexOrganizationName(char.TeletexString):
     pass
 
 
-TeletexOrganizationName.subtypeSpec = constraint.ValueSizeConstraint(1, ub_organization_name_length)
+TeletexOrganizationName.subtypeSpec = constraint.ValueSizeConstraint(
+    1, ub_organization_name_length
+)
 
 ub_terminal_id_length = univ.Integer(24)
 
@@ -616,7 +844,9 @@ class TerminalIdentifier(char.PrintableString):
     pass
 
 
-TerminalIdentifier.subtypeSpec = constraint.ValueSizeConstraint(1, ub_terminal_id_length)
+TerminalIdentifier.subtypeSpec = constraint.ValueSizeConstraint(
+    1, ub_terminal_id_length
+)
 
 id_ad_caIssuers = _buildOid(id_ad, 2)
 
@@ -639,7 +869,9 @@ class ExtensionAttributes(univ.SetOf):
 
 
 ExtensionAttributes.componentType = ExtensionAttribute()
-ExtensionAttributes.subtypeSpec = constraint.ValueSizeConstraint(1, ub_extension_attributes)
+ExtensionAttributes.subtypeSpec = constraint.ValueSizeConstraint(
+    1, ub_extension_attributes
+)
 
 ub_emailaddress_length = univ.Integer(255)
 
@@ -658,16 +890,36 @@ class X520OrganizationalUnitName(univ.Choice):
 
 
 X520OrganizationalUnitName.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('teletexString', char.TeletexString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_organizational_unit_name))),
-    namedtype.NamedType('printableString', char.PrintableString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_organizational_unit_name))),
-    namedtype.NamedType('universalString', char.UniversalString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_organizational_unit_name))),
-    namedtype.NamedType('utf8String', char.UTF8String().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_organizational_unit_name))),
-    namedtype.NamedType('bmpString', char.BMPString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_organizational_unit_name)))
+    namedtype.NamedType(
+        "teletexString",
+        char.TeletexString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_organizational_unit_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "printableString",
+        char.PrintableString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_organizational_unit_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "universalString",
+        char.UniversalString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_organizational_unit_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "utf8String",
+        char.UTF8String().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_organizational_unit_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "bmpString",
+        char.BMPString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_organizational_unit_name)
+        ),
+    ),
 )
 
 
@@ -683,15 +935,36 @@ class X520Title(univ.Choice):
 
 
 X520Title.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('teletexString',
-                        char.TeletexString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_title))),
-    namedtype.NamedType('printableString',
-                        char.PrintableString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_title))),
-    namedtype.NamedType('universalString',
-                        char.UniversalString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_title))),
-    namedtype.NamedType('utf8String',
-                        char.UTF8String().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_title))),
-    namedtype.NamedType('bmpString', char.BMPString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_title)))
+    namedtype.NamedType(
+        "teletexString",
+        char.TeletexString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_title)
+        ),
+    ),
+    namedtype.NamedType(
+        "printableString",
+        char.PrintableString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_title)
+        ),
+    ),
+    namedtype.NamedType(
+        "universalString",
+        char.UniversalString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_title)
+        ),
+    ),
+    namedtype.NamedType(
+        "utf8String",
+        char.UTF8String().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_title)
+        ),
+    ),
+    namedtype.NamedType(
+        "bmpString",
+        char.BMPString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_title)
+        ),
+    ),
 )
 
 id_at_localityName = _buildOid(id_at, 7)
@@ -706,16 +979,36 @@ class X520StateOrProvinceName(univ.Choice):
 
 
 X520StateOrProvinceName.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('teletexString',
-                        char.TeletexString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_state_name))),
-    namedtype.NamedType('printableString',
-                        char.PrintableString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_state_name))),
-    namedtype.NamedType('universalString',
-                        char.UniversalString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_state_name))),
-    namedtype.NamedType('utf8String',
-                        char.UTF8String().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_state_name))),
-    namedtype.NamedType('bmpString',
-                        char.BMPString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_state_name)))
+    namedtype.NamedType(
+        "teletexString",
+        char.TeletexString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_state_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "printableString",
+        char.PrintableString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_state_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "universalString",
+        char.UniversalString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_state_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "utf8String",
+        char.UTF8String().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_state_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "bmpString",
+        char.BMPString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_state_name)
+        ),
+    ),
 )
 
 physical_delivery_organization_name = univ.Integer(14)
@@ -743,11 +1036,14 @@ X520SerialNumber.subtypeSpec = constraint.ValueSizeConstraint(1, ub_serial_numbe
 
 class Attribute(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('type', AttributeType()),
-        namedtype.NamedType('values',
-                            univ.SetOf(componentType=AttributeValue()),
-                            openType=opentype.OpenType('type', certificateAttributesMap))
+        namedtype.NamedType("type", AttributeType()),
+        namedtype.NamedType(
+            "values",
+            univ.SetOf(componentType=AttributeValue()),
+            openType=opentype.OpenType("type", certificateAttributesMap),
+        ),
     )
+
 
 ub_common_name = univ.Integer(64)
 
@@ -774,10 +1070,22 @@ class BuiltInDomainDefinedAttribute(univ.Sequence):
 
 
 BuiltInDomainDefinedAttribute.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('type', char.PrintableString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_domain_defined_attribute_type_length))),
-    namedtype.NamedType('value', char.PrintableString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_domain_defined_attribute_value_length)))
+    namedtype.NamedType(
+        "type",
+        char.PrintableString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(
+                1, ub_domain_defined_attribute_type_length
+            )
+        ),
+    ),
+    namedtype.NamedType(
+        "value",
+        char.PrintableString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(
+                1, ub_domain_defined_attribute_value_length
+            )
+        ),
+    ),
 )
 
 
@@ -786,7 +1094,9 @@ class BuiltInDomainDefinedAttributes(univ.SequenceOf):
 
 
 BuiltInDomainDefinedAttributes.componentType = BuiltInDomainDefinedAttribute()
-BuiltInDomainDefinedAttributes.subtypeSpec = constraint.ValueSizeConstraint(1, ub_domain_defined_attributes)
+BuiltInDomainDefinedAttributes.subtypeSpec = constraint.ValueSizeConstraint(
+    1, ub_domain_defined_attributes
+)
 
 id_at_pseudonym = _buildOid(id_at, 65)
 
@@ -798,16 +1108,36 @@ class X520CommonName(univ.Choice):
 
 
 X520CommonName.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('teletexString',
-                        char.TeletexString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_common_name))),
-    namedtype.NamedType('printableString',
-                        char.PrintableString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_common_name))),
-    namedtype.NamedType('universalString',
-                        char.UniversalString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_common_name))),
-    namedtype.NamedType('utf8String',
-                        char.UTF8String().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_common_name))),
-    namedtype.NamedType('bmpString',
-                        char.BMPString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_common_name)))
+    namedtype.NamedType(
+        "teletexString",
+        char.TeletexString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_common_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "printableString",
+        char.PrintableString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_common_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "universalString",
+        char.UniversalString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_common_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "utf8String",
+        char.UTF8String().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_common_name)
+        ),
+    ),
+    namedtype.NamedType(
+        "bmpString",
+        char.BMPString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_common_name)
+        ),
+    ),
 )
 
 extension_OR_address_components = univ.Integer(12)
@@ -839,19 +1169,35 @@ class NumericUserIdentifier(char.NumericString):
     pass
 
 
-NumericUserIdentifier.subtypeSpec = constraint.ValueSizeConstraint(1, ub_numeric_user_id_length)
+NumericUserIdentifier.subtypeSpec = constraint.ValueSizeConstraint(
+    1, ub_numeric_user_id_length
+)
 
 
 class CountryName(univ.Choice):
     pass
 
 
-CountryName.tagSet = univ.Choice.tagSet.tagExplicitly(tag.Tag(tag.tagClassApplication, tag.tagFormatConstructed, 1))
+CountryName.tagSet = univ.Choice.tagSet.tagExplicitly(
+    tag.Tag(tag.tagClassApplication, tag.tagFormatConstructed, 1)
+)
 CountryName.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('x121-dcc-code', char.NumericString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(ub_country_name_numeric_length, ub_country_name_numeric_length))),
-    namedtype.NamedType('iso-3166-alpha2-code', char.PrintableString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(ub_country_name_alpha_length, ub_country_name_alpha_length)))
+    namedtype.NamedType(
+        "x121-dcc-code",
+        char.NumericString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(
+                ub_country_name_numeric_length, ub_country_name_numeric_length
+            )
+        ),
+    ),
+    namedtype.NamedType(
+        "iso-3166-alpha2-code",
+        char.PrintableString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(
+                ub_country_name_alpha_length, ub_country_name_alpha_length
+            )
+        ),
+    ),
 )
 
 
@@ -859,7 +1205,9 @@ class OrganizationName(char.PrintableString):
     pass
 
 
-OrganizationName.subtypeSpec = constraint.ValueSizeConstraint(1, ub_organization_name_length)
+OrganizationName.subtypeSpec = constraint.ValueSizeConstraint(
+    1, ub_organization_name_length
+)
 
 
 class OrganizationalUnitNames(univ.SequenceOf):
@@ -867,7 +1215,9 @@ class OrganizationalUnitNames(univ.SequenceOf):
 
 
 OrganizationalUnitNames.componentType = OrganizationalUnitName()
-OrganizationalUnitNames.subtypeSpec = constraint.ValueSizeConstraint(1, ub_organizational_units)
+OrganizationalUnitNames.subtypeSpec = constraint.ValueSizeConstraint(
+    1, ub_organizational_units
+)
 
 
 class PrivateDomainName(univ.Choice):
@@ -875,10 +1225,18 @@ class PrivateDomainName(univ.Choice):
 
 
 PrivateDomainName.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('numeric', char.NumericString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_domain_name_length))),
-    namedtype.NamedType('printable', char.PrintableString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_domain_name_length)))
+    namedtype.NamedType(
+        "numeric",
+        char.NumericString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_domain_name_length)
+        ),
+    ),
+    namedtype.NamedType(
+        "printable",
+        char.PrintableString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, ub_domain_name_length)
+        ),
+    ),
 )
 
 
@@ -887,22 +1245,52 @@ class BuiltInStandardAttributes(univ.Sequence):
 
 
 BuiltInStandardAttributes.componentType = namedtype.NamedTypes(
-    namedtype.OptionalNamedType('country-name', CountryName()),
-    namedtype.OptionalNamedType('administration-domain-name', AdministrationDomainName()),
-    namedtype.OptionalNamedType('network-address', NetworkAddress().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0))),
-    namedtype.OptionalNamedType('terminal-identifier', TerminalIdentifier().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1))),
-    namedtype.OptionalNamedType('private-domain-name', PrivateDomainName().subtype(
-        explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 2))),
-    namedtype.OptionalNamedType('organization-name', OrganizationName().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 3))),
-    namedtype.OptionalNamedType('numeric-user-identifier', NumericUserIdentifier().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 4))),
-    namedtype.OptionalNamedType('personal-name', PersonalName().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 5))),
-    namedtype.OptionalNamedType('organizational-unit-names', OrganizationalUnitNames().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 6)))
+    namedtype.OptionalNamedType("country-name", CountryName()),
+    namedtype.OptionalNamedType(
+        "administration-domain-name", AdministrationDomainName()
+    ),
+    namedtype.OptionalNamedType(
+        "network-address",
+        NetworkAddress().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0)
+        ),
+    ),
+    namedtype.OptionalNamedType(
+        "terminal-identifier",
+        TerminalIdentifier().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)
+        ),
+    ),
+    namedtype.OptionalNamedType(
+        "private-domain-name",
+        PrivateDomainName().subtype(
+            explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 2)
+        ),
+    ),
+    namedtype.OptionalNamedType(
+        "organization-name",
+        OrganizationName().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 3)
+        ),
+    ),
+    namedtype.OptionalNamedType(
+        "numeric-user-identifier",
+        NumericUserIdentifier().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 4)
+        ),
+    ),
+    namedtype.OptionalNamedType(
+        "personal-name",
+        PersonalName().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 5)
+        ),
+    ),
+    namedtype.OptionalNamedType(
+        "organizational-unit-names",
+        OrganizationalUnitNames().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 6)
+        ),
+    ),
 )
 
 
@@ -911,9 +1299,11 @@ class ORAddress(univ.Sequence):
 
 
 ORAddress.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('built-in-standard-attributes', BuiltInStandardAttributes()),
-    namedtype.OptionalNamedType('built-in-domain-defined-attributes', BuiltInDomainDefinedAttributes()),
-    namedtype.OptionalNamedType('extension-attributes', ExtensionAttributes())
+    namedtype.NamedType("built-in-standard-attributes", BuiltInStandardAttributes()),
+    namedtype.OptionalNamedType(
+        "built-in-domain-defined-attributes", BuiltInDomainDefinedAttributes()
+    ),
+    namedtype.OptionalNamedType("extension-attributes", ExtensionAttributes()),
 )
 
 
@@ -952,18 +1342,34 @@ class TeletexPersonalName(univ.Set):
 
 
 TeletexPersonalName.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('surname', char.TeletexString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_surname_length)).subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0))),
-    namedtype.OptionalNamedType('given-name', char.TeletexString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_given_name_length)).subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1))),
-    namedtype.OptionalNamedType('initials', char.TeletexString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_initials_length)).subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 2))),
-    namedtype.OptionalNamedType('generation-qualifier', char.TeletexString().subtype(
-        subtypeSpec=constraint.ValueSizeConstraint(1, ub_generation_qualifier_length)).subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 3)))
+    namedtype.NamedType(
+        "surname",
+        char.TeletexString()
+        .subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_surname_length))
+        .subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0)),
+    ),
+    namedtype.OptionalNamedType(
+        "given-name",
+        char.TeletexString()
+        .subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_given_name_length))
+        .subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)),
+    ),
+    namedtype.OptionalNamedType(
+        "initials",
+        char.TeletexString()
+        .subtype(subtypeSpec=constraint.ValueSizeConstraint(1, ub_initials_length))
+        .subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 2)),
+    ),
+    namedtype.OptionalNamedType(
+        "generation-qualifier",
+        char.TeletexString()
+        .subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(
+                1, ub_generation_qualifier_length
+            )
+        )
+        .subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 3)),
+    ),
 )
 
 street_address = univ.Integer(17)
@@ -981,14 +1387,32 @@ class DirectoryString(univ.Choice):
 
 
 DirectoryString.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('teletexString',
-                        char.TeletexString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, MAX))),
-    namedtype.NamedType('printableString',
-                        char.PrintableString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, MAX))),
-    namedtype.NamedType('universalString',
-                        char.UniversalString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, MAX))),
-    namedtype.NamedType('utf8String', char.UTF8String().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, MAX))),
-    namedtype.NamedType('bmpString', char.BMPString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, MAX)))
+    namedtype.NamedType(
+        "teletexString",
+        char.TeletexString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, MAX)
+        ),
+    ),
+    namedtype.NamedType(
+        "printableString",
+        char.PrintableString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, MAX)
+        ),
+    ),
+    namedtype.NamedType(
+        "universalString",
+        char.UniversalString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, MAX)
+        ),
+    ),
+    namedtype.NamedType(
+        "utf8String",
+        char.UTF8String().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, MAX)),
+    ),
+    namedtype.NamedType(
+        "bmpString",
+        char.BMPString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, MAX)),
+    ),
 )
 
 teletex_common_name = univ.Integer(2)
@@ -1006,9 +1430,9 @@ class Certificate(univ.Sequence):
 
 
 Certificate.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('tbsCertificate', TBSCertificate()),
-    namedtype.NamedType('signatureAlgorithm', AlgorithmIdentifier()),
-    namedtype.NamedType('signature', univ.BitString())
+    namedtype.NamedType("tbsCertificate", TBSCertificate()),
+    namedtype.NamedType("signatureAlgorithm", AlgorithmIdentifier()),
+    namedtype.NamedType("signature", univ.BitString()),
 )
 
 
@@ -1016,7 +1440,9 @@ class TeletexOrganizationalUnitName(char.TeletexString):
     pass
 
 
-TeletexOrganizationalUnitName.subtypeSpec = constraint.ValueSizeConstraint(1, ub_organizational_unit_name_length)
+TeletexOrganizationalUnitName.subtypeSpec = constraint.ValueSizeConstraint(
+    1, ub_organizational_unit_name_length
+)
 
 id_at_name = _buildOid(id_at, 41)
 
@@ -1026,7 +1452,9 @@ class TeletexOrganizationalUnitNames(univ.SequenceOf):
 
 
 TeletexOrganizationalUnitNames.componentType = TeletexOrganizationalUnitName()
-TeletexOrganizationalUnitNames.subtypeSpec = constraint.ValueSizeConstraint(1, ub_organizational_units)
+TeletexOrganizationalUnitNames.subtypeSpec = constraint.ValueSizeConstraint(
+    1, ub_organizational_units
+)
 
 id_ce = _buildOid(2, 5, 29)
 
@@ -1045,16 +1473,16 @@ class CRLReason(univ.Enumerated):
 
 
 CRLReason.namedValues = namedval.NamedValues(
-    ('unspecified', 0),
-    ('keyCompromise', 1),
-    ('cACompromise', 2),
-    ('affiliationChanged', 3),
-    ('superseded', 4),
-    ('cessationOfOperation', 5),
-    ('certificateHold', 6),
-    ('removeFromCRL', 8),
-    ('privilegeWithdrawn', 9),
-    ('aACompromise', 10)
+    ("unspecified", 0),
+    ("keyCompromise", 1),
+    ("cACompromise", 2),
+    ("affiliationChanged", 3),
+    ("superseded", 4),
+    ("cessationOfOperation", 5),
+    ("certificateHold", 6),
+    ("removeFromCRL", 8),
+    ("privilegeWithdrawn", 9),
+    ("aACompromise", 10),
 )
 
 
@@ -1063,26 +1491,34 @@ class PrivateKeyUsagePeriod(univ.Sequence):
 
 
 PrivateKeyUsagePeriod.componentType = namedtype.NamedTypes(
-    namedtype.OptionalNamedType('notBefore', useful.GeneralizedTime().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0))),
-    namedtype.OptionalNamedType('notAfter', useful.GeneralizedTime().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)))
+    namedtype.OptionalNamedType(
+        "notBefore",
+        useful.GeneralizedTime().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0)
+        ),
+    ),
+    namedtype.OptionalNamedType(
+        "notAfter",
+        useful.GeneralizedTime().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)
+        ),
+    ),
 )
 
 
-anotherNameMap = {
-
-}
+anotherNameMap = {}
 
 
 class AnotherName(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('type-id', univ.ObjectIdentifier()),
+        namedtype.NamedType("type-id", univ.ObjectIdentifier()),
         namedtype.NamedType(
-            'value',
-            univ.Any().subtype(explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0)),
-            openType=opentype.OpenType('type-id', anotherNameMap)
-        )
+            "value",
+            univ.Any().subtype(
+                explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0)
+            ),
+            openType=opentype.OpenType("type-id", anotherNameMap),
+        ),
     )
 
 
@@ -1091,10 +1527,18 @@ class EDIPartyName(univ.Sequence):
 
 
 EDIPartyName.componentType = namedtype.NamedTypes(
-    namedtype.OptionalNamedType('nameAssigner', DirectoryString().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0))),
-    namedtype.NamedType('partyName', DirectoryString().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1)))
+    namedtype.OptionalNamedType(
+        "nameAssigner",
+        DirectoryString().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0)
+        ),
+    ),
+    namedtype.NamedType(
+        "partyName",
+        DirectoryString().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1)
+        ),
+    ),
 )
 
 
@@ -1103,24 +1547,60 @@ class GeneralName(univ.Choice):
 
 
 GeneralName.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('otherName',
-                        AnotherName().subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0))),
-    namedtype.NamedType('rfc822Name',
-                        char.IA5String().subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1))),
-    namedtype.NamedType('dNSName',
-                        char.IA5String().subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 2))),
-    namedtype.NamedType('x400Address',
-                        ORAddress().subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 3))),
-    namedtype.NamedType('directoryName',
-                        Name().subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 4))),
-    namedtype.NamedType('ediPartyName',
-                        EDIPartyName().subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 5))),
-    namedtype.NamedType('uniformResourceIdentifier',
-                        char.IA5String().subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 6))),
-    namedtype.NamedType('iPAddress',
-                        univ.OctetString().subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 7))),
-    namedtype.NamedType('registeredID', univ.ObjectIdentifier().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 8)))
+    namedtype.NamedType(
+        "otherName",
+        AnotherName().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0)
+        ),
+    ),
+    namedtype.NamedType(
+        "rfc822Name",
+        char.IA5String().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)
+        ),
+    ),
+    namedtype.NamedType(
+        "dNSName",
+        char.IA5String().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 2)
+        ),
+    ),
+    namedtype.NamedType(
+        "x400Address",
+        ORAddress().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 3)
+        ),
+    ),
+    namedtype.NamedType(
+        "directoryName",
+        Name().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 4)
+        ),
+    ),
+    namedtype.NamedType(
+        "ediPartyName",
+        EDIPartyName().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 5)
+        ),
+    ),
+    namedtype.NamedType(
+        "uniformResourceIdentifier",
+        char.IA5String().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 6)
+        ),
+    ),
+    namedtype.NamedType(
+        "iPAddress",
+        univ.OctetString().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 7)
+        ),
+    ),
+    namedtype.NamedType(
+        "registeredID",
+        univ.ObjectIdentifier().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 8)
+        ),
+    ),
 )
 
 
@@ -1136,11 +1616,19 @@ class GeneralSubtree(univ.Sequence):
 
 
 GeneralSubtree.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('base', GeneralName()),
-    namedtype.DefaultedNamedType('minimum', BaseDistance().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0)).subtype(value=0)),
-    namedtype.OptionalNamedType('maximum', BaseDistance().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)))
+    namedtype.NamedType("base", GeneralName()),
+    namedtype.DefaultedNamedType(
+        "minimum",
+        BaseDistance()
+        .subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0))
+        .subtype(value=0),
+    ),
+    namedtype.OptionalNamedType(
+        "maximum",
+        BaseDistance().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)
+        ),
+    ),
 )
 
 
@@ -1157,10 +1645,18 @@ class DistributionPointName(univ.Choice):
 
 
 DistributionPointName.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('fullName',
-                        GeneralNames().subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0))),
-    namedtype.NamedType('nameRelativeToCRLIssuer', RelativeDistinguishedName().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)))
+    namedtype.NamedType(
+        "fullName",
+        GeneralNames().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0)
+        ),
+    ),
+    namedtype.NamedType(
+        "nameRelativeToCRLIssuer",
+        RelativeDistinguishedName().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)
+        ),
+    ),
 )
 
 
@@ -1169,15 +1665,15 @@ class ReasonFlags(univ.BitString):
 
 
 ReasonFlags.namedValues = namedval.NamedValues(
-    ('unused', 0),
-    ('keyCompromise', 1),
-    ('cACompromise', 2),
-    ('affiliationChanged', 3),
-    ('superseded', 4),
-    ('cessationOfOperation', 5),
-    ('certificateHold', 6),
-    ('privilegeWithdrawn', 7),
-    ('aACompromise', 8)
+    ("unused", 0),
+    ("keyCompromise", 1),
+    ("cACompromise", 2),
+    ("affiliationChanged", 3),
+    ("superseded", 4),
+    ("cessationOfOperation", 5),
+    ("certificateHold", 6),
+    ("privilegeWithdrawn", 7),
+    ("aACompromise", 8),
 )
 
 
@@ -1186,18 +1682,42 @@ class IssuingDistributionPoint(univ.Sequence):
 
 
 IssuingDistributionPoint.componentType = namedtype.NamedTypes(
-    namedtype.OptionalNamedType('distributionPoint', DistributionPointName().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0))),
-    namedtype.DefaultedNamedType('onlyContainsUserCerts', univ.Boolean().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)).subtype(value=0)),
-    namedtype.DefaultedNamedType('onlyContainsCACerts', univ.Boolean().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 2)).subtype(value=0)),
-    namedtype.OptionalNamedType('onlySomeReasons', ReasonFlags().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 3))),
-    namedtype.DefaultedNamedType('indirectCRL', univ.Boolean().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 4)).subtype(value=0)),
-    namedtype.DefaultedNamedType('onlyContainsAttributeCerts', univ.Boolean().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 5)).subtype(value=0))
+    namedtype.OptionalNamedType(
+        "distributionPoint",
+        DistributionPointName().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0)
+        ),
+    ),
+    namedtype.DefaultedNamedType(
+        "onlyContainsUserCerts",
+        univ.Boolean()
+        .subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1))
+        .subtype(value=0),
+    ),
+    namedtype.DefaultedNamedType(
+        "onlyContainsCACerts",
+        univ.Boolean()
+        .subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 2))
+        .subtype(value=0),
+    ),
+    namedtype.OptionalNamedType(
+        "onlySomeReasons",
+        ReasonFlags().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 3)
+        ),
+    ),
+    namedtype.DefaultedNamedType(
+        "indirectCRL",
+        univ.Boolean()
+        .subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 4))
+        .subtype(value=0),
+    ),
+    namedtype.DefaultedNamedType(
+        "onlyContainsAttributeCerts",
+        univ.Boolean()
+        .subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 5))
+        .subtype(value=0),
+    ),
 )
 
 id_ce_certificatePolicies = _buildOid(id_ce, 32)
@@ -1210,8 +1730,8 @@ class AccessDescription(univ.Sequence):
 
 
 AccessDescription.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('accessMethod', univ.ObjectIdentifier()),
-    namedtype.NamedType('accessLocation', GeneralName())
+    namedtype.NamedType("accessMethod", univ.ObjectIdentifier()),
+    namedtype.NamedType("accessLocation", GeneralName()),
 )
 
 
@@ -1235,12 +1755,24 @@ class DistributionPoint(univ.Sequence):
 
 
 DistributionPoint.componentType = namedtype.NamedTypes(
-    namedtype.OptionalNamedType('distributionPoint', DistributionPointName().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0))),
-    namedtype.OptionalNamedType('reasons', ReasonFlags().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1))),
-    namedtype.OptionalNamedType('cRLIssuer', GeneralNames().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 2)))
+    namedtype.OptionalNamedType(
+        "distributionPoint",
+        DistributionPointName().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0)
+        ),
+    ),
+    namedtype.OptionalNamedType(
+        "reasons",
+        ReasonFlags().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)
+        ),
+    ),
+    namedtype.OptionalNamedType(
+        "cRLIssuer",
+        GeneralNames().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 2)
+        ),
+    ),
 )
 
 
@@ -1265,10 +1797,18 @@ class NameConstraints(univ.Sequence):
 
 
 NameConstraints.componentType = namedtype.NamedTypes(
-    namedtype.OptionalNamedType('permittedSubtrees', GeneralSubtrees().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0))),
-    namedtype.OptionalNamedType('excludedSubtrees', GeneralSubtrees().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)))
+    namedtype.OptionalNamedType(
+        "permittedSubtrees",
+        GeneralSubtrees().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0)
+        ),
+    ),
+    namedtype.OptionalNamedType(
+        "excludedSubtrees",
+        GeneralSubtrees().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)
+        ),
+    ),
 )
 
 
@@ -1289,11 +1829,24 @@ class DisplayText(univ.Choice):
 
 
 DisplayText.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('ia5String', char.IA5String().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, 200))),
-    namedtype.NamedType('visibleString',
-                        char.VisibleString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, 200))),
-    namedtype.NamedType('bmpString', char.BMPString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, 200))),
-    namedtype.NamedType('utf8String', char.UTF8String().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, 200)))
+    namedtype.NamedType(
+        "ia5String",
+        char.IA5String().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, 200)),
+    ),
+    namedtype.NamedType(
+        "visibleString",
+        char.VisibleString().subtype(
+            subtypeSpec=constraint.ValueSizeConstraint(1, 200)
+        ),
+    ),
+    namedtype.NamedType(
+        "bmpString",
+        char.BMPString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, 200)),
+    ),
+    namedtype.NamedType(
+        "utf8String",
+        char.UTF8String().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, 200)),
+    ),
 )
 
 
@@ -1302,8 +1855,8 @@ class NoticeReference(univ.Sequence):
 
 
 NoticeReference.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('organization', DisplayText()),
-    namedtype.NamedType('noticeNumbers', univ.SequenceOf(componentType=univ.Integer()))
+    namedtype.NamedType("organization", DisplayText()),
+    namedtype.NamedType("noticeNumbers", univ.SequenceOf(componentType=univ.Integer())),
 )
 
 
@@ -1312,8 +1865,8 @@ class UserNotice(univ.Sequence):
 
 
 UserNotice.componentType = namedtype.NamedTypes(
-    namedtype.OptionalNamedType('noticeRef', NoticeReference()),
-    namedtype.OptionalNamedType('explicitText', DisplayText())
+    namedtype.OptionalNamedType("noticeRef", NoticeReference()),
+    namedtype.OptionalNamedType("explicitText", DisplayText()),
 )
 
 
@@ -1321,18 +1874,17 @@ class PolicyQualifierId(univ.ObjectIdentifier):
     pass
 
 
-policyQualifierInfoMap = {
-
-}
+policyQualifierInfoMap = {}
 
 
 class PolicyQualifierInfo(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('policyQualifierId', PolicyQualifierId()),
+        namedtype.NamedType("policyQualifierId", PolicyQualifierId()),
         namedtype.NamedType(
-            'qualifier', univ.Any(),
-            openType=opentype.OpenType('policyQualifierId', policyQualifierInfoMap)
-        )
+            "qualifier",
+            univ.Any(),
+            openType=opentype.OpenType("policyQualifierId", policyQualifierInfoMap),
+        ),
     )
 
 
@@ -1345,8 +1897,10 @@ class PolicyInformation(univ.Sequence):
 
 
 PolicyInformation.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('policyIdentifier', CertPolicyId()),
-    namedtype.OptionalNamedType('policyQualifiers', univ.SequenceOf(componentType=PolicyQualifierInfo()))
+    namedtype.NamedType("policyIdentifier", CertPolicyId()),
+    namedtype.OptionalNamedType(
+        "policyQualifiers", univ.SequenceOf(componentType=PolicyQualifierInfo())
+    ),
 )
 
 
@@ -1374,9 +1928,11 @@ class BasicConstraints(univ.Sequence):
 
 
 BasicConstraints.componentType = namedtype.NamedTypes(
-    namedtype.DefaultedNamedType('cA', univ.Boolean().subtype(value=0)),
-    namedtype.OptionalNamedType('pathLenConstraint',
-                                univ.Integer().subtype(subtypeSpec=constraint.ValueRangeConstraint(0, MAX)))
+    namedtype.DefaultedNamedType("cA", univ.Boolean().subtype(value=0)),
+    namedtype.OptionalNamedType(
+        "pathLenConstraint",
+        univ.Integer().subtype(subtypeSpec=constraint.ValueRangeConstraint(0, MAX)),
+    ),
 )
 
 id_ce_certificateIssuer = _buildOid(id_ce, 29)
@@ -1388,8 +1944,8 @@ class PolicyMappings(univ.SequenceOf):
 
 PolicyMappings.componentType = univ.Sequence(
     componentType=namedtype.NamedTypes(
-        namedtype.NamedType('issuerDomainPolicy', CertPolicyId()),
-        namedtype.NamedType('subjectDomainPolicy', CertPolicyId())
+        namedtype.NamedType("issuerDomainPolicy", CertPolicyId()),
+        namedtype.NamedType("subjectDomainPolicy", CertPolicyId()),
     )
 )
 
@@ -1434,12 +1990,24 @@ class AuthorityKeyIdentifier(univ.Sequence):
 
 
 AuthorityKeyIdentifier.componentType = namedtype.NamedTypes(
-    namedtype.OptionalNamedType('keyIdentifier', KeyIdentifier().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0))),
-    namedtype.OptionalNamedType('authorityCertIssuer', GeneralNames().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1))),
-    namedtype.OptionalNamedType('authorityCertSerialNumber', CertificateSerialNumber().subtype(
-        implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 2)))
+    namedtype.OptionalNamedType(
+        "keyIdentifier",
+        KeyIdentifier().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0)
+        ),
+    ),
+    namedtype.OptionalNamedType(
+        "authorityCertIssuer",
+        GeneralNames().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)
+        ),
+    ),
+    namedtype.OptionalNamedType(
+        "authorityCertSerialNumber",
+        CertificateSerialNumber().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 2)
+        ),
+    ),
 )
 
 
@@ -1516,15 +2084,15 @@ class KeyUsage(univ.BitString):
 
 
 KeyUsage.namedValues = namedval.NamedValues(
-    ('digitalSignature', 0),
-    ('nonRepudiation', 1),
-    ('keyEncipherment', 2),
-    ('dataEncipherment', 3),
-    ('keyAgreement', 4),
-    ('keyCertSign', 5),
-    ('cRLSign', 6),
-    ('encipherOnly', 7),
-    ('decipherOnly', 8)
+    ("digitalSignature", 0),
+    ("nonRepudiation", 1),
+    ("keyEncipherment", 2),
+    ("dataEncipherment", 3),
+    ("keyAgreement", 4),
+    ("keyCertSign", 5),
+    ("cRLSign", 6),
+    ("encipherOnly", 7),
+    ("decipherOnly", 8),
 )
 
 id_ce_invalidityDate = _buildOid(id_ce, 24)
@@ -1550,10 +2118,18 @@ class PolicyConstraints(univ.Sequence):
 
 
 PolicyConstraints.componentType = namedtype.NamedTypes(
-    namedtype.OptionalNamedType('requireExplicitPolicy',
-                                SkipCerts().subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0))),
-    namedtype.OptionalNamedType('inhibitPolicyMapping',
-                                SkipCerts().subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)))
+    namedtype.OptionalNamedType(
+        "requireExplicitPolicy",
+        SkipCerts().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0)
+        ),
+    ),
+    namedtype.OptionalNamedType(
+        "inhibitPolicyMapping",
+        SkipCerts().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1)
+        ),
+    ),
 )
 
 id_kp_clientAuth = _buildOid(id_kp, 2)

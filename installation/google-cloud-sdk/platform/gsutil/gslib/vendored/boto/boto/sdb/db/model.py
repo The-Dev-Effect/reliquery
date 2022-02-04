@@ -25,6 +25,7 @@ from boto.sdb.db.query import Query
 import boto
 from boto.compat import filter
 
+
 class ModelMeta(type):
     "Metaclass for all Models"
 
@@ -49,24 +50,25 @@ class ModelMeta(type):
                 prop_names = []
                 props = cls.properties()
                 for prop in props:
-                    if not prop.__class__.__name__.startswith('_'):
+                    if not prop.__class__.__name__.startswith("_"):
                         prop_names.append(prop.name)
-                setattr(cls, '_prop_names', prop_names)
+                setattr(cls, "_prop_names", prop_names)
         except NameError:
             # 'Model' isn't defined yet, meaning we're looking at our own
             # Model class, defined below.
             pass
 
+
 class Model(object):
     __metaclass__ = ModelMeta
-    __consistent__ = False # Consistent is set off by default
+    __consistent__ = False  # Consistent is set off by default
     id = None
 
     @classmethod
     def get_lineage(cls):
         l = [c.__name__ for c in cls.mro()]
         l.reverse()
-        return '.'.join(l)
+        return ".".join(l)
 
     @classmethod
     def kind(cls):
@@ -96,7 +98,7 @@ class Model(object):
     def find(cls, limit=None, next_token=None, **params):
         q = Query(cls, limit=limit, next_token=next_token)
         for key, value in params.items():
-            q.filter('%s =' % key, value)
+            q.filter("%s =" % key, value)
         return q
 
     @classmethod
@@ -114,7 +116,7 @@ class Model(object):
             for key in cls.__dict__.keys():
                 prop = cls.__dict__[key]
                 if isinstance(prop, Property):
-                    if hidden or not prop.__class__.__name__.startswith('_'):
+                    if hidden or not prop.__class__.__name__.startswith("_"):
                         properties.append(prop)
             if len(cls.__bases__) > 0:
                 cls = cls.__bases__[0]
@@ -129,7 +131,10 @@ class Model(object):
             for key in cls.__dict__.keys():
                 prop = cls.__dict__[key]
                 if isinstance(prop, Property):
-                    if not prop.__class__.__name__.startswith('_') and prop_name == prop.name:
+                    if (
+                        not prop.__class__.__name__.startswith("_")
+                        and prop_name == prop.name
+                    ):
                         property = prop
             if len(cls.__bases__) > 0:
                 cls = cls.__bases__[0]
@@ -139,10 +144,12 @@ class Model(object):
 
     @classmethod
     def get_xmlmanager(cls):
-        if not hasattr(cls, '_xmlmanager'):
+        if not hasattr(cls, "_xmlmanager"):
             from boto.sdb.db.manager.xmlmanager import XMLManager
-            cls._xmlmanager = XMLManager(cls, None, None, None,
-                                         None, None, None, None, False)
+
+            cls._xmlmanager = XMLManager(
+                cls, None, None, None, None, None, None, None, False
+            )
         return cls._xmlmanager
 
     @classmethod
@@ -158,11 +165,11 @@ class Model(object):
                 setattr(self, prop.name, prop.default_value())
             except ValueError:
                 pass
-        if 'manager' in kw:
-            self._manager = kw['manager']
+        if "manager" in kw:
+            self._manager = kw["manager"]
         self.id = id
         for key in kw:
-            if key != 'manager':
+            if key != "manager":
                 # We don't want any errors populating up when loading an object,
                 # so if it fails we just revert to it's default value
                 try:
@@ -171,7 +178,7 @@ class Model(object):
                     boto.log.exception(e)
 
     def __repr__(self):
-        return '%s<%s>' % (self.__class__.__name__, self.id)
+        return "%s<%s>" % (self.__class__.__name__, self.id)
 
     def __str__(self):
         return str(self.id)
@@ -217,11 +224,11 @@ class Model(object):
         :return: self
         :rtype: :class:`boto.sdb.db.model.Model`
         """
-        assert(isinstance(attrs, dict)), "Argument must be a dict of key->values to save"
+        assert isinstance(attrs, dict), "Argument must be a dict of key->values to save"
         for prop_name in attrs:
             value = attrs[prop_name]
             prop = self.find_property(prop_name)
-            assert(prop), "Property not found: %s" % prop_name
+            assert prop, "Property not found: %s" % prop_name
             self._manager.set_property(prop, self, prop_name, value)
         self.reload()
         return self
@@ -235,7 +242,9 @@ class Model(object):
         :return: self
         :rtype: :class:`boto.sdb.db.model.Model`
         """
-        assert(isinstance(attrs, list)), "Argument must be a list of names of keys to delete."
+        assert isinstance(
+            attrs, list
+        ), "Argument must be a list of names of keys to delete."
         self._manager.domain.delete_attributes(self.id, attrs)
         self.reload()
         return self
@@ -255,8 +264,7 @@ class Model(object):
         props = {}
         for prop in self.properties(hidden=False):
             props[prop.name] = getattr(self, prop.name)
-        obj = {'properties': props,
-               'id': self.id}
+        obj = {"properties": props, "id": self.id}
         return {self.__class__.__name__: obj}
 
     def to_xml(self, doc=None):
@@ -274,21 +282,21 @@ class Model(object):
             if r is not None:
                 return r
 
-class Expando(Model):
 
+class Expando(Model):
     def __setattr__(self, name, value):
         if name in self._prop_names:
             object.__setattr__(self, name, value)
-        elif name.startswith('_'):
+        elif name.startswith("_"):
             object.__setattr__(self, name, value)
-        elif name == 'id':
+        elif name == "id":
             object.__setattr__(self, name, value)
         else:
             self._manager.set_key_value(self, name, value)
             object.__setattr__(self, name, value)
 
     def __getattr__(self, name):
-        if not name.startswith('_'):
+        if not name.startswith("_"):
             value = self._manager.get_key_value(self, name)
             if value:
                 object.__setattr__(self, name, value)

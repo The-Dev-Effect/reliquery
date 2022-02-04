@@ -51,8 +51,7 @@ class HttpError(CommunicationError):
 
     """Error making a request. Soon to be HttpError."""
 
-    def __init__(self, response, content, url,
-                 method_config=None, request=None):
+    def __init__(self, response, content, url, method_config=None, request=None):
         error_message = HttpError._build_message(response, content, url)
         super(HttpError, self).__init__(error_message)
         self.response = response
@@ -67,25 +66,32 @@ class HttpError(CommunicationError):
     @staticmethod
     def _build_message(response, content, url):
         if isinstance(content, bytes):
-            content = content.decode('ascii', 'replace')
-        return 'HttpError accessing <%s>: response: <%s>, content <%s>' % (
-            url, response, content)
+            content = content.decode("ascii", "replace")
+        return "HttpError accessing <%s>: response: <%s>, content <%s>" % (
+            url,
+            response,
+            content,
+        )
 
     @property
     def status_code(self):
         # TODO(craigcitro): Turn this into something better than a
         # KeyError if there is no status.
-        return int(self.response['status'])
+        return int(self.response["status"])
 
     @classmethod
     def FromResponse(cls, http_response, **kwargs):
         try:
-            status_code = int(http_response.info.get('status'))
+            status_code = int(http_response.info.get("status"))
             error_cls = _HTTP_ERRORS.get(status_code, cls)
         except ValueError:
             error_cls = cls
-        return error_cls(http_response.info, http_response.content,
-                         http_response.request_url, **kwargs)
+        return error_cls(
+            http_response.info,
+            http_response.content,
+            http_response.request_url,
+            **kwargs
+        )
 
 
 class HttpBadRequestError(HttpError):
@@ -187,9 +193,13 @@ class RetryAfterError(HttpError):
 
     @classmethod
     def FromResponse(cls, http_response, **kwargs):
-        return cls(http_response.info, http_response.content,
-                   http_response.request_url, http_response.retry_after,
-                   **kwargs)
+        return cls(
+            http_response.info,
+            http_response.content,
+            http_response.request_url,
+            http_response.retry_after,
+            **kwargs
+        )
 
 
 class BadStatusCodeError(HttpError):

@@ -24,11 +24,11 @@ class _CompatEndpointResolver(_regions.EndpointResolver):
         # These don't always sync up to the name that boto2 uses.
         # A mapping can be provided that handles the mapping between
         # "service names" and endpoint prefixes.
-        'awslambda': 'lambda',
-        'cloudwatch': 'monitoring',
-        'ses': 'email',
-        'ec2containerservice': 'ecs',
-        'configservice': 'config',
+        "awslambda": "lambda",
+        "cloudwatch": "monitoring",
+        "ses": "email",
+        "ec2containerservice": "ecs",
+        "configservice": "config",
     }
 
     def __init__(self, endpoint_data, service_rename_map=None):
@@ -47,14 +47,15 @@ class _CompatEndpointResolver(_regions.EndpointResolver):
         # Mapping of boto2 service name to endpoint prefix
         self._endpoint_prefix_map = service_rename_map
         # Mapping of endpoint prefix to boto2 service name
-        self._service_name_map = dict(
-            (v, k) for k, v in service_rename_map.items())
+        self._service_name_map = dict((v, k) for k, v in service_rename_map.items())
 
-    def get_available_endpoints(self, service_name, partition_name='aws',
-                                allow_non_regional=False):
+    def get_available_endpoints(
+        self, service_name, partition_name="aws", allow_non_regional=False
+    ):
         endpoint_prefix = self._endpoint_prefix(service_name)
         return super(_CompatEndpointResolver, self).get_available_endpoints(
-            endpoint_prefix, partition_name, allow_non_regional)
+            endpoint_prefix, partition_name, allow_non_regional
+        )
 
     def get_all_available_regions(self, service_name):
         """Retrieve every region across partitions for a service."""
@@ -67,12 +68,11 @@ class _CompatEndpointResolver(_regions.EndpointResolver):
                 # Global services are available in every region in the
                 # partition in which they are considered global.
                 partition = self._get_partition_data(partition_name)
-                regions.update(partition['regions'].keys())
+                regions.update(partition["regions"].keys())
                 continue
             else:
                 regions.update(
-                    self.get_available_endpoints(
-                        endpoint_prefix, partition_name)
+                    self.get_available_endpoints(endpoint_prefix, partition_name)
                 )
 
         return list(regions)
@@ -80,18 +80,19 @@ class _CompatEndpointResolver(_regions.EndpointResolver):
     def construct_endpoint(self, service_name, region_name=None):
         endpoint_prefix = self._endpoint_prefix(service_name)
         return super(_CompatEndpointResolver, self).construct_endpoint(
-            endpoint_prefix, region_name)
+            endpoint_prefix, region_name
+        )
 
     def get_available_services(self):
         """Get a list of all the available services in the endpoints file(s)"""
         services = set()
 
-        for partition in self._endpoint_data['partitions']:
-            services.update(partition['services'].keys())
+        for partition in self._endpoint_data["partitions"]:
+            services.update(partition["services"].keys())
 
         return [self._service_name(s) for s in services]
 
-    def _is_global_service(self, service_name, partition_name='aws'):
+    def _is_global_service(self, service_name, partition_name="aws"):
         """Determines whether a service uses a global endpoint.
 
         In theory a service can be 'global' in one partition but regional in
@@ -99,8 +100,8 @@ class _CompatEndpointResolver(_regions.EndpointResolver):
         """
         endpoint_prefix = self._endpoint_prefix(service_name)
         partition = self._get_partition_data(partition_name)
-        service = partition['services'].get(endpoint_prefix, {})
-        return 'partitionEndpoint' in service
+        service = partition["services"].get(endpoint_prefix, {})
+        return "partitionEndpoint" in service
 
     def _get_partition_data(self, partition_name):
         """Get partition information for a particular partition.
@@ -115,11 +116,10 @@ class _CompatEndpointResolver(_regions.EndpointResolver):
         :returns: Partition info from the new endpoints format.
         :rtype: dict or None
         """
-        for partition in self._endpoint_data['partitions']:
-            if partition['partition'] == partition_name:
+        for partition in self._endpoint_data["partitions"]:
+            if partition["partition"] == partition_name:
                 return partition
-        raise ValueError(
-            "Could not find partition data for: %s" % partition_name)
+        raise ValueError("Could not find partition data for: %s" % partition_name)
 
     def _endpoint_prefix(self, service_name):
         """Given a boto2 service name, get the endpoint prefix."""
@@ -146,8 +146,7 @@ class BotoEndpointResolver(object):
         :param service_rename_map: A mapping of boto2 service name to
             endpoint prefix.
         """
-        self._resolver = _CompatEndpointResolver(
-            endpoint_data, service_rename_map)
+        self._resolver = _CompatEndpointResolver(endpoint_data, service_rename_map)
 
     def resolve_hostname(self, service_name, region_name):
         """Resolve the hostname for a service in a particular region.
@@ -163,7 +162,7 @@ class BotoEndpointResolver(object):
         endpoint = self._resolver.construct_endpoint(service_name, region_name)
         if endpoint is None:
             return None
-        return endpoint.get('sslCommonName', endpoint['hostname'])
+        return endpoint.get("sslCommonName", endpoint["hostname"])
 
     def get_all_available_regions(self, service_name):
         """Get all the regions a service is available in.
@@ -228,12 +227,13 @@ class StaticEndpointBuilder(object):
         regions = self._resolver.get_all_available_regions(service_name)
         for region_name in regions:
             endpoints[region_name] = self._resolver.resolve_hostname(
-                service_name, region_name)
+                service_name, region_name
+            )
         return endpoints
 
     def _handle_special_cases(self, static_endpoints):
         # cloudsearchdomain endpoints use the exact same set of endpoints as
         # cloudsearch.
-        if 'cloudsearch' in static_endpoints:
-            cloudsearch_endpoints = static_endpoints['cloudsearch']
-            static_endpoints['cloudsearchdomain'] = cloudsearch_endpoints
+        if "cloudsearch" in static_endpoints:
+            cloudsearch_endpoints = static_endpoints["cloudsearch"]
+            static_endpoints["cloudsearchdomain"] = cloudsearch_endpoints

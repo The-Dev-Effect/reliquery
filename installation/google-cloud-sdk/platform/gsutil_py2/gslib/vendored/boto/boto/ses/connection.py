@@ -34,30 +34,53 @@ from boto.ses import exceptions as ses_exceptions
 class SESConnection(AWSAuthConnection):
 
     ResponseError = BotoServerError
-    DefaultRegionName = 'us-east-1'
-    DefaultRegionEndpoint = 'email.us-east-1.amazonaws.com'
-    APIVersion = '2010-12-01'
+    DefaultRegionName = "us-east-1"
+    DefaultRegionEndpoint = "email.us-east-1.amazonaws.com"
+    APIVersion = "2010-12-01"
 
-    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None,
-                 is_secure=True, port=None, proxy=None, proxy_port=None,
-                 proxy_user=None, proxy_pass=None, debug=0,
-                 https_connection_factory=None, region=None, path='/',
-                 security_token=None, validate_certs=True, profile_name=None):
+    def __init__(
+        self,
+        aws_access_key_id=None,
+        aws_secret_access_key=None,
+        is_secure=True,
+        port=None,
+        proxy=None,
+        proxy_port=None,
+        proxy_user=None,
+        proxy_pass=None,
+        debug=0,
+        https_connection_factory=None,
+        region=None,
+        path="/",
+        security_token=None,
+        validate_certs=True,
+        profile_name=None,
+    ):
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
         self.region = region
-        super(SESConnection, self).__init__(self.region.endpoint,
-                                            aws_access_key_id, aws_secret_access_key,
-                                            is_secure, port, proxy, proxy_port,
-                                            proxy_user, proxy_pass, debug,
-                                            https_connection_factory, path,
-                                            security_token=security_token,
-                                            validate_certs=validate_certs,
-                                            profile_name=profile_name)
+        super(SESConnection, self).__init__(
+            self.region.endpoint,
+            aws_access_key_id,
+            aws_secret_access_key,
+            is_secure,
+            port,
+            proxy,
+            proxy_port,
+            proxy_user,
+            proxy_pass,
+            debug,
+            https_connection_factory,
+            path,
+            security_token=security_token,
+            validate_certs=validate_certs,
+            profile_name=profile_name,
+        )
 
     def _required_auth_capability(self):
-        return ['ses']
+        return ["ses"]
 
     def _build_list_params(self, params, items, label):
         """Add an AWS API-compatible parameter list to a dictionary.
@@ -74,7 +97,7 @@ class SESConnection(AWSAuthConnection):
         if isinstance(items, six.string_types):
             items = [items]
         for i in range(1, len(items) + 1):
-            params['%s.%d' % (label, i)] = items[i - 1]
+            params["%s.%d" % (label, i)] = items[i - 1]
 
     def _make_request(self, action, params=None):
         """Make a call to the SES API.
@@ -86,30 +109,33 @@ class SESConnection(AWSAuthConnection):
         :param params: Parameters that will be sent as POST data with the API
             call.
         """
-        ct = 'application/x-www-form-urlencoded; charset=UTF-8'
-        headers = {'Content-Type': ct}
+        ct = "application/x-www-form-urlencoded; charset=UTF-8"
+        headers = {"Content-Type": ct}
         params = params or {}
-        params['Action'] = action
+        params["Action"] = action
 
         for k, v in params.items():
             if isinstance(v, six.text_type):  # UTF-8 encode only if it's Unicode
-                params[k] = v.encode('utf-8')
+                params[k] = v.encode("utf-8")
 
         response = super(SESConnection, self).make_request(
-            'POST',
-            '/',
-            headers=headers,
-            data=urllib.parse.urlencode(params)
+            "POST", "/", headers=headers, data=urllib.parse.urlencode(params)
         )
-        body = response.read().decode('utf-8')
+        body = response.read().decode("utf-8")
         if response.status == 200:
-            list_markers = ('VerifiedEmailAddresses', 'Identities',
-                            'DkimTokens', 'DkimAttributes',
-                            'VerificationAttributes', 'SendDataPoints')
-            item_markers = ('member', 'item', 'entry')
+            list_markers = (
+                "VerifiedEmailAddresses",
+                "Identities",
+                "DkimTokens",
+                "DkimAttributes",
+                "VerificationAttributes",
+                "SendDataPoints",
+            )
+            item_markers = ("member", "item", "entry")
 
-            e = boto.jsonresponse.Element(list_marker=list_markers,
-                                          item_marker=item_markers)
+            e = boto.jsonresponse.Element(
+                list_marker=list_markers, item_marker=item_markers
+            )
             h = boto.jsonresponse.XmlHandler(e, None)
             h.parse(body)
             return e
@@ -124,8 +150,8 @@ class SESConnection(AWSAuthConnection):
         errors share the same HTTP response code, meaning we have to get really
         kludgey and do string searches to figure out what went wrong.
         """
-        boto.log.error('%s %s' % (response.status, response.reason))
-        boto.log.error('%s' % body)
+        boto.log.error("%s %s" % (response.status, response.reason))
+        boto.log.error("%s" % body)
 
         if "Address blacklisted." in body:
             # Delivery failures happened frequently enough with the recipient's
@@ -162,7 +188,7 @@ class SESConnection(AWSAuthConnection):
             exc_reason = "Illegal address"
         # The re.search is to distinguish from the
         # SESAddressNotVerifiedError error above.
-        elif re.search('Identity.*is not verified', body):
+        elif re.search("Identity.*is not verified", body):
             ExceptionToRaise = ses_exceptions.SESIdentityNotVerifiedError
             exc_reason = "Identity is not verified."
         elif "ownership not confirmed" in body:
@@ -176,10 +202,20 @@ class SESConnection(AWSAuthConnection):
 
         raise ExceptionToRaise(response.status, exc_reason, body)
 
-    def send_email(self, source, subject, body, to_addresses,
-                   cc_addresses=None, bcc_addresses=None,
-                   format='text', reply_addresses=None,
-                   return_path=None, text_body=None, html_body=None):
+    def send_email(
+        self,
+        source,
+        subject,
+        body,
+        to_addresses,
+        cc_addresses=None,
+        bcc_addresses=None,
+        format="text",
+        reply_addresses=None,
+        return_path=None,
+        text_body=None,
+        html_body=None,
+    ):
         """Composes an email message based on input data, and then immediately
         queues the message for sending.
 
@@ -231,49 +267,53 @@ class SESConnection(AWSAuthConnection):
         if body is not None:
             if format == "text":
                 if text_body is not None:
-                    raise Warning("You've passed in both a body and a "
-                                  "text_body; please choose one or the other.")
+                    raise Warning(
+                        "You've passed in both a body and a "
+                        "text_body; please choose one or the other."
+                    )
                 text_body = body
             else:
                 if html_body is not None:
-                    raise Warning("You've passed in both a body and an "
-                                  "html_body; please choose one or the other.")
+                    raise Warning(
+                        "You've passed in both a body and an "
+                        "html_body; please choose one or the other."
+                    )
                 html_body = body
 
         params = {
-            'Source': source,
-            'Message.Subject.Data': subject,
+            "Source": source,
+            "Message.Subject.Data": subject,
         }
 
         if return_path:
-            params['ReturnPath'] = return_path
+            params["ReturnPath"] = return_path
 
         if html_body is not None:
-            params['Message.Body.Html.Data'] = html_body
+            params["Message.Body.Html.Data"] = html_body
         if text_body is not None:
-            params['Message.Body.Text.Data'] = text_body
+            params["Message.Body.Text.Data"] = text_body
 
-        if(format not in ("text", "html")):
+        if format not in ("text", "html"):
             raise ValueError("'format' argument must be 'text' or 'html'")
 
-        if(not (html_body or text_body)):
+        if not (html_body or text_body):
             raise ValueError("No text or html body found for mail")
 
-        self._build_list_params(params, to_addresses,
-                                'Destination.ToAddresses.member')
+        self._build_list_params(params, to_addresses, "Destination.ToAddresses.member")
         if cc_addresses:
-            self._build_list_params(params, cc_addresses,
-                                    'Destination.CcAddresses.member')
+            self._build_list_params(
+                params, cc_addresses, "Destination.CcAddresses.member"
+            )
 
         if bcc_addresses:
-            self._build_list_params(params, bcc_addresses,
-                                    'Destination.BccAddresses.member')
+            self._build_list_params(
+                params, bcc_addresses, "Destination.BccAddresses.member"
+            )
 
         if reply_addresses:
-            self._build_list_params(params, reply_addresses,
-                                    'ReplyToAddresses.member')
+            self._build_list_params(params, reply_addresses, "ReplyToAddresses.member")
 
-        return self._make_request('SendEmail', params)
+        return self._make_request("SendEmail", params)
 
     def send_raw_email(self, raw_message, source=None, destinations=None):
         """Sends an email message, with header and content specified by the
@@ -307,20 +347,19 @@ class SESConnection(AWSAuthConnection):
         """
 
         if isinstance(raw_message, six.text_type):
-            raw_message = raw_message.encode('utf-8')
+            raw_message = raw_message.encode("utf-8")
 
         params = {
-            'RawMessage.Data': base64.b64encode(raw_message),
+            "RawMessage.Data": base64.b64encode(raw_message),
         }
 
         if source:
-            params['Source'] = source
+            params["Source"] = source
 
         if destinations:
-            self._build_list_params(params, destinations,
-                                    'Destinations.member')
+            self._build_list_params(params, destinations, "Destinations.member")
 
-        return self._make_request('SendRawEmail', params)
+        return self._make_request("SendRawEmail", params)
 
     def list_verified_email_addresses(self):
         """Fetch a list of the email addresses that have been verified.
@@ -329,7 +368,7 @@ class SESConnection(AWSAuthConnection):
         :returns: A ListVerifiedEmailAddressesResponse structure. Note that
                   keys must be unicode strings.
         """
-        return self._make_request('ListVerifiedEmailAddresses')
+        return self._make_request("ListVerifiedEmailAddresses")
 
     def get_send_quota(self):
         """Fetches the user's current activity limits.
@@ -338,7 +377,7 @@ class SESConnection(AWSAuthConnection):
         :returns: A GetSendQuotaResponse structure. Note that keys must be
                   unicode strings.
         """
-        return self._make_request('GetSendQuota')
+        return self._make_request("GetSendQuota")
 
     def get_send_statistics(self):
         """Fetches the user's sending statistics. The result is a list of data
@@ -351,7 +390,7 @@ class SESConnection(AWSAuthConnection):
         :returns: A GetSendStatisticsResponse structure. Note that keys must be
                   unicode strings.
         """
-        return self._make_request('GetSendStatistics')
+        return self._make_request("GetSendStatistics")
 
     def delete_verified_email_address(self, email_address):
         """Deletes the specified email address from the list of verified
@@ -365,9 +404,12 @@ class SESConnection(AWSAuthConnection):
         :returns: A DeleteVerifiedEmailAddressResponse structure. Note that
                   keys must be unicode strings.
         """
-        return self._make_request('DeleteVerifiedEmailAddress', {
-            'EmailAddress': email_address,
-        })
+        return self._make_request(
+            "DeleteVerifiedEmailAddress",
+            {
+                "EmailAddress": email_address,
+            },
+        )
 
     def verify_email_address(self, email_address):
         """Verifies an email address. This action causes a confirmation email
@@ -380,9 +422,12 @@ class SESConnection(AWSAuthConnection):
         :returns: A VerifyEmailAddressResponse structure. Note that keys must
                   be unicode strings.
         """
-        return self._make_request('VerifyEmailAddress', {
-            'EmailAddress': email_address,
-        })
+        return self._make_request(
+            "VerifyEmailAddress",
+            {
+                "EmailAddress": email_address,
+            },
+        )
 
     def verify_domain_dkim(self, domain):
         """
@@ -404,9 +449,12 @@ class SESConnection(AWSAuthConnection):
         :param domain: The domain name.
 
         """
-        return self._make_request('VerifyDomainDkim', {
-            'Domain': domain,
-        })
+        return self._make_request(
+            "VerifyDomainDkim",
+            {
+                "Domain": domain,
+            },
+        )
 
     def set_identity_dkim_enabled(self, identity, dkim_enabled):
         """Enables or disables DKIM signing of email sent from an identity.
@@ -430,10 +478,10 @@ class SESConnection(AWSAuthConnection):
         :param dkim_enabled: Specifies whether or not to enable DKIM signing.
 
         """
-        return self._make_request('SetIdentityDkimEnabled', {
-            'Identity': identity,
-            'DkimEnabled': 'true' if dkim_enabled else 'false'
-        })
+        return self._make_request(
+            "SetIdentityDkimEnabled",
+            {"Identity": identity, "DkimEnabled": "true" if dkim_enabled else "false"},
+        )
 
     def get_identity_dkim_attributes(self, identities):
         """Get attributes associated with a list of verified identities.
@@ -447,8 +495,8 @@ class SESConnection(AWSAuthConnection):
 
         """
         params = {}
-        self._build_list_params(params, identities, 'Identities.member')
-        return self._make_request('GetIdentityDkimAttributes', params)
+        self._build_list_params(params, identities, "Identities.member")
+        return self._make_request("GetIdentityDkimAttributes", params)
 
     def list_identities(self):
         """Returns a list containing all of the identities (email addresses
@@ -459,7 +507,7 @@ class SESConnection(AWSAuthConnection):
         :returns: A ListIdentitiesResponse structure. Note that
                   keys must be unicode strings.
         """
-        return self._make_request('ListIdentities')
+        return self._make_request("ListIdentities")
 
     def get_identity_verification_attributes(self, identities):
         """Given a list of identities (email addresses and/or domains),
@@ -474,9 +522,8 @@ class SESConnection(AWSAuthConnection):
                   Note that keys must be unicode strings.
         """
         params = {}
-        self._build_list_params(params, identities,
-                                'Identities.member')
-        return self._make_request('GetIdentityVerificationAttributes', params)
+        self._build_list_params(params, identities, "Identities.member")
+        return self._make_request("GetIdentityVerificationAttributes", params)
 
     def verify_domain_identity(self, domain):
         """Verifies a domain.
@@ -488,9 +535,12 @@ class SESConnection(AWSAuthConnection):
         :returns: A VerifyDomainIdentityResponse structure. Note that
                   keys must be unicode strings.
         """
-        return self._make_request('VerifyDomainIdentity', {
-            'Domain': domain,
-        })
+        return self._make_request(
+            "VerifyDomainIdentity",
+            {
+                "Domain": domain,
+            },
+        )
 
     def verify_email_identity(self, email_address):
         """Verifies an email address. This action causes a confirmation
@@ -503,9 +553,12 @@ class SESConnection(AWSAuthConnection):
         :returns: A VerifyEmailIdentityResponse structure. Note that keys must
                   be unicode strings.
         """
-        return self._make_request('VerifyEmailIdentity', {
-            'EmailAddress': email_address,
-        })
+        return self._make_request(
+            "VerifyEmailIdentity",
+            {
+                "EmailAddress": email_address,
+            },
+        )
 
     def delete_identity(self, identity):
         """Deletes the specified identity (email address or domain) from
@@ -518,11 +571,16 @@ class SESConnection(AWSAuthConnection):
         :returns: A DeleteIdentityResponse structure. Note that keys must
                   be unicode strings.
         """
-        return self._make_request('DeleteIdentity', {
-            'Identity': identity,
-        })
+        return self._make_request(
+            "DeleteIdentity",
+            {
+                "Identity": identity,
+            },
+        )
 
-    def set_identity_notification_topic(self, identity, notification_type, sns_topic=None):
+    def set_identity_notification_topic(
+        self, identity, notification_type, sns_topic=None
+    ):
         """Sets an SNS topic to publish bounce or complaint notifications for
         emails sent with the given identity as the Source. Publishing to topics
         may only be disabled when feedback forwarding is enabled.
@@ -539,15 +597,14 @@ class SESConnection(AWSAuthConnection):
         :param sns_topic: The Amazon Resource Name (ARN) of the Amazon Simple
                           Notification Service (Amazon SNS) topic.
         """
-        params = {
-            'Identity': identity,
-            'NotificationType': notification_type
-        }
+        params = {"Identity": identity, "NotificationType": notification_type}
         if sns_topic:
-            params['SnsTopic'] = sns_topic
-        return self._make_request('SetIdentityNotificationTopic', params)
+            params["SnsTopic"] = sns_topic
+        return self._make_request("SetIdentityNotificationTopic", params)
 
-    def set_identity_feedback_forwarding_enabled(self, identity, forwarding_enabled=True):
+    def set_identity_feedback_forwarding_enabled(
+        self, identity, forwarding_enabled=True
+    ):
         """
         Enables or disables SES feedback notification via email.
         Feedback forwarding may only be disabled when both complaint and
@@ -559,7 +616,10 @@ class SESConnection(AWSAuthConnection):
         :type forwarding_enabled: bool
         :param forwarding_enabled: Specifies whether or not to enable feedback forwarding.
         """
-        return self._make_request('SetIdentityFeedbackForwardingEnabled', {
-            'Identity': identity,
-            'ForwardingEnabled': 'true' if forwarding_enabled else 'false'
-        })
+        return self._make_request(
+            "SetIdentityFeedbackForwardingEnabled",
+            {
+                "Identity": identity,
+                "ForwardingEnabled": "true" if forwarding_enabled else "false",
+            },
+        )

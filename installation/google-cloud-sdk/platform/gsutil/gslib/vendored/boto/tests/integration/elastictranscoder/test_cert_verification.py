@@ -26,7 +26,9 @@ import boto.elastictranscoder
 from tests.compat import unittest
 
 
-class ElasticTranscoderCertVerificationTest(unittest.TestCase, ServiceCertVerificationTest):
+class ElasticTranscoderCertVerificationTest(
+    unittest.TestCase, ServiceCertVerificationTest
+):
     elastictranscoder = True
     regions = boto.elastictranscoder.regions()
 

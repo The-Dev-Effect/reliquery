@@ -23,11 +23,12 @@ import socket
 from oauth2client_4_0 import _helpers
 from oauth2client_4_0 import client
 
-DEVSHELL_ENV = 'DEVSHELL_CLIENT_PORT'
+DEVSHELL_ENV = "DEVSHELL_CLIENT_PORT"
 
 
 class Error(Exception):
     """Errors for this module."""
+
     pass
 
 
@@ -42,7 +43,7 @@ class NoDevshellServer(Error):
 # The request for credential information to the Developer Shell client socket
 # is always an empty PBLite-formatted JSON object, so just define it as a
 # constant.
-CREDENTIAL_INFO_REQUEST_JSON = '[]'
+CREDENTIAL_INFO_REQUEST_JSON = "[]"
 
 
 class CredentialInfoResponse(object):
@@ -62,7 +63,7 @@ class CredentialInfoResponse(object):
         """Initialize the response data from JSON PBLite array."""
         pbl = json.loads(json_string)
         if not isinstance(pbl, list):
-            raise ValueError('Not a list: ' + str(pbl))
+            raise ValueError("Not a list: " + str(pbl))
         pbl_len = len(pbl)
         self.user_email = pbl[0] if pbl_len > 0 else None
         self.project_id = pbl[1] if pbl_len > 1 else None
@@ -78,16 +79,16 @@ def _SendRecv():
         raise NoDevshellServer()
 
     sock = socket.socket()
-    sock.connect(('localhost', port))
+    sock.connect(("localhost", port))
 
     data = CREDENTIAL_INFO_REQUEST_JSON
-    msg = '{0}\n{1}'.format(len(data), data)
-    sock.sendall(_helpers._to_bytes(msg, encoding='utf-8'))
+    msg = "{0}\n{1}".format(len(data), data)
+    sock.sendall(_helpers._to_bytes(msg, encoding="utf-8"))
 
     header = sock.recv(6).decode()
-    if '\n' not in header:
-        raise CommunicationError('saw no newline in the first 6 bytes')
-    len_str, json_str = header.split('\n', 1)
+    if "\n" not in header:
+        raise CommunicationError("saw no newline in the first 6 bytes")
+    len_str, json_str = header.split("\n", 1)
     to_read = int(len_str) - len(json_str)
     if to_read > 0:
         json_str += sock.recv(to_read, socket.MSG_WAITALL).decode()
@@ -116,7 +117,8 @@ class DevshellCredentials(client.GoogleCredentials):
             None,  # refresh_token
             None,  # token_expiry
             None,  # token_uri
-            user_agent)
+            user_agent,
+        )
         self._refresh(None)
 
     def _refresh(self, http):
@@ -144,10 +146,8 @@ class DevshellCredentials(client.GoogleCredentials):
 
     @classmethod
     def from_json(cls, json_data):
-        raise NotImplementedError(
-            'Cannot load Developer Shell credentials from JSON.')
+        raise NotImplementedError("Cannot load Developer Shell credentials from JSON.")
 
     @property
     def serialization_data(self):
-        raise NotImplementedError(
-            'Cannot serialize Developer Shell credentials.')
+        raise NotImplementedError("Cannot serialize Developer Shell credentials.")

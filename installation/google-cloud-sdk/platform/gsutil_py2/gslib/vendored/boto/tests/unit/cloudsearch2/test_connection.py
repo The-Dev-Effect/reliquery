@@ -42,40 +42,46 @@ class TestCloudSearchCreateDomain(AWSMockServiceTestCase):
 
     def test_create_domain(self):
         self.set_http_response(status_code=200)
-        self.service_connection.create_domain('demo')
+        self.service_connection.create_domain("demo")
 
-        self.assert_request_parameters({
-            'Action': 'CreateDomain',
-            'ContentType': 'JSON',
-            'DomainName': 'demo',
-            'Version': '2013-01-01',
-        })
+        self.assert_request_parameters(
+            {
+                "Action": "CreateDomain",
+                "ContentType": "JSON",
+                "DomainName": "demo",
+                "Version": "2013-01-01",
+            }
+        )
 
     def test_cloudsearch_connect_result_endpoints(self):
         """Check that endpoints & ARNs are correctly returned from AWS"""
 
         self.set_http_response(status_code=200)
-        api_response = self.service_connection.create_domain('demo')
-        domain = Domain(self, api_response['CreateDomainResponse']
-                                          ['CreateDomainResult']
-                                          ['DomainStatus'])
+        api_response = self.service_connection.create_domain("demo")
+        domain = Domain(
+            self,
+            api_response["CreateDomainResponse"]["CreateDomainResult"]["DomainStatus"],
+        )
 
         self.assertEqual(
-            domain.doc_service_endpoint,
-            "doc-demo.us-east-1.cloudsearch.amazonaws.com")
-        self.assertEqual(domain.service_arn,
-                         "arn:aws:cs:us-east-1:1234567890:domain/demo")
+            domain.doc_service_endpoint, "doc-demo.us-east-1.cloudsearch.amazonaws.com"
+        )
+        self.assertEqual(
+            domain.service_arn, "arn:aws:cs:us-east-1:1234567890:domain/demo"
+        )
         self.assertEqual(
             domain.search_service_endpoint,
-            "search-demo.us-east-1.cloudsearch.amazonaws.com")
+            "search-demo.us-east-1.cloudsearch.amazonaws.com",
+        )
 
     def test_cloudsearch_connect_result_statuses(self):
         """Check that domain statuses are correctly returned from AWS"""
         self.set_http_response(status_code=200)
-        api_response = self.service_connection.create_domain('demo')
-        domain = Domain(self, api_response['CreateDomainResponse']
-                                          ['CreateDomainResult']
-                                          ['DomainStatus'])
+        api_response = self.service_connection.create_domain("demo")
+        domain = Domain(
+            self,
+            api_response["CreateDomainResponse"]["CreateDomainResult"]["DomainStatus"],
+        )
 
         self.assertEqual(domain.created, True)
         self.assertEqual(domain.processing, False)
@@ -85,39 +91,42 @@ class TestCloudSearchCreateDomain(AWSMockServiceTestCase):
     def test_cloudsearch_connect_result_details(self):
         """Check that the domain information is correctly returned from AWS"""
         self.set_http_response(status_code=200)
-        api_response = self.service_connection.create_domain('demo')
-        domain = Domain(self, api_response['CreateDomainResponse']
-                                          ['CreateDomainResult']
-                                          ['DomainStatus'])
+        api_response = self.service_connection.create_domain("demo")
+        domain = Domain(
+            self,
+            api_response["CreateDomainResponse"]["CreateDomainResult"]["DomainStatus"],
+        )
 
         self.assertEqual(domain.id, "1234567890/demo")
         self.assertEqual(domain.name, "demo")
 
     def test_cloudsearch_documentservice_creation(self):
         self.set_http_response(status_code=200)
-        api_response = self.service_connection.create_domain('demo')
-        domain = Domain(self, api_response['CreateDomainResponse']
-                                          ['CreateDomainResult']
-                                          ['DomainStatus'])
+        api_response = self.service_connection.create_domain("demo")
+        domain = Domain(
+            self,
+            api_response["CreateDomainResponse"]["CreateDomainResult"]["DomainStatus"],
+        )
 
         document = domain.get_document_service()
 
         self.assertEqual(
-            document.endpoint,
-            "doc-demo.us-east-1.cloudsearch.amazonaws.com")
+            document.endpoint, "doc-demo.us-east-1.cloudsearch.amazonaws.com"
+        )
 
     def test_cloudsearch_searchservice_creation(self):
         self.set_http_response(status_code=200)
-        api_response = self.service_connection.create_domain('demo')
-        domain = Domain(self, api_response['CreateDomainResponse']
-                                          ['CreateDomainResult']
-                                          ['DomainStatus'])
+        api_response = self.service_connection.create_domain("demo")
+        domain = Domain(
+            self,
+            api_response["CreateDomainResponse"]["CreateDomainResult"]["DomainStatus"],
+        )
 
         search = domain.get_search_service()
 
         self.assertEqual(
-            search.endpoint,
-            "search-demo.us-east-1.cloudsearch.amazonaws.com")
+            search.endpoint, "search-demo.us-east-1.cloudsearch.amazonaws.com"
+        )
 
 
 class CloudSearchConnectionDeletionTest(AWSMockServiceTestCase):
@@ -160,14 +169,16 @@ class CloudSearchConnectionDeletionTest(AWSMockServiceTestCase):
         cloudsearch connection.
         """
         self.set_http_response(status_code=200)
-        self.service_connection.delete_domain('demo')
+        self.service_connection.delete_domain("demo")
 
-        self.assert_request_parameters({
-            'Action': 'DeleteDomain',
-            'ContentType': 'JSON',
-            'DomainName': 'demo',
-            'Version': '2013-01-01',
-        })
+        self.assert_request_parameters(
+            {
+                "Action": "DeleteDomain",
+                "ContentType": "JSON",
+                "DomainName": "demo",
+                "Version": "2013-01-01",
+            }
+        )
 
 
 class CloudSearchConnectionIndexDocumentTest(AWSMockServiceTestCase):
@@ -217,14 +228,16 @@ class CloudSearchConnectionIndexDocumentTest(AWSMockServiceTestCase):
         domain.
         """
         self.set_http_response(status_code=200)
-        self.service_connection.index_documents('demo')
+        self.service_connection.index_documents("demo")
 
-        self.assert_request_parameters({
-            'Action': 'IndexDocuments',
-            'ContentType': 'JSON',
-            'DomainName': 'demo',
-            'Version': '2013-01-01',
-        })
+        self.assert_request_parameters(
+            {
+                "Action": "IndexDocuments",
+                "ContentType": "JSON",
+                "DomainName": "demo",
+                "Version": "2013-01-01",
+            }
+        )
 
     def test_cloudsearch_index_documents_resp(self):
         """
@@ -232,19 +245,37 @@ class CloudSearchConnectionIndexDocumentTest(AWSMockServiceTestCase):
         domain.
         """
         self.set_http_response(status_code=200)
-        api_response = self.service_connection.index_documents('demo')
+        api_response = self.service_connection.index_documents("demo")
 
-        fields = (api_response['IndexDocumentsResponse']
-                              ['IndexDocumentsResult']
-                              ['FieldNames'])
+        fields = api_response["IndexDocumentsResponse"]["IndexDocumentsResult"][
+            "FieldNames"
+        ]
 
-        self.assertEqual(fields, ['average_score', 'brand_id', 'colors',
-                                  'context', 'context_owner',
-                                  'created_at', 'creator_id',
-                                  'description', 'file_size', 'format',
-                                  'has_logo', 'has_messaging', 'height',
-                                  'image_id', 'ingested_from',
-                                  'is_advertising', 'is_photo',
-                                  'is_reviewed', 'modified_at',
-                                  'subject_date', 'tags', 'title',
-                                  'width'])
+        self.assertEqual(
+            fields,
+            [
+                "average_score",
+                "brand_id",
+                "colors",
+                "context",
+                "context_owner",
+                "created_at",
+                "creator_id",
+                "description",
+                "file_size",
+                "format",
+                "has_logo",
+                "has_messaging",
+                "height",
+                "image_id",
+                "ingested_from",
+                "is_advertising",
+                "is_photo",
+                "is_reviewed",
+                "modified_at",
+                "subject_date",
+                "tags",
+                "title",
+                "width",
+            ],
+        )

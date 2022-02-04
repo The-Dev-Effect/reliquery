@@ -20,10 +20,11 @@
 # IN THE SOFTWARE.
 #
 
+
 def tag(key, value):
-    start = '<%s>' % key
-    end = '</%s>' % key
-    return '%s%s%s' % (start, value, end)
+    start = "<%s>" % key
+    end = "</%s>" % key
+    return "%s%s%s" % (start, value, end)
 
 
 class WebsiteConfiguration(object):
@@ -52,8 +53,13 @@ class WebsiteConfiguration(object):
 
     """
 
-    def __init__(self, suffix=None, error_key=None,
-                 redirect_all_requests_to=None, routing_rules=None):
+    def __init__(
+        self,
+        suffix=None,
+        error_key=None,
+        redirect_all_requests_to=None,
+        routing_rules=None,
+    ):
         self.suffix = suffix
         self.error_key = error_key
         self.redirect_all_requests_to = redirect_all_requests_to
@@ -63,30 +69,32 @@ class WebsiteConfiguration(object):
             self.routing_rules = RoutingRules()
 
     def startElement(self, name, attrs, connection):
-        if name == 'RoutingRules':
+        if name == "RoutingRules":
             self.routing_rules = RoutingRules()
             return self.routing_rules
-        elif name == 'IndexDocument':
-            return _XMLKeyValue([('Suffix', 'suffix')], container=self)
-        elif name == 'ErrorDocument':
-            return _XMLKeyValue([('Key', 'error_key')], container=self)
+        elif name == "IndexDocument":
+            return _XMLKeyValue([("Suffix", "suffix")], container=self)
+        elif name == "ErrorDocument":
+            return _XMLKeyValue([("Key", "error_key")], container=self)
 
     def endElement(self, name, value, connection):
         pass
 
     def to_xml(self):
-        parts = ['<?xml version="1.0" encoding="UTF-8"?>',
-          '<WebsiteConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/">']
+        parts = [
+            '<?xml version="1.0" encoding="UTF-8"?>',
+            '<WebsiteConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/">',
+        ]
         if self.suffix is not None:
-            parts.append(tag('IndexDocument', tag('Suffix', self.suffix)))
+            parts.append(tag("IndexDocument", tag("Suffix", self.suffix)))
         if self.error_key is not None:
-            parts.append(tag('ErrorDocument', tag('Key', self.error_key)))
+            parts.append(tag("ErrorDocument", tag("Key", self.error_key)))
         if self.redirect_all_requests_to is not None:
             parts.append(self.redirect_all_requests_to.to_xml())
         if self.routing_rules:
             parts.append(self.routing_rules.to_xml())
-        parts.append('</WebsiteConfiguration>')
-        return ''.join(parts)
+        parts.append("</WebsiteConfiguration>")
+        return "".join(parts)
 
 
 class _XMLKeyValue(object):
@@ -111,7 +119,7 @@ class _XMLKeyValue(object):
             content = getattr(self.container, attr_name)
             if content is not None:
                 parts.append(tag(xml_key, content))
-        return ''.join(parts)
+        return "".join(parts)
 
 
 class RedirectLocation(_XMLKeyValue):
@@ -123,9 +131,11 @@ class RedirectLocation(_XMLKeyValue):
         The default is the protocol that is used in the original request.
 
     """
-    TRANSLATOR = [('HostName', 'hostname'),
-                  ('Protocol', 'protocol'),
-                 ]
+
+    TRANSLATOR = [
+        ("HostName", "hostname"),
+        ("Protocol", "protocol"),
+    ]
 
     def __init__(self, hostname=None, protocol=None):
         self.hostname = hostname
@@ -133,12 +143,10 @@ class RedirectLocation(_XMLKeyValue):
         super(RedirectLocation, self).__init__(self.TRANSLATOR)
 
     def to_xml(self):
-        return tag('RedirectAllRequestsTo',
-            super(RedirectLocation, self).to_xml())
+        return tag("RedirectAllRequestsTo", super(RedirectLocation, self).to_xml())
 
 
 class RoutingRules(list):
-
     def add_rule(self, rule):
         """
 
@@ -153,7 +161,7 @@ class RoutingRules(list):
         return self
 
     def startElement(self, name, attrs, connection):
-        if name == 'RoutingRule':
+        if name == "RoutingRule":
             rule = RoutingRule(Condition(), Redirect())
             self.add_rule(rule)
             return rule
@@ -168,7 +176,7 @@ class RoutingRules(list):
         inner_text = []
         for rule in self:
             inner_text.append(rule.to_xml())
-        return tag('RoutingRules', '\n'.join(inner_text))
+        return tag("RoutingRules", "\n".join(inner_text))
 
 
 class RoutingRule(object):
@@ -187,14 +195,15 @@ class RoutingRule(object):
         of an error, you can can specify a different error code to return.
 
     """
+
     def __init__(self, condition=None, redirect=None):
         self.condition = condition
         self.redirect = redirect
 
     def startElement(self, name, attrs, connection):
-        if name == 'Condition':
+        if name == "Condition":
             return self.condition
-        elif name == 'Redirect':
+        elif name == "Redirect":
             return self.redirect
 
     def endElement(self, name, value, connection):
@@ -206,20 +215,29 @@ class RoutingRule(object):
             parts.append(self.condition.to_xml())
         if self.redirect:
             parts.append(self.redirect.to_xml())
-        return tag('RoutingRule', '\n'.join(parts))
+        return tag("RoutingRule", "\n".join(parts))
 
     @classmethod
     def when(cls, key_prefix=None, http_error_code=None):
-        return cls(Condition(key_prefix=key_prefix,
-                             http_error_code=http_error_code), None)
+        return cls(
+            Condition(key_prefix=key_prefix, http_error_code=http_error_code), None
+        )
 
-    def then_redirect(self, hostname=None, protocol=None, replace_key=None,
-                      replace_key_prefix=None, http_redirect_code=None):
+    def then_redirect(
+        self,
+        hostname=None,
+        protocol=None,
+        replace_key=None,
+        replace_key_prefix=None,
+        http_redirect_code=None,
+    ):
         self.redirect = Redirect(
-                hostname=hostname, protocol=protocol,
-                replace_key=replace_key,
-                replace_key_prefix=replace_key_prefix,
-                http_redirect_code=http_redirect_code)
+            hostname=hostname,
+            protocol=protocol,
+            replace_key=replace_key,
+            replace_key_prefix=replace_key_prefix,
+            http_redirect_code=http_redirect_code,
+        )
         return self
 
 
@@ -236,10 +254,11 @@ class Condition(_XMLKeyValue):
         specified redirect is applied.
 
     """
+
     TRANSLATOR = [
-        ('KeyPrefixEquals', 'key_prefix'),
-        ('HttpErrorCodeReturnedEquals', 'http_error_code'),
-        ]
+        ("KeyPrefixEquals", "key_prefix"),
+        ("HttpErrorCodeReturnedEquals", "http_error_code"),
+    ]
 
     def __init__(self, key_prefix=None, http_error_code=None):
         self.key_prefix = key_prefix
@@ -247,7 +266,7 @@ class Condition(_XMLKeyValue):
         super(Condition, self).__init__(self.TRANSLATOR)
 
     def to_xml(self):
-        return tag('Condition', super(Condition, self).to_xml())
+        return tag("Condition", super(Condition, self).to_xml())
 
 
 class Redirect(_XMLKeyValue):
@@ -271,15 +290,21 @@ class Redirect(_XMLKeyValue):
     """
 
     TRANSLATOR = [
-        ('Protocol', 'protocol'),
-        ('HostName', 'hostname'),
-        ('ReplaceKeyWith', 'replace_key'),
-        ('ReplaceKeyPrefixWith', 'replace_key_prefix'),
-        ('HttpRedirectCode', 'http_redirect_code'),
-        ]
+        ("Protocol", "protocol"),
+        ("HostName", "hostname"),
+        ("ReplaceKeyWith", "replace_key"),
+        ("ReplaceKeyPrefixWith", "replace_key_prefix"),
+        ("HttpRedirectCode", "http_redirect_code"),
+    ]
 
-    def __init__(self, hostname=None, protocol=None, replace_key=None,
-                 replace_key_prefix=None, http_redirect_code=None):
+    def __init__(
+        self,
+        hostname=None,
+        protocol=None,
+        replace_key=None,
+        replace_key_prefix=None,
+        http_redirect_code=None,
+    ):
         self.hostname = hostname
         self.protocol = protocol
         self.replace_key = replace_key
@@ -288,6 +313,4 @@ class Redirect(_XMLKeyValue):
         super(Redirect, self).__init__(self.TRANSLATOR)
 
     def to_xml(self):
-        return tag('Redirect', super(Redirect, self).to_xml())
-
-
+        return tag("Redirect", super(Redirect, self).to_xml())

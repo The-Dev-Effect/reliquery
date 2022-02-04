@@ -22,177 +22,186 @@ from pyu2f import errors
 from pyu2f import hardware
 
 if sys.version_info[:2] < (2, 7):
-  import unittest2 as unittest  # pylint: disable=g-import-not-at-top
+    import unittest2 as unittest  # pylint: disable=g-import-not-at-top
 else:
-  import unittest  # pylint: disable=g-import-not-at-top
+    import unittest  # pylint: disable=g-import-not-at-top
 
 
 class HardwareTest(unittest.TestCase):
+    def testSimpleCommands(self):
+        mock_transport = mock.MagicMock()
+        sk = hardware.SecurityKey(mock_transport)
 
-  def testSimpleCommands(self):
-    mock_transport = mock.MagicMock()
-    sk = hardware.SecurityKey(mock_transport)
+        sk.CmdBlink(5)
+        mock_transport.SendBlink.assert_called_once_with(5)
 
-    sk.CmdBlink(5)
-    mock_transport.SendBlink.assert_called_once_with(5)
+        sk.CmdWink()
+        mock_transport.SendWink.assert_called_once_with()
 
-    sk.CmdWink()
-    mock_transport.SendWink.assert_called_once_with()
+        sk.CmdPing(bytearray(b"foo"))
+        mock_transport.SendPing.assert_called_once_with(bytearray(b"foo"))
 
-    sk.CmdPing(bytearray(b'foo'))
-    mock_transport.SendPing.assert_called_once_with(bytearray(b'foo'))
+    def testRegisterInvalidParams(self):
+        mock_transport = mock.MagicMock()
+        sk = hardware.SecurityKey(mock_transport)
 
-  def testRegisterInvalidParams(self):
-    mock_transport = mock.MagicMock()
-    sk = hardware.SecurityKey(mock_transport)
+        self.assertRaises(errors.InvalidRequestError, sk.CmdRegister, "1234", "1234")
 
-    self.assertRaises(errors.InvalidRequestError, sk.CmdRegister, '1234',
-                      '1234')
+    def testRegisterSuccess(self):
+        mock_transport = mock.MagicMock()
+        sk = hardware.SecurityKey(mock_transport)
 
-  def testRegisterSuccess(self):
-    mock_transport = mock.MagicMock()
-    sk = hardware.SecurityKey(mock_transport)
+        challenge_param = b"01234567890123456789012345678901"
+        app_param = b"01234567890123456789012345678901"
 
-    challenge_param = b'01234567890123456789012345678901'
-    app_param = b'01234567890123456789012345678901'
+        mock_transport.SendMsgBytes.return_value = bytearray([0x01, 0x02, 0x90, 0x00])
 
-    mock_transport.SendMsgBytes.return_value = bytearray(
-        [0x01, 0x02, 0x90, 0x00])
+        reply = sk.CmdRegister(challenge_param, app_param)
+        self.assertEquals(reply, bytearray([0x01, 0x02]))
+        self.assertEquals(mock_transport.SendMsgBytes.call_count, 1)
+        (sent_msg,), _ = mock_transport.SendMsgBytes.call_args
+        self.assertEquals(sent_msg[0:4], bytearray([0x00, 0x01, 0x03, 0x00]))
+        self.assertEquals(sent_msg[7:-2], bytearray(challenge_param + app_param))
 
-    reply = sk.CmdRegister(challenge_param, app_param)
-    self.assertEquals(reply, bytearray([0x01, 0x02]))
-    self.assertEquals(mock_transport.SendMsgBytes.call_count, 1)
-    (sent_msg,), _ = mock_transport.SendMsgBytes.call_args
-    self.assertEquals(sent_msg[0:4], bytearray([0x00, 0x01, 0x03, 0x00]))
-    self.assertEquals(sent_msg[7:-2], bytearray(challenge_param + app_param))
+    def testRegisterTUPRequired(self):
+        mock_transport = mock.MagicMock()
+        sk = hardware.SecurityKey(mock_transport)
 
-  def testRegisterTUPRequired(self):
-    mock_transport = mock.MagicMock()
-    sk = hardware.SecurityKey(mock_transport)
+        challenge_param = b"01234567890123456789012345678901"
+        app_param = b"01234567890123456789012345678901"
 
-    challenge_param = b'01234567890123456789012345678901'
-    app_param = b'01234567890123456789012345678901'
+        mock_transport.SendMsgBytes.return_value = bytearray([0x69, 0x85])
 
-    mock_transport.SendMsgBytes.return_value = bytearray([0x69, 0x85])
+        self.assertRaises(
+            errors.TUPRequiredError, sk.CmdRegister, challenge_param, app_param
+        )
+        self.assertEquals(mock_transport.SendMsgBytes.call_count, 1)
 
-    self.assertRaises(errors.TUPRequiredError, sk.CmdRegister, challenge_param,
-                      app_param)
-    self.assertEquals(mock_transport.SendMsgBytes.call_count, 1)
+    def testVersion(self):
+        mock_transport = mock.MagicMock()
+        sk = hardware.SecurityKey(mock_transport)
 
-  def testVersion(self):
-    mock_transport = mock.MagicMock()
-    sk = hardware.SecurityKey(mock_transport)
+        mock_transport.SendMsgBytes.return_value = bytearray(b"U2F_V2\x90\x00")
 
-    mock_transport.SendMsgBytes.return_value = bytearray(b'U2F_V2\x90\x00')
+        reply = sk.CmdVersion()
+        self.assertEquals(reply, bytearray(b"U2F_V2"))
+        self.assertEquals(mock_transport.SendMsgBytes.call_count, 1)
+        (sent_msg,), _ = mock_transport.SendMsgBytes.call_args
+        self.assertEquals(
+            sent_msg, bytearray([0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00])
+        )
 
-    reply = sk.CmdVersion()
-    self.assertEquals(reply, bytearray(b'U2F_V2'))
-    self.assertEquals(mock_transport.SendMsgBytes.call_count, 1)
-    (sent_msg,), _ = mock_transport.SendMsgBytes.call_args
-    self.assertEquals(sent_msg, bytearray(
-        [0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00]))
+    def testVersionFallback(self):
+        mock_transport = mock.MagicMock()
+        sk = hardware.SecurityKey(mock_transport)
 
-  def testVersionFallback(self):
-    mock_transport = mock.MagicMock()
-    sk = hardware.SecurityKey(mock_transport)
+        mock_transport.SendMsgBytes.side_effect = [
+            bytearray([0x67, 0x00]),
+            bytearray(b"U2F_V2\x90\x00"),
+        ]
 
-    mock_transport.SendMsgBytes.side_effect = [
-        bytearray([0x67, 0x00]),
-        bytearray(b'U2F_V2\x90\x00')]
+        reply = sk.CmdVersion()
+        self.assertEquals(reply, bytearray(b"U2F_V2"))
+        self.assertEquals(mock_transport.SendMsgBytes.call_count, 2)
+        (sent_msg,), _ = mock_transport.SendMsgBytes.call_args_list[0]
+        self.assertEquals(len(sent_msg), 7)
+        self.assertEquals(sent_msg[0:4], bytearray([0x00, 0x03, 0x00, 0x00]))
+        self.assertEquals(sent_msg[4:7], bytearray([0x00, 0x00, 0x00]))  # Le
+        (sent_msg,), _ = mock_transport.SendMsgBytes.call_args_list[1]
+        self.assertEquals(len(sent_msg), 9)
+        self.assertEquals(sent_msg[0:4], bytearray([0x00, 0x03, 0x00, 0x00]))
+        self.assertEquals(sent_msg[4:7], bytearray([0x00, 0x00, 0x00]))  # Lc
+        self.assertEquals(sent_msg[7:9], bytearray([0x00, 0x00]))  # Le
 
-    reply = sk.CmdVersion()
-    self.assertEquals(reply, bytearray(b'U2F_V2'))
-    self.assertEquals(mock_transport.SendMsgBytes.call_count, 2)
-    (sent_msg,), _ = mock_transport.SendMsgBytes.call_args_list[0]
-    self.assertEquals(len(sent_msg), 7)
-    self.assertEquals(sent_msg[0:4], bytearray([0x00, 0x03, 0x00, 0x00]))
-    self.assertEquals(sent_msg[4:7], bytearray([0x00, 0x00, 0x00]))  # Le
-    (sent_msg,), _ = mock_transport.SendMsgBytes.call_args_list[1]
-    self.assertEquals(len(sent_msg), 9)
-    self.assertEquals(sent_msg[0:4], bytearray([0x00, 0x03, 0x00, 0x00]))
-    self.assertEquals(sent_msg[4:7], bytearray([0x00, 0x00, 0x00]))  # Lc
-    self.assertEquals(sent_msg[7:9], bytearray([0x00, 0x00]))  # Le
+    def testVersionErrors(self):
+        mock_transport = mock.MagicMock()
+        sk = hardware.SecurityKey(mock_transport)
 
-  def testVersionErrors(self):
-    mock_transport = mock.MagicMock()
-    sk = hardware.SecurityKey(mock_transport)
+        mock_transport.SendMsgBytes.return_value = bytearray([0xFA, 0x05])
 
-    mock_transport.SendMsgBytes.return_value = bytearray([0xfa, 0x05])
+        self.assertRaises(errors.ApduError, sk.CmdVersion)
+        self.assertEquals(mock_transport.SendMsgBytes.call_count, 1)
 
-    self.assertRaises(errors.ApduError, sk.CmdVersion)
-    self.assertEquals(mock_transport.SendMsgBytes.call_count, 1)
+    def testAuthenticateSuccess(self):
+        mock_transport = mock.MagicMock()
+        sk = hardware.SecurityKey(mock_transport)
 
-  def testAuthenticateSuccess(self):
-    mock_transport = mock.MagicMock()
-    sk = hardware.SecurityKey(mock_transport)
+        challenge_param = b"01234567890123456789012345678901"
+        app_param = b"01234567890123456789012345678901"
+        key_handle = b"\x01\x02\x03\x04"
 
-    challenge_param = b'01234567890123456789012345678901'
-    app_param = b'01234567890123456789012345678901'
-    key_handle = b'\x01\x02\x03\x04'
+        mock_transport.SendMsgBytes.return_value = bytearray([0x01, 0x02, 0x90, 0x00])
 
-    mock_transport.SendMsgBytes.return_value = bytearray(
-        [0x01, 0x02, 0x90, 0x00])
+        reply = sk.CmdAuthenticate(challenge_param, app_param, key_handle)
+        self.assertEquals(reply, bytearray([0x01, 0x02]))
+        self.assertEquals(mock_transport.SendMsgBytes.call_count, 1)
+        (sent_msg,), _ = mock_transport.SendMsgBytes.call_args
+        self.assertEquals(sent_msg[0:4], bytearray([0x00, 0x02, 0x03, 0x00]))
+        self.assertEquals(
+            sent_msg[7:-2],
+            bytearray(challenge_param + app_param + bytearray([4, 1, 2, 3, 4])),
+        )
 
-    reply = sk.CmdAuthenticate(challenge_param, app_param, key_handle)
-    self.assertEquals(reply, bytearray([0x01, 0x02]))
-    self.assertEquals(mock_transport.SendMsgBytes.call_count, 1)
-    (sent_msg,), _ = mock_transport.SendMsgBytes.call_args
-    self.assertEquals(sent_msg[0:4], bytearray([0x00, 0x02, 0x03, 0x00]))
-    self.assertEquals(
-        sent_msg[7:-2],
-        bytearray(challenge_param + app_param + bytearray([4, 1, 2, 3, 4])))
+    def testAuthenticateCheckOnly(self):
+        mock_transport = mock.MagicMock()
+        sk = hardware.SecurityKey(mock_transport)
 
-  def testAuthenticateCheckOnly(self):
-    mock_transport = mock.MagicMock()
-    sk = hardware.SecurityKey(mock_transport)
+        challenge_param = b"01234567890123456789012345678901"
+        app_param = b"01234567890123456789012345678901"
+        key_handle = b"\x01\x02\x03\x04"
 
-    challenge_param = b'01234567890123456789012345678901'
-    app_param = b'01234567890123456789012345678901'
-    key_handle = b'\x01\x02\x03\x04'
+        mock_transport.SendMsgBytes.return_value = bytearray([0x01, 0x02, 0x90, 0x00])
 
-    mock_transport.SendMsgBytes.return_value = bytearray(
-        [0x01, 0x02, 0x90, 0x00])
+        reply = sk.CmdAuthenticate(
+            challenge_param, app_param, key_handle, check_only=True
+        )
+        self.assertEquals(reply, bytearray([0x01, 0x02]))
+        self.assertEquals(mock_transport.SendMsgBytes.call_count, 1)
+        (sent_msg,), _ = mock_transport.SendMsgBytes.call_args
+        self.assertEquals(sent_msg[0:4], bytearray([0x00, 0x02, 0x07, 0x00]))
+        self.assertEquals(
+            sent_msg[7:-2],
+            bytearray(challenge_param + app_param + bytearray([4, 1, 2, 3, 4])),
+        )
 
-    reply = sk.CmdAuthenticate(challenge_param,
-                               app_param,
-                               key_handle,
-                               check_only=True)
-    self.assertEquals(reply, bytearray([0x01, 0x02]))
-    self.assertEquals(mock_transport.SendMsgBytes.call_count, 1)
-    (sent_msg,), _ = mock_transport.SendMsgBytes.call_args
-    self.assertEquals(sent_msg[0:4], bytearray([0x00, 0x02, 0x07, 0x00]))
-    self.assertEquals(
-        sent_msg[7:-2],
-        bytearray(challenge_param + app_param + bytearray([4, 1, 2, 3, 4])))
+    def testAuthenticateTUPRequired(self):
+        mock_transport = mock.MagicMock()
+        sk = hardware.SecurityKey(mock_transport)
 
-  def testAuthenticateTUPRequired(self):
-    mock_transport = mock.MagicMock()
-    sk = hardware.SecurityKey(mock_transport)
+        challenge_param = b"01234567890123456789012345678901"
+        app_param = b"01234567890123456789012345678901"
+        key_handle = b"\x01\x02\x03\x04"
 
-    challenge_param = b'01234567890123456789012345678901'
-    app_param = b'01234567890123456789012345678901'
-    key_handle = b'\x01\x02\x03\x04'
+        mock_transport.SendMsgBytes.return_value = bytearray([0x69, 0x85])
 
-    mock_transport.SendMsgBytes.return_value = bytearray([0x69, 0x85])
+        self.assertRaises(
+            errors.TUPRequiredError,
+            sk.CmdAuthenticate,
+            challenge_param,
+            app_param,
+            key_handle,
+        )
+        self.assertEquals(mock_transport.SendMsgBytes.call_count, 1)
 
-    self.assertRaises(errors.TUPRequiredError, sk.CmdAuthenticate,
-                      challenge_param, app_param, key_handle)
-    self.assertEquals(mock_transport.SendMsgBytes.call_count, 1)
+    def testAuthenticateInvalidKeyHandle(self):
+        mock_transport = mock.MagicMock()
+        sk = hardware.SecurityKey(mock_transport)
 
-  def testAuthenticateInvalidKeyHandle(self):
-    mock_transport = mock.MagicMock()
-    sk = hardware.SecurityKey(mock_transport)
+        challenge_param = b"01234567890123456789012345678901"
+        app_param = b"01234567890123456789012345678901"
+        key_handle = b"\x01\x02\x03\x04"
 
-    challenge_param = b'01234567890123456789012345678901'
-    app_param = b'01234567890123456789012345678901'
-    key_handle = b'\x01\x02\x03\x04'
+        mock_transport.SendMsgBytes.return_value = bytearray([0x6A, 0x80])
 
-    mock_transport.SendMsgBytes.return_value = bytearray([0x6a, 0x80])
-
-    self.assertRaises(errors.InvalidKeyHandleError, sk.CmdAuthenticate,
-                      challenge_param, app_param, key_handle)
-    self.assertEquals(mock_transport.SendMsgBytes.call_count, 1)
+        self.assertRaises(
+            errors.InvalidKeyHandleError,
+            sk.CmdAuthenticate,
+            challenge_param,
+            app_param,
+            key_handle,
+        )
+        self.assertEquals(mock_transport.SendMsgBytes.call_count, 1)
 
 
-if __name__ == '__main__':
-  unittest.main()
+if __name__ == "__main__":
+    unittest.main()

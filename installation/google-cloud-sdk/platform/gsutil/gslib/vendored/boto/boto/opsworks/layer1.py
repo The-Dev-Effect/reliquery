@@ -78,6 +78,7 @@ class OpsWorksConnection(AWSQueryConnection):
     stacks, and we recommend migrating your existing Chef 0.9 stacks
     to Chef 11.10 as soon as possible.
     """
+
     APIVersion = "2013-02-18"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "opsworks.us-east-1.amazonaws.com"
@@ -90,21 +91,21 @@ class OpsWorksConnection(AWSQueryConnection):
         "ValidationException": exceptions.ValidationException,
     }
 
-
     def __init__(self, **kwargs):
-        region = kwargs.pop('region', None)
+        region = kwargs.pop("region", None)
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
 
-        if 'host' not in kwargs or kwargs['host'] is None:
-            kwargs['host'] = region.endpoint
+        if "host" not in kwargs or kwargs["host"] is None:
+            kwargs["host"] = region.endpoint
 
         super(OpsWorksConnection, self).__init__(**kwargs)
         self.region = region
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
     def assign_instance(self, instance_id, layer_ids):
         """
@@ -127,11 +128,10 @@ class OpsWorksConnection(AWSQueryConnection):
 
         """
         params = {
-            'InstanceId': instance_id,
-            'LayerIds': layer_ids,
+            "InstanceId": instance_id,
+            "LayerIds": layer_ids,
         }
-        return self.make_request(action='AssignInstance',
-                                 body=json.dumps(params))
+        return self.make_request(action="AssignInstance", body=json.dumps(params))
 
     def assign_volume(self, volume_id, instance_id=None):
         """
@@ -153,11 +153,12 @@ class OpsWorksConnection(AWSQueryConnection):
         :param instance_id: The instance ID.
 
         """
-        params = {'VolumeId': volume_id, }
+        params = {
+            "VolumeId": volume_id,
+        }
         if instance_id is not None:
-            params['InstanceId'] = instance_id
-        return self.make_request(action='AssignVolume',
-                                 body=json.dumps(params))
+            params["InstanceId"] = instance_id
+        return self.make_request(action="AssignVolume", body=json.dumps(params))
 
     def associate_elastic_ip(self, elastic_ip, instance_id=None):
         """
@@ -179,14 +180,14 @@ class OpsWorksConnection(AWSQueryConnection):
         :param instance_id: The instance ID.
 
         """
-        params = {'ElasticIp': elastic_ip, }
+        params = {
+            "ElasticIp": elastic_ip,
+        }
         if instance_id is not None:
-            params['InstanceId'] = instance_id
-        return self.make_request(action='AssociateElasticIp',
-                                 body=json.dumps(params))
+            params["InstanceId"] = instance_id
+        return self.make_request(action="AssociateElasticIp", body=json.dumps(params))
 
-    def attach_elastic_load_balancer(self, elastic_load_balancer_name,
-                                     layer_id):
+    def attach_elastic_load_balancer(self, elastic_load_balancer_name, layer_id):
         """
         Attaches an Elastic Load Balancing load balancer to a
         specified layer. For more information, see `Elastic Load
@@ -215,23 +216,37 @@ class OpsWorksConnection(AWSQueryConnection):
 
         """
         params = {
-            'ElasticLoadBalancerName': elastic_load_balancer_name,
-            'LayerId': layer_id,
+            "ElasticLoadBalancerName": elastic_load_balancer_name,
+            "LayerId": layer_id,
         }
-        return self.make_request(action='AttachElasticLoadBalancer',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="AttachElasticLoadBalancer", body=json.dumps(params)
+        )
 
-    def clone_stack(self, source_stack_id, service_role_arn, name=None,
-                    region=None, vpc_id=None, attributes=None,
-                    default_instance_profile_arn=None, default_os=None,
-                    hostname_theme=None, default_availability_zone=None,
-                    default_subnet_id=None, custom_json=None,
-                    configuration_manager=None, chef_configuration=None,
-                    use_custom_cookbooks=None,
-                    use_opsworks_security_groups=None,
-                    custom_cookbooks_source=None, default_ssh_key_name=None,
-                    clone_permissions=None, clone_app_ids=None,
-                    default_root_device_type=None):
+    def clone_stack(
+        self,
+        source_stack_id,
+        service_role_arn,
+        name=None,
+        region=None,
+        vpc_id=None,
+        attributes=None,
+        default_instance_profile_arn=None,
+        default_os=None,
+        hostname_theme=None,
+        default_availability_zone=None,
+        default_subnet_id=None,
+        custom_json=None,
+        configuration_manager=None,
+        chef_configuration=None,
+        use_custom_cookbooks=None,
+        use_opsworks_security_groups=None,
+        custom_cookbooks_source=None,
+        default_ssh_key_name=None,
+        clone_permissions=None,
+        clone_app_ids=None,
+        default_root_device_type=None,
+    ):
         """
         Creates a clone of a specified stack. For more information,
         see `Clone a Stack`_.
@@ -431,54 +446,64 @@ class OpsWorksConnection(AWSQueryConnection):
 
         """
         params = {
-            'SourceStackId': source_stack_id,
-            'ServiceRoleArn': service_role_arn,
+            "SourceStackId": source_stack_id,
+            "ServiceRoleArn": service_role_arn,
         }
         if name is not None:
-            params['Name'] = name
+            params["Name"] = name
         if region is not None:
-            params['Region'] = region
+            params["Region"] = region
         if vpc_id is not None:
-            params['VpcId'] = vpc_id
+            params["VpcId"] = vpc_id
         if attributes is not None:
-            params['Attributes'] = attributes
+            params["Attributes"] = attributes
         if default_instance_profile_arn is not None:
-            params['DefaultInstanceProfileArn'] = default_instance_profile_arn
+            params["DefaultInstanceProfileArn"] = default_instance_profile_arn
         if default_os is not None:
-            params['DefaultOs'] = default_os
+            params["DefaultOs"] = default_os
         if hostname_theme is not None:
-            params['HostnameTheme'] = hostname_theme
+            params["HostnameTheme"] = hostname_theme
         if default_availability_zone is not None:
-            params['DefaultAvailabilityZone'] = default_availability_zone
+            params["DefaultAvailabilityZone"] = default_availability_zone
         if default_subnet_id is not None:
-            params['DefaultSubnetId'] = default_subnet_id
+            params["DefaultSubnetId"] = default_subnet_id
         if custom_json is not None:
-            params['CustomJson'] = custom_json
+            params["CustomJson"] = custom_json
         if configuration_manager is not None:
-            params['ConfigurationManager'] = configuration_manager
+            params["ConfigurationManager"] = configuration_manager
         if chef_configuration is not None:
-            params['ChefConfiguration'] = chef_configuration
+            params["ChefConfiguration"] = chef_configuration
         if use_custom_cookbooks is not None:
-            params['UseCustomCookbooks'] = use_custom_cookbooks
+            params["UseCustomCookbooks"] = use_custom_cookbooks
         if use_opsworks_security_groups is not None:
-            params['UseOpsworksSecurityGroups'] = use_opsworks_security_groups
+            params["UseOpsworksSecurityGroups"] = use_opsworks_security_groups
         if custom_cookbooks_source is not None:
-            params['CustomCookbooksSource'] = custom_cookbooks_source
+            params["CustomCookbooksSource"] = custom_cookbooks_source
         if default_ssh_key_name is not None:
-            params['DefaultSshKeyName'] = default_ssh_key_name
+            params["DefaultSshKeyName"] = default_ssh_key_name
         if clone_permissions is not None:
-            params['ClonePermissions'] = clone_permissions
+            params["ClonePermissions"] = clone_permissions
         if clone_app_ids is not None:
-            params['CloneAppIds'] = clone_app_ids
+            params["CloneAppIds"] = clone_app_ids
         if default_root_device_type is not None:
-            params['DefaultRootDeviceType'] = default_root_device_type
-        return self.make_request(action='CloneStack',
-                                 body=json.dumps(params))
+            params["DefaultRootDeviceType"] = default_root_device_type
+        return self.make_request(action="CloneStack", body=json.dumps(params))
 
-    def create_app(self, stack_id, name, type, shortname=None,
-                   description=None, data_sources=None, app_source=None,
-                   domains=None, enable_ssl=None, ssl_configuration=None,
-                   attributes=None, environment=None):
+    def create_app(
+        self,
+        stack_id,
+        name,
+        type,
+        shortname=None,
+        description=None,
+        data_sources=None,
+        app_source=None,
+        domains=None,
+        enable_ssl=None,
+        ssl_configuration=None,
+        attributes=None,
+        environment=None,
+    ):
         """
         Creates an app for a specified stack. For more information,
         see `Creating Apps`_.
@@ -540,30 +565,40 @@ class OpsWorksConnection(AWSQueryConnection):
             stack's Chef version.
 
         """
-        params = {'StackId': stack_id, 'Name': name, 'Type': type, }
+        params = {
+            "StackId": stack_id,
+            "Name": name,
+            "Type": type,
+        }
         if shortname is not None:
-            params['Shortname'] = shortname
+            params["Shortname"] = shortname
         if description is not None:
-            params['Description'] = description
+            params["Description"] = description
         if data_sources is not None:
-            params['DataSources'] = data_sources
+            params["DataSources"] = data_sources
         if app_source is not None:
-            params['AppSource'] = app_source
+            params["AppSource"] = app_source
         if domains is not None:
-            params['Domains'] = domains
+            params["Domains"] = domains
         if enable_ssl is not None:
-            params['EnableSsl'] = enable_ssl
+            params["EnableSsl"] = enable_ssl
         if ssl_configuration is not None:
-            params['SslConfiguration'] = ssl_configuration
+            params["SslConfiguration"] = ssl_configuration
         if attributes is not None:
-            params['Attributes'] = attributes
+            params["Attributes"] = attributes
         if environment is not None:
-            params['Environment'] = environment
-        return self.make_request(action='CreateApp',
-                                 body=json.dumps(params))
+            params["Environment"] = environment
+        return self.make_request(action="CreateApp", body=json.dumps(params))
 
-    def create_deployment(self, stack_id, command, app_id=None,
-                          instance_ids=None, comment=None, custom_json=None):
+    def create_deployment(
+        self,
+        stack_id,
+        command,
+        app_id=None,
+        instance_ids=None,
+        comment=None,
+        custom_json=None,
+    ):
         """
         Runs deployment or stack commands. For more information, see
         `Deploying Apps`_ and `Run Stack Commands`_.
@@ -602,25 +637,38 @@ class OpsWorksConnection(AWSQueryConnection):
             Stack Configuration JSON`_.
 
         """
-        params = {'StackId': stack_id, 'Command': command, }
+        params = {
+            "StackId": stack_id,
+            "Command": command,
+        }
         if app_id is not None:
-            params['AppId'] = app_id
+            params["AppId"] = app_id
         if instance_ids is not None:
-            params['InstanceIds'] = instance_ids
+            params["InstanceIds"] = instance_ids
         if comment is not None:
-            params['Comment'] = comment
+            params["Comment"] = comment
         if custom_json is not None:
-            params['CustomJson'] = custom_json
-        return self.make_request(action='CreateDeployment',
-                                 body=json.dumps(params))
+            params["CustomJson"] = custom_json
+        return self.make_request(action="CreateDeployment", body=json.dumps(params))
 
-    def create_instance(self, stack_id, layer_ids, instance_type,
-                        auto_scaling_type=None, hostname=None, os=None,
-                        ami_id=None, ssh_key_name=None,
-                        availability_zone=None, virtualization_type=None,
-                        subnet_id=None, architecture=None,
-                        root_device_type=None, install_updates_on_boot=None,
-                        ebs_optimized=None):
+    def create_instance(
+        self,
+        stack_id,
+        layer_ids,
+        instance_type,
+        auto_scaling_type=None,
+        hostname=None,
+        os=None,
+        ami_id=None,
+        ssh_key_name=None,
+        availability_zone=None,
+        virtualization_type=None,
+        subnet_id=None,
+        architecture=None,
+        root_device_type=None,
+        install_updates_on_boot=None,
+        ebs_optimized=None,
+    ):
         """
         Creates an instance in a specified stack. For more
         information, see `Adding an Instance to a Layer`_.
@@ -723,46 +771,55 @@ class OpsWorksConnection(AWSQueryConnection):
 
         """
         params = {
-            'StackId': stack_id,
-            'LayerIds': layer_ids,
-            'InstanceType': instance_type,
+            "StackId": stack_id,
+            "LayerIds": layer_ids,
+            "InstanceType": instance_type,
         }
         if auto_scaling_type is not None:
-            params['AutoScalingType'] = auto_scaling_type
+            params["AutoScalingType"] = auto_scaling_type
         if hostname is not None:
-            params['Hostname'] = hostname
+            params["Hostname"] = hostname
         if os is not None:
-            params['Os'] = os
+            params["Os"] = os
         if ami_id is not None:
-            params['AmiId'] = ami_id
+            params["AmiId"] = ami_id
         if ssh_key_name is not None:
-            params['SshKeyName'] = ssh_key_name
+            params["SshKeyName"] = ssh_key_name
         if availability_zone is not None:
-            params['AvailabilityZone'] = availability_zone
+            params["AvailabilityZone"] = availability_zone
         if virtualization_type is not None:
-            params['VirtualizationType'] = virtualization_type
+            params["VirtualizationType"] = virtualization_type
         if subnet_id is not None:
-            params['SubnetId'] = subnet_id
+            params["SubnetId"] = subnet_id
         if architecture is not None:
-            params['Architecture'] = architecture
+            params["Architecture"] = architecture
         if root_device_type is not None:
-            params['RootDeviceType'] = root_device_type
+            params["RootDeviceType"] = root_device_type
         if install_updates_on_boot is not None:
-            params['InstallUpdatesOnBoot'] = install_updates_on_boot
+            params["InstallUpdatesOnBoot"] = install_updates_on_boot
         if ebs_optimized is not None:
-            params['EbsOptimized'] = ebs_optimized
-        return self.make_request(action='CreateInstance',
-                                 body=json.dumps(params))
+            params["EbsOptimized"] = ebs_optimized
+        return self.make_request(action="CreateInstance", body=json.dumps(params))
 
-    def create_layer(self, stack_id, type, name, shortname, attributes=None,
-                     custom_instance_profile_arn=None,
-                     custom_security_group_ids=None, packages=None,
-                     volume_configurations=None, enable_auto_healing=None,
-                     auto_assign_elastic_ips=None,
-                     auto_assign_public_ips=None, custom_recipes=None,
-                     install_updates_on_boot=None,
-                     use_ebs_optimized_instances=None,
-                     lifecycle_event_configuration=None):
+    def create_layer(
+        self,
+        stack_id,
+        type,
+        name,
+        shortname,
+        attributes=None,
+        custom_instance_profile_arn=None,
+        custom_security_group_ids=None,
+        packages=None,
+        volume_configurations=None,
+        enable_auto_healing=None,
+        auto_assign_elastic_ips=None,
+        auto_assign_public_ips=None,
+        custom_recipes=None,
+        install_updates_on_boot=None,
+        use_ebs_optimized_instances=None,
+        lifecycle_event_configuration=None,
+    ):
         """
         Creates a layer. For more information, see `How to Create a
         Layer`_.
@@ -864,47 +921,58 @@ class OpsWorksConnection(AWSQueryConnection):
 
         """
         params = {
-            'StackId': stack_id,
-            'Type': type,
-            'Name': name,
-            'Shortname': shortname,
+            "StackId": stack_id,
+            "Type": type,
+            "Name": name,
+            "Shortname": shortname,
         }
         if attributes is not None:
-            params['Attributes'] = attributes
+            params["Attributes"] = attributes
         if custom_instance_profile_arn is not None:
-            params['CustomInstanceProfileArn'] = custom_instance_profile_arn
+            params["CustomInstanceProfileArn"] = custom_instance_profile_arn
         if custom_security_group_ids is not None:
-            params['CustomSecurityGroupIds'] = custom_security_group_ids
+            params["CustomSecurityGroupIds"] = custom_security_group_ids
         if packages is not None:
-            params['Packages'] = packages
+            params["Packages"] = packages
         if volume_configurations is not None:
-            params['VolumeConfigurations'] = volume_configurations
+            params["VolumeConfigurations"] = volume_configurations
         if enable_auto_healing is not None:
-            params['EnableAutoHealing'] = enable_auto_healing
+            params["EnableAutoHealing"] = enable_auto_healing
         if auto_assign_elastic_ips is not None:
-            params['AutoAssignElasticIps'] = auto_assign_elastic_ips
+            params["AutoAssignElasticIps"] = auto_assign_elastic_ips
         if auto_assign_public_ips is not None:
-            params['AutoAssignPublicIps'] = auto_assign_public_ips
+            params["AutoAssignPublicIps"] = auto_assign_public_ips
         if custom_recipes is not None:
-            params['CustomRecipes'] = custom_recipes
+            params["CustomRecipes"] = custom_recipes
         if install_updates_on_boot is not None:
-            params['InstallUpdatesOnBoot'] = install_updates_on_boot
+            params["InstallUpdatesOnBoot"] = install_updates_on_boot
         if use_ebs_optimized_instances is not None:
-            params['UseEbsOptimizedInstances'] = use_ebs_optimized_instances
+            params["UseEbsOptimizedInstances"] = use_ebs_optimized_instances
         if lifecycle_event_configuration is not None:
-            params['LifecycleEventConfiguration'] = lifecycle_event_configuration
-        return self.make_request(action='CreateLayer',
-                                 body=json.dumps(params))
+            params["LifecycleEventConfiguration"] = lifecycle_event_configuration
+        return self.make_request(action="CreateLayer", body=json.dumps(params))
 
-    def create_stack(self, name, region, service_role_arn,
-                     default_instance_profile_arn, vpc_id=None,
-                     attributes=None, default_os=None, hostname_theme=None,
-                     default_availability_zone=None, default_subnet_id=None,
-                     custom_json=None, configuration_manager=None,
-                     chef_configuration=None, use_custom_cookbooks=None,
-                     use_opsworks_security_groups=None,
-                     custom_cookbooks_source=None, default_ssh_key_name=None,
-                     default_root_device_type=None):
+    def create_stack(
+        self,
+        name,
+        region,
+        service_role_arn,
+        default_instance_profile_arn,
+        vpc_id=None,
+        attributes=None,
+        default_os=None,
+        hostname_theme=None,
+        default_availability_zone=None,
+        default_subnet_id=None,
+        custom_json=None,
+        configuration_manager=None,
+        chef_configuration=None,
+        use_custom_cookbooks=None,
+        use_opsworks_security_groups=None,
+        custom_cookbooks_source=None,
+        default_ssh_key_name=None,
+        default_root_device_type=None,
+    ):
         """
         Creates a new stack. For more information, see `Create a New
         Stack`_.
@@ -1085,44 +1153,48 @@ class OpsWorksConnection(AWSQueryConnection):
 
         """
         params = {
-            'Name': name,
-            'Region': region,
-            'ServiceRoleArn': service_role_arn,
-            'DefaultInstanceProfileArn': default_instance_profile_arn,
+            "Name": name,
+            "Region": region,
+            "ServiceRoleArn": service_role_arn,
+            "DefaultInstanceProfileArn": default_instance_profile_arn,
         }
         if vpc_id is not None:
-            params['VpcId'] = vpc_id
+            params["VpcId"] = vpc_id
         if attributes is not None:
-            params['Attributes'] = attributes
+            params["Attributes"] = attributes
         if default_os is not None:
-            params['DefaultOs'] = default_os
+            params["DefaultOs"] = default_os
         if hostname_theme is not None:
-            params['HostnameTheme'] = hostname_theme
+            params["HostnameTheme"] = hostname_theme
         if default_availability_zone is not None:
-            params['DefaultAvailabilityZone'] = default_availability_zone
+            params["DefaultAvailabilityZone"] = default_availability_zone
         if default_subnet_id is not None:
-            params['DefaultSubnetId'] = default_subnet_id
+            params["DefaultSubnetId"] = default_subnet_id
         if custom_json is not None:
-            params['CustomJson'] = custom_json
+            params["CustomJson"] = custom_json
         if configuration_manager is not None:
-            params['ConfigurationManager'] = configuration_manager
+            params["ConfigurationManager"] = configuration_manager
         if chef_configuration is not None:
-            params['ChefConfiguration'] = chef_configuration
+            params["ChefConfiguration"] = chef_configuration
         if use_custom_cookbooks is not None:
-            params['UseCustomCookbooks'] = use_custom_cookbooks
+            params["UseCustomCookbooks"] = use_custom_cookbooks
         if use_opsworks_security_groups is not None:
-            params['UseOpsworksSecurityGroups'] = use_opsworks_security_groups
+            params["UseOpsworksSecurityGroups"] = use_opsworks_security_groups
         if custom_cookbooks_source is not None:
-            params['CustomCookbooksSource'] = custom_cookbooks_source
+            params["CustomCookbooksSource"] = custom_cookbooks_source
         if default_ssh_key_name is not None:
-            params['DefaultSshKeyName'] = default_ssh_key_name
+            params["DefaultSshKeyName"] = default_ssh_key_name
         if default_root_device_type is not None:
-            params['DefaultRootDeviceType'] = default_root_device_type
-        return self.make_request(action='CreateStack',
-                                 body=json.dumps(params))
+            params["DefaultRootDeviceType"] = default_root_device_type
+        return self.make_request(action="CreateStack", body=json.dumps(params))
 
-    def create_user_profile(self, iam_user_arn, ssh_username=None,
-                            ssh_public_key=None, allow_self_management=None):
+    def create_user_profile(
+        self,
+        iam_user_arn,
+        ssh_username=None,
+        ssh_public_key=None,
+        allow_self_management=None,
+    ):
         """
         Creates a new user profile.
 
@@ -1151,15 +1223,16 @@ class OpsWorksConnection(AWSQueryConnection):
             `Setting an IAM User's Public SSH Key`_.
 
         """
-        params = {'IamUserArn': iam_user_arn, }
+        params = {
+            "IamUserArn": iam_user_arn,
+        }
         if ssh_username is not None:
-            params['SshUsername'] = ssh_username
+            params["SshUsername"] = ssh_username
         if ssh_public_key is not None:
-            params['SshPublicKey'] = ssh_public_key
+            params["SshPublicKey"] = ssh_public_key
         if allow_self_management is not None:
-            params['AllowSelfManagement'] = allow_self_management
-        return self.make_request(action='CreateUserProfile',
-                                 body=json.dumps(params))
+            params["AllowSelfManagement"] = allow_self_management
+        return self.make_request(action="CreateUserProfile", body=json.dumps(params))
 
     def delete_app(self, app_id):
         """
@@ -1175,12 +1248,12 @@ class OpsWorksConnection(AWSQueryConnection):
         :param app_id: The app ID.
 
         """
-        params = {'AppId': app_id, }
-        return self.make_request(action='DeleteApp',
-                                 body=json.dumps(params))
+        params = {
+            "AppId": app_id,
+        }
+        return self.make_request(action="DeleteApp", body=json.dumps(params))
 
-    def delete_instance(self, instance_id, delete_elastic_ip=None,
-                        delete_volumes=None):
+    def delete_instance(self, instance_id, delete_elastic_ip=None, delete_volumes=None):
         """
         Deletes a specified instance, which terminates the associated
         Amazon EC2 instance. You must stop an instance before you can
@@ -1206,13 +1279,14 @@ class OpsWorksConnection(AWSQueryConnection):
             volumes.
 
         """
-        params = {'InstanceId': instance_id, }
+        params = {
+            "InstanceId": instance_id,
+        }
         if delete_elastic_ip is not None:
-            params['DeleteElasticIp'] = delete_elastic_ip
+            params["DeleteElasticIp"] = delete_elastic_ip
         if delete_volumes is not None:
-            params['DeleteVolumes'] = delete_volumes
-        return self.make_request(action='DeleteInstance',
-                                 body=json.dumps(params))
+            params["DeleteVolumes"] = delete_volumes
+        return self.make_request(action="DeleteInstance", body=json.dumps(params))
 
     def delete_layer(self, layer_id):
         """
@@ -1230,9 +1304,10 @@ class OpsWorksConnection(AWSQueryConnection):
         :param layer_id: The layer ID.
 
         """
-        params = {'LayerId': layer_id, }
-        return self.make_request(action='DeleteLayer',
-                                 body=json.dumps(params))
+        params = {
+            "LayerId": layer_id,
+        }
+        return self.make_request(action="DeleteLayer", body=json.dumps(params))
 
     def delete_stack(self, stack_id):
         """
@@ -1250,9 +1325,10 @@ class OpsWorksConnection(AWSQueryConnection):
         :param stack_id: The stack ID.
 
         """
-        params = {'StackId': stack_id, }
-        return self.make_request(action='DeleteStack',
-                                 body=json.dumps(params))
+        params = {
+            "StackId": stack_id,
+        }
+        return self.make_request(action="DeleteStack", body=json.dumps(params))
 
     def delete_user_profile(self, iam_user_arn):
         """
@@ -1267,9 +1343,10 @@ class OpsWorksConnection(AWSQueryConnection):
         :param iam_user_arn: The user's IAM ARN.
 
         """
-        params = {'IamUserArn': iam_user_arn, }
-        return self.make_request(action='DeleteUserProfile',
-                                 body=json.dumps(params))
+        params = {
+            "IamUserArn": iam_user_arn,
+        }
+        return self.make_request(action="DeleteUserProfile", body=json.dumps(params))
 
     def deregister_elastic_ip(self, elastic_ip):
         """
@@ -1287,9 +1364,10 @@ class OpsWorksConnection(AWSQueryConnection):
         :param elastic_ip: The Elastic IP address.
 
         """
-        params = {'ElasticIp': elastic_ip, }
-        return self.make_request(action='DeregisterElasticIp',
-                                 body=json.dumps(params))
+        params = {
+            "ElasticIp": elastic_ip,
+        }
+        return self.make_request(action="DeregisterElasticIp", body=json.dumps(params))
 
     def deregister_instance(self, instance_id):
         """
@@ -1308,9 +1386,10 @@ class OpsWorksConnection(AWSQueryConnection):
         :param instance_id: The instance ID.
 
         """
-        params = {'InstanceId': instance_id, }
-        return self.make_request(action='DeregisterInstance',
-                                 body=json.dumps(params))
+        params = {
+            "InstanceId": instance_id,
+        }
+        return self.make_request(action="DeregisterInstance", body=json.dumps(params))
 
     def deregister_rds_db_instance(self, rds_db_instance_arn):
         """
@@ -1326,9 +1405,12 @@ class OpsWorksConnection(AWSQueryConnection):
         :param rds_db_instance_arn: The Amazon RDS instance's ARN.
 
         """
-        params = {'RdsDbInstanceArn': rds_db_instance_arn, }
-        return self.make_request(action='DeregisterRdsDbInstance',
-                                 body=json.dumps(params))
+        params = {
+            "RdsDbInstanceArn": rds_db_instance_arn,
+        }
+        return self.make_request(
+            action="DeregisterRdsDbInstance", body=json.dumps(params)
+        )
 
     def deregister_volume(self, volume_id):
         """
@@ -1346,9 +1428,10 @@ class OpsWorksConnection(AWSQueryConnection):
         :param volume_id: The volume ID.
 
         """
-        params = {'VolumeId': volume_id, }
-        return self.make_request(action='DeregisterVolume',
-                                 body=json.dumps(params))
+        params = {
+            "VolumeId": volume_id,
+        }
+        return self.make_request(action="DeregisterVolume", body=json.dumps(params))
 
     def describe_apps(self, stack_id=None, app_ids=None):
         """
@@ -1377,14 +1460,12 @@ class OpsWorksConnection(AWSQueryConnection):
         """
         params = {}
         if stack_id is not None:
-            params['StackId'] = stack_id
+            params["StackId"] = stack_id
         if app_ids is not None:
-            params['AppIds'] = app_ids
-        return self.make_request(action='DescribeApps',
-                                 body=json.dumps(params))
+            params["AppIds"] = app_ids
+        return self.make_request(action="DescribeApps", body=json.dumps(params))
 
-    def describe_commands(self, deployment_id=None, instance_id=None,
-                          command_ids=None):
+    def describe_commands(self, deployment_id=None, instance_id=None, command_ids=None):
         """
         Describes the results of specified commands.
 
@@ -1417,16 +1498,14 @@ class OpsWorksConnection(AWSQueryConnection):
         """
         params = {}
         if deployment_id is not None:
-            params['DeploymentId'] = deployment_id
+            params["DeploymentId"] = deployment_id
         if instance_id is not None:
-            params['InstanceId'] = instance_id
+            params["InstanceId"] = instance_id
         if command_ids is not None:
-            params['CommandIds'] = command_ids
-        return self.make_request(action='DescribeCommands',
-                                 body=json.dumps(params))
+            params["CommandIds"] = command_ids
+        return self.make_request(action="DescribeCommands", body=json.dumps(params))
 
-    def describe_deployments(self, stack_id=None, app_id=None,
-                             deployment_ids=None):
+    def describe_deployments(self, stack_id=None, app_id=None, deployment_ids=None):
         """
         Requests a description of a specified set of deployments.
 
@@ -1459,13 +1538,12 @@ class OpsWorksConnection(AWSQueryConnection):
         """
         params = {}
         if stack_id is not None:
-            params['StackId'] = stack_id
+            params["StackId"] = stack_id
         if app_id is not None:
-            params['AppId'] = app_id
+            params["AppId"] = app_id
         if deployment_ids is not None:
-            params['DeploymentIds'] = deployment_ids
-        return self.make_request(action='DescribeDeployments',
-                                 body=json.dumps(params))
+            params["DeploymentIds"] = deployment_ids
+        return self.make_request(action="DescribeDeployments", body=json.dumps(params))
 
     def describe_elastic_ips(self, instance_id=None, stack_id=None, ips=None):
         """
@@ -1500,13 +1578,12 @@ class OpsWorksConnection(AWSQueryConnection):
         """
         params = {}
         if instance_id is not None:
-            params['InstanceId'] = instance_id
+            params["InstanceId"] = instance_id
         if stack_id is not None:
-            params['StackId'] = stack_id
+            params["StackId"] = stack_id
         if ips is not None:
-            params['Ips'] = ips
-        return self.make_request(action='DescribeElasticIps',
-                                 body=json.dumps(params))
+            params["Ips"] = ips
+        return self.make_request(action="DescribeElasticIps", body=json.dumps(params))
 
     def describe_elastic_load_balancers(self, stack_id=None, layer_ids=None):
         """
@@ -1533,14 +1610,14 @@ class OpsWorksConnection(AWSQueryConnection):
         """
         params = {}
         if stack_id is not None:
-            params['StackId'] = stack_id
+            params["StackId"] = stack_id
         if layer_ids is not None:
-            params['LayerIds'] = layer_ids
-        return self.make_request(action='DescribeElasticLoadBalancers',
-                                 body=json.dumps(params))
+            params["LayerIds"] = layer_ids
+        return self.make_request(
+            action="DescribeElasticLoadBalancers", body=json.dumps(params)
+        )
 
-    def describe_instances(self, stack_id=None, layer_id=None,
-                           instance_ids=None):
+    def describe_instances(self, stack_id=None, layer_id=None, instance_ids=None):
         """
         Requests a description of a set of instances.
 
@@ -1573,13 +1650,12 @@ class OpsWorksConnection(AWSQueryConnection):
         """
         params = {}
         if stack_id is not None:
-            params['StackId'] = stack_id
+            params["StackId"] = stack_id
         if layer_id is not None:
-            params['LayerId'] = layer_id
+            params["LayerId"] = layer_id
         if instance_ids is not None:
-            params['InstanceIds'] = instance_ids
-        return self.make_request(action='DescribeInstances',
-                                 body=json.dumps(params))
+            params["InstanceIds"] = instance_ids
+        return self.make_request(action="DescribeInstances", body=json.dumps(params))
 
     def describe_layers(self, stack_id=None, layer_ids=None):
         """
@@ -1607,11 +1683,10 @@ class OpsWorksConnection(AWSQueryConnection):
         """
         params = {}
         if stack_id is not None:
-            params['StackId'] = stack_id
+            params["StackId"] = stack_id
         if layer_ids is not None:
-            params['LayerIds'] = layer_ids
-        return self.make_request(action='DescribeLayers',
-                                 body=json.dumps(params))
+            params["LayerIds"] = layer_ids
+        return self.make_request(action="DescribeLayers", body=json.dumps(params))
 
     def describe_load_based_auto_scaling(self, layer_ids):
         """
@@ -1632,9 +1707,12 @@ class OpsWorksConnection(AWSQueryConnection):
         :param layer_ids: An array of layer IDs.
 
         """
-        params = {'LayerIds': layer_ids, }
-        return self.make_request(action='DescribeLoadBasedAutoScaling',
-                                 body=json.dumps(params))
+        params = {
+            "LayerIds": layer_ids,
+        }
+        return self.make_request(
+            action="DescribeLoadBasedAutoScaling", body=json.dumps(params)
+        )
 
     def describe_my_user_profile(self):
         """
@@ -1645,11 +1723,12 @@ class OpsWorksConnection(AWSQueryConnection):
         explicitly grants permissions. For more information on user
         permissions, see `Managing User Permissions`_.
 
-        
+
         """
         params = {}
-        return self.make_request(action='DescribeMyUserProfile',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="DescribeMyUserProfile", body=json.dumps(params)
+        )
 
     def describe_permissions(self, iam_user_arn=None, stack_id=None):
         """
@@ -1671,14 +1750,14 @@ class OpsWorksConnection(AWSQueryConnection):
         """
         params = {}
         if iam_user_arn is not None:
-            params['IamUserArn'] = iam_user_arn
+            params["IamUserArn"] = iam_user_arn
         if stack_id is not None:
-            params['StackId'] = stack_id
-        return self.make_request(action='DescribePermissions',
-                                 body=json.dumps(params))
+            params["StackId"] = stack_id
+        return self.make_request(action="DescribePermissions", body=json.dumps(params))
 
-    def describe_raid_arrays(self, instance_id=None, stack_id=None,
-                             raid_array_ids=None):
+    def describe_raid_arrays(
+        self, instance_id=None, stack_id=None, raid_array_ids=None
+    ):
         """
         Describe an instance's RAID arrays.
 
@@ -1709,13 +1788,12 @@ class OpsWorksConnection(AWSQueryConnection):
         """
         params = {}
         if instance_id is not None:
-            params['InstanceId'] = instance_id
+            params["InstanceId"] = instance_id
         if stack_id is not None:
-            params['StackId'] = stack_id
+            params["StackId"] = stack_id
         if raid_array_ids is not None:
-            params['RaidArrayIds'] = raid_array_ids
-        return self.make_request(action='DescribeRaidArrays',
-                                 body=json.dumps(params))
+            params["RaidArrayIds"] = raid_array_ids
+        return self.make_request(action="DescribeRaidArrays", body=json.dumps(params))
 
     def describe_rds_db_instances(self, stack_id, rds_db_instance_arns=None):
         """
@@ -1737,14 +1815,18 @@ class OpsWorksConnection(AWSQueryConnection):
             instances to be described.
 
         """
-        params = {'StackId': stack_id, }
+        params = {
+            "StackId": stack_id,
+        }
         if rds_db_instance_arns is not None:
-            params['RdsDbInstanceArns'] = rds_db_instance_arns
-        return self.make_request(action='DescribeRdsDbInstances',
-                                 body=json.dumps(params))
+            params["RdsDbInstanceArns"] = rds_db_instance_arns
+        return self.make_request(
+            action="DescribeRdsDbInstances", body=json.dumps(params)
+        )
 
-    def describe_service_errors(self, stack_id=None, instance_id=None,
-                                service_error_ids=None):
+    def describe_service_errors(
+        self, stack_id=None, instance_id=None, service_error_ids=None
+    ):
         """
         Describes AWS OpsWorks service errors.
 
@@ -1773,13 +1855,14 @@ class OpsWorksConnection(AWSQueryConnection):
         """
         params = {}
         if stack_id is not None:
-            params['StackId'] = stack_id
+            params["StackId"] = stack_id
         if instance_id is not None:
-            params['InstanceId'] = instance_id
+            params["InstanceId"] = instance_id
         if service_error_ids is not None:
-            params['ServiceErrorIds'] = service_error_ids
-        return self.make_request(action='DescribeServiceErrors',
-                                 body=json.dumps(params))
+            params["ServiceErrorIds"] = service_error_ids
+        return self.make_request(
+            action="DescribeServiceErrors", body=json.dumps(params)
+        )
 
     def describe_stack_provisioning_parameters(self, stack_id):
         """
@@ -1795,9 +1878,12 @@ class OpsWorksConnection(AWSQueryConnection):
         :param stack_id: The stack ID
 
         """
-        params = {'StackId': stack_id, }
-        return self.make_request(action='DescribeStackProvisioningParameters',
-                                 body=json.dumps(params))
+        params = {
+            "StackId": stack_id,
+        }
+        return self.make_request(
+            action="DescribeStackProvisioningParameters", body=json.dumps(params)
+        )
 
     def describe_stack_summary(self, stack_id):
         """
@@ -1815,9 +1901,10 @@ class OpsWorksConnection(AWSQueryConnection):
         :param stack_id: The stack ID.
 
         """
-        params = {'StackId': stack_id, }
-        return self.make_request(action='DescribeStackSummary',
-                                 body=json.dumps(params))
+        params = {
+            "StackId": stack_id,
+        }
+        return self.make_request(action="DescribeStackSummary", body=json.dumps(params))
 
     def describe_stacks(self, stack_ids=None):
         """
@@ -1837,9 +1924,8 @@ class OpsWorksConnection(AWSQueryConnection):
         """
         params = {}
         if stack_ids is not None:
-            params['StackIds'] = stack_ids
-        return self.make_request(action='DescribeStacks',
-                                 body=json.dumps(params))
+            params["StackIds"] = stack_ids
+        return self.make_request(action="DescribeStacks", body=json.dumps(params))
 
     def describe_time_based_auto_scaling(self, instance_ids):
         """
@@ -1860,9 +1946,12 @@ class OpsWorksConnection(AWSQueryConnection):
         :param instance_ids: An array of instance IDs.
 
         """
-        params = {'InstanceIds': instance_ids, }
-        return self.make_request(action='DescribeTimeBasedAutoScaling',
-                                 body=json.dumps(params))
+        params = {
+            "InstanceIds": instance_ids,
+        }
+        return self.make_request(
+            action="DescribeTimeBasedAutoScaling", body=json.dumps(params)
+        )
 
     def describe_user_profiles(self, iam_user_arns=None):
         """
@@ -1880,12 +1969,12 @@ class OpsWorksConnection(AWSQueryConnection):
         """
         params = {}
         if iam_user_arns is not None:
-            params['IamUserArns'] = iam_user_arns
-        return self.make_request(action='DescribeUserProfiles',
-                                 body=json.dumps(params))
+            params["IamUserArns"] = iam_user_arns
+        return self.make_request(action="DescribeUserProfiles", body=json.dumps(params))
 
-    def describe_volumes(self, instance_id=None, stack_id=None,
-                         raid_array_id=None, volume_ids=None):
+    def describe_volumes(
+        self, instance_id=None, stack_id=None, raid_array_id=None, volume_ids=None
+    ):
         """
         Describes an instance's Amazon EBS volumes.
 
@@ -1921,18 +2010,16 @@ class OpsWorksConnection(AWSQueryConnection):
         """
         params = {}
         if instance_id is not None:
-            params['InstanceId'] = instance_id
+            params["InstanceId"] = instance_id
         if stack_id is not None:
-            params['StackId'] = stack_id
+            params["StackId"] = stack_id
         if raid_array_id is not None:
-            params['RaidArrayId'] = raid_array_id
+            params["RaidArrayId"] = raid_array_id
         if volume_ids is not None:
-            params['VolumeIds'] = volume_ids
-        return self.make_request(action='DescribeVolumes',
-                                 body=json.dumps(params))
+            params["VolumeIds"] = volume_ids
+        return self.make_request(action="DescribeVolumes", body=json.dumps(params))
 
-    def detach_elastic_load_balancer(self, elastic_load_balancer_name,
-                                     layer_id):
+    def detach_elastic_load_balancer(self, elastic_load_balancer_name, layer_id):
         """
         Detaches a specified Elastic Load Balancing instance from its
         layer.
@@ -1953,11 +2040,12 @@ class OpsWorksConnection(AWSQueryConnection):
 
         """
         params = {
-            'ElasticLoadBalancerName': elastic_load_balancer_name,
-            'LayerId': layer_id,
+            "ElasticLoadBalancerName": elastic_load_balancer_name,
+            "LayerId": layer_id,
         }
-        return self.make_request(action='DetachElasticLoadBalancer',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="DetachElasticLoadBalancer", body=json.dumps(params)
+        )
 
     def disassociate_elastic_ip(self, elastic_ip):
         """
@@ -1975,9 +2063,12 @@ class OpsWorksConnection(AWSQueryConnection):
         :param elastic_ip: The Elastic IP address.
 
         """
-        params = {'ElasticIp': elastic_ip, }
-        return self.make_request(action='DisassociateElasticIp',
-                                 body=json.dumps(params))
+        params = {
+            "ElasticIp": elastic_ip,
+        }
+        return self.make_request(
+            action="DisassociateElasticIp", body=json.dumps(params)
+        )
 
     def get_hostname_suggestion(self, layer_id):
         """
@@ -1994,9 +2085,12 @@ class OpsWorksConnection(AWSQueryConnection):
         :param layer_id: The layer ID.
 
         """
-        params = {'LayerId': layer_id, }
-        return self.make_request(action='GetHostnameSuggestion',
-                                 body=json.dumps(params))
+        params = {
+            "LayerId": layer_id,
+        }
+        return self.make_request(
+            action="GetHostnameSuggestion", body=json.dumps(params)
+        )
 
     def reboot_instance(self, instance_id):
         """
@@ -2013,9 +2107,10 @@ class OpsWorksConnection(AWSQueryConnection):
         :param instance_id: The instance ID.
 
         """
-        params = {'InstanceId': instance_id, }
-        return self.make_request(action='RebootInstance',
-                                 body=json.dumps(params))
+        params = {
+            "InstanceId": instance_id,
+        }
+        return self.make_request(action="RebootInstance", body=json.dumps(params))
 
     def register_elastic_ip(self, elastic_ip, stack_id):
         """
@@ -2038,14 +2133,22 @@ class OpsWorksConnection(AWSQueryConnection):
         :param stack_id: The stack ID.
 
         """
-        params = {'ElasticIp': elastic_ip, 'StackId': stack_id, }
-        return self.make_request(action='RegisterElasticIp',
-                                 body=json.dumps(params))
+        params = {
+            "ElasticIp": elastic_ip,
+            "StackId": stack_id,
+        }
+        return self.make_request(action="RegisterElasticIp", body=json.dumps(params))
 
-    def register_instance(self, stack_id, hostname=None, public_ip=None,
-                          private_ip=None, rsa_public_key=None,
-                          rsa_public_key_fingerprint=None,
-                          instance_identity=None):
+    def register_instance(
+        self,
+        stack_id,
+        hostname=None,
+        public_ip=None,
+        private_ip=None,
+        rsa_public_key=None,
+        rsa_public_key_fingerprint=None,
+        instance_identity=None,
+    ):
         """
         Registers instances with a specified stack that were created
         outside of AWS OpsWorks.
@@ -2090,24 +2193,26 @@ class OpsWorksConnection(AWSQueryConnection):
             instance's identity.
 
         """
-        params = {'StackId': stack_id, }
+        params = {
+            "StackId": stack_id,
+        }
         if hostname is not None:
-            params['Hostname'] = hostname
+            params["Hostname"] = hostname
         if public_ip is not None:
-            params['PublicIp'] = public_ip
+            params["PublicIp"] = public_ip
         if private_ip is not None:
-            params['PrivateIp'] = private_ip
+            params["PrivateIp"] = private_ip
         if rsa_public_key is not None:
-            params['RsaPublicKey'] = rsa_public_key
+            params["RsaPublicKey"] = rsa_public_key
         if rsa_public_key_fingerprint is not None:
-            params['RsaPublicKeyFingerprint'] = rsa_public_key_fingerprint
+            params["RsaPublicKeyFingerprint"] = rsa_public_key_fingerprint
         if instance_identity is not None:
-            params['InstanceIdentity'] = instance_identity
-        return self.make_request(action='RegisterInstance',
-                                 body=json.dumps(params))
+            params["InstanceIdentity"] = instance_identity
+        return self.make_request(action="RegisterInstance", body=json.dumps(params))
 
-    def register_rds_db_instance(self, stack_id, rds_db_instance_arn,
-                                 db_user, db_password):
+    def register_rds_db_instance(
+        self, stack_id, rds_db_instance_arn, db_user, db_password
+    ):
         """
         Registers an Amazon RDS instance with a stack.
 
@@ -2131,13 +2236,14 @@ class OpsWorksConnection(AWSQueryConnection):
 
         """
         params = {
-            'StackId': stack_id,
-            'RdsDbInstanceArn': rds_db_instance_arn,
-            'DbUser': db_user,
-            'DbPassword': db_password,
+            "StackId": stack_id,
+            "RdsDbInstanceArn": rds_db_instance_arn,
+            "DbUser": db_user,
+            "DbPassword": db_password,
         }
-        return self.make_request(action='RegisterRdsDbInstance',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="RegisterRdsDbInstance", body=json.dumps(params)
+        )
 
     def register_volume(self, stack_id, ec_2_volume_id=None):
         """
@@ -2160,14 +2266,16 @@ class OpsWorksConnection(AWSQueryConnection):
         :param stack_id: The stack ID.
 
         """
-        params = {'StackId': stack_id, }
+        params = {
+            "StackId": stack_id,
+        }
         if ec_2_volume_id is not None:
-            params['Ec2VolumeId'] = ec_2_volume_id
-        return self.make_request(action='RegisterVolume',
-                                 body=json.dumps(params))
+            params["Ec2VolumeId"] = ec_2_volume_id
+        return self.make_request(action="RegisterVolume", body=json.dumps(params))
 
-    def set_load_based_auto_scaling(self, layer_id, enable=None,
-                                    up_scaling=None, down_scaling=None):
+    def set_load_based_auto_scaling(
+        self, layer_id, enable=None, up_scaling=None, down_scaling=None
+    ):
         """
         Specify the load-based auto scaling configuration for a
         specified layer. For more information, see `Managing Load with
@@ -2206,18 +2314,22 @@ class OpsWorksConnection(AWSQueryConnection):
             specified number of instances.
 
         """
-        params = {'LayerId': layer_id, }
+        params = {
+            "LayerId": layer_id,
+        }
         if enable is not None:
-            params['Enable'] = enable
+            params["Enable"] = enable
         if up_scaling is not None:
-            params['UpScaling'] = up_scaling
+            params["UpScaling"] = up_scaling
         if down_scaling is not None:
-            params['DownScaling'] = down_scaling
-        return self.make_request(action='SetLoadBasedAutoScaling',
-                                 body=json.dumps(params))
+            params["DownScaling"] = down_scaling
+        return self.make_request(
+            action="SetLoadBasedAutoScaling", body=json.dumps(params)
+        )
 
-    def set_permission(self, stack_id, iam_user_arn, allow_ssh=None,
-                       allow_sudo=None, level=None):
+    def set_permission(
+        self, stack_id, iam_user_arn, allow_ssh=None, allow_sudo=None, level=None
+    ):
         """
         Specifies a user's permissions. For more information, see
         `Security and Permissions`_.
@@ -2257,18 +2369,19 @@ class OpsWorksConnection(AWSQueryConnection):
             see `Managing User Permissions`_
 
         """
-        params = {'StackId': stack_id, 'IamUserArn': iam_user_arn, }
+        params = {
+            "StackId": stack_id,
+            "IamUserArn": iam_user_arn,
+        }
         if allow_ssh is not None:
-            params['AllowSsh'] = allow_ssh
+            params["AllowSsh"] = allow_ssh
         if allow_sudo is not None:
-            params['AllowSudo'] = allow_sudo
+            params["AllowSudo"] = allow_sudo
         if level is not None:
-            params['Level'] = level
-        return self.make_request(action='SetPermission',
-                                 body=json.dumps(params))
+            params["Level"] = level
+        return self.make_request(action="SetPermission", body=json.dumps(params))
 
-    def set_time_based_auto_scaling(self, instance_id,
-                                    auto_scaling_schedule=None):
+    def set_time_based_auto_scaling(self, instance_id, auto_scaling_schedule=None):
         """
         Specify the time-based auto scaling configuration for a
         specified instance. For more information, see `Managing Load
@@ -2288,11 +2401,14 @@ class OpsWorksConnection(AWSQueryConnection):
             instance schedule.
 
         """
-        params = {'InstanceId': instance_id, }
+        params = {
+            "InstanceId": instance_id,
+        }
         if auto_scaling_schedule is not None:
-            params['AutoScalingSchedule'] = auto_scaling_schedule
-        return self.make_request(action='SetTimeBasedAutoScaling',
-                                 body=json.dumps(params))
+            params["AutoScalingSchedule"] = auto_scaling_schedule
+        return self.make_request(
+            action="SetTimeBasedAutoScaling", body=json.dumps(params)
+        )
 
     def start_instance(self, instance_id):
         """
@@ -2309,9 +2425,10 @@ class OpsWorksConnection(AWSQueryConnection):
         :param instance_id: The instance ID.
 
         """
-        params = {'InstanceId': instance_id, }
-        return self.make_request(action='StartInstance',
-                                 body=json.dumps(params))
+        params = {
+            "InstanceId": instance_id,
+        }
+        return self.make_request(action="StartInstance", body=json.dumps(params))
 
     def start_stack(self, stack_id):
         """
@@ -2327,9 +2444,10 @@ class OpsWorksConnection(AWSQueryConnection):
         :param stack_id: The stack ID.
 
         """
-        params = {'StackId': stack_id, }
-        return self.make_request(action='StartStack',
-                                 body=json.dumps(params))
+        params = {
+            "StackId": stack_id,
+        }
+        return self.make_request(action="StartStack", body=json.dumps(params))
 
     def stop_instance(self, instance_id):
         """
@@ -2349,9 +2467,10 @@ class OpsWorksConnection(AWSQueryConnection):
         :param instance_id: The instance ID.
 
         """
-        params = {'InstanceId': instance_id, }
-        return self.make_request(action='StopInstance',
-                                 body=json.dumps(params))
+        params = {
+            "InstanceId": instance_id,
+        }
+        return self.make_request(action="StopInstance", body=json.dumps(params))
 
     def stop_stack(self, stack_id):
         """
@@ -2367,9 +2486,10 @@ class OpsWorksConnection(AWSQueryConnection):
         :param stack_id: The stack ID.
 
         """
-        params = {'StackId': stack_id, }
-        return self.make_request(action='StopStack',
-                                 body=json.dumps(params))
+        params = {
+            "StackId": stack_id,
+        }
+        return self.make_request(action="StopStack", body=json.dumps(params))
 
     def unassign_instance(self, instance_id):
         """
@@ -2389,9 +2509,10 @@ class OpsWorksConnection(AWSQueryConnection):
         :param instance_id: The instance ID.
 
         """
-        params = {'InstanceId': instance_id, }
-        return self.make_request(action='UnassignInstance',
-                                 body=json.dumps(params))
+        params = {
+            "InstanceId": instance_id,
+        }
+        return self.make_request(action="UnassignInstance", body=json.dumps(params))
 
     def unassign_volume(self, volume_id):
         """
@@ -2409,14 +2530,25 @@ class OpsWorksConnection(AWSQueryConnection):
         :param volume_id: The volume ID.
 
         """
-        params = {'VolumeId': volume_id, }
-        return self.make_request(action='UnassignVolume',
-                                 body=json.dumps(params))
+        params = {
+            "VolumeId": volume_id,
+        }
+        return self.make_request(action="UnassignVolume", body=json.dumps(params))
 
-    def update_app(self, app_id, name=None, description=None,
-                   data_sources=None, type=None, app_source=None,
-                   domains=None, enable_ssl=None, ssl_configuration=None,
-                   attributes=None, environment=None):
+    def update_app(
+        self,
+        app_id,
+        name=None,
+        description=None,
+        data_sources=None,
+        type=None,
+        app_source=None,
+        domains=None,
+        enable_ssl=None,
+        ssl_configuration=None,
+        attributes=None,
+        environment=None,
+    ):
         """
         Updates a specified app.
 
@@ -2471,29 +2603,30 @@ class OpsWorksConnection(AWSQueryConnection):
             stack's Chef version.
 
         """
-        params = {'AppId': app_id, }
+        params = {
+            "AppId": app_id,
+        }
         if name is not None:
-            params['Name'] = name
+            params["Name"] = name
         if description is not None:
-            params['Description'] = description
+            params["Description"] = description
         if data_sources is not None:
-            params['DataSources'] = data_sources
+            params["DataSources"] = data_sources
         if type is not None:
-            params['Type'] = type
+            params["Type"] = type
         if app_source is not None:
-            params['AppSource'] = app_source
+            params["AppSource"] = app_source
         if domains is not None:
-            params['Domains'] = domains
+            params["Domains"] = domains
         if enable_ssl is not None:
-            params['EnableSsl'] = enable_ssl
+            params["EnableSsl"] = enable_ssl
         if ssl_configuration is not None:
-            params['SslConfiguration'] = ssl_configuration
+            params["SslConfiguration"] = ssl_configuration
         if attributes is not None:
-            params['Attributes'] = attributes
+            params["Attributes"] = attributes
         if environment is not None:
-            params['Environment'] = environment
-        return self.make_request(action='UpdateApp',
-                                 body=json.dumps(params))
+            params["Environment"] = environment
+        return self.make_request(action="UpdateApp", body=json.dumps(params))
 
     def update_elastic_ip(self, elastic_ip, name=None):
         """
@@ -2513,17 +2646,27 @@ class OpsWorksConnection(AWSQueryConnection):
         :param name: The new name.
 
         """
-        params = {'ElasticIp': elastic_ip, }
+        params = {
+            "ElasticIp": elastic_ip,
+        }
         if name is not None:
-            params['Name'] = name
-        return self.make_request(action='UpdateElasticIp',
-                                 body=json.dumps(params))
+            params["Name"] = name
+        return self.make_request(action="UpdateElasticIp", body=json.dumps(params))
 
-    def update_instance(self, instance_id, layer_ids=None,
-                        instance_type=None, auto_scaling_type=None,
-                        hostname=None, os=None, ami_id=None,
-                        ssh_key_name=None, architecture=None,
-                        install_updates_on_boot=None, ebs_optimized=None):
+    def update_instance(
+        self,
+        instance_id,
+        layer_ids=None,
+        instance_type=None,
+        auto_scaling_type=None,
+        hostname=None,
+        os=None,
+        ami_id=None,
+        ssh_key_name=None,
+        architecture=None,
+        install_updates_on_boot=None,
+        ebs_optimized=None,
+    ):
         """
         Updates a specified instance.
 
@@ -2604,39 +2747,49 @@ class OpsWorksConnection(AWSQueryConnection):
         :param ebs_optimized: Whether this is an Amazon EBS-optimized instance.
 
         """
-        params = {'InstanceId': instance_id, }
+        params = {
+            "InstanceId": instance_id,
+        }
         if layer_ids is not None:
-            params['LayerIds'] = layer_ids
+            params["LayerIds"] = layer_ids
         if instance_type is not None:
-            params['InstanceType'] = instance_type
+            params["InstanceType"] = instance_type
         if auto_scaling_type is not None:
-            params['AutoScalingType'] = auto_scaling_type
+            params["AutoScalingType"] = auto_scaling_type
         if hostname is not None:
-            params['Hostname'] = hostname
+            params["Hostname"] = hostname
         if os is not None:
-            params['Os'] = os
+            params["Os"] = os
         if ami_id is not None:
-            params['AmiId'] = ami_id
+            params["AmiId"] = ami_id
         if ssh_key_name is not None:
-            params['SshKeyName'] = ssh_key_name
+            params["SshKeyName"] = ssh_key_name
         if architecture is not None:
-            params['Architecture'] = architecture
+            params["Architecture"] = architecture
         if install_updates_on_boot is not None:
-            params['InstallUpdatesOnBoot'] = install_updates_on_boot
+            params["InstallUpdatesOnBoot"] = install_updates_on_boot
         if ebs_optimized is not None:
-            params['EbsOptimized'] = ebs_optimized
-        return self.make_request(action='UpdateInstance',
-                                 body=json.dumps(params))
+            params["EbsOptimized"] = ebs_optimized
+        return self.make_request(action="UpdateInstance", body=json.dumps(params))
 
-    def update_layer(self, layer_id, name=None, shortname=None,
-                     attributes=None, custom_instance_profile_arn=None,
-                     custom_security_group_ids=None, packages=None,
-                     volume_configurations=None, enable_auto_healing=None,
-                     auto_assign_elastic_ips=None,
-                     auto_assign_public_ips=None, custom_recipes=None,
-                     install_updates_on_boot=None,
-                     use_ebs_optimized_instances=None,
-                     lifecycle_event_configuration=None):
+    def update_layer(
+        self,
+        layer_id,
+        name=None,
+        shortname=None,
+        attributes=None,
+        custom_instance_profile_arn=None,
+        custom_security_group_ids=None,
+        packages=None,
+        volume_configurations=None,
+        enable_auto_healing=None,
+        auto_assign_elastic_ips=None,
+        auto_assign_public_ips=None,
+        custom_recipes=None,
+        install_updates_on_boot=None,
+        use_ebs_optimized_instances=None,
+        lifecycle_event_configuration=None,
+    ):
         """
         Updates a specified layer.
 
@@ -2719,37 +2872,38 @@ class OpsWorksConnection(AWSQueryConnection):
         :param lifecycle_event_configuration:
 
         """
-        params = {'LayerId': layer_id, }
+        params = {
+            "LayerId": layer_id,
+        }
         if name is not None:
-            params['Name'] = name
+            params["Name"] = name
         if shortname is not None:
-            params['Shortname'] = shortname
+            params["Shortname"] = shortname
         if attributes is not None:
-            params['Attributes'] = attributes
+            params["Attributes"] = attributes
         if custom_instance_profile_arn is not None:
-            params['CustomInstanceProfileArn'] = custom_instance_profile_arn
+            params["CustomInstanceProfileArn"] = custom_instance_profile_arn
         if custom_security_group_ids is not None:
-            params['CustomSecurityGroupIds'] = custom_security_group_ids
+            params["CustomSecurityGroupIds"] = custom_security_group_ids
         if packages is not None:
-            params['Packages'] = packages
+            params["Packages"] = packages
         if volume_configurations is not None:
-            params['VolumeConfigurations'] = volume_configurations
+            params["VolumeConfigurations"] = volume_configurations
         if enable_auto_healing is not None:
-            params['EnableAutoHealing'] = enable_auto_healing
+            params["EnableAutoHealing"] = enable_auto_healing
         if auto_assign_elastic_ips is not None:
-            params['AutoAssignElasticIps'] = auto_assign_elastic_ips
+            params["AutoAssignElasticIps"] = auto_assign_elastic_ips
         if auto_assign_public_ips is not None:
-            params['AutoAssignPublicIps'] = auto_assign_public_ips
+            params["AutoAssignPublicIps"] = auto_assign_public_ips
         if custom_recipes is not None:
-            params['CustomRecipes'] = custom_recipes
+            params["CustomRecipes"] = custom_recipes
         if install_updates_on_boot is not None:
-            params['InstallUpdatesOnBoot'] = install_updates_on_boot
+            params["InstallUpdatesOnBoot"] = install_updates_on_boot
         if use_ebs_optimized_instances is not None:
-            params['UseEbsOptimizedInstances'] = use_ebs_optimized_instances
+            params["UseEbsOptimizedInstances"] = use_ebs_optimized_instances
         if lifecycle_event_configuration is not None:
-            params['LifecycleEventConfiguration'] = lifecycle_event_configuration
-        return self.make_request(action='UpdateLayer',
-                                 body=json.dumps(params))
+            params["LifecycleEventConfiguration"] = lifecycle_event_configuration
+        return self.make_request(action="UpdateLayer", body=json.dumps(params))
 
     def update_my_user_profile(self, ssh_public_key=None):
         """
@@ -2766,12 +2920,12 @@ class OpsWorksConnection(AWSQueryConnection):
         """
         params = {}
         if ssh_public_key is not None:
-            params['SshPublicKey'] = ssh_public_key
-        return self.make_request(action='UpdateMyUserProfile',
-                                 body=json.dumps(params))
+            params["SshPublicKey"] = ssh_public_key
+        return self.make_request(action="UpdateMyUserProfile", body=json.dumps(params))
 
-    def update_rds_db_instance(self, rds_db_instance_arn, db_user=None,
-                               db_password=None):
+    def update_rds_db_instance(
+        self, rds_db_instance_arn, db_user=None, db_password=None
+    ):
         """
         Updates an Amazon RDS instance.
 
@@ -2791,24 +2945,35 @@ class OpsWorksConnection(AWSQueryConnection):
         :param db_password: The database password.
 
         """
-        params = {'RdsDbInstanceArn': rds_db_instance_arn, }
+        params = {
+            "RdsDbInstanceArn": rds_db_instance_arn,
+        }
         if db_user is not None:
-            params['DbUser'] = db_user
+            params["DbUser"] = db_user
         if db_password is not None:
-            params['DbPassword'] = db_password
-        return self.make_request(action='UpdateRdsDbInstance',
-                                 body=json.dumps(params))
+            params["DbPassword"] = db_password
+        return self.make_request(action="UpdateRdsDbInstance", body=json.dumps(params))
 
-    def update_stack(self, stack_id, name=None, attributes=None,
-                     service_role_arn=None,
-                     default_instance_profile_arn=None, default_os=None,
-                     hostname_theme=None, default_availability_zone=None,
-                     default_subnet_id=None, custom_json=None,
-                     configuration_manager=None, chef_configuration=None,
-                     use_custom_cookbooks=None, custom_cookbooks_source=None,
-                     default_ssh_key_name=None,
-                     default_root_device_type=None,
-                     use_opsworks_security_groups=None):
+    def update_stack(
+        self,
+        stack_id,
+        name=None,
+        attributes=None,
+        service_role_arn=None,
+        default_instance_profile_arn=None,
+        default_os=None,
+        hostname_theme=None,
+        default_availability_zone=None,
+        default_subnet_id=None,
+        custom_json=None,
+        configuration_manager=None,
+        chef_configuration=None,
+        use_custom_cookbooks=None,
+        custom_cookbooks_source=None,
+        default_ssh_key_name=None,
+        default_root_device_type=None,
+        use_opsworks_security_groups=None,
+    ):
         """
         Updates a specified stack.
 
@@ -2963,44 +3128,50 @@ class OpsWorksConnection(AWSQueryConnection):
         For more information, see `Create a New Stack`_.
 
         """
-        params = {'StackId': stack_id, }
+        params = {
+            "StackId": stack_id,
+        }
         if name is not None:
-            params['Name'] = name
+            params["Name"] = name
         if attributes is not None:
-            params['Attributes'] = attributes
+            params["Attributes"] = attributes
         if service_role_arn is not None:
-            params['ServiceRoleArn'] = service_role_arn
+            params["ServiceRoleArn"] = service_role_arn
         if default_instance_profile_arn is not None:
-            params['DefaultInstanceProfileArn'] = default_instance_profile_arn
+            params["DefaultInstanceProfileArn"] = default_instance_profile_arn
         if default_os is not None:
-            params['DefaultOs'] = default_os
+            params["DefaultOs"] = default_os
         if hostname_theme is not None:
-            params['HostnameTheme'] = hostname_theme
+            params["HostnameTheme"] = hostname_theme
         if default_availability_zone is not None:
-            params['DefaultAvailabilityZone'] = default_availability_zone
+            params["DefaultAvailabilityZone"] = default_availability_zone
         if default_subnet_id is not None:
-            params['DefaultSubnetId'] = default_subnet_id
+            params["DefaultSubnetId"] = default_subnet_id
         if custom_json is not None:
-            params['CustomJson'] = custom_json
+            params["CustomJson"] = custom_json
         if configuration_manager is not None:
-            params['ConfigurationManager'] = configuration_manager
+            params["ConfigurationManager"] = configuration_manager
         if chef_configuration is not None:
-            params['ChefConfiguration'] = chef_configuration
+            params["ChefConfiguration"] = chef_configuration
         if use_custom_cookbooks is not None:
-            params['UseCustomCookbooks'] = use_custom_cookbooks
+            params["UseCustomCookbooks"] = use_custom_cookbooks
         if custom_cookbooks_source is not None:
-            params['CustomCookbooksSource'] = custom_cookbooks_source
+            params["CustomCookbooksSource"] = custom_cookbooks_source
         if default_ssh_key_name is not None:
-            params['DefaultSshKeyName'] = default_ssh_key_name
+            params["DefaultSshKeyName"] = default_ssh_key_name
         if default_root_device_type is not None:
-            params['DefaultRootDeviceType'] = default_root_device_type
+            params["DefaultRootDeviceType"] = default_root_device_type
         if use_opsworks_security_groups is not None:
-            params['UseOpsworksSecurityGroups'] = use_opsworks_security_groups
-        return self.make_request(action='UpdateStack',
-                                 body=json.dumps(params))
+            params["UseOpsworksSecurityGroups"] = use_opsworks_security_groups
+        return self.make_request(action="UpdateStack", body=json.dumps(params))
 
-    def update_user_profile(self, iam_user_arn, ssh_username=None,
-                            ssh_public_key=None, allow_self_management=None):
+    def update_user_profile(
+        self,
+        iam_user_arn,
+        ssh_username=None,
+        ssh_public_key=None,
+        allow_self_management=None,
+    ):
         """
         Updates a specified user profile.
 
@@ -3029,15 +3200,16 @@ class OpsWorksConnection(AWSQueryConnection):
             `Managing User Permissions`_.
 
         """
-        params = {'IamUserArn': iam_user_arn, }
+        params = {
+            "IamUserArn": iam_user_arn,
+        }
         if ssh_username is not None:
-            params['SshUsername'] = ssh_username
+            params["SshUsername"] = ssh_username
         if ssh_public_key is not None:
-            params['SshPublicKey'] = ssh_public_key
+            params["SshPublicKey"] = ssh_public_key
         if allow_self_management is not None:
-            params['AllowSelfManagement'] = allow_self_management
-        return self.make_request(action='UpdateUserProfile',
-                                 body=json.dumps(params))
+            params["AllowSelfManagement"] = allow_self_management
+        return self.make_request(action="UpdateUserProfile", body=json.dumps(params))
 
     def update_volume(self, volume_id, name=None, mount_point=None):
         """
@@ -3060,35 +3232,38 @@ class OpsWorksConnection(AWSQueryConnection):
         :param mount_point: The new mount point.
 
         """
-        params = {'VolumeId': volume_id, }
+        params = {
+            "VolumeId": volume_id,
+        }
         if name is not None:
-            params['Name'] = name
+            params["Name"] = name
         if mount_point is not None:
-            params['MountPoint'] = mount_point
-        return self.make_request(action='UpdateVolume',
-                                 body=json.dumps(params))
+            params["MountPoint"] = mount_point
+        return self.make_request(action="UpdateVolume", body=json.dumps(params))
 
     def make_request(self, action, body):
         headers = {
-            'X-Amz-Target': '%s.%s' % (self.TargetPrefix, action),
-            'Host': self.region.endpoint,
-            'Content-Type': 'application/x-amz-json-1.1',
-            'Content-Length': str(len(body)),
+            "X-Amz-Target": "%s.%s" % (self.TargetPrefix, action),
+            "Host": self.region.endpoint,
+            "Content-Type": "application/x-amz-json-1.1",
+            "Content-Length": str(len(body)),
         }
         http_request = self.build_base_http_request(
-            method='POST', path='/', auth_path='/', params={},
-            headers=headers, data=body)
-        response = self._mexe(http_request, sender=None,
-                              override_num_retries=10)
-        response_body = response.read().decode('utf-8')
+            method="POST",
+            path="/",
+            auth_path="/",
+            params={},
+            headers=headers,
+            data=body,
+        )
+        response = self._mexe(http_request, sender=None, override_num_retries=10)
+        response_body = response.read().decode("utf-8")
         boto.log.debug(response_body)
         if response.status == 200:
             if response_body:
                 return json.loads(response_body)
         else:
             json_body = json.loads(response_body)
-            fault_name = json_body.get('__type', None)
+            fault_name = json_body.get("__type", None)
             exception_class = self._faults.get(fault_name, self.ResponseError)
-            raise exception_class(response.status, response.reason,
-                                  body=json_body)
-
+            raise exception_class(response.status, response.reason, body=json_body)

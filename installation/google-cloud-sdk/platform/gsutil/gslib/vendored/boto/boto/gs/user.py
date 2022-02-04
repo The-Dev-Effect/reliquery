@@ -21,7 +21,7 @@
 
 
 class User(object):
-    def __init__(self, parent=None, id='', name=''):
+    def __init__(self, parent=None, id="", name=""):
         if parent:
             parent.owner = self
         self.type = None
@@ -35,20 +35,20 @@ class User(object):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'Name':
+        if name == "Name":
             self.name = value
-        elif name == 'ID':
+        elif name == "ID":
             self.id = value
         else:
             setattr(self, name, value)
 
-    def to_xml(self, element_name='Owner'):
+    def to_xml(self, element_name="Owner"):
         if self.type:
             s = '<%s type="%s">' % (element_name, self.type)
         else:
-            s = '<%s>' % element_name
-        s += '<ID>%s</ID>' % self.id
+            s = "<%s>" % element_name
+        s += "<ID>%s</ID>" % self.id
         if self.name:
-            s += '<Name>%s</Name>' % self.name
-        s += '</%s>' % element_name
+            s += "<Name>%s</Name>" % self.name
+        s += "</%s>" % element_name
         return s

@@ -30,11 +30,16 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.route53.domains.layer1 import Route53DomainsConnection
-    return get_regions('route53domains',
-                       connection_cls=Route53DomainsConnection)
+
+    return get_regions("route53domains", connection_cls=Route53DomainsConnection)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.route53.domains.layer1 import Route53DomainsConnection
-    return connect('route53domains', region_name,
-                   connection_cls=Route53DomainsConnection, **kw_params)
+
+    return connect(
+        "route53domains",
+        region_name,
+        connection_cls=Route53DomainsConnection,
+        **kw_params
+    )

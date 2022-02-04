@@ -103,22 +103,21 @@ from apitools.base.protorpclite import util
 
 
 __all__ = [
-    'EnumDescriptor',
-    'EnumValueDescriptor',
-    'FieldDescriptor',
-    'MessageDescriptor',
-    'FileDescriptor',
-    'FileSet',
-    'DescriptorLibrary',
-
-    'describe_enum',
-    'describe_enum_value',
-    'describe_field',
-    'describe_message',
-    'describe_file',
-    'describe_file_set',
-    'describe',
-    'import_descriptor_loader',
+    "EnumDescriptor",
+    "EnumValueDescriptor",
+    "FieldDescriptor",
+    "MessageDescriptor",
+    "FileDescriptor",
+    "FileSet",
+    "DescriptorLibrary",
+    "describe_enum",
+    "describe_enum_value",
+    "describe_field",
+    "describe_message",
+    "describe_file",
+    "describe_file_set",
+    "describe",
+    "import_descriptor_loader",
 ]
 
 
@@ -132,7 +131,7 @@ __all__ = [
 _DEFAULT_TO_STRING_MAP = {
     messages.IntegerField: six.text_type,
     messages.FloatField: six.text_type,
-    messages.BooleanField: lambda value: value and u'true' or u'false',
+    messages.BooleanField: lambda value: value and u"true" or u"false",
     messages.BytesField: lambda value: codecs.escape_encode(value)[0],
     messages.StringField: lambda value: value,
     messages.EnumField: lambda value: six.text_type(value.number),
@@ -141,7 +140,7 @@ _DEFAULT_TO_STRING_MAP = {
 _DEFAULT_FROM_STRING_MAP = {
     messages.IntegerField: int,
     messages.FloatField: float,
-    messages.BooleanField: lambda value: value == u'true',
+    messages.BooleanField: lambda value: value == u"true",
     messages.BytesField: lambda value: codecs.escape_decode(value)[0],
     messages.StringField: lambda value: value,
     messages.EnumField: int,
@@ -159,9 +158,7 @@ class EnumValueDescriptor(messages.Message):
     # TODO(rafek): Why are these listed as optional in descriptor.proto.
     # Harmonize?
     name = messages.StringField(1, required=True)
-    number = messages.IntegerField(2,
-                                   required=True,
-                                   variant=messages.Variant.INT32)
+    number = messages.IntegerField(2, required=True, variant=messages.Variant.INT32)
 
 
 class EnumDescriptor(messages.Message):
@@ -201,9 +198,7 @@ class FieldDescriptor(messages.Message):
         REPEATED = 3
 
     name = messages.StringField(1, required=True)
-    number = messages.IntegerField(3,
-                                   required=True,
-                                   variant=messages.Variant.INT32)
+    number = messages.IntegerField(3, required=True, variant=messages.Variant.INT32)
     label = messages.EnumField(Label, 4, default=Label.OPTIONAL)
     variant = messages.EnumField(Variant, 5)
     type_name = messages.StringField(6)
@@ -232,8 +227,8 @@ class MessageDescriptor(messages.Message):
     fields = messages.MessageField(FieldDescriptor, 2, repeated=True)
 
     message_types = messages.MessageField(
-        'apitools.base.protorpclite.descriptor.MessageDescriptor', 3,
-        repeated=True)
+        "apitools.base.protorpclite.descriptor.MessageDescriptor", 3, repeated=True
+    )
     enum_types = messages.MessageField(EnumDescriptor, 4, repeated=True)
 
 
@@ -289,7 +284,7 @@ def describe_enum(enum_definition):
       Initialized EnumDescriptor instance describing the Enum class.
     """
     enum_descriptor = EnumDescriptor()
-    enum_descriptor.name = enum_definition.definition_name().split('.')[-1]
+    enum_descriptor.name = enum_definition.definition_name().split(".")[-1]
 
     values = []
     for number in sorted(enum_definition.numbers()):
@@ -320,12 +315,12 @@ def describe_field(field_definition):
         field_descriptor.type_name = field_definition.type.definition_name()
 
     if isinstance(field_definition, messages.MessageField):
-        field_descriptor.type_name = (
-            field_definition.message_type.definition_name())
+        field_descriptor.type_name = field_definition.message_type.definition_name()
 
     if field_definition.default is not None:
-        field_descriptor.default_value = _DEFAULT_TO_STRING_MAP[
-            type(field_definition)](field_definition.default)
+        field_descriptor.default_value = _DEFAULT_TO_STRING_MAP[type(field_definition)](
+            field_definition.default
+        )
 
     # Set label.
     if field_definition.repeated:
@@ -348,11 +343,9 @@ def describe_message(message_definition):
       Initialized MessageDescriptor instance describing the Message class.
     """
     message_descriptor = MessageDescriptor()
-    message_descriptor.name = message_definition.definition_name().split(
-        '.')[-1]
+    message_descriptor.name = message_definition.definition_name().split(".")[-1]
 
-    fields = sorted(message_definition.all_fields(),
-                    key=lambda v: v.number)
+    fields = sorted(message_definition.all_fields(), key=lambda v: v.number)
     if fields:
         message_descriptor.fields = [describe_field(field) for field in fields]
 
@@ -491,13 +484,13 @@ def import_descriptor_loader(definition_name, importer=__import__):
       or a module.
     """
     # Attempt to import descriptor as a module.
-    if definition_name.startswith('.'):
+    if definition_name.startswith("."):
         definition_name = definition_name[1:]
-    if not definition_name.startswith('.'):
-        leaf = definition_name.split('.')[-1]
+    if not definition_name.startswith("."):
+        leaf = definition_name.split(".")[-1]
         if definition_name:
             try:
-                module = importer(definition_name, '', '', [leaf])
+                module = importer(definition_name, "", "", [leaf])
             except ImportError:
                 pass
             else:
@@ -505,18 +498,16 @@ def import_descriptor_loader(definition_name, importer=__import__):
 
     try:
         # Attempt to use messages.find_definition to find item.
-        return describe(messages.find_definition(definition_name,
-                                                 importer=__import__))
+        return describe(messages.find_definition(definition_name, importer=__import__))
     except messages.DefinitionNotFoundError as err:
         # There are things that find_definition will not find, but if
         # the parent is loaded, its children can be searched for a
         # match.
-        split_name = definition_name.rsplit('.', 1)
+        split_name = definition_name.rsplit(".", 1)
         if len(split_name) > 1:
             parent, child = split_name
             try:
-                parent_definition = import_descriptor_loader(
-                    parent, importer=importer)
+                parent_definition = import_descriptor_loader(parent, importer=importer)
             except messages.DefinitionNotFoundError:
                 # Fall through to original error.
                 pass
@@ -550,9 +541,7 @@ class DescriptorLibrary(object):
     """
 
     @util.positional(1)
-    def __init__(self,
-                 descriptors=None,
-                 descriptor_loader=import_descriptor_loader):
+    def __init__(self, descriptors=None, descriptor_loader=import_descriptor_loader):
         """Constructor.
 
         Args:
@@ -591,7 +580,8 @@ class DescriptorLibrary(object):
             return definition
         else:
             raise messages.DefinitionNotFoundError(
-                'Could not find definition for %s' % definition_name)
+                "Could not find definition for %s" % definition_name
+            )
 
     def lookup_package(self, definition_name):
         """Determines the package name for any definition.
@@ -609,7 +599,7 @@ class DescriptorLibrary(object):
             if isinstance(descriptor, FileDescriptor):
                 return descriptor.package
             else:
-                index = definition_name.rfind('.')
+                index = definition_name.rfind(".")
                 if index < 0:
                     return None
                 definition_name = definition_name[:index]

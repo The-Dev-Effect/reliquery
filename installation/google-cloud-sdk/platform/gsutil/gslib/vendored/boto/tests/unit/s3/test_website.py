@@ -35,7 +35,7 @@ from boto import handler
 
 
 def pretty_print_xml(text):
-    text = ''.join(t.strip() for t in text.splitlines())
+    text = "".join(t.strip() for t in text.splitlines())
     x = xml.dom.minidom.parseString(text)
     return x.toprettyxml()
 
@@ -50,43 +50,48 @@ class TestS3WebsiteConfiguration(unittest.TestCase):
         pass
 
     def test_suffix_only(self):
-        config = WebsiteConfiguration(suffix='index.html')
+        config = WebsiteConfiguration(suffix="index.html")
         xml = config.to_xml()
-        self.assertIn(
-            '<IndexDocument><Suffix>index.html</Suffix></IndexDocument>', xml)
+        self.assertIn("<IndexDocument><Suffix>index.html</Suffix></IndexDocument>", xml)
 
     def test_suffix_and_error(self):
-        config = WebsiteConfiguration(suffix='index.html',
-                                      error_key='error.html')
+        config = WebsiteConfiguration(suffix="index.html", error_key="error.html")
         xml = config.to_xml()
-        self.assertIn(
-            '<ErrorDocument><Key>error.html</Key></ErrorDocument>', xml)
+        self.assertIn("<ErrorDocument><Key>error.html</Key></ErrorDocument>", xml)
 
     def test_redirect_all_request_to_with_just_host(self):
-        location = RedirectLocation(hostname='example.com')
+        location = RedirectLocation(hostname="example.com")
         config = WebsiteConfiguration(redirect_all_requests_to=location)
         xml = config.to_xml()
         self.assertIn(
-            ('<RedirectAllRequestsTo><HostName>'
-             'example.com</HostName></RedirectAllRequestsTo>'), xml)
+            (
+                "<RedirectAllRequestsTo><HostName>"
+                "example.com</HostName></RedirectAllRequestsTo>"
+            ),
+            xml,
+        )
 
     def test_redirect_all_requests_with_protocol(self):
-        location = RedirectLocation(hostname='example.com', protocol='https')
+        location = RedirectLocation(hostname="example.com", protocol="https")
         config = WebsiteConfiguration(redirect_all_requests_to=location)
         xml = config.to_xml()
         self.assertIn(
-            ('<RedirectAllRequestsTo><HostName>'
-             'example.com</HostName><Protocol>https</Protocol>'
-             '</RedirectAllRequestsTo>'), xml)
+            (
+                "<RedirectAllRequestsTo><HostName>"
+                "example.com</HostName><Protocol>https</Protocol>"
+                "</RedirectAllRequestsTo>"
+            ),
+            xml,
+        )
 
     def test_routing_rules_key_prefix(self):
         x = pretty_print_xml
         # This rule redirects requests for docs/* to documentation/*
         rules = RoutingRules()
-        condition = Condition(key_prefix='docs/')
-        redirect = Redirect(replace_key_prefix='documents/')
+        condition = Condition(key_prefix="docs/")
+        redirect = Redirect(replace_key_prefix="documents/")
         rules.add_rule(RoutingRule(condition, redirect))
-        config = WebsiteConfiguration(suffix='index.html', routing_rules=rules)
+        config = WebsiteConfiguration(suffix="index.html", routing_rules=rules)
         xml = config.to_xml()
 
         expected_xml = """<?xml version="1.0" encoding="UTF-8"?>
@@ -117,10 +122,9 @@ class TestS3WebsiteConfiguration(unittest.TestCase):
         # in a 404, the request is routed to a page report-404/ExamplePage.html
         rules = RoutingRules()
         condition = Condition(http_error_code=404)
-        redirect = Redirect(hostname='example.com',
-                            replace_key_prefix='report-404/')
+        redirect = Redirect(hostname="example.com", replace_key_prefix="report-404/")
         rules.add_rule(RoutingRule(condition, redirect))
-        config = WebsiteConfiguration(suffix='index.html', routing_rules=rules)
+        config = WebsiteConfiguration(suffix="index.html", routing_rules=rules)
         xml = config.to_xml()
 
         expected_xml = """<?xml version="1.0" encoding="UTF-8"?>
@@ -147,9 +151,9 @@ class TestS3WebsiteConfiguration(unittest.TestCase):
         x = pretty_print_xml
         rules = RoutingRules()
         condition = Condition(key_prefix="images/")
-        redirect = Redirect(replace_key='folderdeleted.html')
+        redirect = Redirect(replace_key="folderdeleted.html")
         rules.add_rule(RoutingRule(condition, redirect))
-        config = WebsiteConfiguration(suffix='index.html', routing_rules=rules)
+        config = WebsiteConfiguration(suffix="index.html", routing_rules=rules)
         xml = config.to_xml()
 
         expected_xml = """<?xml version="1.0" encoding="UTF-8"?>
@@ -177,15 +181,16 @@ class TestS3WebsiteConfiguration(unittest.TestCase):
         # First the long way.
         rules = RoutingRules()
         condition = Condition(http_error_code=404)
-        redirect = Redirect(hostname='example.com',
-                            replace_key_prefix='report-404/')
+        redirect = Redirect(hostname="example.com", replace_key_prefix="report-404/")
         rules.add_rule(RoutingRule(condition, redirect))
         xml = rules.to_xml()
 
         # Then the more concise way.
         rules2 = RoutingRules().add_rule(
             RoutingRule.when(http_error_code=404).then_redirect(
-                hostname='example.com', replace_key_prefix='report-404/'))
+                hostname="example.com", replace_key_prefix="report-404/"
+            )
+        )
         xml2 = rules2.to_xml()
         self.assertEqual(x(xml), x(xml2))
 
@@ -225,6 +230,6 @@ class TestS3WebsiteConfiguration(unittest.TestCase):
         """
         webconfig = WebsiteConfiguration()
         h = handler.XmlHandler(webconfig, None)
-        xml.sax.parseString(xml_in.encode('utf-8'), h)
+        xml.sax.parseString(xml_in.encode("utf-8"), h)
         xml_out = webconfig.to_xml()
         self.assertEqual(x(xml_in), x(xml_out))

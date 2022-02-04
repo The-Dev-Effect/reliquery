@@ -15,7 +15,7 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 # OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
 # ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
@@ -31,31 +31,35 @@ import uuid
 
 from threading import Thread
 
+
 def spawn(function, *args, **kwargs):
     """
     Spawns a new thread.  API is the same as
     gevent.greenlet.Greenlet.spawn.
     """
-    t = Thread(target = function, args = args, kwargs = kwargs)
+    t = Thread(target=function, args=args, kwargs=kwargs)
     t.start()
     return t
+
 
 def put_object(bucket, name):
     bucket.new_key(name).set_contents_from_string(name)
 
+
 def get_object(bucket, name):
-    assert bucket.get_key(name).get_contents_as_string().decode('utf-8') == name
+    assert bucket.get_key(name).get_contents_as_string().decode("utf-8") == name
+
 
 def test_close_connections():
     """
     A test that exposes the problem where connections are returned to the
     connection pool (and closed) before the caller reads the response.
-    
+
     I couldn't think of a way to test it without greenlets, so this test
     doesn't run as part of the standard test suite.  That way, no more
     dependencies are added to the test suite.
     """
-    
+
     print("Running test_close_connections")
 
     # Connect to S3
@@ -63,22 +67,19 @@ def test_close_connections():
 
     # Clean previous tests.
     for b in s3.get_all_buckets():
-        if b.name.startswith('test-'):
+        if b.name.startswith("test-"):
             for key in b.get_all_keys():
                 key.delete()
             b.delete()
 
     # Make a test bucket
-    bucket = s3.create_bucket('test-%d' % int(time.time()))
+    bucket = s3.create_bucket("test-%d" % int(time.time()))
 
     # Create 30 threads that each create an object in S3.  The number
     # 30 is chosen because it is larger than the connection pool size
-    # (20). 
+    # (20).
     names = [str(uuid.uuid4) for _ in range(30)]
-    threads = [
-        spawn(put_object, bucket, name)
-        for name in names
-        ]
+    threads = [spawn(put_object, bucket, name) for name in names]
     for t in threads:
         t.join()
 
@@ -86,16 +87,15 @@ def test_close_connections():
     # is where closing the connection early is a problem, because
     # there is a response that needs to be read, and it can't be read
     # if the connection has already been closed.
-    threads = [
-        spawn(get_object, bucket, name)
-        for name in names
-        ]
+    threads = [spawn(get_object, bucket, name) for name in names]
     for t in threads:
         t.join()
 
+
 # test_reuse_connections needs to read a file that is big enough that
-# one read() call on the socket won't read the whole thing.  
+# one read() call on the socket won't read the whole thing.
 BIG_SIZE = 10000
+
 
 class WriteAndCount(object):
 
@@ -108,7 +108,8 @@ class WriteAndCount(object):
 
     def write(self, data):
         self.size += len(data)
-        time.sleep(0) # yield to other threads
+        time.sleep(0)  # yield to other threads
+
 
 def read_big_object(s3, bucket, name, count):
     for _ in range(count):
@@ -119,6 +120,7 @@ def read_big_object(s3, bucket, name, count):
             print(out.size, BIG_SIZE)
         assert out.size == BIG_SIZE
         print("    pool size:", s3._pool.size())
+
 
 class LittleQuerier(object):
 
@@ -143,12 +145,13 @@ class LittleQuerier(object):
             i = count % 4
             key = self.bucket.get_key(self.small_names[i])
             expected = str(i)
-            rh = { 'response-content-type' : 'small/' + str(i) }
-            actual = key.get_contents_as_string(response_headers = rh).decode('utf-8')
+            rh = {"response-content-type": "small/" + str(i)}
+            actual = key.get_contents_as_string(response_headers=rh).decode("utf-8")
             if expected != actual:
                 print("AHA:", repr(expected), repr(actual))
             assert expected == actual
             count += 1
+
 
 def test_reuse_connections():
     """
@@ -182,7 +185,7 @@ def test_reuse_connections():
                    retries.
 
        - Thread 1: Finish reading the body of its response.
-       
+
        - Server:   Gets the second request on the connection, and
                    sends a response.  This response is ignored because
                    the connection has been dropped on the client end.
@@ -198,7 +201,7 @@ def test_reuse_connections():
     s3 = boto.connect_s3()
 
     # Make a test bucket
-    bucket = s3.create_bucket('test-%d' % int(time.time()))
+    bucket = s3.create_bucket("test-%d" % int(time.time()))
 
     # Create some small objects in S3.
     small_names = [str(uuid.uuid4()) for _ in range(4)]
@@ -211,7 +214,7 @@ def test_reuse_connections():
     s3._pool.clean()
     assert s3._pool.size() == 0
     print("    pool is empty")
-    
+
     # Create a big object in S3.
     big_name = str(uuid.uuid4())
     contents = "-" * BIG_SIZE
@@ -219,17 +222,11 @@ def test_reuse_connections():
 
     # Start some threads to read it and check that they are reading
     # the correct thing.  Each thread will read the object 40 times.
-    threads = [
-        spawn(read_big_object, s3, bucket, big_name, 20)
-        for _ in range(5)
-        ]
+    threads = [spawn(read_big_object, s3, bucket, big_name, 20) for _ in range(5)]
 
     # Do some other things that may (incorrectly) re-use the same
     # connections while the big objects are being read.
-    queriers = [
-        LittleQuerier(bucket, small_names)
-        for _ in range(5)
-        ]
+    queriers = [LittleQuerier(bucket, small_names) for _ in range(5)]
 
     # Clean up.
     for t in threads:
@@ -237,9 +234,11 @@ def test_reuse_connections():
     for q in queriers:
         q.stop()
 
+
 def main():
     test_close_connections()
     test_reuse_connections()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

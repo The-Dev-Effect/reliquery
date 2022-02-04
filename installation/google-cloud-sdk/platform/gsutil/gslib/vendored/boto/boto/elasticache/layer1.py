@@ -43,28 +43,32 @@ class ElastiCacheConnection(AWSQueryConnection):
     associated with their cache and can receive alarms if a part of
     their cache runs hot.
     """
+
     APIVersion = "2013-06-15"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "elasticache.us-east-1.amazonaws.com"
 
     def __init__(self, **kwargs):
-        region = kwargs.get('region')
+        region = kwargs.get("region")
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
         else:
-            del kwargs['region']
-        kwargs['host'] = region.endpoint
+            del kwargs["region"]
+        kwargs["host"] = region.endpoint
         super(ElastiCacheConnection, self).__init__(**kwargs)
         self.region = region
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
-    def authorize_cache_security_group_ingress(self,
-                                               cache_security_group_name,
-                                               ec2_security_group_name,
-                                               ec2_security_group_owner_id):
+    def authorize_cache_security_group_ingress(
+        self,
+        cache_security_group_name,
+        ec2_security_group_name,
+        ec2_security_group_owner_id,
+    ):
         """
         The AuthorizeCacheSecurityGroupIngress operation allows
         network ingress to a cache security group. Applications using
@@ -89,26 +93,36 @@ class ElastiCacheConnection(AWSQueryConnection):
 
         """
         params = {
-            'CacheSecurityGroupName': cache_security_group_name,
-            'EC2SecurityGroupName': ec2_security_group_name,
-            'EC2SecurityGroupOwnerId': ec2_security_group_owner_id,
+            "CacheSecurityGroupName": cache_security_group_name,
+            "EC2SecurityGroupName": ec2_security_group_name,
+            "EC2SecurityGroupOwnerId": ec2_security_group_owner_id,
         }
         return self._make_request(
-            action='AuthorizeCacheSecurityGroupIngress',
-            verb='POST',
-            path='/', params=params)
+            action="AuthorizeCacheSecurityGroupIngress",
+            verb="POST",
+            path="/",
+            params=params,
+        )
 
-    def create_cache_cluster(self, cache_cluster_id, num_cache_nodes=None,
-                             cache_node_type=None, engine=None,
-                             replication_group_id=None, engine_version=None,
-                             cache_parameter_group_name=None,
-                             cache_subnet_group_name=None,
-                             cache_security_group_names=None,
-                             security_group_ids=None, snapshot_arns=None,
-                             preferred_availability_zone=None,
-                             preferred_maintenance_window=None, port=None,
-                             notification_topic_arn=None,
-                             auto_minor_version_upgrade=None):
+    def create_cache_cluster(
+        self,
+        cache_cluster_id,
+        num_cache_nodes=None,
+        cache_node_type=None,
+        engine=None,
+        replication_group_id=None,
+        engine_version=None,
+        cache_parameter_group_name=None,
+        cache_subnet_group_name=None,
+        cache_security_group_names=None,
+        security_group_ids=None,
+        snapshot_arns=None,
+        preferred_availability_zone=None,
+        preferred_maintenance_window=None,
+        port=None,
+        notification_topic_arn=None,
+        auto_minor_version_upgrade=None,
+    ):
         """
         The CreateCacheCluster operation creates a new cache cluster.
         All nodes in the cache cluster run the same protocol-compliant
@@ -242,53 +256,49 @@ class ElastiCacheConnection(AWSQueryConnection):
 
         """
         params = {
-            'CacheClusterId': cache_cluster_id,
+            "CacheClusterId": cache_cluster_id,
         }
         if num_cache_nodes is not None:
-            params['NumCacheNodes'] = num_cache_nodes
+            params["NumCacheNodes"] = num_cache_nodes
         if cache_node_type is not None:
-            params['CacheNodeType'] = cache_node_type
+            params["CacheNodeType"] = cache_node_type
         if engine is not None:
-            params['Engine'] = engine
+            params["Engine"] = engine
         if replication_group_id is not None:
-            params['ReplicationGroupId'] = replication_group_id
+            params["ReplicationGroupId"] = replication_group_id
         if engine_version is not None:
-            params['EngineVersion'] = engine_version
+            params["EngineVersion"] = engine_version
         if cache_parameter_group_name is not None:
-            params['CacheParameterGroupName'] = cache_parameter_group_name
+            params["CacheParameterGroupName"] = cache_parameter_group_name
         if cache_subnet_group_name is not None:
-            params['CacheSubnetGroupName'] = cache_subnet_group_name
+            params["CacheSubnetGroupName"] = cache_subnet_group_name
         if cache_security_group_names is not None:
-            self.build_list_params(params,
-                                   cache_security_group_names,
-                                   'CacheSecurityGroupNames.member')
+            self.build_list_params(
+                params, cache_security_group_names, "CacheSecurityGroupNames.member"
+            )
         if security_group_ids is not None:
-            self.build_list_params(params,
-                                   security_group_ids,
-                                   'SecurityGroupIds.member')
+            self.build_list_params(
+                params, security_group_ids, "SecurityGroupIds.member"
+            )
         if snapshot_arns is not None:
-            self.build_list_params(params,
-                                   snapshot_arns,
-                                   'SnapshotArns.member')
+            self.build_list_params(params, snapshot_arns, "SnapshotArns.member")
         if preferred_availability_zone is not None:
-            params['PreferredAvailabilityZone'] = preferred_availability_zone
+            params["PreferredAvailabilityZone"] = preferred_availability_zone
         if preferred_maintenance_window is not None:
-            params['PreferredMaintenanceWindow'] = preferred_maintenance_window
+            params["PreferredMaintenanceWindow"] = preferred_maintenance_window
         if port is not None:
-            params['Port'] = port
+            params["Port"] = port
         if notification_topic_arn is not None:
-            params['NotificationTopicArn'] = notification_topic_arn
+            params["NotificationTopicArn"] = notification_topic_arn
         if auto_minor_version_upgrade is not None:
-            params['AutoMinorVersionUpgrade'] = str(
-                auto_minor_version_upgrade).lower()
+            params["AutoMinorVersionUpgrade"] = str(auto_minor_version_upgrade).lower()
         return self._make_request(
-            action='CreateCacheCluster',
-            verb='POST',
-            path='/', params=params)
+            action="CreateCacheCluster", verb="POST", path="/", params=params
+        )
 
-    def create_cache_parameter_group(self, cache_parameter_group_name,
-                                     cache_parameter_group_family,
-                                     description):
+    def create_cache_parameter_group(
+        self, cache_parameter_group_name, cache_parameter_group_family, description
+    ):
         """
         The CreateCacheParameterGroup operation creates a new cache
         parameter group. A cache parameter group is a collection of
@@ -310,17 +320,15 @@ class ElastiCacheConnection(AWSQueryConnection):
 
         """
         params = {
-            'CacheParameterGroupName': cache_parameter_group_name,
-            'CacheParameterGroupFamily': cache_parameter_group_family,
-            'Description': description,
+            "CacheParameterGroupName": cache_parameter_group_name,
+            "CacheParameterGroupFamily": cache_parameter_group_family,
+            "Description": description,
         }
         return self._make_request(
-            action='CreateCacheParameterGroup',
-            verb='POST',
-            path='/', params=params)
+            action="CreateCacheParameterGroup", verb="POST", path="/", params=params
+        )
 
-    def create_cache_security_group(self, cache_security_group_name,
-                                    description):
+    def create_cache_security_group(self, cache_security_group_name, description):
         """
         The CreateCacheSecurityGroup operation creates a new cache
         security group. Use a cache security group to control access
@@ -345,16 +353,16 @@ class ElastiCacheConnection(AWSQueryConnection):
 
         """
         params = {
-            'CacheSecurityGroupName': cache_security_group_name,
-            'Description': description,
+            "CacheSecurityGroupName": cache_security_group_name,
+            "Description": description,
         }
         return self._make_request(
-            action='CreateCacheSecurityGroup',
-            verb='POST',
-            path='/', params=params)
+            action="CreateCacheSecurityGroup", verb="POST", path="/", params=params
+        )
 
-    def create_cache_subnet_group(self, cache_subnet_group_name,
-                                  cache_subnet_group_description, subnet_ids):
+    def create_cache_subnet_group(
+        self, cache_subnet_group_name, cache_subnet_group_description, subnet_ids
+    ):
         """
         The CreateCacheSubnetGroup operation creates a new cache
         subnet group.
@@ -379,20 +387,17 @@ class ElastiCacheConnection(AWSQueryConnection):
 
         """
         params = {
-            'CacheSubnetGroupName': cache_subnet_group_name,
-            'CacheSubnetGroupDescription': cache_subnet_group_description,
+            "CacheSubnetGroupName": cache_subnet_group_name,
+            "CacheSubnetGroupDescription": cache_subnet_group_description,
         }
-        self.build_list_params(params,
-                               subnet_ids,
-                               'SubnetIds.member')
+        self.build_list_params(params, subnet_ids, "SubnetIds.member")
         return self._make_request(
-            action='CreateCacheSubnetGroup',
-            verb='POST',
-            path='/', params=params)
+            action="CreateCacheSubnetGroup", verb="POST", path="/", params=params
+        )
 
-    def create_replication_group(self, replication_group_id,
-                                 primary_cluster_id,
-                                 replication_group_description):
+    def create_replication_group(
+        self, replication_group_id, primary_cluster_id, replication_group_description
+    ):
         """
         The CreateReplicationGroup operation creates a replication
         group. A replication group is a collection of cache clusters,
@@ -429,14 +434,13 @@ class ElastiCacheConnection(AWSQueryConnection):
 
         """
         params = {
-            'ReplicationGroupId': replication_group_id,
-            'PrimaryClusterId': primary_cluster_id,
-            'ReplicationGroupDescription': replication_group_description,
+            "ReplicationGroupId": replication_group_id,
+            "PrimaryClusterId": primary_cluster_id,
+            "ReplicationGroupDescription": replication_group_description,
         }
         return self._make_request(
-            action='CreateReplicationGroup',
-            verb='POST',
-            path='/', params=params)
+            action="CreateReplicationGroup", verb="POST", path="/", params=params
+        )
 
     def delete_cache_cluster(self, cache_cluster_id):
         """
@@ -452,11 +456,12 @@ class ElastiCacheConnection(AWSQueryConnection):
             to be deleted. This parameter is not case sensitive.
 
         """
-        params = {'CacheClusterId': cache_cluster_id, }
+        params = {
+            "CacheClusterId": cache_cluster_id,
+        }
         return self._make_request(
-            action='DeleteCacheCluster',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteCacheCluster", verb="POST", path="/", params=params
+        )
 
     def delete_cache_parameter_group(self, cache_parameter_group_name):
         """
@@ -473,12 +478,11 @@ class ElastiCacheConnection(AWSQueryConnection):
 
         """
         params = {
-            'CacheParameterGroupName': cache_parameter_group_name,
+            "CacheParameterGroupName": cache_parameter_group_name,
         }
         return self._make_request(
-            action='DeleteCacheParameterGroup',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteCacheParameterGroup", verb="POST", path="/", params=params
+        )
 
     def delete_cache_security_group(self, cache_security_group_name):
         """
@@ -495,12 +499,11 @@ class ElastiCacheConnection(AWSQueryConnection):
 
         """
         params = {
-            'CacheSecurityGroupName': cache_security_group_name,
+            "CacheSecurityGroupName": cache_security_group_name,
         }
         return self._make_request(
-            action='DeleteCacheSecurityGroup',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteCacheSecurityGroup", verb="POST", path="/", params=params
+        )
 
     def delete_cache_subnet_group(self, cache_subnet_group_name):
         """
@@ -516,11 +519,12 @@ class ElastiCacheConnection(AWSQueryConnection):
             hyphens.
 
         """
-        params = {'CacheSubnetGroupName': cache_subnet_group_name, }
+        params = {
+            "CacheSubnetGroupName": cache_subnet_group_name,
+        }
         return self._make_request(
-            action='DeleteCacheSubnetGroup',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteCacheSubnetGroup", verb="POST", path="/", params=params
+        )
 
     def delete_replication_group(self, replication_group_id):
         """
@@ -537,15 +541,20 @@ class ElastiCacheConnection(AWSQueryConnection):
             to be deleted. This parameter is not case sensitive.
 
         """
-        params = {'ReplicationGroupId': replication_group_id, }
+        params = {
+            "ReplicationGroupId": replication_group_id,
+        }
         return self._make_request(
-            action='DeleteReplicationGroup',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteReplicationGroup", verb="POST", path="/", params=params
+        )
 
-    def describe_cache_clusters(self, cache_cluster_id=None,
-                                max_records=None, marker=None,
-                                show_cache_node_info=None):
+    def describe_cache_clusters(
+        self,
+        cache_cluster_id=None,
+        max_records=None,
+        marker=None,
+        show_cache_node_info=None,
+    ):
         """
         The DescribeCacheClusters operation returns information about
         all provisioned cache clusters if no cache cluster identifier
@@ -603,24 +612,26 @@ class ElastiCacheConnection(AWSQueryConnection):
         """
         params = {}
         if cache_cluster_id is not None:
-            params['CacheClusterId'] = cache_cluster_id
+            params["CacheClusterId"] = cache_cluster_id
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if show_cache_node_info is not None:
-            params['ShowCacheNodeInfo'] = str(
-                show_cache_node_info).lower()
+            params["ShowCacheNodeInfo"] = str(show_cache_node_info).lower()
         return self._make_request(
-            action='DescribeCacheClusters',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeCacheClusters", verb="POST", path="/", params=params
+        )
 
-    def describe_cache_engine_versions(self, engine=None,
-                                       engine_version=None,
-                                       cache_parameter_group_family=None,
-                                       max_records=None, marker=None,
-                                       default_only=None):
+    def describe_cache_engine_versions(
+        self,
+        engine=None,
+        engine_version=None,
+        cache_parameter_group_family=None,
+        max_records=None,
+        marker=None,
+        default_only=None,
+    ):
         """
         The DescribeCacheEngineVersions operation returns a list of
         the available cache engines and their versions.
@@ -668,26 +679,24 @@ class ElastiCacheConnection(AWSQueryConnection):
         """
         params = {}
         if engine is not None:
-            params['Engine'] = engine
+            params["Engine"] = engine
         if engine_version is not None:
-            params['EngineVersion'] = engine_version
+            params["EngineVersion"] = engine_version
         if cache_parameter_group_family is not None:
-            params['CacheParameterGroupFamily'] = cache_parameter_group_family
+            params["CacheParameterGroupFamily"] = cache_parameter_group_family
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if default_only is not None:
-            params['DefaultOnly'] = str(
-                default_only).lower()
+            params["DefaultOnly"] = str(default_only).lower()
         return self._make_request(
-            action='DescribeCacheEngineVersions',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeCacheEngineVersions", verb="POST", path="/", params=params
+        )
 
-    def describe_cache_parameter_groups(self,
-                                        cache_parameter_group_name=None,
-                                        max_records=None, marker=None):
+    def describe_cache_parameter_groups(
+        self, cache_parameter_group_name=None, max_records=None, marker=None
+    ):
         """
         The DescribeCacheParameterGroups operation returns a list of
         cache parameter group descriptions. If a cache parameter group
@@ -716,18 +725,18 @@ class ElastiCacheConnection(AWSQueryConnection):
         """
         params = {}
         if cache_parameter_group_name is not None:
-            params['CacheParameterGroupName'] = cache_parameter_group_name
+            params["CacheParameterGroupName"] = cache_parameter_group_name
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeCacheParameterGroups',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeCacheParameterGroups", verb="POST", path="/", params=params
+        )
 
-    def describe_cache_parameters(self, cache_parameter_group_name,
-                                  source=None, max_records=None, marker=None):
+    def describe_cache_parameters(
+        self, cache_parameter_group_name, source=None, max_records=None, marker=None
+    ):
         """
         The DescribeCacheParameters operation returns the detailed
         parameter list for a particular cache parameter group.
@@ -757,21 +766,21 @@ class ElastiCacheConnection(AWSQueryConnection):
 
         """
         params = {
-            'CacheParameterGroupName': cache_parameter_group_name,
+            "CacheParameterGroupName": cache_parameter_group_name,
         }
         if source is not None:
-            params['Source'] = source
+            params["Source"] = source
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeCacheParameters',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeCacheParameters", verb="POST", path="/", params=params
+        )
 
-    def describe_cache_security_groups(self, cache_security_group_name=None,
-                                       max_records=None, marker=None):
+    def describe_cache_security_groups(
+        self, cache_security_group_name=None, max_records=None, marker=None
+    ):
         """
         The DescribeCacheSecurityGroups operation returns a list of
         cache security group descriptions. If a cache security group
@@ -800,18 +809,18 @@ class ElastiCacheConnection(AWSQueryConnection):
         """
         params = {}
         if cache_security_group_name is not None:
-            params['CacheSecurityGroupName'] = cache_security_group_name
+            params["CacheSecurityGroupName"] = cache_security_group_name
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeCacheSecurityGroups',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeCacheSecurityGroups", verb="POST", path="/", params=params
+        )
 
-    def describe_cache_subnet_groups(self, cache_subnet_group_name=None,
-                                     max_records=None, marker=None):
+    def describe_cache_subnet_groups(
+        self, cache_subnet_group_name=None, max_records=None, marker=None
+    ):
         """
         The DescribeCacheSubnetGroups operation returns a list of
         cache subnet group descriptions. If a subnet group name is
@@ -840,19 +849,18 @@ class ElastiCacheConnection(AWSQueryConnection):
         """
         params = {}
         if cache_subnet_group_name is not None:
-            params['CacheSubnetGroupName'] = cache_subnet_group_name
+            params["CacheSubnetGroupName"] = cache_subnet_group_name
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeCacheSubnetGroups',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeCacheSubnetGroups", verb="POST", path="/", params=params
+        )
 
-    def describe_engine_default_parameters(self,
-                                           cache_parameter_group_family,
-                                           max_records=None, marker=None):
+    def describe_engine_default_parameters(
+        self, cache_parameter_group_family, max_records=None, marker=None
+    ):
         """
         The DescribeEngineDefaultParameters operation returns the
         default engine and system parameter information for the
@@ -879,20 +887,29 @@ class ElastiCacheConnection(AWSQueryConnection):
 
         """
         params = {
-            'CacheParameterGroupFamily': cache_parameter_group_family,
+            "CacheParameterGroupFamily": cache_parameter_group_family,
         }
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeEngineDefaultParameters',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeEngineDefaultParameters",
+            verb="POST",
+            path="/",
+            params=params,
+        )
 
-    def describe_events(self, source_identifier=None, source_type=None,
-                        start_time=None, end_time=None, duration=None,
-                        max_records=None, marker=None):
+    def describe_events(
+        self,
+        source_identifier=None,
+        source_type=None,
+        start_time=None,
+        end_time=None,
+        duration=None,
+        max_records=None,
+        marker=None,
+    ):
         """
         The DescribeEvents operation returns events related to cache
         clusters, cache security groups, and cache parameter groups.
@@ -944,26 +961,26 @@ class ElastiCacheConnection(AWSQueryConnection):
         """
         params = {}
         if source_identifier is not None:
-            params['SourceIdentifier'] = source_identifier
+            params["SourceIdentifier"] = source_identifier
         if source_type is not None:
-            params['SourceType'] = source_type
+            params["SourceType"] = source_type
         if start_time is not None:
-            params['StartTime'] = start_time
+            params["StartTime"] = start_time
         if end_time is not None:
-            params['EndTime'] = end_time
+            params["EndTime"] = end_time
         if duration is not None:
-            params['Duration'] = duration
+            params["Duration"] = duration
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeEvents',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeEvents", verb="POST", path="/", params=params
+        )
 
-    def describe_replication_groups(self, replication_group_id=None,
-                                    max_records=None, marker=None):
+    def describe_replication_groups(
+        self, replication_group_id=None, max_records=None, marker=None
+    ):
         """
         The DescribeReplicationGroups operation returns information
         about a particular replication group. If no identifier is
@@ -994,22 +1011,26 @@ class ElastiCacheConnection(AWSQueryConnection):
         """
         params = {}
         if replication_group_id is not None:
-            params['ReplicationGroupId'] = replication_group_id
+            params["ReplicationGroupId"] = replication_group_id
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeReplicationGroups',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeReplicationGroups", verb="POST", path="/", params=params
+        )
 
-    def describe_reserved_cache_nodes(self, reserved_cache_node_id=None,
-                                      reserved_cache_nodes_offering_id=None,
-                                      cache_node_type=None, duration=None,
-                                      product_description=None,
-                                      offering_type=None, max_records=None,
-                                      marker=None):
+    def describe_reserved_cache_nodes(
+        self,
+        reserved_cache_node_id=None,
+        reserved_cache_nodes_offering_id=None,
+        cache_node_type=None,
+        duration=None,
+        product_description=None,
+        offering_type=None,
+        max_records=None,
+        marker=None,
+    ):
         """
         The DescribeReservedCacheNodes operation returns information
         about reserved cache nodes for this account, or about a
@@ -1066,34 +1087,35 @@ class ElastiCacheConnection(AWSQueryConnection):
         """
         params = {}
         if reserved_cache_node_id is not None:
-            params['ReservedCacheNodeId'] = reserved_cache_node_id
+            params["ReservedCacheNodeId"] = reserved_cache_node_id
         if reserved_cache_nodes_offering_id is not None:
-            params['ReservedCacheNodesOfferingId'] = reserved_cache_nodes_offering_id
+            params["ReservedCacheNodesOfferingId"] = reserved_cache_nodes_offering_id
         if cache_node_type is not None:
-            params['CacheNodeType'] = cache_node_type
+            params["CacheNodeType"] = cache_node_type
         if duration is not None:
-            params['Duration'] = duration
+            params["Duration"] = duration
         if product_description is not None:
-            params['ProductDescription'] = product_description
+            params["ProductDescription"] = product_description
         if offering_type is not None:
-            params['OfferingType'] = offering_type
+            params["OfferingType"] = offering_type
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeReservedCacheNodes',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeReservedCacheNodes", verb="POST", path="/", params=params
+        )
 
-    def describe_reserved_cache_nodes_offerings(self,
-                                                reserved_cache_nodes_offering_id=None,
-                                                cache_node_type=None,
-                                                duration=None,
-                                                product_description=None,
-                                                offering_type=None,
-                                                max_records=None,
-                                                marker=None):
+    def describe_reserved_cache_nodes_offerings(
+        self,
+        reserved_cache_nodes_offering_id=None,
+        cache_node_type=None,
+        duration=None,
+        product_description=None,
+        offering_type=None,
+        max_records=None,
+        marker=None,
+    ):
         """
         The DescribeReservedCacheNodesOfferings operation lists
         available reserved cache node offerings.
@@ -1144,34 +1166,41 @@ class ElastiCacheConnection(AWSQueryConnection):
         """
         params = {}
         if reserved_cache_nodes_offering_id is not None:
-            params['ReservedCacheNodesOfferingId'] = reserved_cache_nodes_offering_id
+            params["ReservedCacheNodesOfferingId"] = reserved_cache_nodes_offering_id
         if cache_node_type is not None:
-            params['CacheNodeType'] = cache_node_type
+            params["CacheNodeType"] = cache_node_type
         if duration is not None:
-            params['Duration'] = duration
+            params["Duration"] = duration
         if product_description is not None:
-            params['ProductDescription'] = product_description
+            params["ProductDescription"] = product_description
         if offering_type is not None:
-            params['OfferingType'] = offering_type
+            params["OfferingType"] = offering_type
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeReservedCacheNodesOfferings',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeReservedCacheNodesOfferings",
+            verb="POST",
+            path="/",
+            params=params,
+        )
 
-    def modify_cache_cluster(self, cache_cluster_id, num_cache_nodes=None,
-                             cache_node_ids_to_remove=None,
-                             cache_security_group_names=None,
-                             security_group_ids=None,
-                             preferred_maintenance_window=None,
-                             notification_topic_arn=None,
-                             cache_parameter_group_name=None,
-                             notification_topic_status=None,
-                             apply_immediately=None, engine_version=None,
-                             auto_minor_version_upgrade=None):
+    def modify_cache_cluster(
+        self,
+        cache_cluster_id,
+        num_cache_nodes=None,
+        cache_node_ids_to_remove=None,
+        cache_security_group_names=None,
+        security_group_ids=None,
+        preferred_maintenance_window=None,
+        notification_topic_arn=None,
+        cache_parameter_group_name=None,
+        notification_topic_status=None,
+        apply_immediately=None,
+        engine_version=None,
+        auto_minor_version_upgrade=None,
+    ):
         """
         The ModifyCacheCluster operation modifies the settings for a
         cache cluster. You can use this operation to change one or
@@ -1270,44 +1299,44 @@ class ElastiCacheConnection(AWSQueryConnection):
         Default: `True`
 
         """
-        params = {'CacheClusterId': cache_cluster_id, }
+        params = {
+            "CacheClusterId": cache_cluster_id,
+        }
         if num_cache_nodes is not None:
-            params['NumCacheNodes'] = num_cache_nodes
+            params["NumCacheNodes"] = num_cache_nodes
         if cache_node_ids_to_remove is not None:
-            self.build_list_params(params,
-                                   cache_node_ids_to_remove,
-                                   'CacheNodeIdsToRemove.member')
+            self.build_list_params(
+                params, cache_node_ids_to_remove, "CacheNodeIdsToRemove.member"
+            )
         if cache_security_group_names is not None:
-            self.build_list_params(params,
-                                   cache_security_group_names,
-                                   'CacheSecurityGroupNames.member')
+            self.build_list_params(
+                params, cache_security_group_names, "CacheSecurityGroupNames.member"
+            )
         if security_group_ids is not None:
-            self.build_list_params(params,
-                                   security_group_ids,
-                                   'SecurityGroupIds.member')
+            self.build_list_params(
+                params, security_group_ids, "SecurityGroupIds.member"
+            )
         if preferred_maintenance_window is not None:
-            params['PreferredMaintenanceWindow'] = preferred_maintenance_window
+            params["PreferredMaintenanceWindow"] = preferred_maintenance_window
         if notification_topic_arn is not None:
-            params['NotificationTopicArn'] = notification_topic_arn
+            params["NotificationTopicArn"] = notification_topic_arn
         if cache_parameter_group_name is not None:
-            params['CacheParameterGroupName'] = cache_parameter_group_name
+            params["CacheParameterGroupName"] = cache_parameter_group_name
         if notification_topic_status is not None:
-            params['NotificationTopicStatus'] = notification_topic_status
+            params["NotificationTopicStatus"] = notification_topic_status
         if apply_immediately is not None:
-            params['ApplyImmediately'] = str(
-                apply_immediately).lower()
+            params["ApplyImmediately"] = str(apply_immediately).lower()
         if engine_version is not None:
-            params['EngineVersion'] = engine_version
+            params["EngineVersion"] = engine_version
         if auto_minor_version_upgrade is not None:
-            params['AutoMinorVersionUpgrade'] = str(
-                auto_minor_version_upgrade).lower()
+            params["AutoMinorVersionUpgrade"] = str(auto_minor_version_upgrade).lower()
         return self._make_request(
-            action='ModifyCacheCluster',
-            verb='POST',
-            path='/', params=params)
+            action="ModifyCacheCluster", verb="POST", path="/", params=params
+        )
 
-    def modify_cache_parameter_group(self, cache_parameter_group_name,
-                                     parameter_name_values):
+    def modify_cache_parameter_group(
+        self, cache_parameter_group_name, parameter_name_values
+    ):
         """
         The ModifyCacheParameterGroup operation modifies the
         parameters of a cache parameter group. You can modify up to 20
@@ -1326,20 +1355,24 @@ class ElastiCacheConnection(AWSQueryConnection):
 
         """
         params = {
-            'CacheParameterGroupName': cache_parameter_group_name,
+            "CacheParameterGroupName": cache_parameter_group_name,
         }
         self.build_complex_list_params(
-            params, parameter_name_values,
-            'ParameterNameValues.member',
-            ('ParameterName', 'ParameterValue'))
+            params,
+            parameter_name_values,
+            "ParameterNameValues.member",
+            ("ParameterName", "ParameterValue"),
+        )
         return self._make_request(
-            action='ModifyCacheParameterGroup',
-            verb='POST',
-            path='/', params=params)
+            action="ModifyCacheParameterGroup", verb="POST", path="/", params=params
+        )
 
-    def modify_cache_subnet_group(self, cache_subnet_group_name,
-                                  cache_subnet_group_description=None,
-                                  subnet_ids=None):
+    def modify_cache_subnet_group(
+        self,
+        cache_subnet_group_name,
+        cache_subnet_group_description=None,
+        subnet_ids=None,
+    ):
         """
         The ModifyCacheSubnetGroup operation modifies an existing
         cache subnet group.
@@ -1360,29 +1393,32 @@ class ElastiCacheConnection(AWSQueryConnection):
         :param subnet_ids: The EC2 subnet IDs for the cache subnet group.
 
         """
-        params = {'CacheSubnetGroupName': cache_subnet_group_name, }
+        params = {
+            "CacheSubnetGroupName": cache_subnet_group_name,
+        }
         if cache_subnet_group_description is not None:
-            params['CacheSubnetGroupDescription'] = cache_subnet_group_description
+            params["CacheSubnetGroupDescription"] = cache_subnet_group_description
         if subnet_ids is not None:
-            self.build_list_params(params,
-                                   subnet_ids,
-                                   'SubnetIds.member')
+            self.build_list_params(params, subnet_ids, "SubnetIds.member")
         return self._make_request(
-            action='ModifyCacheSubnetGroup',
-            verb='POST',
-            path='/', params=params)
+            action="ModifyCacheSubnetGroup", verb="POST", path="/", params=params
+        )
 
-    def modify_replication_group(self, replication_group_id,
-                                 replication_group_description=None,
-                                 cache_security_group_names=None,
-                                 security_group_ids=None,
-                                 preferred_maintenance_window=None,
-                                 notification_topic_arn=None,
-                                 cache_parameter_group_name=None,
-                                 notification_topic_status=None,
-                                 apply_immediately=None, engine_version=None,
-                                 auto_minor_version_upgrade=None,
-                                 primary_cluster_id=None):
+    def modify_replication_group(
+        self,
+        replication_group_id,
+        replication_group_description=None,
+        cache_security_group_names=None,
+        security_group_ids=None,
+        preferred_maintenance_window=None,
+        notification_topic_arn=None,
+        cache_parameter_group_name=None,
+        notification_topic_status=None,
+        apply_immediately=None,
+        engine_version=None,
+        auto_minor_version_upgrade=None,
+        primary_cluster_id=None,
+    ):
         """
         The ModifyReplicationGroup operation modifies the settings for
         a replication group.
@@ -1471,44 +1507,45 @@ class ElastiCacheConnection(AWSQueryConnection):
             replication group will be read replicas.
 
         """
-        params = {'ReplicationGroupId': replication_group_id, }
+        params = {
+            "ReplicationGroupId": replication_group_id,
+        }
         if replication_group_description is not None:
-            params['ReplicationGroupDescription'] = replication_group_description
+            params["ReplicationGroupDescription"] = replication_group_description
         if cache_security_group_names is not None:
-            self.build_list_params(params,
-                                   cache_security_group_names,
-                                   'CacheSecurityGroupNames.member')
+            self.build_list_params(
+                params, cache_security_group_names, "CacheSecurityGroupNames.member"
+            )
         if security_group_ids is not None:
-            self.build_list_params(params,
-                                   security_group_ids,
-                                   'SecurityGroupIds.member')
+            self.build_list_params(
+                params, security_group_ids, "SecurityGroupIds.member"
+            )
         if preferred_maintenance_window is not None:
-            params['PreferredMaintenanceWindow'] = preferred_maintenance_window
+            params["PreferredMaintenanceWindow"] = preferred_maintenance_window
         if notification_topic_arn is not None:
-            params['NotificationTopicArn'] = notification_topic_arn
+            params["NotificationTopicArn"] = notification_topic_arn
         if cache_parameter_group_name is not None:
-            params['CacheParameterGroupName'] = cache_parameter_group_name
+            params["CacheParameterGroupName"] = cache_parameter_group_name
         if notification_topic_status is not None:
-            params['NotificationTopicStatus'] = notification_topic_status
+            params["NotificationTopicStatus"] = notification_topic_status
         if apply_immediately is not None:
-            params['ApplyImmediately'] = str(
-                apply_immediately).lower()
+            params["ApplyImmediately"] = str(apply_immediately).lower()
         if engine_version is not None:
-            params['EngineVersion'] = engine_version
+            params["EngineVersion"] = engine_version
         if auto_minor_version_upgrade is not None:
-            params['AutoMinorVersionUpgrade'] = str(
-                auto_minor_version_upgrade).lower()
+            params["AutoMinorVersionUpgrade"] = str(auto_minor_version_upgrade).lower()
         if primary_cluster_id is not None:
-            params['PrimaryClusterId'] = primary_cluster_id
+            params["PrimaryClusterId"] = primary_cluster_id
         return self._make_request(
-            action='ModifyReplicationGroup',
-            verb='POST',
-            path='/', params=params)
+            action="ModifyReplicationGroup", verb="POST", path="/", params=params
+        )
 
-    def purchase_reserved_cache_nodes_offering(self,
-                                               reserved_cache_nodes_offering_id,
-                                               reserved_cache_node_id=None,
-                                               cache_node_count=None):
+    def purchase_reserved_cache_nodes_offering(
+        self,
+        reserved_cache_nodes_offering_id,
+        reserved_cache_node_id=None,
+        cache_node_count=None,
+    ):
         """
         The PurchaseReservedCacheNodesOffering operation allows you to
         purchase a reserved cache node offering.
@@ -1529,19 +1566,20 @@ class ElastiCacheConnection(AWSQueryConnection):
 
         """
         params = {
-            'ReservedCacheNodesOfferingId': reserved_cache_nodes_offering_id,
+            "ReservedCacheNodesOfferingId": reserved_cache_nodes_offering_id,
         }
         if reserved_cache_node_id is not None:
-            params['ReservedCacheNodeId'] = reserved_cache_node_id
+            params["ReservedCacheNodeId"] = reserved_cache_node_id
         if cache_node_count is not None:
-            params['CacheNodeCount'] = cache_node_count
+            params["CacheNodeCount"] = cache_node_count
         return self._make_request(
-            action='PurchaseReservedCacheNodesOffering',
-            verb='POST',
-            path='/', params=params)
+            action="PurchaseReservedCacheNodesOffering",
+            verb="POST",
+            path="/",
+            params=params,
+        )
 
-    def reboot_cache_cluster(self, cache_cluster_id,
-                             cache_node_ids_to_reboot):
+    def reboot_cache_cluster(self, cache_cluster_id, cache_node_ids_to_reboot):
         """
         The RebootCacheCluster operation reboots some, or all, of the
         cache cluster nodes within a provisioned cache cluster. This
@@ -1567,18 +1605,22 @@ class ElastiCacheConnection(AWSQueryConnection):
             node IDs.
 
         """
-        params = {'CacheClusterId': cache_cluster_id, }
-        self.build_list_params(params,
-                               cache_node_ids_to_reboot,
-                               'CacheNodeIdsToReboot.member')
+        params = {
+            "CacheClusterId": cache_cluster_id,
+        }
+        self.build_list_params(
+            params, cache_node_ids_to_reboot, "CacheNodeIdsToReboot.member"
+        )
         return self._make_request(
-            action='RebootCacheCluster',
-            verb='POST',
-            path='/', params=params)
+            action="RebootCacheCluster", verb="POST", path="/", params=params
+        )
 
-    def reset_cache_parameter_group(self, cache_parameter_group_name,
-                                    parameter_name_values,
-                                    reset_all_parameters=None):
+    def reset_cache_parameter_group(
+        self,
+        cache_parameter_group_name,
+        parameter_name_values,
+        reset_all_parameters=None,
+    ):
         """
         The ResetCacheParameterGroup operation modifies the parameters
         of a cache parameter group to the engine or system default
@@ -1604,23 +1646,26 @@ class ElastiCacheConnection(AWSQueryConnection):
 
         """
         params = {
-            'CacheParameterGroupName': cache_parameter_group_name,
+            "CacheParameterGroupName": cache_parameter_group_name,
         }
         self.build_complex_list_params(
-            params, parameter_name_values,
-            'ParameterNameValues.member',
-            ('ParameterName', 'ParameterValue'))
+            params,
+            parameter_name_values,
+            "ParameterNameValues.member",
+            ("ParameterName", "ParameterValue"),
+        )
         if reset_all_parameters is not None:
-            params['ResetAllParameters'] = str(
-                reset_all_parameters).lower()
+            params["ResetAllParameters"] = str(reset_all_parameters).lower()
         return self._make_request(
-            action='ResetCacheParameterGroup',
-            verb='POST',
-            path='/', params=params)
+            action="ResetCacheParameterGroup", verb="POST", path="/", params=params
+        )
 
-    def revoke_cache_security_group_ingress(self, cache_security_group_name,
-                                            ec2_security_group_name,
-                                            ec2_security_group_owner_id):
+    def revoke_cache_security_group_ingress(
+        self,
+        cache_security_group_name,
+        ec2_security_group_name,
+        ec2_security_group_owner_id,
+    ):
         """
         The RevokeCacheSecurityGroupIngress operation revokes ingress
         from a cache security group. Use this operation to disallow
@@ -1643,20 +1688,23 @@ class ElastiCacheConnection(AWSQueryConnection):
 
         """
         params = {
-            'CacheSecurityGroupName': cache_security_group_name,
-            'EC2SecurityGroupName': ec2_security_group_name,
-            'EC2SecurityGroupOwnerId': ec2_security_group_owner_id,
+            "CacheSecurityGroupName": cache_security_group_name,
+            "EC2SecurityGroupName": ec2_security_group_name,
+            "EC2SecurityGroupOwnerId": ec2_security_group_owner_id,
         }
         return self._make_request(
-            action='RevokeCacheSecurityGroupIngress',
-            verb='POST',
-            path='/', params=params)
+            action="RevokeCacheSecurityGroupIngress",
+            verb="POST",
+            path="/",
+            params=params,
+        )
 
     def _make_request(self, action, verb, path, params):
-        params['ContentType'] = 'JSON'
-        response = self.make_request(action=action, verb='POST',
-                                     path='/', params=params)
-        body = response.read().decode('utf-8')
+        params["ContentType"] = "JSON"
+        response = self.make_request(
+            action=action, verb="POST", path="/", params=params
+        )
+        body = response.read().decode("utf-8")
         boto.log.debug(body)
         if response.status == 200:
             return json.loads(body)

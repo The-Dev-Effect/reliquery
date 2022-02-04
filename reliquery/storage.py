@@ -22,7 +22,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from apiclient.http import MediaFileUpload
-from apiclient.http import MediaIoBaseUpload 
+from apiclient.http import MediaIoBaseUpload
 from googleapiclient.http import MediaIoBaseDownload
 
 
@@ -514,200 +514,261 @@ class DropboxStorage(Storage):
                     )
             return relic_data
 
+
 class GoogleDriveStorage(Storage):
     def __init__(
-            self,
-            prefix: str,
-            name: str,
-            token_file :str,
-            SCOPES :list,
-            shared_folder_id: str
-        ):
-            self.prefix = prefix
-            self.name = name
-            self.token_file = token_file
-            self.SCOPES = SCOPES
-            self.shared_folder_id = shared_folder_id
+        self,
+        prefix: str,
+        name: str,
+        token_file: str,
+        SCOPES: list,
+        shared_folder_id: str,
+    ):
+        self.prefix = prefix
+        self.name = name
+        self.token_file = token_file
+        self.SCOPES = SCOPES
+        self.shared_folder_id = shared_folder_id
 
-            creds = None
-            if os.path.exists(token_file):
-                creds = service_account.Credentials.from_service_account_file(token_file, scopes=SCOPES)
-            try:
-                self.service = build('drive', 'v3', credentials=creds)
-            except HttpError as error:
-                print(f'An error occurred: {error}')
+        creds = None
+        if os.path.exists(token_file):
+            creds = service_account.Credentials.from_service_account_file(
+                token_file, scopes=SCOPES
+            )
+        try:
+            self.service = build("drive", "v3", credentials=creds)
+        except HttpError as error:
+            print(f"An error occurred: {error}")
 
-            #Check for prefix folder 
-            results = self.service.files().list(q="parents in '{}'".format(self.shared_folder_id),
-                pageSize=100, fields="nextPageToken, files(id, name)").execute()
-            items = results.get('files', [])
+        # Check for prefix folder
+        results = (
+            self.service.files()
+            .list(
+                q="parents in '{}'".format(self.shared_folder_id),
+                pageSize=100,
+                fields="nextPageToken, files(id, name)",
+            )
+            .execute()
+        )
+        items = results.get("files", [])
 
-            self.root_id = ''
-            for item in items:
-                if item['name'] == prefix:
-                    self.root_id = item['id']
+        self.root_id = ""
+        prefix_found = False
+        for item in items:
+            if item["name"] == prefix:
+                self.root_id = item["id"]
+                prefix_found = True
+                break
 
-            if self.root_id == '':
-                folder_metadata = {
-                    'name' : prefix,
-                    'mimeType': 'application/vnd.google-apps.folder'
-                }
-                #Create the folder with the previous metadata
-                folder = self.service.files().create(body = folder_metadata,
-                                        fields='id').execute()
-                #Get folder id for the folder just created
-                folder_id = '{}'.format(folder.get('id'))
+        if prefix_found == False:
+            folder_metadata = {
+                "name": prefix,
+                "mimeType": "application/vnd.google-apps.folder",
+            }
+            # Create the folder with the previous metadata
+            folder = (
+                self.service.files().create(body=folder_metadata, fields="id").execute()
+            )
+            # Get folder id for the folder just created
+            folder_id = "{}".format(folder.get("id"))
 
-                #Retrieve existing parents of the folder
-                folder = self.service.files().get(fileId='{}'.format(folder_id),
-                            fields='parents').execute()
-                previous_parents = ",".join(folder.get('parents'))
+            # Retrieve existing parents of the folder
+            folder = (
+                self.service.files()
+                .get(fileId="{}".format(folder_id), fields="parents")
+                .execute()
+            )
+            previous_parents = ",".join(folder.get("parents"))
 
-                #Remove the previous parents and replace with the parent we want 
-                folder = self.service.files().update(fileId = folder_id,
-                                addParents= self.shared_folder_id,
-                                removeParents = previous_parents,
-                                fields='id, parents').execute()
+            # Remove the previous parents and replace with the parent we want
+            folder = (
+                self.service.files()
+                .update(
+                    fileId=folder_id,
+                    addParents=self.shared_folder_id,
+                    removeParents=previous_parents,
+                    fields="id, parents",
+                )
+                .execute()
+            )
 
-                folder = self.service.files().create(body = folder_metadata,
-                                                fields='id').execute()
-                self.root_id = folder.get('id')
-
+            folder = (
+                self.service.files().create(body=folder_metadata, fields="id").execute()
+            )
+            self.root_id = folder.get("id")
+            print("init method root id", self.root_id)
 
     def _join_path(self, path: StoragePath) -> str:
         return "/".join([self.prefix] + path)
 
-    def _create_folder(self,path_name,parent_id):
-        #Create folder metadata
+    def _create_folder(self, path_name, parent_id):
+        # Create folder metadata
         folder1_metadata = {
-            'name' : path_name,
-            'mimeType' : 'application/vnd.google-apps.folder',
-            'parents': '{}'.format([parent_id])
+            "name": path_name,
+            "mimeType": "application/vnd.google-apps.folder",
+            "parents": "{}".format([parent_id]),
         }
-        #Create the folder with the previous metadata
-        folder1 = self.service.files().create(body = folder1_metadata,
-                                fields='id').execute()
-        #Get folder id for the folder just created
-        folder1_id = '{}'.format(folder1.get('id'))
+        # Create the folder with the previous metadata
+        folder1 = (
+            self.service.files().create(body=folder1_metadata, fields="id").execute()
+        )
+        # Get folder id for the folder just created
+        folder1_id = "{}".format(folder1.get("id"))
 
-        #Retrieve existing parents of the folder
-        folder = self.service.files().get(fileId='{}'.format(folder1_id),
-                    fields='parents').execute()
-        previous_parents = ",".join(folder.get('parents'))
+        # Retrieve existing parents of the folder
+        folder = (
+            self.service.files()
+            .get(fileId="{}".format(folder1_id), fields="parents")
+            .execute()
+        )
+        previous_parents = ",".join(folder.get("parents"))
 
-        #Remove the previous parents and replace with the parent we want 
-        folder = self.service.files().update(fileId = folder1_id,
-                        addParents= parent_id,
-                        removeParents = previous_parents,
-                        fields='id, parents').execute()
+        # Remove the previous parents and replace with the parent we want
+        folder = (
+            self.service.files()
+            .update(
+                fileId=folder1_id,
+                addParents=parent_id,
+                removeParents=previous_parents,
+                fields="id, parents",
+            )
+            .execute()
+        )
 
         return folder
 
     def _check_path(self, curr_root, path):
         parents = [curr_root]
-        
-        for p in path:
-            #List files in curr_root
-            results = self.service.files().list(q="parents in '{}'".format(curr_root),
-            pageSize=100, fields="nextPageToken, files(id, name)").execute()
-            items = results.get('files', [])
 
-            #Check if results were found
+        for p in path:
+            # List files in curr_root
+            results = (
+                self.service.files()
+                .list(
+                    q="parents in '{}'".format(curr_root),
+                    pageSize=100,
+                    fields="nextPageToken, files(id, name)",
+                )
+                .execute()
+            )
+            items = results.get("files", [])
+
+            # Check if results were found
             if len(items) > 0:
-                #Check if this path name already exists and change curr_root to it if so
+                # Check if this path name already exists and change curr_root to it if so
                 p_found = False
                 for item in items:
-                    if item['name'] == p:
-                        parents.append(item['id'])
-                        curr_root = item['id']
+                    if item["name"] == p:
+                        parents.append(item["id"])
+                        curr_root = item["id"]
                         p_found = True
 
-                #If all items were checked and the path name did not exist -> Create the path as a folder
+                # If all items were checked and the path name did not exist -> Create the path as a folder
                 if p_found == False:
-                    folder = self._create_folder(p,parents[-1])
-                    curr_root = folder.get('id')
-                    parents.append(folder.get('id'))
+                    folder = self._create_folder(p, parents[-1])
+                    curr_root = folder.get("id")
+                    parents.append(folder.get("id"))
 
-            #When no results are found/items list is empty
+            # When no results are found/items list is empty
             else:
-                folder = self._create_folder(p,parents[-1])
+                folder = self._create_folder(p, parents[-1])
 
-                curr_root = folder.get('id')
-                parents.append(folder.get('id'))
+                curr_root = folder.get("id")
+                parents.append(folder.get("id"))
         return parents
 
-    def _create_binary_file(self, file_name, parent_id,buffer):
-        file_metadata = {
-            'name' : file_name,
-            'parents' : parent_id
-        }
-        media = MediaIoBaseUpload(buffer, mimetype = "application/octet-stream")
-        file = self.service.files().create(body=file_metadata,
-                                        media_body=media,
-                                        fields='id').execute()
+    def _create_binary_file(self, file_name, parent_id, buffer):
+        file_metadata = {"name": file_name, "parents": parent_id}
+        media = MediaIoBaseUpload(buffer, mimetype="application/octet-stream")
+        file = (
+            self.service.files()
+            .create(body=file_metadata, media_body=media, fields="id")
+            .execute()
+        )
 
-        #Get file id for the file just created
-        file_id = '{}'.format(file.get('id'))
+        # Get file id for the file just created
+        file_id = "{}".format(file.get("id"))
 
-        #Retrieve existing parents of the folder
-        file = self.service.files().get(fileId='{}'.format(file_id),
-                    fields='parents').execute()
-        previous_parents = ",".join(file.get('parents'))
+        # Retrieve existing parents of the folder
+        file = (
+            self.service.files()
+            .get(fileId="{}".format(file_id), fields="parents")
+            .execute()
+        )
+        previous_parents = ",".join(file.get("parents"))
 
-        #Remove the previous parents and replace with the parent we want 
-        file = self.service.files().update(fileId = file_id,
-                        addParents= parent_id,
-                        removeParents = previous_parents,
-                        fields='id, parents').execute()
+        # Remove the previous parents and replace with the parent we want
+        file = (
+            self.service.files()
+            .update(
+                fileId=file_id,
+                addParents=parent_id,
+                removeParents=previous_parents,
+                fields="id, parents",
+            )
+            .execute()
+        )
 
-    def _create_file(self,file_name, parent_id, file_path):
-        file_metadata = {
-            'name' : file_name,
-            'parents' : parent_id
-        }
+    def _create_file(self, file_name, parent_id, file_path):
+        file_metadata = {"name": file_name, "parents": parent_id}
         media = MediaFileUpload(file_path)
-        file = self.service.files().create(body=file_metadata,
-                                        media_body=media,
-                                        fields='id').execute()
+        file = (
+            self.service.files()
+            .create(body=file_metadata, media_body=media, fields="id")
+            .execute()
+        )
 
-        #Get file id for the file just created
-        file_id = '{}'.format(file.get('id'))
+        # Get file id for the file just created
+        file_id = "{}".format(file.get("id"))
 
-        #Retrieve existing parents of the folder
-        file = self.service.files().get(fileId='{}'.format(file_id),
-                    fields='parents').execute()
-        previous_parents = ",".join(file.get('parents'))
+        # Retrieve existing parents of the folder
+        file = (
+            self.service.files()
+            .get(fileId="{}".format(file_id), fields="parents")
+            .execute()
+        )
+        previous_parents = ",".join(file.get("parents"))
 
-        #Remove the previous parents and replace with the parent we want 
-        file = self.service.files().update(fileId = file_id,
-                        addParents= parent_id,
-                        removeParents = previous_parents,
-                        fields='id, parents').execute()
+        # Remove the previous parents and replace with the parent we want
+        file = (
+            self.service.files()
+            .update(
+                fileId=file_id,
+                addParents=parent_id,
+                removeParents=previous_parents,
+                fields="id, parents",
+            )
+            .execute()
+        )
 
     def put_file(self, path: StoragePath, file_path: str) -> None:
         curr_root = self.root_id
         parents = self._check_path(curr_root, path[:-1])
-        self._create_file(path[-1], parents[-1],file_path)
-
+        self._create_file(path[-1], parents[-1], file_path)
 
     def put_binary_obj(self, path: StoragePath, buffer: BytesIO):
         curr_root = self.root_id
         parents = self._check_path(curr_root, path[:-1])
-        self._create_binary_file(path[-1], parents[-1],buffer)
-        
+        self._create_binary_file(path[-1], parents[-1], buffer)
 
     def get_binary_obj(self, path: StoragePath) -> BytesIO:
         page_token = None
         while True:
-            # Call the Drive v3 API and display contents in drive 
-            results = self.service.files().list(spaces='drive',
-                                              fields='nextPageToken, files(id, name)',
-                                              pageToken=page_token).execute()
+            # Call the Drive v3 API and display contents in drive
+            results = (
+                self.service.files()
+                .list(
+                    spaces="drive",
+                    fields="nextPageToken, files(id, name)",
+                    pageToken=page_token,
+                )
+                .execute()
+            )
 
-            for file in results.get('files', []):
-                if file.get('name') == path[-1]:
-                    file_id = file.get('id')
-            page_token = results.get('nextPageToken', None)
+            for file in results.get("files", []):
+                if file.get("name") == path[-1]:
+                    file_id = file.get("id")
+            page_token = results.get("nextPageToken", None)
             if page_token is None:
                 break
 
@@ -717,70 +778,84 @@ class GoogleDriveStorage(Storage):
 
         return fh
 
-
     def put_text(self, path: StoragePath, text: str) -> None:
         curr_root = self.root_id
         parents = self._check_path(curr_root, path[:-1])
 
-        with open (path[-1], "w") as f:
+        with open(path[-1], "w") as f:
             f.write(text)
 
-        self._create_file(path[-1], parents[-1],path[-1])
-
+        self._create_file(path[-1], parents[-1], path[-1])
 
     def get_text(self, path: StoragePath) -> str:
-        file_id = ''
+        file_id = ""
         curr_root = self.root_id
         parents = self._check_path(curr_root, path[:-1])
-        print(parents)
-        results = self.service.files().list(q="parents in '{}'".format(parents[-1]),
-        pageSize=100, fields="nextPageToken, files(id, name)").execute()
-        items = results.get('files', [])
+        results = (
+            self.service.files()
+            .list(
+                q="parents in '{}'".format(parents[-1]),
+                pageSize=100,
+                fields="nextPageToken, files(id, name)",
+            )
+            .execute()
+        )
+        items = results.get("files", [])
         for item in items:
-            if item.get('name') == path[-1]:
-                file_id = item.get('id')
+            if item.get("name") == path[-1]:
+                file_id = item.get("id")
                 break
             else:
                 return "File not found"
 
         try:
-            content = self.service.files().get_media(fileId = file_id).execute()
+            content = self.service.files().get_media(fileId=file_id).execute()
             return content
         except HttpError as error:
-            print(f'An error occurred: {error}')
-
-        
-
+            print(f"An error occurred: {error}")
 
     def list_keys(self, path: StoragePath) -> List[str]:
         raise NotImplementedError
 
     def put_metadata(self, path: StoragePath, metadata: Dict):
         parents = []
-        # get the folder id of the relic 
-        results = self.service.files().list(q="parents in '{}'".format(self.root_id),
-            pageSize=100, fields="nextPageToken, files(id, name)").execute()
-        items = results.get('files', [])
+        # get the folder id of the relic
+        results = (
+            self.service.files()
+            .list(
+                q="parents in '{}'".format(self.root_id),
+                pageSize=100,
+                fields="nextPageToken, files(id, name)",
+            )
+            .execute()
+        )
+        items = results.get("files", [])
         for item in items:
-            if item['name'] == path[0]:
-                curr_root = item['id']
+            if item["name"] == path[0]:
+                curr_root = item["id"]
                 parents.append(curr_root)
 
-        results = self.service.files().list(q="parents in '{}'".format(curr_root),
-            pageSize=100, fields="nextPageToken, files(id, name)").execute()
-        items = results.get('files', [])
+        results = (
+            self.service.files()
+            .list(
+                q="parents in '{}'".format(curr_root),
+                pageSize=100,
+                fields="nextPageToken, files(id, name)",
+            )
+            .execute()
+        )
+        items = results.get("files", [])
         for item in items:
-            if item['name'] == path[1]:
-                curr_root = item['id']
+            if item["name"] == path[1]:
+                curr_root = item["id"]
                 parents.append(curr_root)
-        
+
         path_list = path[2:]
         parents = self._check_path(curr_root, path_list[:-1])
 
         metadata_bytes = json.dumps(metadata).encode("utf-8")
         buffer = io.BytesIO(metadata_bytes)
-        self._create_binary_file(path[-1], parents[-1],buffer)
-
+        self._create_binary_file(path[-1], parents[-1], buffer)
 
     def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
         raise NotImplementedError
@@ -796,6 +871,7 @@ class GoogleDriveStorage(Storage):
 
     def get_all_relic_data(self) -> List[Dict]:
         raise NotImplementedError
+
 
 def get_storage_by_name(name: str, root: str = os.path.expanduser("~")) -> Storage:
     reliquery_dir = os.path.join(root, "reliquery")

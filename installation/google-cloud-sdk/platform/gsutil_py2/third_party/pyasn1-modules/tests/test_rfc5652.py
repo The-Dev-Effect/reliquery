@@ -53,21 +53,20 @@ xicQmJP+VoMHo/ZpjFY9fYCjNZUArgKsEwK/s+p9yrVVeB1Nf8Mn
         layers = {
             rfc5652.id_ct_contentInfo: rfc5652.ContentInfo(),
             rfc5652.id_signedData: rfc5652.SignedData(),
-            rfc6402.id_cct_PKIData: rfc6402.PKIData()
+            rfc6402.id_cct_PKIData: rfc6402.PKIData(),
         }
 
         getNextLayer = {
-            rfc5652.id_ct_contentInfo: lambda x: x['contentType'],
-            rfc5652.id_signedData: lambda x: x['encapContentInfo']['eContentType'],
-            rfc6402.id_cct_PKIData: lambda x: None
+            rfc5652.id_ct_contentInfo: lambda x: x["contentType"],
+            rfc5652.id_signedData: lambda x: x["encapContentInfo"]["eContentType"],
+            rfc6402.id_cct_PKIData: lambda x: None,
         }
 
         getNextSubstrate = {
-            rfc5652.id_ct_contentInfo: lambda x: x['content'],
-            rfc5652.id_signedData: lambda x: x['encapContentInfo']['eContent'],
-            rfc6402.id_cct_PKIData: lambda x: None
+            rfc5652.id_ct_contentInfo: lambda x: x["content"],
+            rfc5652.id_signedData: lambda x: x["encapContentInfo"]["eContent"],
+            rfc6402.id_cct_PKIData: lambda x: None,
         }
-
 
         next_layer = rfc5652.id_ct_contentInfo
 
@@ -87,5 +86,5 @@ xicQmJP+VoMHo/ZpjFY9fYCjNZUArgKsEwK/s+p9yrVVeB1Nf8Mn
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.TextTestRunner(verbosity=2).run(suite)

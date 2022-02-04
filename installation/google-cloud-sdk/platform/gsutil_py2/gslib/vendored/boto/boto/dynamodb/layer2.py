@@ -25,8 +25,12 @@ from boto.dynamodb.table import Table
 from boto.dynamodb.schema import Schema
 from boto.dynamodb.item import Item
 from boto.dynamodb.batch import BatchList, BatchWriteList
-from boto.dynamodb.types import get_dynamodb_type, Dynamizer, \
-        LossyFloatDynamizer, NonBooleanDynamizer
+from boto.dynamodb.types import (
+    get_dynamodb_type,
+    Dynamizer,
+    LossyFloatDynamizer,
+    NonBooleanDynamizer,
+)
 
 
 class TableGenerator(object):
@@ -98,23 +102,23 @@ class TableGenerator(object):
         next "page" of results.
         """
         # preserve any existing limit in case the user alters self.remaining
-        limit = self.kwargs.get('limit')
-        if (self.remaining > 0 and (limit is None or limit > self.remaining)):
-            self.kwargs['limit'] = self.remaining
+        limit = self.kwargs.get("limit")
+        if self.remaining > 0 and (limit is None or limit > self.remaining):
+            self.kwargs["limit"] = self.remaining
         self._response = self.callable(**self.kwargs)
-        self.kwargs['limit'] = limit
-        self._consumed_units += self._response.get('ConsumedCapacityUnits', 0.0)
-        self._count += self._response.get('Count', 0)
-        self._scanned_count += self._response.get('ScannedCount', 0)
+        self.kwargs["limit"] = limit
+        self._consumed_units += self._response.get("ConsumedCapacityUnits", 0.0)
+        self._count += self._response.get("Count", 0)
+        self._scanned_count += self._response.get("ScannedCount", 0)
         # at the expense of a possibly gratuitous dynamize, ensure that
         # early generator termination won't result in bad LEK values
-        if 'LastEvaluatedKey' in self._response:
-            lek = self._response['LastEvaluatedKey']
+        if "LastEvaluatedKey" in self._response:
+            lek = self._response["LastEvaluatedKey"]
             esk = self.table.layer2.dynamize_last_evaluated_key(lek)
-            self.kwargs['exclusive_start_key'] = esk
-            lektuple = (lek['HashKeyElement'],)
-            if 'RangeKeyElement' in lek:
-                lektuple += (lek['RangeKeyElement'],)
+            self.kwargs["exclusive_start_key"] = esk
+            lektuple = (lek["HashKeyElement"],)
+            if "RangeKeyElement" in lek:
+                lektuple += (lek["RangeKeyElement"],)
             self.last_evaluated_key = lektuple
         else:
             self.last_evaluated_key = None
@@ -123,7 +127,7 @@ class TableGenerator(object):
     def __iter__(self):
         while self.remaining != 0:
             response = self.response
-            for item in response.get('Items', []):
+            for item in response.get("Items", []):
                 self.remaining -= 1
                 yield self.item_class(self.table, attrs=item)
                 if self.remaining == 0:
@@ -141,17 +145,34 @@ class TableGenerator(object):
 
 
 class Layer2(object):
-
-    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None,
-                 is_secure=True, port=None, proxy=None, proxy_port=None,
-                 debug=0, security_token=None, region=None,
-                 validate_certs=True, dynamizer=LossyFloatDynamizer,
-                 profile_name=None):
-        self.layer1 = Layer1(aws_access_key_id, aws_secret_access_key,
-                             is_secure, port, proxy, proxy_port,
-                             debug, security_token, region,
-                             validate_certs=validate_certs,
-                             profile_name=profile_name)
+    def __init__(
+        self,
+        aws_access_key_id=None,
+        aws_secret_access_key=None,
+        is_secure=True,
+        port=None,
+        proxy=None,
+        proxy_port=None,
+        debug=0,
+        security_token=None,
+        region=None,
+        validate_certs=True,
+        dynamizer=LossyFloatDynamizer,
+        profile_name=None,
+    ):
+        self.layer1 = Layer1(
+            aws_access_key_id,
+            aws_secret_access_key,
+            is_secure,
+            port,
+            proxy,
+            proxy_port,
+            debug,
+            security_token,
+            region,
+            validate_certs=validate_certs,
+            profile_name=profile_name,
+        )
         self.dynamizer = dynamizer()
 
     def use_decimals(self, use_boolean=False):
@@ -178,8 +199,7 @@ class Layer2(object):
                 # DELETE without an attribute value
                 d[attr_name] = {"Action": action}
             else:
-                d[attr_name] = {"Action": action,
-                                "Value": self.dynamizer.encode(value)}
+                d[attr_name] = {"Action": action, "Value": self.dynamizer.encode(value)}
         return d
 
     def dynamize_item(self, item):
@@ -219,12 +239,12 @@ class Layer2(object):
             for attr_name in expected_value:
                 attr_value = expected_value[attr_name]
                 if attr_value is True:
-                    attr_value = {'Exists': True}
+                    attr_value = {"Exists": True}
                 elif attr_value is False:
-                    attr_value = {'Exists': False}
+                    attr_value = {"Exists": False}
                 else:
                     val = self.dynamizer.encode(expected_value[attr_name])
-                    attr_value = {'Value': val}
+                    attr_value = {"Value": val}
                 d[attr_name] = attr_value
         return d
 
@@ -235,11 +255,11 @@ class Layer2(object):
         """
         d = None
         if last_evaluated_key:
-            hash_key = last_evaluated_key['HashKeyElement']
-            d = {'HashKeyElement': self.dynamizer.encode(hash_key)}
-            if 'RangeKeyElement' in last_evaluated_key:
-                range_key = last_evaluated_key['RangeKeyElement']
-                d['RangeKeyElement'] = self.dynamizer.encode(range_key)
+            hash_key = last_evaluated_key["HashKeyElement"]
+            d = {"HashKeyElement": self.dynamizer.encode(hash_key)}
+            if "RangeKeyElement" in last_evaluated_key:
+                range_key = last_evaluated_key["RangeKeyElement"]
+                d["RangeKeyElement"] = self.dynamizer.encode(range_key)
         return d
 
     def build_key_from_values(self, schema, hash_key, range_key=None):
@@ -265,15 +285,15 @@ class Layer2(object):
         dynamodb_key = {}
         dynamodb_value = self.dynamizer.encode(hash_key)
         if list(dynamodb_value.keys())[0] != schema.hash_key_type:
-            msg = 'Hashkey must be of type: %s' % schema.hash_key_type
+            msg = "Hashkey must be of type: %s" % schema.hash_key_type
             raise TypeError(msg)
-        dynamodb_key['HashKeyElement'] = dynamodb_value
+        dynamodb_key["HashKeyElement"] = dynamodb_value
         if range_key is not None:
             dynamodb_value = self.dynamizer.encode(range_key)
             if list(dynamodb_value.keys())[0] != schema.range_key_type:
-                msg = 'RangeKey must be of type: %s' % schema.range_key_type
+                msg = "RangeKey must be of type: %s" % schema.range_key_type
                 raise TypeError(msg)
-            dynamodb_key['RangeKeyElement'] = dynamodb_value
+            dynamodb_key["RangeKeyElement"] = dynamodb_value
         return dynamodb_key
 
     def new_batch_list(self):
@@ -305,9 +325,11 @@ class Layer2(object):
             if limit:
                 this_round_limit = limit - len(tables)
                 this_round_limit = min(this_round_limit, 100)
-            result = self.layer1.list_tables(limit=this_round_limit, start_table=start_table)
-            tables.extend(result.get('TableNames', []))
-            start_table = result.get('LastEvaluatedTableName', None)
+            result = self.layer1.list_tables(
+                limit=this_round_limit, start_table=start_table
+            )
+            tables.extend(result.get("TableNames", []))
+            start_table = result.get("LastEvaluatedTableName", None)
             if not start_table:
                 break
         return tables
@@ -384,10 +406,12 @@ class Layer2(object):
         :rtype: :class:`boto.dynamodb.table.Table`
         :return: A Table object representing the new Amazon DynamoDB table.
         """
-        response = self.layer1.create_table(name, schema.dict,
-                                            {'ReadCapacityUnits': read_units,
-                                             'WriteCapacityUnits': write_units})
-        return Table(self,  response)
+        response = self.layer1.create_table(
+            name,
+            schema.dict,
+            {"ReadCapacityUnits": read_units, "WriteCapacityUnits": write_units},
+        )
+        return Table(self, response)
 
     def update_throughput(self, table, read_units, write_units):
         """
@@ -402,9 +426,10 @@ class Layer2(object):
         :type write_units: int
         :param write_units: The new value for WriteCapacityUnits.
         """
-        response = self.layer1.update_table(table.name,
-                                            {'ReadCapacityUnits': read_units,
-                                             'WriteCapacityUnits': write_units})
+        response = self.layer1.update_table(
+            table.name,
+            {"ReadCapacityUnits": read_units, "WriteCapacityUnits": write_units},
+        )
         table.update_from_response(response)
 
     def delete_table(self, table):
@@ -418,8 +443,13 @@ class Layer2(object):
         response = self.layer1.delete_table(table.name)
         table.update_from_response(response)
 
-    def create_schema(self, hash_key_name, hash_key_proto_value,
-                      range_key_name=None, range_key_proto_value=None):
+    def create_schema(
+        self,
+        hash_key_name,
+        hash_key_proto_value,
+        range_key_name=None,
+        range_key_proto_value=None,
+    ):
         """
         Create a Schema object used when creating a Table.
 
@@ -443,15 +473,20 @@ class Layer2(object):
         """
         hash_key = (hash_key_name, get_dynamodb_type(hash_key_proto_value))
         if range_key_name and range_key_proto_value is not None:
-            range_key = (range_key_name,
-                         get_dynamodb_type(range_key_proto_value))
+            range_key = (range_key_name, get_dynamodb_type(range_key_proto_value))
         else:
             range_key = None
         return Schema.create(hash_key, range_key)
 
-    def get_item(self, table, hash_key, range_key=None,
-                 attributes_to_get=None, consistent_read=False,
-                 item_class=Item):
+    def get_item(
+        self,
+        table,
+        hash_key,
+        range_key=None,
+        attributes_to_get=None,
+        consistent_read=False,
+        item_class=Item,
+    ):
         """
         Retrieve an existing item from the table.
 
@@ -484,12 +519,16 @@ class Layer2(object):
             :class:`boto.dynamodb.item.Item`
         """
         key = self.build_key_from_values(table.schema, hash_key, range_key)
-        response = self.layer1.get_item(table.name, key,
-                                        attributes_to_get, consistent_read,
-                                        object_hook=self.dynamizer.decode)
-        item = item_class(table, hash_key, range_key, response['Item'])
-        if 'ConsumedCapacityUnits' in response:
-            item.consumed_units = response['ConsumedCapacityUnits']
+        response = self.layer1.get_item(
+            table.name,
+            key,
+            attributes_to_get,
+            consistent_read,
+            object_hook=self.dynamizer.decode,
+        )
+        item = item_class(table, hash_key, range_key, response["Item"])
+        if "ConsumedCapacityUnits" in response:
+            item.consumed_units = response["ConsumedCapacityUnits"]
         return item
 
     def batch_get_item(self, batch_list):
@@ -505,8 +544,9 @@ class Layer2(object):
             request.
         """
         request_items = batch_list.to_dict()
-        return self.layer1.batch_get_item(request_items,
-                                          object_hook=self.dynamizer.decode)
+        return self.layer1.batch_get_item(
+            request_items, object_hook=self.dynamizer.decode
+        )
 
     def batch_write_item(self, batch_list):
         """
@@ -519,8 +559,9 @@ class Layer2(object):
             batch of objects that you wish to put or delete.
         """
         request_items = batch_list.to_dict()
-        return self.layer1.batch_write_item(request_items,
-                                            object_hook=self.dynamizer.decode)
+        return self.layer1.batch_write_item(
+            request_items, object_hook=self.dynamizer.decode
+        )
 
     def put_item(self, item, expected_value=None, return_values=None):
         """
@@ -545,12 +586,15 @@ class Layer2(object):
             of the old item is returned.
         """
         expected_value = self.dynamize_expected_value(expected_value)
-        response = self.layer1.put_item(item.table.name,
-                                        self.dynamize_item(item),
-                                        expected_value, return_values,
-                                        object_hook=self.dynamizer.decode)
-        if 'ConsumedCapacityUnits' in response:
-            item.consumed_units = response['ConsumedCapacityUnits']
+        response = self.layer1.put_item(
+            item.table.name,
+            self.dynamize_item(item),
+            expected_value,
+            return_values,
+            object_hook=self.dynamizer.decode,
+        )
+        if "ConsumedCapacityUnits" in response:
+            item.consumed_units = response["ConsumedCapacityUnits"]
         return response
 
     def update_item(self, item, expected_value=None, return_values=None):
@@ -582,17 +626,22 @@ class Layer2(object):
 
         """
         expected_value = self.dynamize_expected_value(expected_value)
-        key = self.build_key_from_values(item.table.schema,
-                                         item.hash_key, item.range_key)
+        key = self.build_key_from_values(
+            item.table.schema, item.hash_key, item.range_key
+        )
         attr_updates = self.dynamize_attribute_updates(item._updates)
 
-        response = self.layer1.update_item(item.table.name, key,
-                                           attr_updates,
-                                           expected_value, return_values,
-                                           object_hook=self.dynamizer.decode)
+        response = self.layer1.update_item(
+            item.table.name,
+            key,
+            attr_updates,
+            expected_value,
+            return_values,
+            object_hook=self.dynamizer.decode,
+        )
         item._updates.clear()
-        if 'ConsumedCapacityUnits' in response:
-            item.consumed_units = response['ConsumedCapacityUnits']
+        if "ConsumedCapacityUnits" in response:
+            item.consumed_units = response["ConsumedCapacityUnits"]
         return response
 
     def delete_item(self, item, expected_value=None, return_values=None):
@@ -617,18 +666,31 @@ class Layer2(object):
             of the old item is returned.
         """
         expected_value = self.dynamize_expected_value(expected_value)
-        key = self.build_key_from_values(item.table.schema,
-                                         item.hash_key, item.range_key)
-        return self.layer1.delete_item(item.table.name, key,
-                                       expected=expected_value,
-                                       return_values=return_values,
-                                       object_hook=self.dynamizer.decode)
+        key = self.build_key_from_values(
+            item.table.schema, item.hash_key, item.range_key
+        )
+        return self.layer1.delete_item(
+            item.table.name,
+            key,
+            expected=expected_value,
+            return_values=return_values,
+            object_hook=self.dynamizer.decode,
+        )
 
-    def query(self, table, hash_key, range_key_condition=None,
-              attributes_to_get=None, request_limit=None,
-              max_results=None, consistent_read=False,
-              scan_index_forward=True, exclusive_start_key=None,
-              item_class=Item, count=False):
+    def query(
+        self,
+        table,
+        hash_key,
+        range_key_condition=None,
+        attributes_to_get=None,
+        request_limit=None,
+        max_results=None,
+        consistent_read=False,
+        scan_index_forward=True,
+        exclusive_start_key=None,
+        item_class=Item,
+        count=False,
+    ):
         """
         Perform a query on the table.
 
@@ -704,26 +766,34 @@ class Layer2(object):
         else:
             rkc = None
         if exclusive_start_key:
-            esk = self.build_key_from_values(table.schema,
-                                             *exclusive_start_key)
+            esk = self.build_key_from_values(table.schema, *exclusive_start_key)
         else:
             esk = None
-        kwargs = {'table_name': table.name,
-                  'hash_key_value': self.dynamizer.encode(hash_key),
-                  'range_key_conditions': rkc,
-                  'attributes_to_get': attributes_to_get,
-                  'limit': request_limit,
-                  'count': count,
-                  'consistent_read': consistent_read,
-                  'scan_index_forward': scan_index_forward,
-                  'exclusive_start_key': esk,
-                  'object_hook': self.dynamizer.decode}
-        return TableGenerator(table, self.layer1.query,
-                              max_results, item_class, kwargs)
+        kwargs = {
+            "table_name": table.name,
+            "hash_key_value": self.dynamizer.encode(hash_key),
+            "range_key_conditions": rkc,
+            "attributes_to_get": attributes_to_get,
+            "limit": request_limit,
+            "count": count,
+            "consistent_read": consistent_read,
+            "scan_index_forward": scan_index_forward,
+            "exclusive_start_key": esk,
+            "object_hook": self.dynamizer.decode,
+        }
+        return TableGenerator(table, self.layer1.query, max_results, item_class, kwargs)
 
-    def scan(self, table, scan_filter=None,
-             attributes_to_get=None, request_limit=None, max_results=None,
-             exclusive_start_key=None, item_class=Item, count=False):
+    def scan(
+        self,
+        table,
+        scan_filter=None,
+        attributes_to_get=None,
+        request_limit=None,
+        max_results=None,
+        exclusive_start_key=None,
+        item_class=Item,
+        count=False,
+    ):
         """
         Perform a scan of DynamoDB.
 
@@ -791,16 +861,16 @@ class Layer2(object):
         :rtype: :class:`boto.dynamodb.layer2.TableGenerator`
         """
         if exclusive_start_key:
-            esk = self.build_key_from_values(table.schema,
-                                             *exclusive_start_key)
+            esk = self.build_key_from_values(table.schema, *exclusive_start_key)
         else:
             esk = None
-        kwargs = {'table_name': table.name,
-                  'scan_filter': self.dynamize_scan_filter(scan_filter),
-                  'attributes_to_get': attributes_to_get,
-                  'limit': request_limit,
-                  'count': count,
-                  'exclusive_start_key': esk,
-                  'object_hook': self.dynamizer.decode}
-        return TableGenerator(table, self.layer1.scan,
-                              max_results, item_class, kwargs)
+        kwargs = {
+            "table_name": table.name,
+            "scan_filter": self.dynamize_scan_filter(scan_filter),
+            "attributes_to_get": attributes_to_get,
+            "limit": request_limit,
+            "count": count,
+            "exclusive_start_key": esk,
+            "object_hook": self.dynamizer.decode,
+        }
+        return TableGenerator(table, self.layer1.scan, max_results, item_class, kwargs)

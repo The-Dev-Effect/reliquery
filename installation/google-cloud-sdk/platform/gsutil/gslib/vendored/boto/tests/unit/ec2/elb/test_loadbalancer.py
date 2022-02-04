@@ -18,14 +18,16 @@ DISABLE_RESPONSE = b"""<?xml version="1.0" encoding="UTF-8"?>
 
 class TestInstanceStatusResponseParsing(unittest.TestCase):
     def test_next_token(self):
-        elb = ELBConnection(aws_access_key_id='aws_access_key_id',
-                            aws_secret_access_key='aws_secret_access_key')
+        elb = ELBConnection(
+            aws_access_key_id="aws_access_key_id",
+            aws_secret_access_key="aws_secret_access_key",
+        )
         mock_response = mock.Mock()
         mock_response.read.return_value = DISABLE_RESPONSE
         mock_response.status = 200
         elb.make_request = mock.Mock(return_value=mock_response)
-        disabled = elb.disable_availability_zones('mine', ['sample-zone'])
-        self.assertEqual(disabled, ['sample-zone'])
+        disabled = elb.disable_availability_zones("mine", ["sample-zone"])
+        self.assertEqual(disabled, ["sample-zone"])
 
 
 DESCRIBE_RESPONSE = b"""<?xml version="1.0" encoding="UTF-8"?>
@@ -85,8 +87,10 @@ DESCRIBE_RESPONSE = b"""<?xml version="1.0" encoding="UTF-8"?>
 
 class TestDescribeLoadBalancers(unittest.TestCase):
     def test_other_policy(self):
-        elb = ELBConnection(aws_access_key_id='aws_access_key_id',
-                            aws_secret_access_key='aws_secret_access_key')
+        elb = ELBConnection(
+            aws_access_key_id="aws_access_key_id",
+            aws_secret_access_key="aws_secret_access_key",
+        )
         mock_response = mock.Mock()
         mock_response.read.return_value = DESCRIBE_RESPONSE
         mock_response.status = 200
@@ -96,26 +100,30 @@ class TestDescribeLoadBalancers(unittest.TestCase):
 
         lb = load_balancers[0]
         self.assertEqual(len(lb.policies.other_policies), 2)
-        self.assertEqual(lb.policies.other_policies[0].policy_name,
-                         'AWSConsole-SSLNegotiationPolicy-my-test-loadbalancer')
-        self.assertEqual(lb.policies.other_policies[1].policy_name,
-                         'EnableProxyProtocol')
+        self.assertEqual(
+            lb.policies.other_policies[0].policy_name,
+            "AWSConsole-SSLNegotiationPolicy-my-test-loadbalancer",
+        )
+        self.assertEqual(
+            lb.policies.other_policies[1].policy_name, "EnableProxyProtocol"
+        )
 
         self.assertEqual(len(lb.backends), 1)
         self.assertEqual(len(lb.backends[0].policies), 1)
-        self.assertEqual(lb.backends[0].policies[0].policy_name,
-                         'EnableProxyProtocol')
+        self.assertEqual(lb.backends[0].policies[0].policy_name, "EnableProxyProtocol")
         self.assertEqual(lb.backends[0].instance_port, 80)
 
     def test_request_with_marker(self):
-        elb = ELBConnection(aws_access_key_id='aws_access_key_id',
-                            aws_secret_access_key='aws_secret_access_key')
+        elb = ELBConnection(
+            aws_access_key_id="aws_access_key_id",
+            aws_secret_access_key="aws_secret_access_key",
+        )
         mock_response = mock.Mock()
         mock_response.read.return_value = DESCRIBE_RESPONSE
         mock_response.status = 200
         elb.make_request = mock.Mock(return_value=mock_response)
         load_balancers1 = elb.get_all_load_balancers()
-        self.assertEqual('1234', load_balancers1.marker)
+        self.assertEqual("1234", load_balancers1.marker)
         load_balancers2 = elb.get_all_load_balancers(marker=load_balancers1.marker)
         self.assertEqual(len(load_balancers2), 1)
 
@@ -129,8 +137,10 @@ DETACH_RESPONSE = r"""<?xml version="1.0" encoding="UTF-8"?>
 
 class TestDetachSubnets(unittest.TestCase):
     def test_detach_subnets(self):
-        elb = ELBConnection(aws_access_key_id='aws_access_key_id',
-                            aws_secret_access_key='aws_secret_access_key')
+        elb = ELBConnection(
+            aws_access_key_id="aws_access_key_id",
+            aws_secret_access_key="aws_secret_access_key",
+        )
         lb = LoadBalancer(elb, "mylb")
 
         mock_response = mock.Mock()
@@ -139,5 +149,6 @@ class TestDetachSubnets(unittest.TestCase):
         elb.make_request = mock.Mock(return_value=mock_response)
         lb.detach_subnets("s-xxx")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

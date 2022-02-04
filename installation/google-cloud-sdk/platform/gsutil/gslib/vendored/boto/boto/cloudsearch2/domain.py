@@ -30,7 +30,7 @@ from boto.cloudsearch2.search import SearchConnection
 
 
 def handle_bool(value):
-    if value in [True, 'true', 'True', 'TRUE', 1]:
+    if value in [True, "true", "True", "TRUE", 1]:
         return True
     return False
 
@@ -87,18 +87,18 @@ class Domain(object):
         self.update_from_data(data)
 
     def update_from_data(self, data):
-        self.created = data['Created']
-        self.deleted = data['Deleted']
-        self.processing = data['Processing']
-        self.requires_index_documents = data['RequiresIndexDocuments']
-        self.domain_id = data['DomainId']
-        self.domain_name = data['DomainName']
-        self.search_instance_count = data['SearchInstanceCount']
-        self.search_instance_type = data.get('SearchInstanceType', None)
-        self.search_partition_count = data['SearchPartitionCount']
-        self._doc_service = data['DocService']
-        self._service_arn = data['ARN']
-        self._search_service = data['SearchService']
+        self.created = data["Created"]
+        self.deleted = data["Deleted"]
+        self.processing = data["Processing"]
+        self.requires_index_documents = data["RequiresIndexDocuments"]
+        self.domain_id = data["DomainId"]
+        self.domain_name = data["DomainName"]
+        self.search_instance_count = data["SearchInstanceCount"]
+        self.search_instance_type = data.get("SearchInstanceType", None)
+        self.search_partition_count = data["SearchPartitionCount"]
+        self._doc_service = data["DocService"]
+        self._service_arn = data["ARN"]
+        self._search_service = data["SearchService"]
 
     @property
     def service_arn(self):
@@ -106,11 +106,11 @@ class Domain(object):
 
     @property
     def doc_service_endpoint(self):
-        return self._doc_service['Endpoint']
+        return self._doc_service["Endpoint"]
 
     @property
     def search_service_endpoint(self):
-        return self._search_service['Endpoint']
+        return self._search_service["Endpoint"]
 
     @property
     def created(self):
@@ -190,11 +190,15 @@ class Domain(object):
             object
         """
         return AvailabilityOptionsStatus(
-            self, refresh_fn=self.layer1.describe_availability_options,
-            refresh_key=['DescribeAvailabilityOptionsResponse',
-                         'DescribeAvailabilityOptionsResult',
-                         'AvailabilityOptions'],
-            save_fn=self.layer1.update_availability_options)
+            self,
+            refresh_fn=self.layer1.describe_availability_options,
+            refresh_key=[
+                "DescribeAvailabilityOptionsResponse",
+                "DescribeAvailabilityOptionsResult",
+                "AvailabilityOptions",
+            ],
+            save_fn=self.layer1.update_availability_options,
+        )
 
     def get_scaling_options(self):
         """
@@ -206,11 +210,15 @@ class Domain(object):
             object
         """
         return ScalingParametersStatus(
-            self, refresh_fn=self.layer1.describe_scaling_parameters,
-            refresh_key=['DescribeScalingParametersResponse',
-                         'DescribeScalingParametersResult',
-                         'ScalingParameters'],
-            save_fn=self.layer1.update_scaling_parameters)
+            self,
+            refresh_fn=self.layer1.describe_scaling_parameters,
+            refresh_key=[
+                "DescribeScalingParametersResponse",
+                "DescribeScalingParametersResult",
+                "ScalingParameters",
+            ],
+            save_fn=self.layer1.update_scaling_parameters,
+        )
 
     def get_access_policies(self):
         """
@@ -221,11 +229,15 @@ class Domain(object):
         :rtype: :class:`boto.cloudsearch2.option.ServicePoliciesStatus` object
         """
         return ServicePoliciesStatus(
-            self, refresh_fn=self.layer1.describe_service_access_policies,
-            refresh_key=['DescribeServiceAccessPoliciesResponse',
-                         'DescribeServiceAccessPoliciesResult',
-                         'AccessPolicies'],
-            save_fn=self.layer1.update_service_access_policies)
+            self,
+            refresh_fn=self.layer1.describe_service_access_policies,
+            refresh_key=[
+                "DescribeServiceAccessPoliciesResponse",
+                "DescribeServiceAccessPoliciesResult",
+                "AccessPolicies",
+            ],
+            save_fn=self.layer1.update_service_access_policies,
+        )
 
     def index_documents(self):
         """
@@ -246,17 +258,25 @@ class Domain(object):
         """
         data = self.layer1.describe_index_fields(self.name, field_names)
 
-        data = (data['DescribeIndexFieldsResponse']
-                    ['DescribeIndexFieldsResult']
-                    ['IndexFields'])
+        data = data["DescribeIndexFieldsResponse"]["DescribeIndexFieldsResult"][
+            "IndexFields"
+        ]
 
         return [IndexFieldStatus(self, d) for d in data]
 
-    def create_index_field(self, field_name, field_type,
-                           default='', facet=False, returnable=False,
-                           searchable=False, sortable=False,
-                           highlight=False, source_field=None,
-                           analysis_scheme=None):
+    def create_index_field(
+        self,
+        field_name,
+        field_type,
+        default="",
+        facet=False,
+        returnable=False,
+        searchable=False,
+        sortable=False,
+        highlight=False,
+        source_field=None,
+        analysis_scheme=None,
+    ):
         """
         Defines an ``IndexField``, either replacing an existing
         definition or creating a new one.
@@ -312,143 +332,132 @@ class Domain(object):
         :raises: BaseException, InternalException, LimitExceededException,
             InvalidTypeException, ResourceNotFoundException
         """
-        index = {
-            'IndexFieldName': field_name,
-            'IndexFieldType': field_type
-        }
-        if field_type == 'literal':
-            index['LiteralOptions'] = {
-                'FacetEnabled': facet,
-                'ReturnEnabled': returnable,
-                'SearchEnabled': searchable,
-                'SortEnabled': sortable
+        index = {"IndexFieldName": field_name, "IndexFieldType": field_type}
+        if field_type == "literal":
+            index["LiteralOptions"] = {
+                "FacetEnabled": facet,
+                "ReturnEnabled": returnable,
+                "SearchEnabled": searchable,
+                "SortEnabled": sortable,
             }
             if default:
-                index['LiteralOptions']['DefaultValue'] = default
+                index["LiteralOptions"]["DefaultValue"] = default
             if source_field:
-                index['LiteralOptions']['SourceField'] = source_field
-        elif field_type == 'literal-array':
-            index['LiteralArrayOptions'] = {
-                'FacetEnabled': facet,
-                'ReturnEnabled': returnable,
-                'SearchEnabled': searchable
+                index["LiteralOptions"]["SourceField"] = source_field
+        elif field_type == "literal-array":
+            index["LiteralArrayOptions"] = {
+                "FacetEnabled": facet,
+                "ReturnEnabled": returnable,
+                "SearchEnabled": searchable,
             }
             if default:
-                index['LiteralArrayOptions']['DefaultValue'] = default
+                index["LiteralArrayOptions"]["DefaultValue"] = default
             if source_field:
-                index['LiteralArrayOptions']['SourceFields'] = \
-                    ','.join(source_field)
-        elif field_type == 'int':
-            index['IntOptions'] = {
-                'DefaultValue': default,
-                'FacetEnabled': facet,
-                'ReturnEnabled': returnable,
-                'SearchEnabled': searchable,
-                'SortEnabled': sortable
+                index["LiteralArrayOptions"]["SourceFields"] = ",".join(source_field)
+        elif field_type == "int":
+            index["IntOptions"] = {
+                "DefaultValue": default,
+                "FacetEnabled": facet,
+                "ReturnEnabled": returnable,
+                "SearchEnabled": searchable,
+                "SortEnabled": sortable,
             }
             if default:
-                index['IntOptions']['DefaultValue'] = default
+                index["IntOptions"]["DefaultValue"] = default
             if source_field:
-                index['IntOptions']['SourceField'] = source_field
-        elif field_type == 'int-array':
-            index['IntArrayOptions'] = {
-                'FacetEnabled': facet,
-                'ReturnEnabled': returnable,
-                'SearchEnabled': searchable
+                index["IntOptions"]["SourceField"] = source_field
+        elif field_type == "int-array":
+            index["IntArrayOptions"] = {
+                "FacetEnabled": facet,
+                "ReturnEnabled": returnable,
+                "SearchEnabled": searchable,
             }
             if default:
-                index['IntArrayOptions']['DefaultValue'] = default
+                index["IntArrayOptions"]["DefaultValue"] = default
             if source_field:
-                index['IntArrayOptions']['SourceFields'] = \
-                    ','.join(source_field)
-        elif field_type == 'date':
-            index['DateOptions'] = {
-                'FacetEnabled': facet,
-                'ReturnEnabled': returnable,
-                'SearchEnabled': searchable,
-                'SortEnabled': sortable
+                index["IntArrayOptions"]["SourceFields"] = ",".join(source_field)
+        elif field_type == "date":
+            index["DateOptions"] = {
+                "FacetEnabled": facet,
+                "ReturnEnabled": returnable,
+                "SearchEnabled": searchable,
+                "SortEnabled": sortable,
             }
             if default:
-                index['DateOptions']['DefaultValue'] = default
+                index["DateOptions"]["DefaultValue"] = default
             if source_field:
-                index['DateOptions']['SourceField'] = source_field
-        elif field_type == 'date-array':
-            index['DateArrayOptions'] = {
-                'FacetEnabled': facet,
-                'ReturnEnabled': returnable,
-                'SearchEnabled': searchable
+                index["DateOptions"]["SourceField"] = source_field
+        elif field_type == "date-array":
+            index["DateArrayOptions"] = {
+                "FacetEnabled": facet,
+                "ReturnEnabled": returnable,
+                "SearchEnabled": searchable,
             }
             if default:
-                index['DateArrayOptions']['DefaultValue'] = default
+                index["DateArrayOptions"]["DefaultValue"] = default
             if source_field:
-                index['DateArrayOptions']['SourceFields'] = \
-                    ','.join(source_field)
-        elif field_type == 'double':
-            index['DoubleOptions'] = {
-                'FacetEnabled': facet,
-                'ReturnEnabled': returnable,
-                'SearchEnabled': searchable,
-                'SortEnabled': sortable
+                index["DateArrayOptions"]["SourceFields"] = ",".join(source_field)
+        elif field_type == "double":
+            index["DoubleOptions"] = {
+                "FacetEnabled": facet,
+                "ReturnEnabled": returnable,
+                "SearchEnabled": searchable,
+                "SortEnabled": sortable,
             }
             if default:
-                index['DoubleOptions']['DefaultValue'] = default
+                index["DoubleOptions"]["DefaultValue"] = default
             if source_field:
-                index['DoubleOptions']['SourceField'] = source_field
-        elif field_type == 'double-array':
-            index['DoubleArrayOptions'] = {
-                'FacetEnabled': facet,
-                'ReturnEnabled': returnable,
-                'SearchEnabled': searchable
+                index["DoubleOptions"]["SourceField"] = source_field
+        elif field_type == "double-array":
+            index["DoubleArrayOptions"] = {
+                "FacetEnabled": facet,
+                "ReturnEnabled": returnable,
+                "SearchEnabled": searchable,
             }
             if default:
-                index['DoubleArrayOptions']['DefaultValue'] = default
+                index["DoubleArrayOptions"]["DefaultValue"] = default
             if source_field:
-                index['DoubleArrayOptions']['SourceFields'] = \
-                    ','.join(source_field)
-        elif field_type == 'text':
-            index['TextOptions'] = {
-                'ReturnEnabled': returnable,
-                'HighlightEnabled': highlight,
-                'SortEnabled': sortable
+                index["DoubleArrayOptions"]["SourceFields"] = ",".join(source_field)
+        elif field_type == "text":
+            index["TextOptions"] = {
+                "ReturnEnabled": returnable,
+                "HighlightEnabled": highlight,
+                "SortEnabled": sortable,
             }
             if default:
-                index['TextOptions']['DefaultValue'] = default
+                index["TextOptions"]["DefaultValue"] = default
             if source_field:
-                index['TextOptions']['SourceField'] = source_field
+                index["TextOptions"]["SourceField"] = source_field
             if analysis_scheme:
-                index['TextOptions']['AnalysisScheme'] = analysis_scheme
-        elif field_type == 'text-array':
-            index['TextArrayOptions'] = {
-                'ReturnEnabled': returnable,
-                'HighlightEnabled': highlight
+                index["TextOptions"]["AnalysisScheme"] = analysis_scheme
+        elif field_type == "text-array":
+            index["TextArrayOptions"] = {
+                "ReturnEnabled": returnable,
+                "HighlightEnabled": highlight,
             }
             if default:
-                index['TextArrayOptions']['DefaultValue'] = default
+                index["TextArrayOptions"]["DefaultValue"] = default
             if source_field:
-                index['TextArrayOptions']['SourceFields'] = \
-                    ','.join(source_field)
+                index["TextArrayOptions"]["SourceFields"] = ",".join(source_field)
             if analysis_scheme:
-                index['TextArrayOptions']['AnalysisScheme'] = analysis_scheme
-        elif field_type == 'latlon':
-            index['LatLonOptions'] = {
-                'FacetEnabled': facet,
-                'ReturnEnabled': returnable,
-                'SearchEnabled': searchable,
-                'SortEnabled': sortable
+                index["TextArrayOptions"]["AnalysisScheme"] = analysis_scheme
+        elif field_type == "latlon":
+            index["LatLonOptions"] = {
+                "FacetEnabled": facet,
+                "ReturnEnabled": returnable,
+                "SearchEnabled": searchable,
+                "SortEnabled": sortable,
             }
             if default:
-                index['LatLonOptions']['DefaultValue'] = default
+                index["LatLonOptions"]["DefaultValue"] = default
             if source_field:
-                index['LatLonOptions']['SourceField'] = source_field
+                index["LatLonOptions"]["SourceField"] = source_field
 
         data = self.layer1.define_index_field(self.name, index)
 
-        data = (data['DefineIndexFieldResponse']
-                    ['DefineIndexFieldResult']
-                    ['IndexField'])
+        data = data["DefineIndexFieldResponse"]["DefineIndexFieldResult"]["IndexField"]
 
-        return IndexFieldStatus(self, data,
-                                self.layer1.describe_index_fields)
+        return IndexFieldStatus(self, data, self.layer1.describe_index_fields)
 
     def get_expressions(self, names=None):
         """
@@ -460,9 +469,9 @@ class Domain(object):
         fn = self.layer1.describe_expressions
         data = fn(self.name, names)
 
-        data = (data['DescribeExpressionsResponse']
-                    ['DescribeExpressionsResult']
-                    ['Expressions'])
+        data = data["DescribeExpressionsResponse"]["DescribeExpressionsResult"][
+            "Expressions"
+        ]
 
         return [ExpressionStatus(self, d, fn) for d in data]
 
@@ -525,12 +534,9 @@ class Domain(object):
         """
         data = self.layer1.define_expression(self.name, name, value)
 
-        data = (data['DefineExpressionResponse']
-                    ['DefineExpressionResult']
-                    ['Expression'])
+        data = data["DefineExpressionResponse"]["DefineExpressionResult"]["Expression"]
 
-        return ExpressionStatus(self, data,
-                                self.layer1.describe_expressions)
+        return ExpressionStatus(self, data, self.layer1.describe_expressions)
 
     def get_document_service(self):
         return DocumentServiceConnection(domain=self)
@@ -539,4 +545,4 @@ class Domain(object):
         return SearchConnection(domain=self)
 
     def __repr__(self):
-        return '<Domain: %s>' % self.domain_name
+        return "<Domain: %s>" % self.domain_name

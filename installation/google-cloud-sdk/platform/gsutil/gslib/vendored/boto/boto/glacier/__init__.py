@@ -33,9 +33,11 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.glacier.layer2 import Layer2
-    return get_regions('glacier', connection_cls=Layer2)
+
+    return get_regions("glacier", connection_cls=Layer2)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.glacier.layer2 import Layer2
-    return connect('glacier', region_name, connection_cls=Layer2, **kw_params)
+
+    return connect("glacier", region_name, connection_cls=Layer2, **kw_params)

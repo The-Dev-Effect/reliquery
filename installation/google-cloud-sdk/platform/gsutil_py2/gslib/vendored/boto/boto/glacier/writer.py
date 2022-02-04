@@ -25,6 +25,7 @@
 import hashlib
 
 from boto.glacier.utils import chunk_hashes, tree_hash, bytes_to_hex
+
 # This import is provided for backwards compatibility.  This function is
 # now in boto.glacier.utils, but any existing code can still import
 # this directly from this module.
@@ -46,6 +47,7 @@ class _Partitioner(object):
     call.
 
     """
+
     def __init__(self, part_size, send_fn):
         self.part_size = part_size
         self.send_fn = send_fn
@@ -53,7 +55,7 @@ class _Partitioner(object):
         self._buffer_size = 0
 
     def write(self, data):
-        if data == b'':
+        if data == b"":
             return
         self._buffer.append(data)
         self._buffer_size += len(data)
@@ -61,17 +63,17 @@ class _Partitioner(object):
             self._send_part()
 
     def _send_part(self):
-        data = b''.join(self._buffer)
+        data = b"".join(self._buffer)
         # Put back any data remaining over the part size into the
         # buffer
         if len(data) > self.part_size:
-            self._buffer = [data[self.part_size:]]
+            self._buffer = [data[self.part_size :]]
             self._buffer_size = len(self._buffer[0])
         else:
             self._buffer = []
             self._buffer_size = 0
         # The part we will send
-        part = data[:self.part_size]
+        part = data[: self.part_size]
         self.send_fn(part)
 
     def flush(self):
@@ -86,6 +88,7 @@ class _Uploader(object):
     the upload.
 
     """
+
     def __init__(self, vault, upload_id, part_size, chunk_size=_ONE_MEGABYTE):
         self.vault = vault
         self.upload_id = upload_id
@@ -120,13 +123,15 @@ class _Uploader(object):
         hex_tree_hash = bytes_to_hex(part_tree_hash)
         linear_hash = hashlib.sha256(part_data).hexdigest()
         start = self.part_size * part_index
-        content_range = (start,
-                         (start + len(part_data)) - 1)
-        response = self.vault.layer1.upload_part(self.vault.name,
-                                                 self.upload_id,
-                                                 linear_hash,
-                                                 hex_tree_hash,
-                                                 content_range, part_data)
+        content_range = (start, (start + len(part_data)) - 1)
+        response = self.vault.layer1.upload_part(
+            self.vault.name,
+            self.upload_id,
+            linear_hash,
+            hex_tree_hash,
+            content_range,
+            part_data,
+        )
         response.read()
         self._uploaded_size += len(part_data)
 
@@ -155,21 +160,22 @@ class _Uploader(object):
         # Complete the multiplart glacier upload
         hex_tree_hash = bytes_to_hex(tree_hash(self._tree_hashes))
         response = self.vault.layer1.complete_multipart_upload(
-            self.vault.name, self.upload_id, hex_tree_hash,
-            self._uploaded_size)
-        self.archive_id = response['ArchiveId']
+            self.vault.name, self.upload_id, hex_tree_hash, self._uploaded_size
+        )
+        self.archive_id = response["ArchiveId"]
         self.closed = True
 
 
 def generate_parts_from_fobj(fobj, part_size):
     data = fobj.read(part_size)
     while data:
-        yield data.encode('utf-8')
+        yield data.encode("utf-8")
         data = fobj.read(part_size)
 
 
-def resume_file_upload(vault, upload_id, part_size, fobj, part_hash_map,
-                       chunk_size=_ONE_MEGABYTE):
+def resume_file_upload(
+    vault, upload_id, part_size, fobj, part_hash_map, chunk_size=_ONE_MEGABYTE
+):
     """Resume upload of a file already part-uploaded to Glacier.
 
     The resumption of an upload where the part-uploaded section is empty is a
@@ -190,11 +196,12 @@ def resume_file_upload(vault, upload_id, part_size, fobj, part_hash_map,
 
     """
     uploader = _Uploader(vault, upload_id, part_size, chunk_size)
-    for part_index, part_data in enumerate(
-            generate_parts_from_fobj(fobj, part_size)):
+    for part_index, part_data in enumerate(generate_parts_from_fobj(fobj, part_size)):
         part_tree_hash = tree_hash(chunk_hashes(part_data, chunk_size))
-        if (part_index not in part_hash_map or
-                part_hash_map[part_index] != part_tree_hash):
+        if (
+            part_index not in part_hash_map
+            or part_hash_map[part_index] != part_tree_hash
+        ):
             uploader.upload_part(part_index, part_data)
         else:
             uploader.skip_part(part_index, part_tree_hash, len(part_data))
@@ -207,6 +214,7 @@ class Writer(object):
     Presents a file-like object for writing to a Amazon Glacier
     Archive. The data is written using the multi-part upload API.
     """
+
     def __init__(self, vault, upload_id, part_size, chunk_size=_ONE_MEGABYTE):
         self.uploader = _Uploader(vault, upload_id, part_size, chunk_size)
         self.partitioner = _Partitioner(part_size, self._upload_part)

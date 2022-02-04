@@ -1,14 +1,25 @@
 import boto
 from boto.dynamodb2 import exceptions
-from boto.dynamodb2.fields import (HashKey, RangeKey,
-                                   AllIndex, KeysOnlyIndex, IncludeIndex,
-                                   GlobalAllIndex, GlobalKeysOnlyIndex,
-                                   GlobalIncludeIndex)
+from boto.dynamodb2.fields import (
+    HashKey,
+    RangeKey,
+    AllIndex,
+    KeysOnlyIndex,
+    IncludeIndex,
+    GlobalAllIndex,
+    GlobalKeysOnlyIndex,
+    GlobalIncludeIndex,
+)
 from boto.dynamodb2.items import Item
 from boto.dynamodb2.layer1 import DynamoDBConnection
 from boto.dynamodb2.results import ResultSet, BatchGetResultSet
-from boto.dynamodb2.types import (NonBooleanDynamizer, Dynamizer, FILTER_OPERATORS,
-                                  QUERY_OPERATORS, STRING)
+from boto.dynamodb2.types import (
+    NonBooleanDynamizer,
+    Dynamizer,
+    FILTER_OPERATORS,
+    QUERY_OPERATORS,
+    STRING,
+)
 from boto.exception import JSONResponseError
 
 
@@ -22,6 +33,7 @@ class Table(object):
     namespaced for use in your application. For example, you might have a
     ``users`` table or a ``forums`` table.
     """
+
     max_batch_get = 100
 
     _PROJECTION_TYPE_TO_INDEX = dict(
@@ -29,15 +41,23 @@ class Table(object):
             ALL=GlobalAllIndex,
             KEYS_ONLY=GlobalKeysOnlyIndex,
             INCLUDE=GlobalIncludeIndex,
-        ), local_indexes=dict(
+        ),
+        local_indexes=dict(
             ALL=AllIndex,
             KEYS_ONLY=KeysOnlyIndex,
             INCLUDE=IncludeIndex,
-        )
+        ),
     )
 
-    def __init__(self, table_name, schema=None, throughput=None, indexes=None,
-                 global_indexes=None, connection=None):
+    def __init__(
+        self,
+        table_name,
+        schema=None,
+        throughput=None,
+        indexes=None,
+        global_indexes=None,
+        connection=None,
+    ):
         """
         Sets up a new in-memory ``Table``.
 
@@ -108,8 +128,8 @@ class Table(object):
         self.table_name = table_name
         self.connection = connection
         self.throughput = {
-            'read': 5,
-            'write': 5,
+            "read": 5,
+            "write": 5,
         }
         self.schema = schema
         self.indexes = indexes
@@ -127,8 +147,15 @@ class Table(object):
         self._dynamizer = Dynamizer()
 
     @classmethod
-    def create(cls, table_name, schema, throughput=None, indexes=None,
-               global_indexes=None, connection=None):
+    def create(
+        cls,
+        table_name,
+        schema,
+        throughput=None,
+        indexes=None,
+        global_indexes=None,
+        connection=None,
+    ):
         """
         Creates a new table in DynamoDB & returns an in-memory ``Table`` object.
 
@@ -216,16 +243,16 @@ class Table(object):
             attr_defs.append(field.definition())
 
         raw_throughput = {
-            'ReadCapacityUnits': int(table.throughput['read']),
-            'WriteCapacityUnits': int(table.throughput['write']),
+            "ReadCapacityUnits": int(table.throughput["read"]),
+            "WriteCapacityUnits": int(table.throughput["write"]),
         }
         kwargs = {}
 
         kwarg_map = {
-            'indexes': 'local_secondary_indexes',
-            'global_indexes': 'global_secondary_indexes',
+            "indexes": "local_secondary_indexes",
+            "global_indexes": "global_secondary_indexes",
         }
-        for index_attr in ('indexes', 'global_indexes'):
+        for index_attr in ("indexes", "global_indexes"):
             table_indexes = getattr(table, index_attr)
             if table_indexes:
                 raw_indexes = []
@@ -259,23 +286,19 @@ class Table(object):
 
         if raw_attributes:
             for field in raw_attributes:
-                sane_attributes[field['AttributeName']] = field['AttributeType']
+                sane_attributes[field["AttributeName"]] = field["AttributeType"]
 
         for field in raw_schema:
-            data_type = sane_attributes.get(field['AttributeName'], STRING)
+            data_type = sane_attributes.get(field["AttributeName"], STRING)
 
-            if field['KeyType'] == 'HASH':
-                schema.append(
-                    HashKey(field['AttributeName'], data_type=data_type)
-                )
-            elif field['KeyType'] == 'RANGE':
-                schema.append(
-                    RangeKey(field['AttributeName'], data_type=data_type)
-                )
+            if field["KeyType"] == "HASH":
+                schema.append(HashKey(field["AttributeName"], data_type=data_type))
+            elif field["KeyType"] == "RANGE":
+                schema.append(RangeKey(field["AttributeName"], data_type=data_type))
             else:
                 raise exceptions.UnknownSchemaFieldError(
                     "%s was seen, but is unknown. Please report this at "
-                    "https://github.com/boto/boto/issues." % field['KeyType']
+                    "https://github.com/boto/boto/issues." % field["KeyType"]
                 )
 
         return schema
@@ -288,27 +311,25 @@ class Table(object):
         indexes = []
 
         for field in raw_indexes:
-            index_klass = map_indexes_projection.get('ALL')
-            kwargs = {
-                'parts': []
-            }
+            index_klass = map_indexes_projection.get("ALL")
+            kwargs = {"parts": []}
 
-            if field['Projection']['ProjectionType'] == 'ALL':
-                index_klass = map_indexes_projection.get('ALL')
-            elif field['Projection']['ProjectionType'] == 'KEYS_ONLY':
-                index_klass = map_indexes_projection.get('KEYS_ONLY')
-            elif field['Projection']['ProjectionType'] == 'INCLUDE':
-                index_klass = map_indexes_projection.get('INCLUDE')
-                kwargs['includes'] = field['Projection']['NonKeyAttributes']
+            if field["Projection"]["ProjectionType"] == "ALL":
+                index_klass = map_indexes_projection.get("ALL")
+            elif field["Projection"]["ProjectionType"] == "KEYS_ONLY":
+                index_klass = map_indexes_projection.get("KEYS_ONLY")
+            elif field["Projection"]["ProjectionType"] == "INCLUDE":
+                index_klass = map_indexes_projection.get("INCLUDE")
+                kwargs["includes"] = field["Projection"]["NonKeyAttributes"]
             else:
                 raise exceptions.UnknownIndexFieldError(
                     "%s was seen, but is unknown. Please report this at "
-                    "https://github.com/boto/boto/issues." % \
-                    field['Projection']['ProjectionType']
+                    "https://github.com/boto/boto/issues."
+                    % field["Projection"]["ProjectionType"]
                 )
 
-            name = field['IndexName']
-            kwargs['parts'] = self._introspect_schema(field['KeySchema'], None)
+            name = field["IndexName"]
+            kwargs["parts"] = self._introspect_schema(field["KeySchema"], None)
             indexes.append(index_klass(name, **kwargs))
 
         return indexes
@@ -319,7 +340,8 @@ class Table(object):
         out & build the high-level Python objects that represent them.
         """
         return self._introspect_all_indexes(
-            raw_indexes, self._PROJECTION_TYPE_TO_INDEX.get('local_indexes'))
+            raw_indexes, self._PROJECTION_TYPE_TO_INDEX.get("local_indexes")
+        )
 
     def _introspect_global_indexes(self, raw_global_indexes):
         """
@@ -327,8 +349,8 @@ class Table(object):
         out & build the high-level Python objects that represent them.
         """
         return self._introspect_all_indexes(
-            raw_global_indexes,
-            self._PROJECTION_TYPE_TO_INDEX.get('global_indexes'))
+            raw_global_indexes, self._PROJECTION_TYPE_TO_INDEX.get("global_indexes")
+        )
 
     def describe(self):
         """
@@ -357,23 +379,23 @@ class Table(object):
 
         # Blindly update throughput, since what's on DynamoDB's end is likely
         # more correct.
-        raw_throughput = result['Table']['ProvisionedThroughput']
-        self.throughput['read'] = int(raw_throughput['ReadCapacityUnits'])
-        self.throughput['write'] = int(raw_throughput['WriteCapacityUnits'])
+        raw_throughput = result["Table"]["ProvisionedThroughput"]
+        self.throughput["read"] = int(raw_throughput["ReadCapacityUnits"])
+        self.throughput["write"] = int(raw_throughput["WriteCapacityUnits"])
 
         if not self.schema:
             # Since we have the data, build the schema.
-            raw_schema = result['Table'].get('KeySchema', [])
-            raw_attributes = result['Table'].get('AttributeDefinitions', [])
+            raw_schema = result["Table"].get("KeySchema", [])
+            raw_attributes = result["Table"].get("AttributeDefinitions", [])
             self.schema = self._introspect_schema(raw_schema, raw_attributes)
 
         if not self.indexes:
             # Build the index information as well.
-            raw_indexes = result['Table'].get('LocalSecondaryIndexes', [])
+            raw_indexes = result["Table"].get("LocalSecondaryIndexes", [])
             self.indexes = self._introspect_indexes(raw_indexes)
 
         # Build the global index information as well.
-        raw_global_indexes = result['Table'].get('GlobalSecondaryIndexes', [])
+        raw_global_indexes = result["Table"].get("GlobalSecondaryIndexes", [])
         self.global_indexes = self._introspect_global_indexes(raw_global_indexes)
 
         # This is leaky.
@@ -423,8 +445,8 @@ class Table(object):
         if throughput:
             self.throughput = throughput
             data = {
-                'ReadCapacityUnits': int(self.throughput['read']),
-                'WriteCapacityUnits': int(self.throughput['write']),
+                "ReadCapacityUnits": int(self.throughput["read"]),
+                "WriteCapacityUnits": int(self.throughput["write"]),
             }
 
         gsi_data = None
@@ -433,15 +455,17 @@ class Table(object):
             gsi_data = []
 
             for gsi_name, gsi_throughput in global_indexes.items():
-                gsi_data.append({
-                    "Update": {
-                        "IndexName": gsi_name,
-                        "ProvisionedThroughput": {
-                            "ReadCapacityUnits": int(gsi_throughput['read']),
-                            "WriteCapacityUnits": int(gsi_throughput['write']),
+                gsi_data.append(
+                    {
+                        "Update": {
+                            "IndexName": gsi_name,
+                            "ProvisionedThroughput": {
+                                "ReadCapacityUnits": int(gsi_throughput["read"]),
+                                "WriteCapacityUnits": int(gsi_throughput["write"]),
+                            },
                         },
-                    },
-                })
+                    }
+                )
 
         if throughput or global_indexes:
             self.connection.update_table(
@@ -452,8 +476,10 @@ class Table(object):
 
             return True
         else:
-            msg = 'You need to provide either the throughput or the ' \
-                  'global_indexes to update method'
+            msg = (
+                "You need to provide either the throughput or the "
+                "global_indexes to update method"
+            )
             boto.log.error(msg)
 
             return False
@@ -492,9 +518,7 @@ class Table(object):
             gsi_data = []
             gsi_data_attr_def = []
 
-            gsi_data.append({
-                "Create": global_index.schema()
-            })
+            gsi_data.append({"Create": global_index.schema()})
 
             for attr_def in global_index.parts:
                 gsi_data_attr_def.append(attr_def.definition())
@@ -502,13 +526,15 @@ class Table(object):
             self.connection.update_table(
                 self.table_name,
                 global_secondary_index_updates=gsi_data,
-                attribute_definitions=gsi_data_attr_def
+                attribute_definitions=gsi_data_attr_def,
             )
 
             return True
         else:
-            msg = 'You need to provide the global_index to ' \
-                  'create_global_secondary_index method'
+            msg = (
+                "You need to provide the global_index to "
+                "create_global_secondary_index method"
+            )
             boto.log.error(msg)
 
             return False
@@ -534,13 +560,7 @@ class Table(object):
         """
 
         if global_index_name:
-            gsi_data = [
-                {
-                    "Delete": {
-                        "IndexName": global_index_name
-                    }
-                }
-            ]
+            gsi_data = [{"Delete": {"IndexName": global_index_name}}]
 
             self.connection.update_table(
                 self.table_name,
@@ -549,8 +569,10 @@ class Table(object):
 
             return True
         else:
-            msg = 'You need to provide the global index name to ' \
-                  'delete_global_secondary_index method'
+            msg = (
+                "You need to provide the global index name to "
+                "delete_global_secondary_index method"
+            )
             boto.log.error(msg)
 
             return False
@@ -586,15 +608,17 @@ class Table(object):
             gsi_data = []
 
             for gsi_name, gsi_throughput in global_indexes.items():
-                gsi_data.append({
-                    "Update": {
-                        "IndexName": gsi_name,
-                        "ProvisionedThroughput": {
-                            "ReadCapacityUnits": int(gsi_throughput['read']),
-                            "WriteCapacityUnits": int(gsi_throughput['write']),
+                gsi_data.append(
+                    {
+                        "Update": {
+                            "IndexName": gsi_name,
+                            "ProvisionedThroughput": {
+                                "ReadCapacityUnits": int(gsi_throughput["read"]),
+                                "WriteCapacityUnits": int(gsi_throughput["write"]),
+                            },
                         },
-                    },
-                })
+                    }
+                )
 
             self.connection.update_table(
                 self.table_name,
@@ -602,8 +626,10 @@ class Table(object):
             )
             return True
         else:
-            msg = 'You need to provide the global indexes to ' \
-                  'update_global_secondary_index method'
+            msg = (
+                "You need to provide the global indexes to "
+                "update_global_secondary_index method"
+            )
             boto.log.error(msg)
 
             return False
@@ -703,9 +729,9 @@ class Table(object):
             self.table_name,
             raw_key,
             attributes_to_get=attributes,
-            consistent_read=consistent
+            consistent_read=consistent,
         )
-        if 'Item' not in item_data:
+        if "Item" not in item_data:
             raise exceptions.ItemNotFound("Item %s couldn't be found." % kwargs)
         item = Item(self)
         item.load(item_data)
@@ -831,7 +857,7 @@ class Table(object):
         kwargs = {}
 
         if expects is not None:
-            kwargs['expected'] = expects
+            kwargs["expected"] = expects
 
         self.connection.put_item(self.table_name, item_data, **kwargs)
         return True
@@ -847,7 +873,7 @@ class Table(object):
         kwargs = {}
 
         if expects is not None:
-            kwargs['expected'] = expects
+            kwargs["expected"] = expects
 
         self.connection.update_item(self.table_name, raw_key, item_data, **kwargs)
         return True
@@ -908,9 +934,12 @@ class Table(object):
         raw_key = self._encode_keys(kwargs)
 
         try:
-            self.connection.delete_item(self.table_name, raw_key,
-                                        expected=expected,
-                                        conditional_operator=conditional_operator)
+            self.connection.delete_item(
+                self.table_name,
+                raw_key,
+                expected=expected,
+                conditional_operator=conditional_operator,
+            )
         except exceptions.ConditionalCheckFailedException:
             return False
 
@@ -998,61 +1027,65 @@ class Table(object):
         filters = {}
 
         for field_and_op, value in filter_kwargs.items():
-            field_bits = field_and_op.split('__')
-            fieldname = '__'.join(field_bits[:-1])
+            field_bits = field_and_op.split("__")
+            fieldname = "__".join(field_bits[:-1])
 
             try:
                 op = using[field_bits[-1]]
             except KeyError:
                 raise exceptions.UnknownFilterTypeError(
-                    "Operator '%s' from '%s' is not recognized." % (
-                        field_bits[-1],
-                        field_and_op
-                    )
+                    "Operator '%s' from '%s' is not recognized."
+                    % (field_bits[-1], field_and_op)
                 )
 
             lookup = {
-                'AttributeValueList': [],
-                'ComparisonOperator': op,
+                "AttributeValueList": [],
+                "ComparisonOperator": op,
             }
 
             # Special-case the ``NULL/NOT_NULL`` case.
-            if field_bits[-1] == 'null':
-                del lookup['AttributeValueList']
+            if field_bits[-1] == "null":
+                del lookup["AttributeValueList"]
 
                 if value is False:
-                    lookup['ComparisonOperator'] = 'NOT_NULL'
+                    lookup["ComparisonOperator"] = "NOT_NULL"
                 else:
-                    lookup['ComparisonOperator'] = 'NULL'
+                    lookup["ComparisonOperator"] = "NULL"
             # Special-case the ``BETWEEN`` case.
-            elif field_bits[-1] == 'between':
+            elif field_bits[-1] == "between":
                 if len(value) == 2 and isinstance(value, (list, tuple)):
-                    lookup['AttributeValueList'].append(
+                    lookup["AttributeValueList"].append(
                         self._dynamizer.encode(value[0])
                     )
-                    lookup['AttributeValueList'].append(
+                    lookup["AttributeValueList"].append(
                         self._dynamizer.encode(value[1])
                     )
             # Special-case the ``IN`` case
-            elif field_bits[-1] == 'in':
+            elif field_bits[-1] == "in":
                 for val in value:
-                    lookup['AttributeValueList'].append(self._dynamizer.encode(val))
+                    lookup["AttributeValueList"].append(self._dynamizer.encode(val))
             else:
                 # Fix up the value for encoding, because it was built to only work
                 # with ``set``s.
                 if isinstance(value, (list, tuple)):
                     value = set(value)
-                lookup['AttributeValueList'].append(
-                    self._dynamizer.encode(value)
-                )
+                lookup["AttributeValueList"].append(self._dynamizer.encode(value))
 
             # Finally, insert it into the filters.
             filters[fieldname] = lookup
 
         return filters
 
-    def query(self, limit=None, index=None, reverse=False, consistent=False,
-              attributes=None, max_page_size=None, **filter_kwargs):
+    def query(
+        self,
+        limit=None,
+        index=None,
+        reverse=False,
+        consistent=False,
+        attributes=None,
+        max_page_size=None,
+        **filter_kwargs
+    ):
         """
         **WARNING:** This method is provided **strictly** for
         backward-compatibility. It returns results in an incorrect order.
@@ -1060,14 +1093,28 @@ class Table(object):
         If you are writing new code, please use ``Table.query_2``.
         """
         reverse = not reverse
-        return self.query_2(limit=limit, index=index, reverse=reverse,
-                            consistent=consistent, attributes=attributes,
-                            max_page_size=max_page_size, **filter_kwargs)
+        return self.query_2(
+            limit=limit,
+            index=index,
+            reverse=reverse,
+            consistent=consistent,
+            attributes=attributes,
+            max_page_size=max_page_size,
+            **filter_kwargs
+        )
 
-    def query_2(self, limit=None, index=None, reverse=False,
-                consistent=False, attributes=None, max_page_size=None,
-                query_filter=None, conditional_operator=None,
-                **filter_kwargs):
+    def query_2(
+        self,
+        limit=None,
+        index=None,
+        reverse=False,
+        consistent=False,
+        attributes=None,
+        max_page_size=None,
+        query_filter=None,
+        conditional_operator=None,
+        **filter_kwargs
+    ):
         """
         Queries for a set of matching items in a DynamoDB table.
 
@@ -1182,30 +1229,38 @@ class Table(object):
                         )
 
         if attributes is not None:
-            select = 'SPECIFIC_ATTRIBUTES'
+            select = "SPECIFIC_ATTRIBUTES"
         else:
             select = None
 
-        results = ResultSet(
-            max_page_size=max_page_size
-        )
+        results = ResultSet(max_page_size=max_page_size)
         kwargs = filter_kwargs.copy()
-        kwargs.update({
-            'limit': limit,
-            'index': index,
-            'reverse': reverse,
-            'consistent': consistent,
-            'select': select,
-            'attributes_to_get': attributes,
-            'query_filter': query_filter,
-            'conditional_operator': conditional_operator,
-        })
+        kwargs.update(
+            {
+                "limit": limit,
+                "index": index,
+                "reverse": reverse,
+                "consistent": consistent,
+                "select": select,
+                "attributes_to_get": attributes,
+                "query_filter": query_filter,
+                "conditional_operator": conditional_operator,
+            }
+        )
         results.to_call(self._query, **kwargs)
         return results
 
-    def query_count(self, index=None, consistent=False, conditional_operator=None,
-                    query_filter=None, scan_index_forward=True, limit=None,
-                    exclusive_start_key=None, **filter_kwargs):
+    def query_count(
+        self,
+        index=None,
+        consistent=False,
+        conditional_operator=None,
+        query_filter=None,
+        scan_index_forward=True,
+        limit=None,
+        exclusive_start_key=None,
+        **filter_kwargs
+    ):
         """
         Queries the exact count of matching items in a DynamoDB table.
 
@@ -1274,15 +1329,9 @@ class Table(object):
             2
 
         """
-        key_conditions = self._build_filters(
-            filter_kwargs,
-            using=QUERY_OPERATORS
-        )
+        key_conditions = self._build_filters(filter_kwargs, using=QUERY_OPERATORS)
 
-        built_query_filter = self._build_filters(
-            query_filter,
-            using=FILTER_OPERATORS
-        )
+        built_query_filter = self._build_filters(query_filter, using=FILTER_OPERATORS)
 
         count_buffer = 0
         last_evaluated_key = exclusive_start_key
@@ -1292,87 +1341,100 @@ class Table(object):
                 self.table_name,
                 index_name=index,
                 consistent_read=consistent,
-                select='COUNT',
+                select="COUNT",
                 key_conditions=key_conditions,
                 query_filter=built_query_filter,
                 conditional_operator=conditional_operator,
                 limit=limit,
                 scan_index_forward=scan_index_forward,
-                exclusive_start_key=last_evaluated_key
+                exclusive_start_key=last_evaluated_key,
             )
 
-            count_buffer += int(raw_results.get('Count', 0))
-            last_evaluated_key = raw_results.get('LastEvaluatedKey')
+            count_buffer += int(raw_results.get("Count", 0))
+            last_evaluated_key = raw_results.get("LastEvaluatedKey")
             if not last_evaluated_key or count_buffer < 1:
                 break
 
         return count_buffer
 
-    def _query(self, limit=None, index=None, reverse=False, consistent=False,
-               exclusive_start_key=None, select=None, attributes_to_get=None,
-               query_filter=None, conditional_operator=None, **filter_kwargs):
+    def _query(
+        self,
+        limit=None,
+        index=None,
+        reverse=False,
+        consistent=False,
+        exclusive_start_key=None,
+        select=None,
+        attributes_to_get=None,
+        query_filter=None,
+        conditional_operator=None,
+        **filter_kwargs
+    ):
         """
         The internal method that performs the actual queries. Used extensively
         by ``ResultSet`` to perform each (paginated) request.
         """
         kwargs = {
-            'limit': limit,
-            'index_name': index,
-            'consistent_read': consistent,
-            'select': select,
-            'attributes_to_get': attributes_to_get,
-            'conditional_operator': conditional_operator,
+            "limit": limit,
+            "index_name": index,
+            "consistent_read": consistent,
+            "select": select,
+            "attributes_to_get": attributes_to_get,
+            "conditional_operator": conditional_operator,
         }
 
         if reverse:
-            kwargs['scan_index_forward'] = False
+            kwargs["scan_index_forward"] = False
 
         if exclusive_start_key:
-            kwargs['exclusive_start_key'] = {}
+            kwargs["exclusive_start_key"] = {}
 
             for key, value in exclusive_start_key.items():
-                kwargs['exclusive_start_key'][key] = \
-                    self._dynamizer.encode(value)
+                kwargs["exclusive_start_key"][key] = self._dynamizer.encode(value)
 
         # Convert the filters into something we can actually use.
-        kwargs['key_conditions'] = self._build_filters(
-            filter_kwargs,
-            using=QUERY_OPERATORS
+        kwargs["key_conditions"] = self._build_filters(
+            filter_kwargs, using=QUERY_OPERATORS
         )
 
-        kwargs['query_filter'] = self._build_filters(
-            query_filter,
-            using=FILTER_OPERATORS
+        kwargs["query_filter"] = self._build_filters(
+            query_filter, using=FILTER_OPERATORS
         )
 
-        raw_results = self.connection.query(
-            self.table_name,
-            **kwargs
-        )
+        raw_results = self.connection.query(self.table_name, **kwargs)
         results = []
         last_key = None
 
-        for raw_item in raw_results.get('Items', []):
+        for raw_item in raw_results.get("Items", []):
             item = Item(self)
-            item.load({
-                'Item': raw_item,
-            })
+            item.load(
+                {
+                    "Item": raw_item,
+                }
+            )
             results.append(item)
 
-        if raw_results.get('LastEvaluatedKey', None):
+        if raw_results.get("LastEvaluatedKey", None):
             last_key = {}
 
-            for key, value in raw_results['LastEvaluatedKey'].items():
+            for key, value in raw_results["LastEvaluatedKey"].items():
                 last_key[key] = self._dynamizer.decode(value)
 
         return {
-            'results': results,
-            'last_key': last_key,
+            "results": results,
+            "last_key": last_key,
         }
 
-    def scan(self, limit=None, segment=None, total_segments=None,
-             max_page_size=None, attributes=None, conditional_operator=None,
-             **filter_kwargs):
+    def scan(
+        self,
+        limit=None,
+        segment=None,
+        total_segments=None,
+        max_page_size=None,
+        attributes=None,
+        conditional_operator=None,
+        **filter_kwargs
+    ):
         """
         Scans across all items within a DynamoDB table.
 
@@ -1434,71 +1496,75 @@ class Table(object):
             'Alice'
 
         """
-        results = ResultSet(
-            max_page_size=max_page_size
-        )
+        results = ResultSet(max_page_size=max_page_size)
         kwargs = filter_kwargs.copy()
-        kwargs.update({
-            'limit': limit,
-            'segment': segment,
-            'total_segments': total_segments,
-            'attributes': attributes,
-            'conditional_operator': conditional_operator,
-        })
+        kwargs.update(
+            {
+                "limit": limit,
+                "segment": segment,
+                "total_segments": total_segments,
+                "attributes": attributes,
+                "conditional_operator": conditional_operator,
+            }
+        )
         results.to_call(self._scan, **kwargs)
         return results
 
-    def _scan(self, limit=None, exclusive_start_key=None, segment=None,
-              total_segments=None, attributes=None, conditional_operator=None,
-              **filter_kwargs):
+    def _scan(
+        self,
+        limit=None,
+        exclusive_start_key=None,
+        segment=None,
+        total_segments=None,
+        attributes=None,
+        conditional_operator=None,
+        **filter_kwargs
+    ):
         """
         The internal method that performs the actual scan. Used extensively
         by ``ResultSet`` to perform each (paginated) request.
         """
         kwargs = {
-            'limit': limit,
-            'segment': segment,
-            'total_segments': total_segments,
-            'attributes_to_get': attributes,
-            'conditional_operator': conditional_operator,
+            "limit": limit,
+            "segment": segment,
+            "total_segments": total_segments,
+            "attributes_to_get": attributes,
+            "conditional_operator": conditional_operator,
         }
 
         if exclusive_start_key:
-            kwargs['exclusive_start_key'] = {}
+            kwargs["exclusive_start_key"] = {}
 
             for key, value in exclusive_start_key.items():
-                kwargs['exclusive_start_key'][key] = \
-                    self._dynamizer.encode(value)
+                kwargs["exclusive_start_key"][key] = self._dynamizer.encode(value)
 
         # Convert the filters into something we can actually use.
-        kwargs['scan_filter'] = self._build_filters(
-            filter_kwargs,
-            using=FILTER_OPERATORS
+        kwargs["scan_filter"] = self._build_filters(
+            filter_kwargs, using=FILTER_OPERATORS
         )
 
-        raw_results = self.connection.scan(
-            self.table_name,
-            **kwargs
-        )
+        raw_results = self.connection.scan(self.table_name, **kwargs)
         results = []
         last_key = None
 
-        for raw_item in raw_results.get('Items', []):
+        for raw_item in raw_results.get("Items", []):
             item = Item(self)
-            item.load({
-                'Item': raw_item,
-            })
+            item.load(
+                {
+                    "Item": raw_item,
+                }
+            )
             results.append(item)
 
-        if raw_results.get('LastEvaluatedKey', None):
+        if raw_results.get("LastEvaluatedKey", None):
             last_key = {}
 
-            for key, value in raw_results['LastEvaluatedKey'].items():
+            for key, value in raw_results["LastEvaluatedKey"].items():
                 last_key[key] = self._dynamizer.decode(value)
 
         return {
-            'results': results,
-            'last_key': last_key,
+            "results": results,
+            "last_key": last_key,
         }
 
     def batch_get(self, keys, consistent=False, attributes=None):
@@ -1552,15 +1618,15 @@ class Table(object):
         """
         items = {
             self.table_name: {
-                'Keys': [],
+                "Keys": [],
             },
         }
 
         if consistent:
-            items[self.table_name]['ConsistentRead'] = True
+            items[self.table_name]["ConsistentRead"] = True
 
         if attributes is not None:
-            items[self.table_name]['AttributesToGet'] = attributes
+            items[self.table_name]["AttributesToGet"] = attributes
 
         for key_data in keys:
             raw_key = {}
@@ -1568,22 +1634,26 @@ class Table(object):
             for key, value in key_data.items():
                 raw_key[key] = self._dynamizer.encode(value)
 
-            items[self.table_name]['Keys'].append(raw_key)
+            items[self.table_name]["Keys"].append(raw_key)
 
         raw_results = self.connection.batch_get_item(request_items=items)
         results = []
         unprocessed_keys = []
 
-        for raw_item in raw_results['Responses'].get(self.table_name, []):
+        for raw_item in raw_results["Responses"].get(self.table_name, []):
             item = Item(self)
-            item.load({
-                'Item': raw_item,
-            })
+            item.load(
+                {
+                    "Item": raw_item,
+                }
+            )
             results.append(item)
 
-        raw_unprocessed = raw_results.get('UnprocessedKeys', {}).get(self.table_name, {})
+        raw_unprocessed = raw_results.get("UnprocessedKeys", {}).get(
+            self.table_name, {}
+        )
 
-        for raw_key in raw_unprocessed.get('Keys', []):
+        for raw_key in raw_unprocessed.get("Keys", []):
             py_key = {}
 
             for key, value in raw_key.items():
@@ -1592,12 +1662,12 @@ class Table(object):
             unprocessed_keys.append(py_key)
 
         return {
-            'results': results,
+            "results": results,
             # NEVER return a ``last_key``. Just in-case any part of
             # ``ResultSet`` peeks through, since much of the
             # original underlying implementation is based on this key.
-            'last_key': None,
-            'unprocessed_keys': unprocessed_keys,
+            "last_key": None,
+            "unprocessed_keys": unprocessed_keys,
         }
 
     def count(self):
@@ -1614,7 +1684,7 @@ class Table(object):
 
         """
         info = self.describe()
-        return info['Table'].get('ItemCount', 0)
+        return info["Table"].get("ItemCount", 0)
 
 
 class BatchTable(object):
@@ -1623,6 +1693,7 @@ class BatchTable(object):
 
     You likely don't want to try to use this object directly.
     """
+
     def __init__(self, table):
         self.table = table
         self._to_put = []
@@ -1668,18 +1739,22 @@ class BatchTable(object):
 
         for put in self._to_put:
             item = Item(self.table, data=put)
-            batch_data[self.table.table_name].append({
-                'PutRequest': {
-                    'Item': item.prepare_full(),
+            batch_data[self.table.table_name].append(
+                {
+                    "PutRequest": {
+                        "Item": item.prepare_full(),
+                    }
                 }
-            })
+            )
 
         for delete in self._to_delete:
-            batch_data[self.table.table_name].append({
-                'DeleteRequest': {
-                    'Key': self.table._encode_keys(delete),
+            batch_data[self.table.table_name].append(
+                {
+                    "DeleteRequest": {
+                        "Key": self.table._encode_keys(delete),
+                    }
                 }
-            })
+            )
 
         resp = self.table.connection.batch_write_item(batch_data)
         self.handle_unprocessed(resp)
@@ -1689,9 +1764,9 @@ class BatchTable(object):
         return True
 
     def handle_unprocessed(self, resp):
-        if len(resp.get('UnprocessedItems', [])):
+        if len(resp.get("UnprocessedItems", [])):
             table_name = self.table.table_name
-            unprocessed = resp['UnprocessedItems'].get(table_name, [])
+            unprocessed = resp["UnprocessedItems"].get(table_name, [])
 
             # Some items have not been processed. Stow them for now &
             # re-attempt processing on ``__exit__``.
@@ -1703,21 +1778,15 @@ class BatchTable(object):
         # If there are unprocessed records (for instance, the user was over
         # their throughput limitations), iterate over them & send until they're
         # all there.
-        boto.log.info(
-            "Re-sending %s unprocessed items." % len(self._unprocessed)
-        )
+        boto.log.info("Re-sending %s unprocessed items." % len(self._unprocessed))
 
         while len(self._unprocessed):
             # Again, do 25 at a time.
             to_resend = self._unprocessed[:25]
             # Remove them from the list.
             self._unprocessed = self._unprocessed[25:]
-            batch_data = {
-                self.table.table_name: to_resend
-            }
+            batch_data = {self.table.table_name: to_resend}
             boto.log.info("Sending %s items" % len(to_resend))
             resp = self.table.connection.batch_write_item(batch_data)
             self.handle_unprocessed(resp)
-            boto.log.info(
-                "%s unprocessed items left" % len(self._unprocessed)
-            )
+            boto.log.info("%s unprocessed items left" % len(self._unprocessed))

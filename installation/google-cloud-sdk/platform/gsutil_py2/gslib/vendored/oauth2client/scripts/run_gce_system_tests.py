@@ -25,7 +25,6 @@ from oauth2client.contrib import gce
 
 
 class TestComputeEngine(unittest.TestCase):
-
     def test_application_default(self):
         default_creds = client.GoogleCredentials.get_application_default()
         self.assertIsInstance(default_creds, gce.AppAssertionCredentials)
@@ -40,17 +39,20 @@ class TestComputeEngine(unittest.TestCase):
         self.assertIsNotNone(credentials.access_token)
 
         # Then check the access token against the token info API.
-        query_params = {'access_token': credentials.access_token}
-        token_uri = (oauth2client.GOOGLE_TOKEN_INFO_URI + '?' +
-                     urllib.parse.urlencode(query_params))
+        query_params = {"access_token": credentials.access_token}
+        token_uri = (
+            oauth2client.GOOGLE_TOKEN_INFO_URI
+            + "?"
+            + urllib.parse.urlencode(query_params)
+        )
         response, content = transport.request(http, token_uri)
         self.assertEqual(response.status, http_client.OK)
 
-        content = content.decode('utf-8')
+        content = content.decode("utf-8")
         payload = json.loads(content)
-        self.assertEqual(payload['access_type'], 'offline')
-        self.assertLessEqual(int(payload['expires_in']), 3600)
+        self.assertEqual(payload["access_type"], "offline")
+        self.assertLessEqual(int(payload["expires_in"]), 3600)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

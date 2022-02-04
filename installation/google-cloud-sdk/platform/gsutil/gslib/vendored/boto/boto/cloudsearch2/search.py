@@ -25,10 +25,10 @@ from boto.compat import json, map, six
 import requests
 from boto.cloudsearchdomain.layer1 import CloudSearchDomainConnection
 
-SIMPLE = 'simple'
-STRUCTURED = 'structured'
-LUCENE = 'lucene'
-DISMAX = 'dismax'
+SIMPLE = "simple"
+STRUCTURED = "structured"
+LUCENE = "lucene"
+DISMAX = "dismax"
 
 
 class SearchServiceException(Exception):
@@ -37,19 +37,25 @@ class SearchServiceException(Exception):
 
 class SearchResults(object):
     def __init__(self, **attrs):
-        self.rid = attrs['status']['rid']
-        self.time_ms = attrs['status']['time-ms']
-        self.hits = attrs['hits']['found']
-        self.docs = attrs['hits']['hit']
-        self.start = attrs['hits']['start']
-        self.query = attrs['query']
-        self.search_service = attrs['search_service']
+        self.rid = attrs["status"]["rid"]
+        self.time_ms = attrs["status"]["time-ms"]
+        self.hits = attrs["hits"]["found"]
+        self.docs = attrs["hits"]["hit"]
+        self.start = attrs["hits"]["start"]
+        self.query = attrs["query"]
+        self.search_service = attrs["search_service"]
 
         self.facets = {}
-        if 'facets' in attrs:
-            for (facet, values) in attrs['facets'].items():
-                if 'buckets' in values:
-                    self.facets[facet] = dict((k, v) for (k, v) in map(lambda x: (x['value'], x['count']), values.get('buckets', [])))
+        if "facets" in attrs:
+            for (facet, values) in attrs["facets"].items():
+                if "buckets" in values:
+                    self.facets[facet] = dict(
+                        (k, v)
+                        for (k, v) in map(
+                            lambda x: (x["value"], x["count"]),
+                            values.get("buckets", []),
+                        )
+                    )
 
         self.num_pages_needed = ceil(self.hits / self.query.real_size)
 
@@ -77,9 +83,21 @@ class Query(object):
 
     RESULTS_PER_PAGE = 500
 
-    def __init__(self, q=None, parser=None, fq=None, expr=None,
-                 return_fields=None, size=10, start=0, sort=None,
-                 facet=None, highlight=None, partial=None, options=None):
+    def __init__(
+        self,
+        q=None,
+        parser=None,
+        fq=None,
+        expr=None,
+        return_fields=None,
+        size=10,
+        start=0,
+        sort=None,
+        facet=None,
+        highlight=None,
+        partial=None,
+        options=None,
+    ):
 
         self.q = q
         self.parser = parser
@@ -97,8 +115,11 @@ class Query(object):
 
     def update_size(self, new_size):
         self.size = new_size
-        self.real_size = Query.RESULTS_PER_PAGE if (self.size >
-            Query.RESULTS_PER_PAGE or self.size == 0) else self.size
+        self.real_size = (
+            Query.RESULTS_PER_PAGE
+            if (self.size > Query.RESULTS_PER_PAGE or self.size == 0)
+            else self.size
+        )
 
     def to_params(self):
         """Transform search parameters from instance properties to a dictionary
@@ -106,42 +127,42 @@ class Query(object):
         :rtype: dict
         :return: search parameters
         """
-        params = {'start': self.start, 'size': self.real_size}
+        params = {"start": self.start, "size": self.real_size}
 
         if self.q:
-            params['q'] = self.q
+            params["q"] = self.q
 
         if self.parser:
-            params['q.parser'] = self.parser
+            params["q.parser"] = self.parser
 
         if self.fq:
-            params['fq'] = self.fq
+            params["fq"] = self.fq
 
         if self.expr:
             for k, v in six.iteritems(self.expr):
-                params['expr.%s' % k] = v
+                params["expr.%s" % k] = v
 
         if self.facet:
             for k, v in six.iteritems(self.facet):
                 if not isinstance(v, six.string_types):
                     v = json.dumps(v)
-                params['facet.%s' % k] = v
+                params["facet.%s" % k] = v
 
         if self.highlight:
             for k, v in six.iteritems(self.highlight):
-                params['highlight.%s' % k] = v
+                params["highlight.%s" % k] = v
 
         if self.options:
-            params['q.options'] = self.options
+            params["q.options"] = self.options
 
         if self.return_fields:
-            params['return'] = ','.join(self.return_fields)
+            params["return"] = ",".join(self.return_fields)
 
         if self.partial is not None:
-            params['partial'] = self.partial
+            params["partial"] = self.partial
 
         if self.sort:
-            params['sort'] = ','.join(self.sort)
+            params["sort"] = ",".join(self.sort)
 
         return params
 
@@ -153,57 +174,56 @@ class Query(object):
         :rtype: dict
         :return: search parameters
         """
-        params = {'start': self.start, 'size': self.real_size}
+        params = {"start": self.start, "size": self.real_size}
 
         if self.q:
-            params['q'] = self.q
+            params["q"] = self.q
 
         if self.parser:
-            params['query_parser'] = self.parser
+            params["query_parser"] = self.parser
 
         if self.fq:
-            params['filter_query'] = self.fq
+            params["filter_query"] = self.fq
 
         if self.expr:
             expr = {}
             for k, v in six.iteritems(self.expr):
-                expr['expr.%s' % k] = v
+                expr["expr.%s" % k] = v
 
-            params['expr'] = expr
+            params["expr"] = expr
 
         if self.facet:
             facet = {}
             for k, v in six.iteritems(self.facet):
                 if not isinstance(v, six.string_types):
                     v = json.dumps(v)
-                facet['facet.%s' % k] = v
+                facet["facet.%s" % k] = v
 
-            params['facet'] = facet
+            params["facet"] = facet
 
         if self.highlight:
             highlight = {}
             for k, v in six.iteritems(self.highlight):
-                highlight['highlight.%s' % k] = v
+                highlight["highlight.%s" % k] = v
 
-            params['highlight'] = highlight
+            params["highlight"] = highlight
 
         if self.options:
-            params['query_options'] = self.options
+            params["query_options"] = self.options
 
         if self.return_fields:
-            params['ret'] = ','.join(self.return_fields)
+            params["ret"] = ",".join(self.return_fields)
 
         if self.partial is not None:
-            params['partial'] = self.partial
+            params["partial"] = self.partial
 
         if self.sort:
-            params['sort'] = ','.join(self.sort)
+            params["sort"] = ",".join(self.sort)
 
         return params
 
 
 class SearchConnection(object):
-
     def __init__(self, domain=None, endpoint=None):
         self.domain = domain
         self.endpoint = endpoint
@@ -217,9 +237,11 @@ class SearchConnection(object):
         self.sign_request = False
         if self.domain and self.domain.layer1:
             if self.domain.layer1.use_proxy:
-                self.session.proxies['http'] = self.domain.layer1.get_proxy_url_with_auth()
+                self.session.proxies[
+                    "http"
+                ] = self.domain.layer1.get_proxy_url_with_auth()
 
-            self.sign_request = getattr(self.domain.layer1, 'sign_request', False)
+            self.sign_request = getattr(self.domain.layer1, "sign_request", False)
 
             if self.sign_request:
                 layer1 = self.domain.layer1
@@ -228,19 +250,54 @@ class SearchConnection(object):
                     aws_access_key_id=layer1.aws_access_key_id,
                     aws_secret_access_key=layer1.aws_secret_access_key,
                     region=layer1.region,
-                    provider=layer1.provider
+                    provider=layer1.provider,
                 )
 
-    def build_query(self, q=None, parser=None, fq=None, rank=None, return_fields=None,
-                    size=10, start=0, facet=None, highlight=None, sort=None,
-                    partial=None, options=None):
-        return Query(q=q, parser=parser, fq=fq, expr=rank, return_fields=return_fields,
-                     size=size, start=start, facet=facet, highlight=highlight,
-                     sort=sort, partial=partial, options=options)
+    def build_query(
+        self,
+        q=None,
+        parser=None,
+        fq=None,
+        rank=None,
+        return_fields=None,
+        size=10,
+        start=0,
+        facet=None,
+        highlight=None,
+        sort=None,
+        partial=None,
+        options=None,
+    ):
+        return Query(
+            q=q,
+            parser=parser,
+            fq=fq,
+            expr=rank,
+            return_fields=return_fields,
+            size=size,
+            start=start,
+            facet=facet,
+            highlight=highlight,
+            sort=sort,
+            partial=partial,
+            options=options,
+        )
 
-    def search(self, q=None, parser=None, fq=None, rank=None, return_fields=None,
-               size=10, start=0, facet=None, highlight=None, sort=None, partial=None,
-               options=None):
+    def search(
+        self,
+        q=None,
+        parser=None,
+        fq=None,
+        rank=None,
+        return_fields=None,
+        size=10,
+        start=0,
+        facet=None,
+        highlight=None,
+        sort=None,
+        partial=None,
+        options=None,
+    ):
         """
         Send a query to CloudSearch
 
@@ -328,11 +385,20 @@ class SearchConnection(object):
         >>> search(q='Tim', facet={'Author': '{sort:"bucket", size:3}'})
         """
 
-        query = self.build_query(q=q, parser=parser, fq=fq, rank=rank,
-                                 return_fields=return_fields,
-                                 size=size, start=start, facet=facet,
-                                 highlight=highlight, sort=sort,
-                                 partial=partial, options=options)
+        query = self.build_query(
+            q=q,
+            parser=parser,
+            fq=fq,
+            rank=rank,
+            return_fields=return_fields,
+            size=size,
+            start=start,
+            facet=facet,
+            highlight=highlight,
+            sort=sort,
+            partial=partial,
+            options=options,
+        )
         return self(query)
 
     def _search_with_auth(self, params):
@@ -342,7 +408,7 @@ class SearchConnection(object):
         url = "http://%s/%s/search" % (self.endpoint, api_version)
         resp = self.session.get(url, params=params)
 
-        return {'body': resp.content.decode('utf-8'), 'status_code': resp.status_code}
+        return {"body": resp.content.decode("utf-8"), "status_code": resp.status_code}
 
     def __call__(self, query):
         """Make a call to CloudSearch
@@ -353,7 +419,7 @@ class SearchConnection(object):
         :rtype: :class:`boto.cloudsearch2.search.SearchResults`
         :return: search results
         """
-        api_version = '2013-01-01'
+        api_version = "2013-01-01"
         if self.domain and self.domain.layer1:
             api_version = self.domain.layer1.APIVersion
 
@@ -362,34 +428,42 @@ class SearchConnection(object):
         else:
             r = self._search_without_auth(query.to_params(), api_version)
 
-            _body = r['body']
-            _status_code = r['status_code']
+            _body = r["body"]
+            _status_code = r["status_code"]
 
             try:
                 data = json.loads(_body)
             except ValueError:
                 if _status_code == 403:
-                    msg = ''
+                    msg = ""
                     import re
-                    g = re.search('<html><body><h1>403 Forbidden</h1>([^<]+)<', _body)
+
+                    g = re.search("<html><body><h1>403 Forbidden</h1>([^<]+)<", _body)
                     try:
-                        msg = ': %s' % (g.groups()[0].strip())
+                        msg = ": %s" % (g.groups()[0].strip())
                     except AttributeError:
                         pass
-                    raise SearchServiceException('Authentication error from Amazon%s' % msg)
-                raise SearchServiceException("Got non-json response from Amazon. %s" % _body, query)
+                    raise SearchServiceException(
+                        "Authentication error from Amazon%s" % msg
+                    )
+                raise SearchServiceException(
+                    "Got non-json response from Amazon. %s" % _body, query
+                )
 
-        if 'messages' in data and 'error' in data:
-            for m in data['messages']:
-                if m['severity'] == 'fatal':
-                    raise SearchServiceException("Error processing search %s "
-                        "=> %s" % (params, m['message']), query)
-        elif 'error' in data:
-            raise SearchServiceException("Unknown error processing search %s"
-                % json.dumps(data), query)
+        if "messages" in data and "error" in data:
+            for m in data["messages"]:
+                if m["severity"] == "fatal":
+                    raise SearchServiceException(
+                        "Error processing search %s " "=> %s" % (params, m["message"]),
+                        query,
+                    )
+        elif "error" in data:
+            raise SearchServiceException(
+                "Unknown error processing search %s" % json.dumps(data), query
+            )
 
-        data['query'] = query
-        data['search_service'] = self
+        data["query"] = query
+        data["search_service"] = self
 
         return SearchResults(**data)
 

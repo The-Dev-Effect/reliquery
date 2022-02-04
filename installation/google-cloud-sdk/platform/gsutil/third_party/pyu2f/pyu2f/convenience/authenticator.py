@@ -22,32 +22,33 @@ from pyu2f.convenience import localauthenticator
 
 
 def CreateCompositeAuthenticator(origin):
-  authenticators = [customauthenticator.CustomAuthenticator(origin),
-                    localauthenticator.LocalAuthenticator(origin)]
-  return CompositeAuthenticator(authenticators)
+    authenticators = [
+        customauthenticator.CustomAuthenticator(origin),
+        localauthenticator.LocalAuthenticator(origin),
+    ]
+    return CompositeAuthenticator(authenticators)
 
 
 class CompositeAuthenticator(baseauthenticator.BaseAuthenticator):
-  """Composes multiple authenticators into a single authenticator.
+    """Composes multiple authenticators into a single authenticator.
 
-  Priority is based on the order of the list initialized with the instance.
-  """
+    Priority is based on the order of the list initialized with the instance.
+    """
 
-  def __init__(self, authenticators):
-    self.authenticators = authenticators
+    def __init__(self, authenticators):
+        self.authenticators = authenticators
 
-  def Authenticate(self, app_id, challenge_data,
-                   print_callback=sys.stderr.write):
-    """See base class."""
-    for authenticator in self.authenticators:
-      if authenticator.IsAvailable():
-        result = authenticator.Authenticate(app_id,
-                                            challenge_data,
-                                            print_callback)
-        return result
+    def Authenticate(self, app_id, challenge_data, print_callback=sys.stderr.write):
+        """See base class."""
+        for authenticator in self.authenticators:
+            if authenticator.IsAvailable():
+                result = authenticator.Authenticate(
+                    app_id, challenge_data, print_callback
+                )
+                return result
 
-    raise ValueError('No valid authenticators found')
+        raise ValueError("No valid authenticators found")
 
-  def IsAvailable(self):
-    """See base class."""
-    return True
+    def IsAvailable(self):
+        """See base class."""
+        return True

@@ -10,18 +10,18 @@ from pyasn1 import __version__
 from pyasn1 import error
 from pyasn1.compat.octets import octs2ints
 
-__all__ = ['Debug', 'setLogger', 'hexdump']
+__all__ = ["Debug", "setLogger", "hexdump"]
 
 flagNone = 0x0000
 flagEncoder = 0x0001
 flagDecoder = 0x0002
-flagAll = 0xffff
+flagAll = 0xFFFF
 
 flagMap = {
-    'none': flagNone,
-    'encoder': flagEncoder,
-    'decoder': flagDecoder,
-    'all': flagAll
+    "none": flagNone,
+    "encoder": flagEncoder,
+    "decoder": flagDecoder,
+    "all": flagAll,
 }
 
 
@@ -29,7 +29,7 @@ class Printer(object):
     # noinspection PyShadowingNames
     def __init__(self, logger=None, handler=None, formatter=None):
         if logger is None:
-            logger = logging.getLogger('pyasn1')
+            logger = logging.getLogger("pyasn1")
 
         logger.setLevel(logging.DEBUG)
 
@@ -37,7 +37,7 @@ class Printer(object):
             handler = logging.StreamHandler()
 
         if formatter is None:
-            formatter = logging.Formatter('%(asctime)s %(name)s: %(message)s')
+            formatter = logging.Formatter("%(asctime)s %(name)s: %(message)s")
 
         handler.setFormatter(formatter)
         handler.setLevel(logging.DEBUG)
@@ -49,10 +49,10 @@ class Printer(object):
         self.__logger.debug(msg)
 
     def __str__(self):
-        return '<python logging>'
+        return "<python logging>"
 
 
-if hasattr(logging, 'NullHandler'):
+if hasattr(logging, "NullHandler"):
     NullHandler = logging.NullHandler
 
 else:
@@ -68,23 +68,24 @@ class Debug(object):
     def __init__(self, *flags, **options):
         self._flags = flagNone
 
-        if 'loggerName' in options:
+        if "loggerName" in options:
             # route our logs to parent logger
             self._printer = Printer(
-                logger=logging.getLogger(options['loggerName']),
-                handler=NullHandler()
+                logger=logging.getLogger(options["loggerName"]), handler=NullHandler()
             )
 
-        elif 'printer' in options:
-            self._printer = options.get('printer')
+        elif "printer" in options:
+            self._printer = options.get("printer")
 
         else:
             self._printer = self.defaultPrinter
 
-        self._printer('running pyasn1 %s, debug flags %s' % (__version__, ', '.join(flags)))
+        self._printer(
+            "running pyasn1 %s, debug flags %s" % (__version__, ", ".join(flags))
+        )
 
         for flag in flags:
-            inverse = flag and flag[0] in ('!', '~')
+            inverse = flag and flag[0] in ("!", "~")
             if inverse:
                 flag = flag[1:]
             try:
@@ -93,12 +94,14 @@ class Debug(object):
                 else:
                     self._flags |= flagMap[flag]
             except KeyError:
-                raise error.PyAsn1Error('bad debug flag %s' % flag)
+                raise error.PyAsn1Error("bad debug flag %s" % flag)
 
-            self._printer("debug category '%s' %s" % (flag, inverse and 'disabled' or 'enabled'))
+            self._printer(
+                "debug category '%s' %s" % (flag, inverse and "disabled" or "enabled")
+            )
 
     def __str__(self):
-        return 'logger %s, flags %x' % (self._printer, self._flags)
+        return "logger %s, flags %x" % (self._printer, self._flags)
 
     def __call__(self, msg):
         self._printer(msg)
@@ -123,9 +126,11 @@ def setLogger(userLogger):
 
 
 def hexdump(octets):
-    return ' '.join(
-        ['%s%.2X' % (n % 16 == 0 and ('\n%.5d: ' % n) or '', x)
-         for n, x in zip(range(len(octets)), octs2ints(octets))]
+    return " ".join(
+        [
+            "%s%.2X" % (n % 16 == 0 and ("\n%.5d: " % n) or "", x)
+            for n, x in zip(range(len(octets)), octs2ints(octets))
+        ]
     )
 
 
@@ -133,7 +138,8 @@ class Scope(object):
     def __init__(self):
         self._list = []
 
-    def __str__(self): return '.'.join(self._list)
+    def __str__(self):
+        return ".".join(self._list)
 
     def push(self, token):
         self._list.append(token)

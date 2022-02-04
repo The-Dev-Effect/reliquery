@@ -79,7 +79,7 @@ def chunk_hashes(bytestring, chunk_size=_MEGABYTE):
         end = (i + 1) * chunk_size
         hashes.append(hashlib.sha256(bytestring[start:end]).digest())
     if not hashes:
-        return [hashlib.sha256(b'').digest()]
+        return [hashlib.sha256(b"").digest()]
     return hashes
 
 
@@ -125,8 +125,8 @@ def compute_hashes_from_fileobj(fileobj, chunk_size=1024 * 1024):
 
     """
     # Python 3+, not binary
-    if six.PY3 and hasattr(fileobj, 'mode') and 'b' not in fileobj.mode:
-        raise ValueError('File-like object must be opened in binary mode!')
+    if six.PY3 and hasattr(fileobj, "mode") and "b" not in fileobj.mode:
+        raise ValueError("File-like object must be opened in binary mode!")
 
     linear_hash = hashlib.sha256()
     chunks = []
@@ -136,12 +136,12 @@ def compute_hashes_from_fileobj(fileobj, chunk_size=1024 * 1024):
         # above) and returns something other than bytes (e.g. str). So here
         # we try to catch that and encode to bytes.
         if not isinstance(chunk, bytes):
-            chunk = chunk.encode(getattr(fileobj, 'encoding', '') or 'utf-8')
+            chunk = chunk.encode(getattr(fileobj, "encoding", "") or "utf-8")
         linear_hash.update(chunk)
         chunks.append(hashlib.sha256(chunk).digest())
         chunk = fileobj.read(chunk_size)
     if not chunks:
-        chunks = [hashlib.sha256(b'').digest()]
+        chunks = [hashlib.sha256(b"").digest()]
     return linear_hash.hexdigest(), bytes_to_hex(tree_hash(chunks))
 
 

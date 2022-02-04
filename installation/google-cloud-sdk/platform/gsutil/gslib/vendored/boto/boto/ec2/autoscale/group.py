@@ -33,13 +33,13 @@ class ProcessType(object):
         self.process_name = None
 
     def __repr__(self):
-        return 'ProcessType(%s)' % self.process_name
+        return "ProcessType(%s)" % self.process_name
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'ProcessName':
+        if name == "ProcessName":
             self.process_name = value
 
 
@@ -50,15 +50,15 @@ class SuspendedProcess(object):
         self.reason = None
 
     def __repr__(self):
-        return 'SuspendedProcess(%s, %s)' % (self.process_name, self.reason)
+        return "SuspendedProcess(%s, %s)" % (self.process_name, self.reason)
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'ProcessName':
+        if name == "ProcessName":
             self.process_name = value
-        elif name == 'SuspensionReason':
+        elif name == "SuspensionReason":
             self.reason = value
 
 
@@ -69,37 +69,48 @@ class EnabledMetric(object):
         self.granularity = granularity
 
     def __repr__(self):
-        return 'EnabledMetric(%s, %s)' % (self.metric, self.granularity)
+        return "EnabledMetric(%s, %s)" % (self.metric, self.granularity)
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'Granularity':
+        if name == "Granularity":
             self.granularity = value
-        elif name == 'Metric':
+        elif name == "Metric":
             self.metric = value
 
 
 class TerminationPolicies(list):
-
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'member':
+        if name == "member":
             self.append(value)
 
 
 class AutoScalingGroup(object):
-    def __init__(self, connection=None, name=None,
-                 launch_config=None, availability_zones=None,
-                 load_balancers=None, default_cooldown=None,
-                 health_check_type=None, health_check_period=None,
-                 placement_group=None, vpc_zone_identifier=None,
-                 desired_capacity=None, min_size=None, max_size=None,
-                 tags=None, termination_policies=None, instance_id=None,
-                 **kwargs):
+    def __init__(
+        self,
+        connection=None,
+        name=None,
+        launch_config=None,
+        availability_zones=None,
+        load_balancers=None,
+        default_cooldown=None,
+        health_check_type=None,
+        health_check_period=None,
+        placement_group=None,
+        vpc_zone_identifier=None,
+        desired_capacity=None,
+        min_size=None,
+        max_size=None,
+        tags=None,
+        termination_policies=None,
+        instance_id=None,
+        **kwargs
+    ):
         """
         Creates a new AutoScalingGroup with the specified name.
 
@@ -166,13 +177,13 @@ class AutoScalingGroup(object):
         :rtype: :class:`boto.ec2.autoscale.group.AutoScalingGroup`
         :return: An autoscale group.
         """
-        self.name = name or kwargs.get('group_name')   # backwards compat
+        self.name = name or kwargs.get("group_name")  # backwards compat
         self.connection = connection
         self.min_size = int(min_size) if min_size is not None else None
         self.max_size = int(max_size) if max_size is not None else None
         self.created_time = None
         # backwards compatibility
-        default_cooldown = default_cooldown or kwargs.get('cooldown')
+        default_cooldown = default_cooldown or kwargs.get("cooldown")
         if default_cooldown is not None:
             default_cooldown = int(default_cooldown)
         self.default_cooldown = default_cooldown
@@ -189,7 +200,7 @@ class AutoScalingGroup(object):
         self.placement_group = placement_group
         self.autoscaling_group_arn = None
         if type(vpc_zone_identifier) is list:
-            vpc_zone_identifier = ','.join(vpc_zone_identifier)
+            vpc_zone_identifier = ",".join(vpc_zone_identifier)
         self.vpc_zone_identifier = vpc_zone_identifier
         self.instances = None
         self.tags = tags or None
@@ -207,59 +218,59 @@ class AutoScalingGroup(object):
     cooldown = property(_get_cooldown, _set_cooldown)
 
     def __repr__(self):
-        return 'AutoScaleGroup<%s>' % self.name
+        return "AutoScaleGroup<%s>" % self.name
 
     def startElement(self, name, attrs, connection):
-        if name == 'Instances':
-            self.instances = ResultSet([('member', Instance)])
+        if name == "Instances":
+            self.instances = ResultSet([("member", Instance)])
             return self.instances
-        elif name == 'LoadBalancerNames':
+        elif name == "LoadBalancerNames":
             return self.load_balancers
-        elif name == 'AvailabilityZones':
+        elif name == "AvailabilityZones":
             return self.availability_zones
-        elif name == 'EnabledMetrics':
-            self.enabled_metrics = ResultSet([('member', EnabledMetric)])
+        elif name == "EnabledMetrics":
+            self.enabled_metrics = ResultSet([("member", EnabledMetric)])
             return self.enabled_metrics
-        elif name == 'SuspendedProcesses':
-            self.suspended_processes = ResultSet([('member', SuspendedProcess)])
+        elif name == "SuspendedProcesses":
+            self.suspended_processes = ResultSet([("member", SuspendedProcess)])
             return self.suspended_processes
-        elif name == 'Tags':
-            self.tags = ResultSet([('member', Tag)])
+        elif name == "Tags":
+            self.tags = ResultSet([("member", Tag)])
             return self.tags
-        elif name == 'TerminationPolicies':
+        elif name == "TerminationPolicies":
             return self.termination_policies
         else:
             return
 
     def endElement(self, name, value, connection):
-        if name == 'MinSize':
+        if name == "MinSize":
             self.min_size = int(value)
-        elif name == 'AutoScalingGroupARN':
+        elif name == "AutoScalingGroupARN":
             self.autoscaling_group_arn = value
-        elif name == 'CreatedTime':
+        elif name == "CreatedTime":
             self.created_time = value
-        elif name == 'DefaultCooldown':
+        elif name == "DefaultCooldown":
             self.default_cooldown = int(value)
-        elif name == 'LaunchConfigurationName':
+        elif name == "LaunchConfigurationName":
             self.launch_config_name = value
-        elif name == 'DesiredCapacity':
+        elif name == "DesiredCapacity":
             self.desired_capacity = int(value)
-        elif name == 'MaxSize':
+        elif name == "MaxSize":
             self.max_size = int(value)
-        elif name == 'AutoScalingGroupName':
+        elif name == "AutoScalingGroupName":
             self.name = value
-        elif name == 'PlacementGroup':
+        elif name == "PlacementGroup":
             self.placement_group = value
-        elif name == 'HealthCheckGracePeriod':
+        elif name == "HealthCheckGracePeriod":
             try:
                 self.health_check_period = int(value)
             except ValueError:
                 self.health_check_period = None
-        elif name == 'HealthCheckType':
+        elif name == "HealthCheckType":
             self.health_check_type = value
-        elif name == 'VPCZoneIdentifier':
+        elif name == "VPCZoneIdentifier":
             self.vpc_zone_identifier = value
-        elif name == 'InstanceId':
+        elif name == "InstanceId":
             self.instance_id = value
         else:
             setattr(self, name, value)
@@ -268,10 +279,8 @@ class AutoScalingGroup(object):
         """
         Set the desired capacity for the group.
         """
-        params = {'AutoScalingGroupName': self.name,
-                  'DesiredCapacity': capacity}
-        req = self.connection.get_object('SetDesiredCapacity', params,
-                                         Request)
+        params = {"AutoScalingGroupName": self.name, "DesiredCapacity": capacity}
+        req = self.connection.get_object("SetDesiredCapacity", params, Request)
         self.connection.last_request = req
         return req
 
@@ -279,7 +288,7 @@ class AutoScalingGroup(object):
         """
         Sync local changes with AutoScaling group.
         """
-        return self.connection._update_group('UpdateAutoScalingGroup', self)
+        return self.connection._update_group("UpdateAutoScalingGroup", self)
 
     def shutdown_instances(self):
         """
@@ -296,15 +305,13 @@ class AutoScalingGroup(object):
         Delete this auto-scaling group if no instances attached or no
         scaling activities in progress.
         """
-        return self.connection.delete_auto_scaling_group(self.name,
-                                                         force_delete)
+        return self.connection.delete_auto_scaling_group(self.name, force_delete)
 
     def get_activities(self, activity_ids=None, max_records=50):
         """
         Get all activies for this group.
         """
-        return self.connection.get_all_activities(self, activity_ids,
-                                                  max_records)
+        return self.connection.get_all_activities(self, activity_ids, max_records)
 
     def put_notification_configuration(self, topic, notification_types):
         """
@@ -316,9 +323,9 @@ class AutoScalingGroup(object):
         'autoscaling:EC2_INSTANCE_TERMINATE_ERROR',
         'autoscaling:TEST_NOTIFICATION'
         """
-        return self.connection.put_notification_configuration(self,
-                                                              topic,
-                                                              notification_types)
+        return self.connection.put_notification_configuration(
+            self, topic, notification_types
+        )
 
     def delete_notification_configuration(self, topic):
         """
@@ -347,15 +354,15 @@ class AutoScalingGroupMetric(object):
         self.granularity = None
 
     def __repr__(self):
-        return 'AutoScalingGroupMetric:%s' % self.metric
+        return "AutoScalingGroupMetric:%s" % self.metric
 
     def startElement(self, name, attrs, connection):
         return
 
     def endElement(self, name, value, connection):
-        if name == 'Metric':
+        if name == "Metric":
             self.metric = value
-        elif name == 'Granularity':
+        elif name == "Granularity":
             self.granularity = value
         else:
             setattr(self, name, value)

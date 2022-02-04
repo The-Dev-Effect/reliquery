@@ -43,25 +43,37 @@ class TestDescribeSubnets(AWSMockServiceTestCase):
     def test_get_all_subnets(self):
         self.set_http_response(status_code=200)
         api_response = self.service_connection.get_all_subnets(
-            ['subnet-9d4a7b6c', 'subnet-6e7f829e'],
-            filters=OrderedDict([('state', 'available'),
-                     ('vpc-id', ['subnet-9d4a7b6c', 'subnet-6e7f829e'])]))
-        self.assert_request_parameters({
-            'Action': 'DescribeSubnets',
-            'SubnetId.1': 'subnet-9d4a7b6c',
-            'SubnetId.2': 'subnet-6e7f829e',
-            'Filter.1.Name': 'state',
-            'Filter.1.Value.1': 'available',
-            'Filter.2.Name': 'vpc-id',
-            'Filter.2.Value.1': 'subnet-9d4a7b6c',
-            'Filter.2.Value.2': 'subnet-6e7f829e'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp',
-                                  'Version'])
+            ["subnet-9d4a7b6c", "subnet-6e7f829e"],
+            filters=OrderedDict(
+                [
+                    ("state", "available"),
+                    ("vpc-id", ["subnet-9d4a7b6c", "subnet-6e7f829e"]),
+                ]
+            ),
+        )
+        self.assert_request_parameters(
+            {
+                "Action": "DescribeSubnets",
+                "SubnetId.1": "subnet-9d4a7b6c",
+                "SubnetId.2": "subnet-6e7f829e",
+                "Filter.1.Name": "state",
+                "Filter.1.Value.1": "available",
+                "Filter.2.Name": "vpc-id",
+                "Filter.2.Value.1": "subnet-9d4a7b6c",
+                "Filter.2.Value.2": "subnet-6e7f829e",
+            },
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
         self.assertEquals(len(api_response), 2)
         self.assertIsInstance(api_response[0], Subnet)
-        self.assertEqual(api_response[0].id, 'subnet-9d4a7b6c')
-        self.assertEqual(api_response[1].id, 'subnet-6e7f829e')
+        self.assertEqual(api_response[0].id, "subnet-9d4a7b6c")
+        self.assertEqual(api_response[1].id, "subnet-6e7f829e")
 
 
 class TestCreateSubnet(AWSMockServiceTestCase):
@@ -87,22 +99,30 @@ class TestCreateSubnet(AWSMockServiceTestCase):
     def test_create_subnet(self):
         self.set_http_response(status_code=200)
         api_response = self.service_connection.create_subnet(
-            'vpc-1a2b3c4d', '10.0.1.0/24', 'us-east-1a')
-        self.assert_request_parameters({
-            'Action': 'CreateSubnet',
-            'VpcId': 'vpc-1a2b3c4d',
-            'CidrBlock': '10.0.1.0/24',
-            'AvailabilityZone': 'us-east-1a'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp',
-                                  'Version'])
+            "vpc-1a2b3c4d", "10.0.1.0/24", "us-east-1a"
+        )
+        self.assert_request_parameters(
+            {
+                "Action": "CreateSubnet",
+                "VpcId": "vpc-1a2b3c4d",
+                "CidrBlock": "10.0.1.0/24",
+                "AvailabilityZone": "us-east-1a",
+            },
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
         self.assertIsInstance(api_response, Subnet)
-        self.assertEquals(api_response.id, 'subnet-9d4a7b6c')
-        self.assertEquals(api_response.state, 'pending')
-        self.assertEquals(api_response.vpc_id, 'vpc-1a2b3c4d')
-        self.assertEquals(api_response.cidr_block, '10.0.1.0/24')
+        self.assertEquals(api_response.id, "subnet-9d4a7b6c")
+        self.assertEquals(api_response.state, "pending")
+        self.assertEquals(api_response.vpc_id, "vpc-1a2b3c4d")
+        self.assertEquals(api_response.cidr_block, "10.0.1.0/24")
         self.assertEquals(api_response.available_ip_address_count, 251)
-        self.assertEquals(api_response.availability_zone, 'us-east-1a')
+        self.assertEquals(api_response.availability_zone, "us-east-1a")
 
 
 class TestDeleteSubnet(AWSMockServiceTestCase):
@@ -119,15 +139,19 @@ class TestDeleteSubnet(AWSMockServiceTestCase):
 
     def test_delete_subnet(self):
         self.set_http_response(status_code=200)
-        api_response = self.service_connection.delete_subnet('subnet-9d4a7b6c')
-        self.assert_request_parameters({
-            'Action': 'DeleteSubnet',
-            'SubnetId': 'subnet-9d4a7b6c'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp',
-                                  'Version'])
+        api_response = self.service_connection.delete_subnet("subnet-9d4a7b6c")
+        self.assert_request_parameters(
+            {"Action": "DeleteSubnet", "SubnetId": "subnet-9d4a7b6c"},
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
         self.assertEquals(api_response, True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

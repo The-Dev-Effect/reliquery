@@ -41,15 +41,15 @@ class SpotInstanceStateFault(object):
         self.message = message
 
     def __repr__(self):
-        return '(%s, %s)' % (self.code, self.message)
+        return "(%s, %s)" % (self.code, self.message)
 
     def startElement(self, name, attrs, connection):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'code':
+        if name == "code":
             self.code = value
-        elif name == 'message':
+        elif name == "message":
             self.message = value
         setattr(self, name, value)
 
@@ -69,17 +69,17 @@ class SpotInstanceStatus(object):
         self.message = message
 
     def __repr__(self):
-        return '<Status: %s>' % self.code
+        return "<Status: %s>" % self.code
 
     def startElement(self, name, attrs, connection):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'code':
+        if name == "code":
             self.code = value
-        elif name == 'message':
+        elif name == "message":
             self.message = value
-        elif name == 'updateTime':
+        elif name == "updateTime":
             self.update_time = value
 
 
@@ -138,55 +138,51 @@ class SpotInstanceRequest(TaggedEC2Object):
         self.status = None
 
     def __repr__(self):
-        return 'SpotInstanceRequest:%s' % self.id
+        return "SpotInstanceRequest:%s" % self.id
 
     def startElement(self, name, attrs, connection):
-        retval = super(SpotInstanceRequest, self).startElement(name, attrs,
-            connection)
+        retval = super(SpotInstanceRequest, self).startElement(name, attrs, connection)
         if retval is not None:
             return retval
-        if name == 'launchSpecification':
+        if name == "launchSpecification":
             self.launch_specification = LaunchSpecification(connection)
             return self.launch_specification
-        elif name == 'fault':
+        elif name == "fault":
             self.fault = SpotInstanceStateFault()
             return self.fault
-        elif name == 'status':
+        elif name == "status":
             self.status = SpotInstanceStatus()
             return self.status
         else:
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'spotInstanceRequestId':
+        if name == "spotInstanceRequestId":
             self.id = value
-        elif name == 'spotPrice':
+        elif name == "spotPrice":
             self.price = float(value)
-        elif name == 'type':
+        elif name == "type":
             self.type = value
-        elif name == 'state':
+        elif name == "state":
             self.state = value
-        elif name == 'validFrom':
+        elif name == "validFrom":
             self.valid_from = value
-        elif name == 'validUntil':
+        elif name == "validUntil":
             self.valid_until = value
-        elif name == 'launchGroup':
+        elif name == "launchGroup":
             self.launch_group = value
-        elif name == 'availabilityZoneGroup':
+        elif name == "availabilityZoneGroup":
             self.availability_zone_group = value
-        elif name == 'launchedAvailabilityZone':
+        elif name == "launchedAvailabilityZone":
             self.launched_availability_zone = value
-        elif name == 'instanceId':
+        elif name == "instanceId":
             self.instance_id = value
-        elif name == 'createTime':
+        elif name == "createTime":
             self.create_time = value
-        elif name == 'productDescription':
+        elif name == "productDescription":
             self.product_description = value
         else:
             setattr(self, name, value)
 
     def cancel(self, dry_run=False):
-        self.connection.cancel_spot_instance_requests(
-            [self.id],
-            dry_run=dry_run
-        )
+        self.connection.cancel_spot_instance_requests([self.id], dry_run=dry_run)

@@ -29,7 +29,11 @@ from boto.ec2.autoscale import AutoScaleConnection
 from boto.ec2.autoscale.activity import Activity
 from boto.ec2.autoscale.group import AutoScalingGroup, ProcessType
 from boto.ec2.autoscale.launchconfig import LaunchConfiguration
-from boto.ec2.autoscale.policy import AdjustmentType, MetricCollectionTypes, ScalingPolicy
+from boto.ec2.autoscale.policy import (
+    AdjustmentType,
+    MetricCollectionTypes,
+    ScalingPolicy,
+)
 from boto.ec2.autoscale.scheduled import ScheduledUpdateGroupAction
 from boto.ec2.autoscale.instance import Instance
 from boto.ec2.autoscale.tag import Tag
@@ -46,10 +50,10 @@ class AutoscaleConnectionTest(unittest.TestCase):
         # have any autoscale groups to introspect. It's useful, however, to
         # catch simple errors
 
-        print('--- running %s tests ---' % self.__class__.__name__)
+        print("--- running %s tests ---" % self.__class__.__name__)
         c = AutoScaleConnection()
 
-        self.assertTrue(repr(c).startswith('AutoScaleConnection'))
+        self.assertTrue(repr(c).startswith("AutoScaleConnection"))
 
         groups = c.get_all_groups()
         for group in groups:
@@ -97,10 +101,11 @@ class AutoscaleConnectionTest(unittest.TestCase):
 
         # create the simplest possible AutoScale group
         # first create the launch configuration
-        time_string = '%d' % int(time.time())
-        lc_name = 'lc-%s' % time_string
-        lc = LaunchConfiguration(name=lc_name, image_id='ami-2272864b',
-                                 instance_type='t1.micro')
+        time_string = "%d" % int(time.time())
+        lc_name = "lc-%s" % time_string
+        lc = LaunchConfiguration(
+            name=lc_name, image_id="ami-2272864b", instance_type="t1.micro"
+        )
         c.create_launch_configuration(lc)
         found = False
         lcs = c.get_all_launch_configurations()
@@ -111,10 +116,14 @@ class AutoscaleConnectionTest(unittest.TestCase):
         assert found
 
         # now create autoscaling group
-        group_name = 'group-%s' % time_string
-        group = AutoScalingGroup(name=group_name, launch_config=lc,
-                                 availability_zones=['us-east-1a'],
-                                 min_size=1, max_size=1)
+        group_name = "group-%s" % time_string
+        group = AutoScalingGroup(
+            name=group_name,
+            launch_config=lc,
+            availability_zones=["us-east-1a"],
+            min_size=1,
+            max_size=1,
+        )
         c.create_auto_scaling_group(group)
         found = False
         groups = c.get_all_groups()
@@ -125,14 +134,15 @@ class AutoscaleConnectionTest(unittest.TestCase):
         assert found
 
         # now create a tag
-        tag = Tag(key='foo', value='bar', resource_id=group_name,
-                  propagate_at_launch=True)
+        tag = Tag(
+            key="foo", value="bar", resource_id=group_name, propagate_at_launch=True
+        )
         c.create_or_update_tags([tag])
 
         found = False
         tags = c.get_all_tags()
         for tag in tags:
-            if tag.resource_id == group_name and tag.key == 'foo':
+            if tag.resource_id == group_name and tag.key == "foo":
                 found = True
                 break
         assert found
@@ -159,22 +169,22 @@ class AutoscaleConnectionTest(unittest.TestCase):
             time.sleep(5)
             tags = c.get_all_tags()
             for tag in tags:
-                if tag.resource_id == group_name and tag.key == 'foo':
+                if tag.resource_id == group_name and tag.key == "foo":
                     found = True
 
         assert not found
 
-        print('--- tests completed ---')
+        print("--- tests completed ---")
 
     def test_ebs_optimized_regression(self):
         c = AutoScaleConnection()
-        time_string = '%d' % int(time.time())
-        lc_name = 'lc-%s' % time_string
+        time_string = "%d" % int(time.time())
+        lc_name = "lc-%s" % time_string
         lc = LaunchConfiguration(
             name=lc_name,
-            image_id='ami-2272864b',
-            instance_type='t1.micro',
-            ebs_optimized=True
+            image_id="ami-2272864b",
+            instance_type="t1.micro",
+            ebs_optimized=True,
         )
         # This failed due to the difference between native Python ``True/False``
         # & the expected string variants.

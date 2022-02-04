@@ -15,7 +15,7 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 # OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
 # ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
@@ -24,6 +24,7 @@
 Represents an SQS MessageAttribute Name/Value set
 """
 
+
 class MessageAttributes(dict):
     def __init__(self, parent):
         self.parent = parent
@@ -31,16 +32,16 @@ class MessageAttributes(dict):
         self.current_value = None
 
     def startElement(self, name, attrs, connection):
-        if name == 'Value':
+        if name == "Value":
             self.current_value = MessageAttributeValue(self)
             return self.current_value
 
     def endElement(self, name, value, connection):
-        if name == 'MessageAttribute':
+        if name == "MessageAttribute":
             self[self.current_key] = self.current_value
-        elif name == 'Name':
+        elif name == "Name":
             self.current_key = value
-        elif name == 'Value':
+        elif name == "Value":
             pass
         else:
             setattr(self, name, value)
@@ -54,13 +55,13 @@ class MessageAttributeValue(dict):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'DataType':
-            self['data_type'] = value
-        elif name == 'StringValue':
-            self['string_value'] = value
-        elif name == 'BinaryValue':
-            self['binary_value'] = value
-        elif name == 'StringListValue':
-            self['string_list_value'] = value
-        elif name == 'BinaryListValue':
-            self['binary_list_value'] = value
+        if name == "DataType":
+            self["data_type"] = value
+        elif name == "StringValue":
+            self["string_value"] = value
+        elif name == "BinaryValue":
+            self["binary_value"] = value
+        elif name == "StringListValue":
+            self["string_list_value"] = value
+        elif name == "BinaryListValue":
+            self["binary_list_value"] = value

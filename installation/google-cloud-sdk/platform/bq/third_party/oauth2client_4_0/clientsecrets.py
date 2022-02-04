@@ -25,34 +25,34 @@ import six
 
 
 # Properties that make a client_secrets.json file valid.
-TYPE_WEB = 'web'
-TYPE_INSTALLED = 'installed'
+TYPE_WEB = "web"
+TYPE_INSTALLED = "installed"
 
 VALID_CLIENT = {
     TYPE_WEB: {
-        'required': [
-            'client_id',
-            'client_secret',
-            'redirect_uris',
-            'auth_uri',
-            'token_uri',
+        "required": [
+            "client_id",
+            "client_secret",
+            "redirect_uris",
+            "auth_uri",
+            "token_uri",
         ],
-        'string': [
-            'client_id',
-            'client_secret',
+        "string": [
+            "client_id",
+            "client_secret",
         ],
     },
     TYPE_INSTALLED: {
-        'required': [
-            'client_id',
-            'client_secret',
-            'redirect_uris',
-            'auth_uri',
-            'token_uri',
+        "required": [
+            "client_id",
+            "client_secret",
+            "redirect_uris",
+            "auth_uri",
+            "token_uri",
         ],
-        'string': [
-            'client_id',
-            'client_secret',
+        "string": [
+            "client_id",
+            "client_secret",
         ],
     },
 }
@@ -77,33 +77,37 @@ def _validate_clientsecrets(clientsecrets_dict):
         from the file.
     """
     _INVALID_FILE_FORMAT_MSG = (
-        'Invalid file format. See '
-        'https://developers.google.com/api-client-library/'
-        'python/guide/aaa_client_secrets')
+        "Invalid file format. See "
+        "https://developers.google.com/api-client-library/"
+        "python/guide/aaa_client_secrets"
+    )
 
     if clientsecrets_dict is None:
         raise InvalidClientSecretsError(_INVALID_FILE_FORMAT_MSG)
     try:
-        (client_type, client_info), = clientsecrets_dict.items()
+        ((client_type, client_info),) = clientsecrets_dict.items()
     except (ValueError, AttributeError):
         raise InvalidClientSecretsError(
-            _INVALID_FILE_FORMAT_MSG + ' '
+            _INVALID_FILE_FORMAT_MSG + " "
             'Expected a JSON object with a single property for a "web" or '
-            '"installed" application')
+            '"installed" application'
+        )
 
     if client_type not in VALID_CLIENT:
-        raise InvalidClientSecretsError(
-            'Unknown client type: {0}.'.format(client_type))
+        raise InvalidClientSecretsError("Unknown client type: {0}.".format(client_type))
 
-    for prop_name in VALID_CLIENT[client_type]['required']:
+    for prop_name in VALID_CLIENT[client_type]["required"]:
         if prop_name not in client_info:
             raise InvalidClientSecretsError(
                 'Missing property "{0}" in a client type of "{1}".'.format(
-                    prop_name, client_type))
-    for prop_name in VALID_CLIENT[client_type]['string']:
-        if client_info[prop_name].startswith('[['):
+                    prop_name, client_type
+                )
+            )
+    for prop_name in VALID_CLIENT[client_type]["string"]:
+        if client_info[prop_name].startswith("[["):
             raise InvalidClientSecretsError(
-                'Property "{0}" is not configured.'.format(prop_name))
+                'Property "{0}" is not configured.'.format(prop_name)
+            )
     return client_type, client_info
 
 
@@ -119,11 +123,12 @@ def loads(s):
 
 def _loadfile(filename):
     try:
-        with open(filename, 'r') as fp:
+        with open(filename, "r") as fp:
             obj = json.load(fp)
     except IOError as exc:
-        raise InvalidClientSecretsError('Error opening file', exc.filename,
-                                        exc.strerror, exc.errno)
+        raise InvalidClientSecretsError(
+            "Error opening file", exc.filename, exc.strerror, exc.errno
+        )
     return _validate_clientsecrets(obj)
 
 
@@ -160,7 +165,7 @@ def loadfile(filename, cache=None):
         JSON contents is validated only during first load. Cache hits are not
         validated.
     """
-    _SECRET_NAMESPACE = 'oauth2client:secrets#ns'
+    _SECRET_NAMESPACE = "oauth2client:secrets#ns"
 
     if not cache:
         return _loadfile(filename)

@@ -33,10 +33,13 @@ from tests.integration.gs import util
 from tests.integration.gs.util import retry
 from tests.unit import unittest
 
-@unittest.skipUnless(util.has_google_credentials(),
-                     "Google credentials are required to run the Google "
-                     "Cloud Storage tests.  Update your boto.cfg to run "
-                     "these tests.")
+
+@unittest.skipUnless(
+    util.has_google_credentials(),
+    "Google credentials are required to run the Google "
+    "Cloud Storage tests.  Update your boto.cfg to run "
+    "these tests.",
+)
 class GSTestCase(unittest.TestCase):
     gs = True
 
@@ -53,7 +56,7 @@ class GSTestCase(unittest.TestCase):
             tmpdir = self._tempdirs.pop()
             shutil.rmtree(tmpdir, ignore_errors=True)
 
-        while(len(self._buckets)):
+        while len(self._buckets):
             b = self._buckets[-1]
             try:
                 bucket = self._conn.get_bucket(b)
@@ -92,13 +95,15 @@ class GSTestCase(unittest.TestCase):
         b = self._conn.create_bucket(self._MakeBucketName())
         return b
 
-    def _MakeKey(self, data='', bucket=None, set_contents=True):
+    def _MakeKey(self, data="", bucket=None, set_contents=True):
         """Creates and returns a Key with provided data. If no bucket is given,
         a temporary bucket is created."""
         if data and not set_contents:
-            # The data and set_contents parameters are mutually exclusive. 
-            raise ValueError('MakeKey called with a non-empty data parameter '
-                             'but set_contents was set to False.')
+            # The data and set_contents parameters are mutually exclusive.
+            raise ValueError(
+                "MakeKey called with a non-empty data parameter "
+                "but set_contents was set to False."
+            )
         if not bucket:
             bucket = self._MakeBucket()
         key_name = self._MakeTempName()

@@ -56,6 +56,7 @@ class CognitoIdentityConnection(AWSQueryConnection):
     returned by `GetOpenIdToken` can be passed to the STS operation
     `AssumeRoleWithWebIdentity`_ to retrieve AWS credentials.
     """
+
     APIVersion = "2014-06-30"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "cognito-identity.us-east-1.amazonaws.com"
@@ -74,27 +75,30 @@ class CognitoIdentityConnection(AWSQueryConnection):
         "NotAuthorizedException": exceptions.NotAuthorizedException,
     }
 
-
     def __init__(self, **kwargs):
-        region = kwargs.pop('region', None)
+        region = kwargs.pop("region", None)
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
 
-        if 'host' not in kwargs or kwargs['host'] is None:
-            kwargs['host'] = region.endpoint
+        if "host" not in kwargs or kwargs["host"] is None:
+            kwargs["host"] = region.endpoint
 
         super(CognitoIdentityConnection, self).__init__(**kwargs)
         self.region = region
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
-    def create_identity_pool(self, identity_pool_name,
-                             allow_unauthenticated_identities,
-                             supported_login_providers=None,
-                             developer_provider_name=None,
-                             open_id_connect_provider_ar_ns=None):
+    def create_identity_pool(
+        self,
+        identity_pool_name,
+        allow_unauthenticated_identities,
+        supported_login_providers=None,
+        developer_provider_name=None,
+        open_id_connect_provider_ar_ns=None,
+    ):
         """
         Creates a new identity pool. The identity pool is a store of
         user identity information that is specific to your AWS
@@ -126,17 +130,16 @@ class CognitoIdentityConnection(AWSQueryConnection):
 
         """
         params = {
-            'IdentityPoolName': identity_pool_name,
-            'AllowUnauthenticatedIdentities': allow_unauthenticated_identities,
+            "IdentityPoolName": identity_pool_name,
+            "AllowUnauthenticatedIdentities": allow_unauthenticated_identities,
         }
         if supported_login_providers is not None:
-            params['SupportedLoginProviders'] = supported_login_providers
+            params["SupportedLoginProviders"] = supported_login_providers
         if developer_provider_name is not None:
-            params['DeveloperProviderName'] = developer_provider_name
+            params["DeveloperProviderName"] = developer_provider_name
         if open_id_connect_provider_ar_ns is not None:
-            params['OpenIdConnectProviderARNs'] = open_id_connect_provider_ar_ns
-        return self.make_request(action='CreateIdentityPool',
-                                 body=json.dumps(params))
+            params["OpenIdConnectProviderARNs"] = open_id_connect_provider_ar_ns
+        return self.make_request(action="CreateIdentityPool", body=json.dumps(params))
 
     def delete_identity_pool(self, identity_pool_id):
         """
@@ -147,9 +150,10 @@ class CognitoIdentityConnection(AWSQueryConnection):
         :param identity_pool_id: An identity pool ID in the format REGION:GUID.
 
         """
-        params = {'IdentityPoolId': identity_pool_id, }
-        return self.make_request(action='DeleteIdentityPool',
-                                 body=json.dumps(params))
+        params = {
+            "IdentityPoolId": identity_pool_id,
+        }
+        return self.make_request(action="DeleteIdentityPool", body=json.dumps(params))
 
     def describe_identity_pool(self, identity_pool_id):
         """
@@ -161,9 +165,10 @@ class CognitoIdentityConnection(AWSQueryConnection):
         :param identity_pool_id: An identity pool ID in the format REGION:GUID.
 
         """
-        params = {'IdentityPoolId': identity_pool_id, }
-        return self.make_request(action='DescribeIdentityPool',
-                                 body=json.dumps(params))
+        params = {
+            "IdentityPoolId": identity_pool_id,
+        }
+        return self.make_request(action="DescribeIdentityPool", body=json.dumps(params))
 
     def get_id(self, account_id, identity_pool_id, logins=None):
         """
@@ -187,13 +192,12 @@ class CognitoIdentityConnection(AWSQueryConnection):
 
         """
         params = {
-            'AccountId': account_id,
-            'IdentityPoolId': identity_pool_id,
+            "AccountId": account_id,
+            "IdentityPoolId": identity_pool_id,
         }
         if logins is not None:
-            params['Logins'] = logins
-        return self.make_request(action='GetId',
-                                 body=json.dumps(params))
+            params["Logins"] = logins
+        return self.make_request(action="GetId", body=json.dumps(params))
 
     def get_open_id_token(self, identity_id, logins=None):
         """
@@ -212,15 +216,16 @@ class CognitoIdentityConnection(AWSQueryConnection):
             names to provider tokens.
 
         """
-        params = {'IdentityId': identity_id, }
+        params = {
+            "IdentityId": identity_id,
+        }
         if logins is not None:
-            params['Logins'] = logins
-        return self.make_request(action='GetOpenIdToken',
-                                 body=json.dumps(params))
+            params["Logins"] = logins
+        return self.make_request(action="GetOpenIdToken", body=json.dumps(params))
 
-    def get_open_id_token_for_developer_identity(self, identity_pool_id,
-                                                 logins, identity_id=None,
-                                                 token_duration=None):
+    def get_open_id_token_for_developer_identity(
+        self, identity_pool_id, logins, identity_id=None, token_duration=None
+    ):
         """
         Registers (or retrieves) a Cognito `IdentityId` and an OpenID
         Connect token for a user authenticated by your backend
@@ -271,15 +276,16 @@ class CognitoIdentityConnection(AWSQueryConnection):
 
         """
         params = {
-            'IdentityPoolId': identity_pool_id,
-            'Logins': logins,
+            "IdentityPoolId": identity_pool_id,
+            "Logins": logins,
         }
         if identity_id is not None:
-            params['IdentityId'] = identity_id
+            params["IdentityId"] = identity_id
         if token_duration is not None:
-            params['TokenDuration'] = token_duration
-        return self.make_request(action='GetOpenIdTokenForDeveloperIdentity',
-                                 body=json.dumps(params))
+            params["TokenDuration"] = token_duration
+        return self.make_request(
+            action="GetOpenIdTokenForDeveloperIdentity", body=json.dumps(params)
+        )
 
     def list_identities(self, identity_pool_id, max_results, next_token=None):
         """
@@ -296,13 +302,12 @@ class CognitoIdentityConnection(AWSQueryConnection):
 
         """
         params = {
-            'IdentityPoolId': identity_pool_id,
-            'MaxResults': max_results,
+            "IdentityPoolId": identity_pool_id,
+            "MaxResults": max_results,
         }
         if next_token is not None:
-            params['NextToken'] = next_token
-        return self.make_request(action='ListIdentities',
-                                 body=json.dumps(params))
+            params["NextToken"] = next_token
+        return self.make_request(action="ListIdentities", body=json.dumps(params))
 
     def list_identity_pools(self, max_results, next_token=None):
         """
@@ -316,15 +321,21 @@ class CognitoIdentityConnection(AWSQueryConnection):
         :param next_token: A pagination token.
 
         """
-        params = {'MaxResults': max_results, }
+        params = {
+            "MaxResults": max_results,
+        }
         if next_token is not None:
-            params['NextToken'] = next_token
-        return self.make_request(action='ListIdentityPools',
-                                 body=json.dumps(params))
+            params["NextToken"] = next_token
+        return self.make_request(action="ListIdentityPools", body=json.dumps(params))
 
-    def lookup_developer_identity(self, identity_pool_id, identity_id=None,
-                                  developer_user_identifier=None,
-                                  max_results=None, next_token=None):
+    def lookup_developer_identity(
+        self,
+        identity_pool_id,
+        identity_id=None,
+        developer_user_identifier=None,
+        max_results=None,
+        next_token=None,
+    ):
         """
         Retrieves the `IdentityID` associated with a
         `DeveloperUserIdentifier` or the list of
@@ -363,21 +374,28 @@ class CognitoIdentityConnection(AWSQueryConnection):
             get results starting from the 11th match.
 
         """
-        params = {'IdentityPoolId': identity_pool_id, }
+        params = {
+            "IdentityPoolId": identity_pool_id,
+        }
         if identity_id is not None:
-            params['IdentityId'] = identity_id
+            params["IdentityId"] = identity_id
         if developer_user_identifier is not None:
-            params['DeveloperUserIdentifier'] = developer_user_identifier
+            params["DeveloperUserIdentifier"] = developer_user_identifier
         if max_results is not None:
-            params['MaxResults'] = max_results
+            params["MaxResults"] = max_results
         if next_token is not None:
-            params['NextToken'] = next_token
-        return self.make_request(action='LookupDeveloperIdentity',
-                                 body=json.dumps(params))
+            params["NextToken"] = next_token
+        return self.make_request(
+            action="LookupDeveloperIdentity", body=json.dumps(params)
+        )
 
-    def merge_developer_identities(self, source_user_identifier,
-                                   destination_user_identifier,
-                                   developer_provider_name, identity_pool_id):
+    def merge_developer_identities(
+        self,
+        source_user_identifier,
+        destination_user_identifier,
+        developer_provider_name,
+        identity_pool_id,
+    ):
         """
         Merges two users having different `IdentityId`s, existing in
         the same identity pool, and identified by the same developer
@@ -412,17 +430,22 @@ class CognitoIdentityConnection(AWSQueryConnection):
 
         """
         params = {
-            'SourceUserIdentifier': source_user_identifier,
-            'DestinationUserIdentifier': destination_user_identifier,
-            'DeveloperProviderName': developer_provider_name,
-            'IdentityPoolId': identity_pool_id,
+            "SourceUserIdentifier": source_user_identifier,
+            "DestinationUserIdentifier": destination_user_identifier,
+            "DeveloperProviderName": developer_provider_name,
+            "IdentityPoolId": identity_pool_id,
         }
-        return self.make_request(action='MergeDeveloperIdentities',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="MergeDeveloperIdentities", body=json.dumps(params)
+        )
 
-    def unlink_developer_identity(self, identity_id, identity_pool_id,
-                                  developer_provider_name,
-                                  developer_user_identifier):
+    def unlink_developer_identity(
+        self,
+        identity_id,
+        identity_pool_id,
+        developer_provider_name,
+        developer_user_identifier,
+    ):
         """
         Unlinks a `DeveloperUserIdentifier` from an existing identity.
         Unlinked developer users will be considered new identities
@@ -446,13 +469,14 @@ class CognitoIdentityConnection(AWSQueryConnection):
 
         """
         params = {
-            'IdentityId': identity_id,
-            'IdentityPoolId': identity_pool_id,
-            'DeveloperProviderName': developer_provider_name,
-            'DeveloperUserIdentifier': developer_user_identifier,
+            "IdentityId": identity_id,
+            "IdentityPoolId": identity_pool_id,
+            "DeveloperProviderName": developer_provider_name,
+            "DeveloperUserIdentifier": developer_user_identifier,
         }
-        return self.make_request(action='UnlinkDeveloperIdentity',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="UnlinkDeveloperIdentity", body=json.dumps(params)
+        )
 
     def unlink_identity(self, identity_id, logins, logins_to_remove):
         """
@@ -473,18 +497,21 @@ class CognitoIdentityConnection(AWSQueryConnection):
 
         """
         params = {
-            'IdentityId': identity_id,
-            'Logins': logins,
-            'LoginsToRemove': logins_to_remove,
+            "IdentityId": identity_id,
+            "Logins": logins,
+            "LoginsToRemove": logins_to_remove,
         }
-        return self.make_request(action='UnlinkIdentity',
-                                 body=json.dumps(params))
+        return self.make_request(action="UnlinkIdentity", body=json.dumps(params))
 
-    def update_identity_pool(self, identity_pool_id, identity_pool_name,
-                             allow_unauthenticated_identities,
-                             supported_login_providers=None,
-                             developer_provider_name=None,
-                             open_id_connect_provider_ar_ns=None):
+    def update_identity_pool(
+        self,
+        identity_pool_id,
+        identity_pool_name,
+        allow_unauthenticated_identities,
+        supported_login_providers=None,
+        developer_provider_name=None,
+        open_id_connect_provider_ar_ns=None,
+    ):
         """
         Updates a user pool.
 
@@ -511,39 +538,41 @@ class CognitoIdentityConnection(AWSQueryConnection):
 
         """
         params = {
-            'IdentityPoolId': identity_pool_id,
-            'IdentityPoolName': identity_pool_name,
-            'AllowUnauthenticatedIdentities': allow_unauthenticated_identities,
+            "IdentityPoolId": identity_pool_id,
+            "IdentityPoolName": identity_pool_name,
+            "AllowUnauthenticatedIdentities": allow_unauthenticated_identities,
         }
         if supported_login_providers is not None:
-            params['SupportedLoginProviders'] = supported_login_providers
+            params["SupportedLoginProviders"] = supported_login_providers
         if developer_provider_name is not None:
-            params['DeveloperProviderName'] = developer_provider_name
+            params["DeveloperProviderName"] = developer_provider_name
         if open_id_connect_provider_ar_ns is not None:
-            params['OpenIdConnectProviderARNs'] = open_id_connect_provider_ar_ns
-        return self.make_request(action='UpdateIdentityPool',
-                                 body=json.dumps(params))
+            params["OpenIdConnectProviderARNs"] = open_id_connect_provider_ar_ns
+        return self.make_request(action="UpdateIdentityPool", body=json.dumps(params))
 
     def make_request(self, action, body):
         headers = {
-            'X-Amz-Target': '%s.%s' % (self.TargetPrefix, action),
-            'Host': self.region.endpoint,
-            'Content-Type': 'application/x-amz-json-1.1',
-            'Content-Length': str(len(body)),
+            "X-Amz-Target": "%s.%s" % (self.TargetPrefix, action),
+            "Host": self.region.endpoint,
+            "Content-Type": "application/x-amz-json-1.1",
+            "Content-Length": str(len(body)),
         }
         http_request = self.build_base_http_request(
-            method='POST', path='/', auth_path='/', params={},
-            headers=headers, data=body)
-        response = self._mexe(http_request, sender=None,
-                              override_num_retries=10)
-        response_body = response.read().decode('utf-8')
+            method="POST",
+            path="/",
+            auth_path="/",
+            params={},
+            headers=headers,
+            data=body,
+        )
+        response = self._mexe(http_request, sender=None, override_num_retries=10)
+        response_body = response.read().decode("utf-8")
         boto.log.debug(response_body)
         if response.status == 200:
             if response_body:
                 return json.loads(response_body)
         else:
             json_body = json.loads(response_body)
-            fault_name = json_body.get('__type', None)
+            fault_name = json_body.get("__type", None)
             exception_class = self._faults.get(fault_name, self.ResponseError)
-            raise exception_class(response.status, response.reason,
-                                  body=json_body)
+            raise exception_class(response.status, response.reason, body=json_body)

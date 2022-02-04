@@ -11,6 +11,7 @@ class SWFDomainAlreadyExistsError(SWFResponseError):
     """
     Raised when when the domain already exists.
     """
+
     pass
 
 
@@ -18,6 +19,7 @@ class SWFLimitExceededError(SWFResponseError):
     """
     Raised when when a system imposed limitation has been reached.
     """
+
     pass
 
 
@@ -31,6 +33,7 @@ class SWFTypeAlreadyExistsError(SWFResponseError):
     """
     Raised when when the workflow type or activity type already exists.
     """
+
     pass
 
 
@@ -39,6 +42,3 @@ class SWFWorkflowExecutionAlreadyStartedError(SWFResponseError):
     Raised when an open execution with the same workflow_id is already running
     in the specified domain.
     """
-
-
-

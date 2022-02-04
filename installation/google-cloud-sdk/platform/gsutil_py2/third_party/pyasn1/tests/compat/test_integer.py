@@ -35,19 +35,19 @@ class IntegerTestCase(BaseTestCase):
     else:
 
         def test_from_bytes_zero(self):
-            assert 0 == integer.from_bytes('\x00', signed=False)
+            assert 0 == integer.from_bytes("\x00", signed=False)
 
         def test_from_bytes_unsigned(self):
-            assert -66051 == integer.from_bytes('\xfe\xfd\xfd', signed=True)
+            assert -66051 == integer.from_bytes("\xfe\xfd\xfd", signed=True)
 
         def test_from_bytes_signed(self):
-            assert 66051 == integer.from_bytes('\x01\x02\x03', signed=False)
+            assert 66051 == integer.from_bytes("\x01\x02\x03", signed=False)
 
         def test_from_bytes_empty(self):
-            assert 0 == integer.from_bytes('')
+            assert 0 == integer.from_bytes("")
 
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.TextTestRunner(verbosity=2).run(suite)

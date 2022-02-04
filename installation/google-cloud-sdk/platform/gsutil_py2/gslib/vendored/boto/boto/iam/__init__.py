@@ -28,7 +28,6 @@ from boto.regioninfo import connect
 
 
 class IAMRegionInfo(RegionInfo):
-
     def connect(self, **kw_params):
         """
         Connect to this Region's endpoint. Returns an connection
@@ -51,18 +50,12 @@ def regions():
     :rtype: list
     :return: A list of :class:`boto.regioninfo.RegionInfo` instances
     """
-    regions = get_regions(
-        'iam',
-        region_cls=IAMRegionInfo,
-        connection_cls=IAMConnection
-    )
+    regions = get_regions("iam", region_cls=IAMRegionInfo, connection_cls=IAMConnection)
 
     # For historical reasons, we had a "universal" endpoint as well.
     regions.append(
         IAMRegionInfo(
-            name='universal',
-            endpoint='iam.amazonaws.com',
-            connection_cls=IAMConnection
+            name="universal", endpoint="iam.amazonaws.com", connection_cls=IAMConnection
         )
     )
 
@@ -81,13 +74,16 @@ def connect_to_region(region_name, **kw_params):
     :return: A connection to the given region, or None if an invalid region
              name is given
     """
-    if region_name == 'universal':
+    if region_name == "universal":
         region = IAMRegionInfo(
-            name='universal',
-            endpoint='iam.amazonaws.com',
-            connection_cls=IAMConnection
+            name="universal", endpoint="iam.amazonaws.com", connection_cls=IAMConnection
         )
         return region.connect(**kw_params)
 
-    return connect('iam', region_name, region_cls=IAMRegionInfo,
-                   connection_cls=IAMConnection, **kw_params)
+    return connect(
+        "iam",
+        region_name,
+        region_cls=IAMRegionInfo,
+        connection_cls=IAMConnection,
+        **kw_params
+    )

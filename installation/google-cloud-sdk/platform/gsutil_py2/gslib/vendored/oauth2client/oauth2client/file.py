@@ -44,7 +44,7 @@ class Storage(client.Storage):
         credentials = None
         _helpers.validate_file(self._filename)
         try:
-            f = open(self._filename, 'rb')
+            f = open(self._filename, "rb")
             content = f.read()
             f.close()
         except IOError:
@@ -67,7 +67,7 @@ class Storage(client.Storage):
         if not os.path.exists(self._filename):
             old_umask = os.umask(0o177)
             try:
-                open(self._filename, 'a+b').close()
+                open(self._filename, "a+b").close()
             finally:
                 os.umask(old_umask)
 
@@ -82,7 +82,7 @@ class Storage(client.Storage):
         """
         self._create_file_if_needed()
         _helpers.validate_file(self._filename)
-        f = open(self._filename, 'w')
+        f = open(self._filename, "w")
         f.write(credentials.to_json())
         f.close()
 

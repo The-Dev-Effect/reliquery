@@ -34,6 +34,7 @@ class Condition(object):
         if isinstance(other, Condition):
             return self.to_dict() == other.to_dict()
 
+
 class ConditionNoArgs(Condition):
     """
     Abstract class for Conditions that require no arguments, such
@@ -41,10 +42,10 @@ class ConditionNoArgs(Condition):
     """
 
     def __repr__(self):
-        return '%s' % self.__class__.__name__
+        return "%s" % self.__class__.__name__
 
     def to_dict(self):
-        return {'ComparisonOperator': self.__class__.__name__}
+        return {"ComparisonOperator": self.__class__.__name__}
 
 
 class ConditionOneArg(Condition):
@@ -57,11 +58,13 @@ class ConditionOneArg(Condition):
         self.v1 = v1
 
     def __repr__(self):
-        return '%s:%s' % (self.__class__.__name__, self.v1)
+        return "%s:%s" % (self.__class__.__name__, self.v1)
 
     def to_dict(self):
-        return {'AttributeValueList': [dynamize_value(self.v1)],
-                'ComparisonOperator': self.__class__.__name__}
+        return {
+            "AttributeValueList": [dynamize_value(self.v1)],
+            "ComparisonOperator": self.__class__.__name__,
+        }
 
 
 class ConditionTwoArgs(Condition):
@@ -75,12 +78,14 @@ class ConditionTwoArgs(Condition):
         self.v2 = v2
 
     def __repr__(self):
-        return '%s(%s, %s)' % (self.__class__.__name__, self.v1, self.v2)
+        return "%s(%s, %s)" % (self.__class__.__name__, self.v1, self.v2)
 
     def to_dict(self):
         values = (self.v1, self.v2)
-        return {'AttributeValueList': [dynamize_value(v) for v in values],
-                'ComparisonOperator': self.__class__.__name__}
+        return {
+            "AttributeValueList": [dynamize_value(v) for v in values],
+            "ComparisonOperator": self.__class__.__name__,
+        }
 
 
 class ConditionSeveralArgs(Condition):
@@ -92,12 +97,13 @@ class ConditionSeveralArgs(Condition):
         self.values = values
 
     def __repr__(self):
-        return '{0}({1})'.format(self.__class__.__name__,
-                               ', '.join(self.values))
+        return "{0}({1})".format(self.__class__.__name__, ", ".join(self.values))
 
     def to_dict(self):
-        return {'AttributeValueList': [dynamize_value(v) for v in self.values],
-                'ComparisonOperator': self.__class__.__name__}
+        return {
+            "AttributeValueList": [dynamize_value(v) for v in self.values],
+            "ComparisonOperator": self.__class__.__name__,
+        }
 
 
 class EQ(ConditionOneArg):

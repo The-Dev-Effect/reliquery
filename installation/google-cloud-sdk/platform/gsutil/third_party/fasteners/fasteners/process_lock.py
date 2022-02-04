@@ -99,13 +99,15 @@ class _InterProcessLock(object):
                 else:
                     raise _utils.RetryAgain()
             else:
-                raise threading.ThreadError("Unable to acquire lock on"
-                                            " `%(path)s` due to"
-                                            " %(exception)s" %
-                                            {
-                                                'path': self.path,
-                                                'exception': e,
-                                            })
+                raise threading.ThreadError(
+                    "Unable to acquire lock on"
+                    " `%(path)s` due to"
+                    " %(exception)s"
+                    % {
+                        "path": self.path,
+                        "exception": e,
+                    }
+                )
         else:
             return True
 
@@ -114,17 +116,16 @@ class _InterProcessLock(object):
         if basedir:
             made_basedir = _ensure_tree(basedir)
             if made_basedir:
-                self.logger.log(_utils.BLATHER,
-                                'Created lock base path `%s`', basedir)
+                self.logger.log(_utils.BLATHER, "Created lock base path `%s`", basedir)
         # Open in append mode so we don't overwrite any potential contents of
         # the target file. This eliminates the possibility of an attacker
         # creating a symlink to an important file in our lock path.
         if self.lockfile is None or self.lockfile.closed:
-            self.lockfile = open(self.path, 'a')
+            self.lockfile = open(self.path, "a")
 
-    def acquire(self, blocking=True,
-                delay=DELAY_INCREMENT, max_delay=MAX_DELAY,
-                timeout=None):
+    def acquire(
+        self, blocking=True, delay=DELAY_INCREMENT, max_delay=MAX_DELAY, timeout=None
+    ):
         """Attempt to acquire the given lock.
 
         :param blocking: whether to wait forever to try to acquire the lock
@@ -150,8 +151,7 @@ class _InterProcessLock(object):
             max_delay = delay
         self._do_open()
         watch = _utils.StopWatch(duration=timeout)
-        r = _utils.Retry(delay, max_delay,
-                         sleep_func=self.sleep_func, watch=watch)
+        r = _utils.Retry(delay, max_delay, sleep_func=self.sleep_func, watch=watch)
         with watch:
             gotten = r(self._try_acquire, blocking, watch)
         if not gotten:
@@ -159,10 +159,14 @@ class _InterProcessLock(object):
             return False
         else:
             self.acquired = True
-            self.logger.log(_utils.BLATHER,
-                            "Acquired file lock `%s` after waiting %0.3fs [%s"
-                            " attempts were required]", self.path,
-                            watch.elapsed(), r.attempts)
+            self.logger.log(
+                _utils.BLATHER,
+                "Acquired file lock `%s` after waiting %0.3fs [%s"
+                " attempts were required]",
+                self.path,
+                watch.elapsed(),
+                r.attempts,
+            )
             return True
 
     def _do_close(self):
@@ -177,24 +181,27 @@ class _InterProcessLock(object):
     def release(self):
         """Release the previously acquired lock."""
         if not self.acquired:
-            raise threading.ThreadError("Unable to release an unacquired"
-                                        " lock")
+            raise threading.ThreadError("Unable to release an unacquired" " lock")
         try:
             self.unlock()
         except IOError:
-            self.logger.exception("Could not unlock the acquired lock opened"
-                                  " on `%s`", self.path)
+            self.logger.exception(
+                "Could not unlock the acquired lock opened" " on `%s`", self.path
+            )
         else:
             self.acquired = False
             try:
                 self._do_close()
             except IOError:
-                self.logger.exception("Could not close the file handle"
-                                      " opened on `%s`", self.path)
+                self.logger.exception(
+                    "Could not close the file handle" " opened on `%s`", self.path
+                )
             else:
-                self.logger.log(_utils.BLATHER,
-                                "Unlocked and closed file lock open on"
-                                " `%s`", self.path)
+                self.logger.log(
+                    _utils.BLATHER,
+                    "Unlocked and closed file lock open on" " `%s`",
+                    self.path,
+                )
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.release()
@@ -230,22 +237,23 @@ class _FcntlLock(_InterProcessLock):
         fcntl.lockf(self.lockfile, fcntl.LOCK_UN)
 
 
-if os.name == 'nt':
+if os.name == "nt":
     import msvcrt
+
     InterProcessLock = _WindowsLock
 else:
     import fcntl
+
     InterProcessLock = _FcntlLock
 
 
 def interprocess_locked(path):
     """Acquires & releases a interprocess lock around call into
-       decorated function."""
+    decorated function."""
 
     lock = InterProcessLock(path)
 
     def decorator(f):
-
         @six.wraps(f)
         def wrapper(*args, **kwargs):
             with lock:

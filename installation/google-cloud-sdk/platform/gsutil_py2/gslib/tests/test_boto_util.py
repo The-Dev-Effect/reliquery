@@ -28,27 +28,26 @@ from gslib.tests.util import unittest
 
 from six import add_move, MovedModule
 
-add_move(MovedModule('mock', 'mock', 'unittest.mock'))
+add_move(MovedModule("mock", "mock", "unittest.mock"))
 from six.moves import mock
 
 
 class TestBotoUtil(testcase.GsUtilUnitTestCase):
-  """Test utils that make use of the Boto dependency."""
+    """Test utils that make use of the Boto dependency."""
 
-  @mock.patch.object(context_config, 'get_context_config')
-  def testSetsHostBaseToMtlsIfClientCertificateEnabled(self,
-                                                       mock_get_context_config):
-    mock_context_config = mock.Mock()
-    mock_context_config.use_client_certificate = True
-    mock_context_config.client_cert_path = 'path'
-    mock_context_config.client_cert_password = 'password'
-    mock_get_context_config.return_value = mock_context_config
+    @mock.patch.object(context_config, "get_context_config")
+    def testSetsHostBaseToMtlsIfClientCertificateEnabled(self, mock_get_context_config):
+        mock_context_config = mock.Mock()
+        mock_context_config.use_client_certificate = True
+        mock_context_config.client_cert_path = "path"
+        mock_context_config.client_cert_password = "password"
+        mock_get_context_config.return_value = mock_context_config
 
-    mock_http_class = mock.Mock(return_value=mock.Mock())
-    mock_http = boto_util.GetNewHttp(mock_http_class)
-    mock_http.add_certificate.assert_called_once_with(
-        key='path',
-        cert='path',
-        domain='',
-        password='password',
-    )
+        mock_http_class = mock.Mock(return_value=mock.Mock())
+        mock_http = boto_util.GetNewHttp(mock_http_class)
+        mock_http.add_certificate.assert_called_once_with(
+            key="path",
+            cert="path",
+            domain="",
+            password="password",
+        )

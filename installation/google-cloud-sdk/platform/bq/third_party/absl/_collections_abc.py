@@ -23,6 +23,6 @@ import six
 # pylint: disable=g-importing-member
 # pylint: disable=unused-import
 if six.PY3:
-  from collections import abc
+    from collections import abc
 else:
-  import collections as abc
+    import collections as abc

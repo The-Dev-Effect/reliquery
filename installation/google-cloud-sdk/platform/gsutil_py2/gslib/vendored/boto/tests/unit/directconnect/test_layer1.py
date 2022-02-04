@@ -28,7 +28,7 @@ class TestDescribeTrails(AWSMockServiceTestCase):
     connection_class = DirectConnectConnection
 
     def default_body(self):
-        return b'''
+        return b"""
 {
     "connections": [
         {
@@ -43,16 +43,16 @@ class TestDescribeTrails(AWSMockServiceTestCase):
             "vlan": 1
         }
     ]
-}'''
+}"""
 
     def test_describe(self):
         self.set_http_response(status_code=200)
         api_response = self.service_connection.describe_connections()
 
-        self.assertEqual(1, len(api_response['connections']))
-        self.assertEqual('string', api_response['connections'][0]['region'])
+        self.assertEqual(1, len(api_response["connections"]))
+        self.assertEqual("string", api_response["connections"][0]["region"])
 
         self.assert_request_parameters({})
 
-        target = self.actual_request.headers['X-Amz-Target']
-        self.assertTrue('DescribeConnections' in target)
+        target = self.actual_request.headers["X-Amz-Target"]
+        self.assertTrue("DescribeConnections" in target)

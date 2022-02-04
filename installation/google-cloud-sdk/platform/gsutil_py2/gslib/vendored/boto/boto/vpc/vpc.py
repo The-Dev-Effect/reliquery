@@ -25,8 +25,8 @@ Represents a Virtual Private Cloud.
 
 from boto.ec2.ec2object import TaggedEC2Object
 
-class VPC(TaggedEC2Object):
 
+class VPC(TaggedEC2Object):
     def __init__(self, connection=None):
         """
         Represents a VPC.
@@ -50,22 +50,22 @@ class VPC(TaggedEC2Object):
         self.classic_link_enabled = None
 
     def __repr__(self):
-        return 'VPC:%s' % self.id
+        return "VPC:%s" % self.id
 
     def endElement(self, name, value, connection):
-        if name == 'vpcId':
+        if name == "vpcId":
             self.id = value
-        elif name == 'dhcpOptionsId':
+        elif name == "dhcpOptionsId":
             self.dhcp_options_id = value
-        elif name == 'state':
+        elif name == "state":
             self.state = value
-        elif name == 'cidrBlock':
+        elif name == "cidrBlock":
             self.cidr_block = value
-        elif name == 'isDefault':
-            self.is_default = True if value == 'true' else False
-        elif name == 'instanceTenancy':
+        elif name == "isDefault":
+            self.is_default = True if value == "true" else False
+        elif name == "instanceTenancy":
             self.instance_tenancy = value
-        elif name == 'classicLinkEnabled':
+        elif name == "classicLinkEnabled":
             self.classic_link_enabled = value
         else:
             setattr(self, name, value)
@@ -76,23 +76,19 @@ class VPC(TaggedEC2Object):
     def _update(self, updated):
         self.__dict__.update(updated.__dict__)
 
-    def _get_status_then_update_vpc(self, get_status_method, validate=False,
-                                    dry_run=False):
-        vpc_list = get_status_method(
-            [self.id],
-            dry_run=dry_run
-        )
+    def _get_status_then_update_vpc(
+        self, get_status_method, validate=False, dry_run=False
+    ):
+        vpc_list = get_status_method([self.id], dry_run=dry_run)
         if len(vpc_list):
             updated_vpc = vpc_list[0]
             self._update(updated_vpc)
         elif validate:
-            raise ValueError('%s is not a valid VPC ID' % (self.id,))
+            raise ValueError("%s is not a valid VPC ID" % (self.id,))
 
     def update(self, validate=False, dry_run=False):
         self._get_status_then_update_vpc(
-            self.connection.get_all_vpcs,
-            validate=validate,
-            dry_run=dry_run
+            self.connection.get_all_vpcs, validate=validate, dry_run=dry_run
         )
         return self.state
 
@@ -106,7 +102,7 @@ class VPC(TaggedEC2Object):
         self._get_status_then_update_vpc(
             self.connection.get_all_classic_link_vpcs,
             validate=validate,
-            dry_run=dry_run
+            dry_run=dry_run,
         )
         return self.classic_link_enabled
 
@@ -121,8 +117,7 @@ class VPC(TaggedEC2Object):
         :rtype: bool
         :return: True if successful
         """
-        return self.connection.disable_vpc_classic_link(self.id,
-                                                        dry_run=dry_run)
+        return self.connection.disable_vpc_classic_link(self.id, dry_run=dry_run)
 
     def enable_classic_link(self, dry_run=False):
         """
@@ -139,8 +134,7 @@ class VPC(TaggedEC2Object):
         :rtype: bool
         :return: True if successful
         """
-        return self.connection.enable_vpc_classic_link(self.id,
-                                                       dry_run=dry_run)
+        return self.connection.enable_vpc_classic_link(self.id, dry_run=dry_run)
 
     def attach_classic_instance(self, instance_id, groups, dry_run=False):
         """
@@ -175,10 +169,7 @@ class VPC(TaggedEC2Object):
         :return: True if successful
         """
         return self.connection.attach_classic_link_vpc(
-            vpc_id=self.id,
-            instance_id=instance_id,
-            groups=groups,
-            dry_run=dry_run
+            vpc_id=self.id, instance_id=instance_id, groups=groups, dry_run=dry_run
         )
 
     def detach_classic_instance(self, instance_id, dry_run=False):
@@ -198,7 +189,5 @@ class VPC(TaggedEC2Object):
         :return: True if successful
         """
         return self.connection.detach_classic_link_vpc(
-            vpc_id=self.id,
-            instance_id=instance_id,
-            dry_run=dry_run
+            vpc_id=self.id, instance_id=instance_id, dry_run=dry_run
         )

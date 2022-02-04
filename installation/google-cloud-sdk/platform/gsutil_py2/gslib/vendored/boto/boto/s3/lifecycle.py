@@ -21,6 +21,7 @@
 # IN THE SOFTWARE.
 from boto.compat import six
 
+
 class Rule(object):
     """
     A Lifecycle rule for an S3 bucket.
@@ -43,10 +44,12 @@ class Rule(object):
         when to transition to a different storage class.
 
     """
-    def __init__(self, id=None, prefix=None, status=None, expiration=None,
-                 transition=None):
+
+    def __init__(
+        self, id=None, prefix=None, status=None, expiration=None, transition=None
+    ):
         self.id = id
-        self.prefix = '' if prefix is None else prefix
+        self.prefix = "" if prefix is None else prefix
         self.status = status
         if isinstance(expiration, six.integer_types):
             # retain backwards compatibility???
@@ -65,38 +68,39 @@ class Rule(object):
             self.transition = Transitions()
 
     def __repr__(self):
-        return '<Rule: %s>' % self.id
+        return "<Rule: %s>" % self.id
 
     def startElement(self, name, attrs, connection):
-        if name == 'Transition':
+        if name == "Transition":
             return self.transition
-        elif name == 'Expiration':
+        elif name == "Expiration":
             self.expiration = Expiration()
             return self.expiration
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'ID':
+        if name == "ID":
             self.id = value
-        elif name == 'Prefix':
+        elif name == "Prefix":
             self.prefix = value
-        elif name == 'Status':
+        elif name == "Status":
             self.status = value
         else:
             setattr(self, name, value)
 
     def to_xml(self):
-        s = '<Rule>'
+        s = "<Rule>"
         if self.id is not None:
-            s += '<ID>%s</ID>' % self.id
-        s += '<Prefix>%s</Prefix>' % self.prefix
-        s += '<Status>%s</Status>' % self.status
+            s += "<ID>%s</ID>" % self.id
+        s += "<Prefix>%s</Prefix>" % self.prefix
+        s += "<Status>%s</Status>" % self.status
         if self.expiration is not None:
             s += self.expiration.to_xml()
         if self.transition is not None:
             s += self.transition.to_xml()
-        s += '</Rule>'
+        s += "</Rule>"
         return s
+
 
 class Expiration(object):
     """
@@ -107,6 +111,7 @@ class Expiration(object):
     :ivar date: The date when the object will expire. Must be
         in ISO 8601 format.
     """
+
     def __init__(self, days=None, date=None):
         self.days = days
         self.date = date
@@ -115,9 +120,9 @@ class Expiration(object):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'Days':
+        if name == "Days":
             self.days = int(value)
-        elif name == 'Date':
+        elif name == "Date":
             self.date = value
 
     def __repr__(self):
@@ -125,16 +130,17 @@ class Expiration(object):
             how_long = "on: %s" % self.date
         else:
             how_long = "in: %s days" % self.days
-        return '<Expiration: %s>' % how_long
+        return "<Expiration: %s>" % how_long
 
     def to_xml(self):
-        s = '<Expiration>'
+        s = "<Expiration>"
         if self.days is not None:
-            s += '<Days>%s</Days>' % self.days
+            s += "<Days>%s</Days>" % self.days
         elif self.date is not None:
-            s += '<Date>%s</Date>' % self.date
-        s += '</Expiration>'
+            s += "<Date>%s</Date>" % self.date
+        s += "</Expiration>"
         return s
+
 
 class Transition(object):
     """
@@ -148,6 +154,7 @@ class Transition(object):
     :ivar storage_class: The storage class to transition to.  Valid
         values are GLACIER, STANDARD_IA.
     """
+
     def __init__(self, days=None, date=None, storage_class=None):
         self.days = days
         self.date = date
@@ -158,22 +165,24 @@ class Transition(object):
             how_long = "on: %s" % self.date
         else:
             how_long = "in: %s days" % self.days
-        return '<Transition: %s, %s>' % (how_long, self.storage_class)
+        return "<Transition: %s, %s>" % (how_long, self.storage_class)
 
     def to_xml(self):
-        s = '<Transition>'
-        s += '<StorageClass>%s</StorageClass>' % self.storage_class
+        s = "<Transition>"
+        s += "<StorageClass>%s</StorageClass>" % self.storage_class
         if self.days is not None:
-            s += '<Days>%s</Days>' % self.days
+            s += "<Days>%s</Days>" % self.days
         elif self.date is not None:
-            s += '<Date>%s</Date>' % self.date
-        s += '</Transition>'
+            s += "<Date>%s</Date>" % self.date
+        s += "</Transition>"
         return s
+
 
 class Transitions(list):
     """
     A container for the transitions associated with a Lifecycle's Rule configuration.
     """
+
     def __init__(self):
         self.transition_properties = 3
         self.current_transition_property = 1
@@ -185,18 +194,20 @@ class Transitions(list):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'Days':
+        if name == "Days":
             self.temp_days = int(value)
-        elif name == 'Date':
+        elif name == "Date":
             self.temp_date = value
-        elif name == 'StorageClass':
+        elif name == "StorageClass":
             self.temp_storage_class = value
 
         # the XML does not contain a <Transitions> tag
         # but rather N number of <Transition> tags not
         # structured in any sort of hierarchy.
         if self.current_transition_property == self.transition_properties:
-            self.append(Transition(self.temp_days, self.temp_date, self.temp_storage_class))
+            self.append(
+                Transition(self.temp_days, self.temp_date, self.temp_storage_class)
+            )
             self.temp_days = self.temp_date = self.temp_storage_class = None
             self.current_transition_property = 1
         else:
@@ -207,7 +218,7 @@ class Transitions(list):
         Returns a string containing the XML version of the Lifecycle
         configuration as defined by S3.
         """
-        s = ''
+        s = ""
         for transition in self:
             s += transition.to_xml()
         return s
@@ -239,15 +250,15 @@ class Transitions(list):
     # 'rule.transition.days' syntax
     @property
     def days(self):
-        return self.__first_or_default('days')
+        return self.__first_or_default("days")
 
     @property
     def date(self):
-        return self.__first_or_default('date')
+        return self.__first_or_default("date")
 
     @property
     def storage_class(self):
-        return self.__first_or_default('storage_class')
+        return self.__first_or_default("storage_class")
 
 
 class Lifecycle(list):
@@ -256,7 +267,7 @@ class Lifecycle(list):
     """
 
     def startElement(self, name, attrs, connection):
-        if name == 'Rule':
+        if name == "Rule":
             rule = Rule()
             self.append(rule)
             return rule
@@ -271,14 +282,15 @@ class Lifecycle(list):
         configuration as defined by S3.
         """
         s = '<?xml version="1.0" encoding="UTF-8"?>'
-        s += '<LifecycleConfiguration>'
+        s += "<LifecycleConfiguration>"
         for rule in self:
             s += rule.to_xml()
-        s += '</LifecycleConfiguration>'
+        s += "</LifecycleConfiguration>"
         return s
 
-    def add_rule(self, id=None, prefix='', status='Enabled',
-                 expiration=None, transition=None):
+    def add_rule(
+        self, id=None, prefix="", status="Enabled", expiration=None, transition=None
+    ):
         """
         Add a rule to this Lifecycle configuration.  This only adds
         the rule to the local copy.  To install the new rule(s) on
@@ -305,7 +317,7 @@ class Lifecycle(list):
 
         :type transition: Transitions
         :param transition: Indicates when an object transitions to a
-            different storage class. 
+            different storage class.
         """
         rule = Rule(id, prefix, status, expiration, transition)
         self.append(rule)

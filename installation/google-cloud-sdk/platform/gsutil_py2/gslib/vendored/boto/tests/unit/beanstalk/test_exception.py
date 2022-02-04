@@ -35,15 +35,15 @@ class FakeError(object):
 class TestExceptions(unittest.TestCase):
     def test_exception_class_names(self):
         # Create exception from class name
-        error = FakeError('TooManyApplications', 400, 'foo', 'bar')
+        error = FakeError("TooManyApplications", 400, "foo", "bar")
         exception = simple(error)
-        self.assertEqual(exception.__class__.__name__, 'TooManyApplications')
+        self.assertEqual(exception.__class__.__name__, "TooManyApplications")
 
         # Create exception from class name + 'Exception' as seen from the
         # live service today
-        error = FakeError('TooManyApplicationsException', 400, 'foo', 'bar')
+        error = FakeError("TooManyApplicationsException", 400, "foo", "bar")
         exception = simple(error)
-        self.assertEqual(exception.__class__.__name__, 'TooManyApplications')
+        self.assertEqual(exception.__class__.__name__, "TooManyApplications")
 
         # Make sure message body is present
-        self.assertEqual(exception.message, 'bar')
+        self.assertEqual(exception.message, "bar")

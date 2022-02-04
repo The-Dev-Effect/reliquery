@@ -65,21 +65,22 @@ class VPCSecurityGroupMembership(object):
         <boto.ec2.securitygroup.SecurityGroup>` objects that this RDS Instance
         is a member of
     """
+
     def __init__(self, connection=None, status=None, vpc_group=None):
         self.connection = connection
         self.status = status
         self.vpc_group = vpc_group
 
     def __repr__(self):
-        return 'VPCSecurityGroupMembership:%s' % self.vpc_group
+        return "VPCSecurityGroupMembership:%s" % self.vpc_group
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'VpcSecurityGroupId':
+        if name == "VpcSecurityGroupId":
             self.vpc_group = value
-        elif name == 'Status':
+        elif name == "Status":
             self.status = value
         else:
             setattr(self, name, value)

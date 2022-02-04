@@ -17,7 +17,7 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 # OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
 # ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
@@ -48,7 +48,7 @@ class S3MultiPartUploadTest(unittest.TestCase):
 
     def setUp(self):
         self.conn = S3Connection(is_secure=False)
-        self.bucket_name = 'multipart-%d' % int(time.time())
+        self.bucket_name = "multipart-%d" % int(time.time())
         self.bucket = self.conn.create_bucket(self.bucket_name)
 
     def tearDown(self):
@@ -106,11 +106,11 @@ class S3MultiPartUploadTest(unittest.TestCase):
         self.assertEqual(0, len(mpus))
 
     def test_get_all_multipart_uploads(self):
-        key1 = 'a'
-        key2 = 'b/c'
+        key1 = "a"
+        key2 = "b/c"
         mpu1 = self.bucket.initiate_multipart_upload(key1)
         mpu2 = self.bucket.initiate_multipart_upload(key2)
-        rs = self.bucket.get_all_multipart_uploads(prefix='b/', delimiter='/')
+        rs = self.bucket.get_all_multipart_uploads(prefix="b/", delimiter="/")
         for lmpu in rs:
             # only expect upload for key2 (mpu2) returned
             self.assertEqual(lmpu.key_name, mpu2.key_name)
@@ -149,7 +149,7 @@ class S3MultiPartUploadTest(unittest.TestCase):
         mpu.cancel_upload()
 
     # mpu.upload_part_from_file() now returns the uploaded part
-    # which makes the etag available. Confirm the etag is 
+    # which makes the etag available. Confirm the etag is
     # available and equal to the etag returned by the parts list.
     def test_etag_of_parts(self):
         key_name = "etagtest"
@@ -173,12 +173,11 @@ class S3MultiPartUploadSigV4Test(unittest.TestCase):
     s3 = True
 
     def setUp(self):
-        self.env_patch = mock.patch('os.environ', {'S3_USE_SIGV4': True})
+        self.env_patch = mock.patch("os.environ", {"S3_USE_SIGV4": True})
         self.env_patch.start()
-        self.conn = boto.s3.connect_to_region('us-west-2')
-        self.bucket_name = 'multipart-%d' % int(time.time())
-        self.bucket = self.conn.create_bucket(self.bucket_name,
-                                              location='us-west-2')
+        self.conn = boto.s3.connect_to_region("us-west-2")
+        self.bucket_name = "multipart-%d" % int(time.time())
+        self.bucket = self.conn.create_bucket(self.bucket_name, location="us-west-2")
 
     def tearDown(self):
         for key in self.bucket:

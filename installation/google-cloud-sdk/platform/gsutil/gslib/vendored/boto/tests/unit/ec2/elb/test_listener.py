@@ -82,44 +82,47 @@ LISTENERS_RESPONSE = b"""<?xml version="1.0" encoding="UTF-8"?>
 
 class TestListenerResponseParsing(unittest.TestCase):
     def test_parse_complex(self):
-        rs = boto.resultset.ResultSet([
-            ('member', LoadBalancer)
-        ])
+        rs = boto.resultset.ResultSet([("member", LoadBalancer)])
         h = boto.handler.XmlHandler(rs, None)
         xml.sax.parseString(LISTENERS_RESPONSE, h)
         listeners = rs[0].listeners
         self.assertEqual(
             sorted([l.get_complex_tuple() for l in listeners]),
             [
-                (80, 8000, 'HTTP', 'HTTP'),
-                (2525, 25, 'TCP', 'TCP'),
-                (8080, 80, 'HTTP', 'HTTP'),
-            ]
+                (80, 8000, "HTTP", "HTTP"),
+                (2525, 25, "TCP", "TCP"),
+                (8080, 80, "HTTP", "HTTP"),
+            ],
         )
+
 
 class TestListenerGetItem(unittest.TestCase):
     def test_getitem_for_http_listener(self):
-        listener = Listener(load_balancer_port=80,
-                            instance_port=80,
-                            protocol='HTTP',
-                            instance_protocol='HTTP')
+        listener = Listener(
+            load_balancer_port=80,
+            instance_port=80,
+            protocol="HTTP",
+            instance_protocol="HTTP",
+        )
         self.assertEqual(listener[0], 80)
         self.assertEqual(listener[1], 80)
-        self.assertEqual(listener[2], 'HTTP')
-        self.assertEqual(listener[3], 'HTTP')
+        self.assertEqual(listener[2], "HTTP")
+        self.assertEqual(listener[3], "HTTP")
 
     def test_getitem_for_https_listener(self):
-        listener = Listener(load_balancer_port=443,
-                            instance_port=80,
-                            protocol='HTTPS',
-                            instance_protocol='HTTP',
-                            ssl_certificate_id='look_at_me_im_an_arn')
+        listener = Listener(
+            load_balancer_port=443,
+            instance_port=80,
+            protocol="HTTPS",
+            instance_protocol="HTTP",
+            ssl_certificate_id="look_at_me_im_an_arn",
+        )
         self.assertEqual(listener[0], 443)
         self.assertEqual(listener[1], 80)
-        self.assertEqual(listener[2], 'HTTPS')
-        self.assertEqual(listener[3], 'HTTP')
-        self.assertEqual(listener[4], 'look_at_me_im_an_arn')
+        self.assertEqual(listener[2], "HTTPS")
+        self.assertEqual(listener[3], "HTTP")
+        self.assertEqual(listener[4], "look_at_me_im_an_arn")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

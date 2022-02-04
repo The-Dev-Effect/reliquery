@@ -26,22 +26,22 @@ class TestS3Tagging(AWSMockServiceTestCase):
 
     def test_parse_tagging_response(self):
         self.set_http_response(status_code=200)
-        b = Bucket(self.service_connection, 'mybucket')
+        b = Bucket(self.service_connection, "mybucket")
         api_response = b.get_tags()
         # The outer list is a list of tag sets.
         self.assertEqual(len(api_response), 1)
         # The inner list is a list of tags.
         self.assertEqual(len(api_response[0]), 2)
-        self.assertEqual(api_response[0][0].key, 'Project')
-        self.assertEqual(api_response[0][0].value, 'Project One')
-        self.assertEqual(api_response[0][1].key, 'User')
-        self.assertEqual(api_response[0][1].value, 'jsmith')
+        self.assertEqual(api_response[0][0].key, "Project")
+        self.assertEqual(api_response[0][0].value, "Project One")
+        self.assertEqual(api_response[0][1].key, "User")
+        self.assertEqual(api_response[0][1].value, "jsmith")
 
     def test_tag_equality(self):
-        t1 = Tag('foo', 'bar')
-        t2 = Tag('foo', 'bar')
-        t3 = Tag('foo', 'baz')
-        t4 = Tag('baz', 'bar')
+        t1 = Tag("foo", "bar")
+        t2 = Tag("foo", "bar")
+        t3 = Tag("foo", "baz")
+        t4 = Tag("baz", "bar")
         self.assertEqual(t1, t2)
         self.assertNotEqual(t1, t3)
         self.assertNotEqual(t1, t4)

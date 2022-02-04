@@ -35,10 +35,10 @@ class TestIAMPolicy(unittest.TestCase):
         iam = boto.connect_iam()
 
         time_suffix = time.time()
-        rolename = 'boto-test-role-%d' % time_suffix
-        groupname = 'boto-test-group-%d' % time_suffix
-        username = 'boto-test-user-%d' % time_suffix
-        policyname = 'TestPolicyName-%d' % time_suffix
+        rolename = "boto-test-role-%d" % time_suffix
+        groupname = "boto-test-group-%d" % time_suffix
+        username = "boto-test-user-%d" % time_suffix
+        policyname = "TestPolicyName-%d" % time_suffix
 
         iam.create_role(rolename)
         iam.create_group(groupname)
@@ -49,12 +49,12 @@ class TestIAMPolicy(unittest.TestCase):
             "Id": "TestPermission",
             "Statement": [
                 {
-                  "Sid": "TestSid",
-                  "Action": "s3:*",
-                  "Effect": "Deny",
-                  "Resource": "arn:aws:s3:::*"
+                    "Sid": "TestSid",
+                    "Action": "s3:*",
+                    "Effect": "Deny",
+                    "Resource": "arn:aws:s3:::*",
                 }
-            ]
+            ],
         }
 
         policy_json = json.dumps(policy_doc)
@@ -69,16 +69,16 @@ class TestIAMPolicy(unittest.TestCase):
 
         # Show that policy is not attached
         result = iam.list_entities_for_policy(policy.arn)[
-                'list_entities_for_policy_response'][
-                'list_entities_for_policy_result']
+            "list_entities_for_policy_response"
+        ]["list_entities_for_policy_result"]
 
-        if not len(result['policy_roles']) == 0:
+        if not len(result["policy_roles"]) == 0:
             raise Exception("Roles when not expected")
 
-        if not len(result['policy_groups']) == 0:
+        if not len(result["policy_groups"]) == 0:
             raise Exception("Groups when not expected")
 
-        if not len(result['policy_users']) == 0:
+        if not len(result["policy_users"]) == 0:
             raise Exception("Users when not expected")
 
         # Attach the policy
@@ -88,16 +88,16 @@ class TestIAMPolicy(unittest.TestCase):
 
         # Show that policy is indeed attached
         result = iam.list_entities_for_policy(policy.arn)[
-                'list_entities_for_policy_response'][
-                'list_entities_for_policy_result']
+            "list_entities_for_policy_response"
+        ]["list_entities_for_policy_result"]
 
-        if not len(result['policy_roles']) == 1:
+        if not len(result["policy_roles"]) == 1:
             raise Exception("Roles expected")
 
-        if not len(result['policy_groups']) == 1:
+        if not len(result["policy_groups"]) == 1:
             raise Exception("Groups expected")
 
-        if not len(result['policy_users']) == 1:
+        if not len(result["policy_users"]) == 1:
             raise Exception("Users expected")
 
         # Detach the policy

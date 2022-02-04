@@ -137,8 +137,7 @@ class Item(dict):
             specified, the new versions of only the updated attributes are
             returned.
         """
-        return self.table.layer2.update_item(self, expected_value,
-                                             return_values)
+        return self.table.layer2.update_item(self, expected_value, return_values)
 
     def delete(self, expected_value=None, return_values=None):
         """
@@ -158,8 +157,7 @@ class Item(dict):
             specified and the item is overwritten, the content
             of the old item is returned.
         """
-        return self.table.layer2.delete_item(self, expected_value,
-                                             return_values)
+        return self.table.layer2.delete_item(self, expected_value, return_values)
 
     def put(self, expected_value=None, return_values=None):
         """
@@ -198,5 +196,6 @@ class Item(dict):
     # Allow this item to still be pickled
     def __getstate__(self):
         return self.__dict__
+
     def __setstate__(self, d):
         self.__dict__.update(d)

@@ -27,55 +27,55 @@ from pyu2f import errors
 
 
 class ClientData(object):
-  """FIDO U2F ClientData.
+    """FIDO U2F ClientData.
 
-  Implements the ClientData object of the FIDO U2F protocol.
-  """
-  TYP_AUTHENTICATION = 'navigator.id.getAssertion'
-  TYP_REGISTRATION = 'navigator.id.finishEnrollment'
+    Implements the ClientData object of the FIDO U2F protocol.
+    """
 
-  def __init__(self, typ, raw_server_challenge, origin):
-    if typ not in [ClientData.TYP_REGISTRATION, ClientData.TYP_AUTHENTICATION]:
-      raise errors.InvalidModelError()
-    self.typ = typ
-    self.raw_server_challenge = raw_server_challenge
-    self.origin = origin
+    TYP_AUTHENTICATION = "navigator.id.getAssertion"
+    TYP_REGISTRATION = "navigator.id.finishEnrollment"
 
-  def GetJson(self):
-    """Returns JSON version of ClientData compatible with FIDO spec."""
+    def __init__(self, typ, raw_server_challenge, origin):
+        if typ not in [ClientData.TYP_REGISTRATION, ClientData.TYP_AUTHENTICATION]:
+            raise errors.InvalidModelError()
+        self.typ = typ
+        self.raw_server_challenge = raw_server_challenge
+        self.origin = origin
 
-    # The U2F Raw Messages specification specifies that the challenge is encoded
-    # with URL safe Base64 without padding encoding specified in RFC 4648.
-    # Python does not natively support a paddingless encoding, so we simply
-    # remove the padding from the end of the string.
-    server_challenge_b64 = base64.urlsafe_b64encode(
-        self.raw_server_challenge).decode()
-    server_challenge_b64 = server_challenge_b64.rstrip('=')
-    return json.dumps({'typ': self.typ,
-                       'challenge': server_challenge_b64,
-                       'origin': self.origin}, sort_keys=True)
+    def GetJson(self):
+        """Returns JSON version of ClientData compatible with FIDO spec."""
 
-  def __repr__(self):
-    return self.GetJson()
+        # The U2F Raw Messages specification specifies that the challenge is encoded
+        # with URL safe Base64 without padding encoding specified in RFC 4648.
+        # Python does not natively support a paddingless encoding, so we simply
+        # remove the padding from the end of the string.
+        server_challenge_b64 = base64.urlsafe_b64encode(
+            self.raw_server_challenge
+        ).decode()
+        server_challenge_b64 = server_challenge_b64.rstrip("=")
+        return json.dumps(
+            {"typ": self.typ, "challenge": server_challenge_b64, "origin": self.origin},
+            sort_keys=True,
+        )
+
+    def __repr__(self):
+        return self.GetJson()
 
 
 class RegisteredKey(object):
-
-  def __init__(self, key_handle, version=u'U2F_V2'):
-    self.key_handle = key_handle
-    self.version = version
+    def __init__(self, key_handle, version=u"U2F_V2"):
+        self.key_handle = key_handle
+        self.version = version
 
 
 class RegisterResponse(object):
-
-  def __init__(self, registration_data, client_data):
-    self.registration_data = registration_data
-    self.client_data = client_data
+    def __init__(self, registration_data, client_data):
+        self.registration_data = registration_data
+        self.client_data = client_data
 
 
 class SignResponse(object):
-
-  def __init__(self, key_handle, signature_data, client_data):
-    self.key_handle = key_handle
-    self.signature_data = signature_data
-    self.client_data = client_data
+    def __init__(self, key_handle, signature_data, client_data):
+        self.key_handle = key_handle
+        self.signature_data = signature_data
+        self.client_data = client_data

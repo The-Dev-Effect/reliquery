@@ -32,15 +32,14 @@ from boto.glacier.concurrent import _END_SENTINEL
 
 
 class FakeThreadedConcurrentUploader(ConcurrentUploader):
-    def _start_upload_threads(self, results_queue, upload_id,
-                              worker_queue, filename):
+    def _start_upload_threads(self, results_queue, upload_id, worker_queue, filename):
         self.results_queue = results_queue
         self.worker_queue = worker_queue
         self.upload_id = upload_id
 
     def _wait_for_upload_threads(self, hash_chunks, result_queue, total_parts):
         for i in range(total_parts):
-            hash_chunks[i] = b'foo'
+            hash_chunks[i] = b"foo"
 
 
 class FakeThreadedConcurrentDownloader(ConcurrentDownloader):
@@ -53,10 +52,9 @@ class FakeThreadedConcurrentDownloader(ConcurrentDownloader):
 
 
 class TestConcurrentUploader(unittest.TestCase):
-
     def setUp(self):
         super(TestConcurrentUploader, self).setUp()
-        self.stat_patch = mock.patch('os.stat')
+        self.stat_patch = mock.patch("os.stat")
         self.addCleanup(self.stat_patch.stop)
         self.stat_mock = self.stat_patch.start()
         # Give a default value for tests that don't care
@@ -65,27 +63,25 @@ class TestConcurrentUploader(unittest.TestCase):
 
     def test_calculate_required_part_size(self):
         self.stat_mock.return_value.st_size = 1024 * 1024 * 8
-        uploader = ConcurrentUploader(mock.Mock(), 'vault_name')
-        total_parts, part_size = uploader._calculate_required_part_size(
-            1024 * 1024 * 8)
+        uploader = ConcurrentUploader(mock.Mock(), "vault_name")
+        total_parts, part_size = uploader._calculate_required_part_size(1024 * 1024 * 8)
         self.assertEqual(total_parts, 2)
         self.assertEqual(part_size, 4 * 1024 * 1024)
 
     def test_calculate_required_part_size_too_small(self):
         too_small = 1 * 1024 * 1024
         self.stat_mock.return_value.st_size = 1024 * 1024 * 1024
-        uploader = ConcurrentUploader(mock.Mock(), 'vault_name',
-                                      part_size=too_small)
+        uploader = ConcurrentUploader(mock.Mock(), "vault_name", part_size=too_small)
         total_parts, part_size = uploader._calculate_required_part_size(
-            1024 * 1024 * 1024)
+            1024 * 1024 * 1024
+        )
         self.assertEqual(total_parts, 256)
         # Part size if 4MB not the passed in 1MB.
         self.assertEqual(part_size, 4 * 1024 * 1024)
 
     def test_work_queue_is_correctly_populated(self):
-        uploader = FakeThreadedConcurrentUploader(mock.MagicMock(),
-                                                  'vault_name')
-        uploader.upload('foofile')
+        uploader = FakeThreadedConcurrentUploader(mock.MagicMock(), "vault_name")
+        uploader.upload("foofile")
         q = uploader.worker_queue
         items = [q.get() for i in range(q.qsize())]
         self.assertEqual(items[0], (0, 4 * 1024 * 1024))
@@ -95,26 +91,25 @@ class TestConcurrentUploader(unittest.TestCase):
 
     def test_correct_low_level_api_calls(self):
         api_mock = mock.MagicMock()
-        upload_id = '0898d645-ea45-4548-9a67-578f507ead49'
-        initiate_upload_mock = mock.Mock(
-            return_value={'UploadId': upload_id})
+        upload_id = "0898d645-ea45-4548-9a67-578f507ead49"
+        initiate_upload_mock = mock.Mock(return_value={"UploadId": upload_id})
         # initiate_multipart_upload must return a body containing an `UploadId`
-        api_mock.attach_mock(initiate_upload_mock, 'initiate_multipart_upload')
+        api_mock.attach_mock(initiate_upload_mock, "initiate_multipart_upload")
 
-        uploader = FakeThreadedConcurrentUploader(api_mock, 'vault_name')
-        uploader.upload('foofile')
+        uploader = FakeThreadedConcurrentUploader(api_mock, "vault_name")
+        uploader.upload("foofile")
         # The threads call the upload_part, so we're just verifying the
         # initiate/complete multipart API calls.
-        initiate_upload_mock.assert_called_with(
-            'vault_name', 4 * 1024 * 1024, None)
+        initiate_upload_mock.assert_called_with("vault_name", 4 * 1024 * 1024, None)
         api_mock.complete_multipart_upload.assert_called_with(
-            'vault_name', upload_id, mock.ANY, 8 * 1024 * 1024)
+            "vault_name", upload_id, mock.ANY, 8 * 1024 * 1024
+        )
 
     def test_downloader_work_queue_is_correctly_populated(self):
         job = mock.MagicMock()
         job.archive_size = 8 * 1024 * 1024
         downloader = FakeThreadedConcurrentDownloader(job)
-        downloader.download('foofile')
+        downloader.download("foofile")
         q = downloader.worker_queue
         items = [q.get() for i in range(q.qsize())]
         self.assertEqual(items[0], (0, 4 * 1024 * 1024))
@@ -129,9 +124,9 @@ class TestUploaderThread(unittest.TestCase):
         self.filename = self.fileobj.name
 
     def test_fileobj_closed_when_thread_shuts_down(self):
-        thread = UploadWorkerThread(mock.Mock(), 'vault_name',
-                                    self.filename, 'upload_id',
-                                    Queue(), Queue())
+        thread = UploadWorkerThread(
+            mock.Mock(), "vault_name", self.filename, "upload_id", Queue(), Queue()
+        )
         fileobj = thread._fileobj
         self.assertFalse(fileobj.closed)
         # By settings should_continue to False, it should immediately
@@ -145,9 +140,15 @@ class TestUploaderThread(unittest.TestCase):
         job_queue = Queue()
         result_queue = Queue()
         upload_thread = UploadWorkerThread(
-            api, 'vault_name', self.filename,
-            'upload_id', job_queue, result_queue, num_retries=1,
-            time_between_retries=0)
+            api,
+            "vault_name",
+            self.filename,
+            "upload_id",
+            job_queue,
+            result_queue,
+            num_retries=1,
+            time_between_retries=0,
+        )
         api.upload_part.side_effect = Exception("exception message")
         job_queue.put((0, 1024))
         job_queue.put(_END_SENTINEL)
@@ -164,9 +165,15 @@ class TestUploaderThread(unittest.TestCase):
         job_queue = Queue()
         result_queue = Queue()
         upload_thread = UploadWorkerThread(
-            api, 'vault_name', self.filename,
-            'upload_id', job_queue, result_queue, num_retries=2,
-            time_between_retries=0)
+            api,
+            "vault_name",
+            self.filename,
+            "upload_id",
+            job_queue,
+            result_queue,
+            num_retries=2,
+            time_between_retries=0,
+        )
         api.upload_part.side_effect = Exception()
         job_queue.put((0, 1024))
         job_queue.put(_END_SENTINEL)
@@ -175,5 +182,5 @@ class TestUploaderThread(unittest.TestCase):
         self.assertEqual(api.upload_part.call_count, 3)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

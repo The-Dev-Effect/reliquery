@@ -31,11 +31,16 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.cloudsearchdomain.layer1 import CloudSearchDomainConnection
-    return get_regions('cloudsearchdomain',
-                       connection_cls=CloudSearchDomainConnection)
+
+    return get_regions("cloudsearchdomain", connection_cls=CloudSearchDomainConnection)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.cloudsearchdomain.layer1 import CloudSearchDomainConnection
-    return connect('cloudsearchdomain', region_name,
-                   connection_cls=CloudSearchDomainConnection, **kw_params)
+
+    return connect(
+        "cloudsearchdomain",
+        region_name,
+        connection_cls=CloudSearchDomainConnection,
+        **kw_params
+    )

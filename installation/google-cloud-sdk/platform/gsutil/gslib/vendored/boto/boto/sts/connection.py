@@ -62,16 +62,31 @@ class STSConnection(AWSQueryConnection):
     abbreviated form IAM. All copyrights and legal protections still
     apply.
     """
-    DefaultRegionName = 'us-east-1'
-    DefaultRegionEndpoint = 'sts.amazonaws.com'
-    APIVersion = '2011-06-15'
 
-    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None,
-                 is_secure=True, port=None, proxy=None, proxy_port=None,
-                 proxy_user=None, proxy_pass=None, debug=0,
-                 https_connection_factory=None, region=None, path='/',
-                 converter=None, validate_certs=True, anon=False,
-                 security_token=None, profile_name=None):
+    DefaultRegionName = "us-east-1"
+    DefaultRegionEndpoint = "sts.amazonaws.com"
+    APIVersion = "2011-06-15"
+
+    def __init__(
+        self,
+        aws_access_key_id=None,
+        aws_secret_access_key=None,
+        is_secure=True,
+        port=None,
+        proxy=None,
+        proxy_port=None,
+        proxy_user=None,
+        proxy_pass=None,
+        debug=0,
+        https_connection_factory=None,
+        region=None,
+        path="/",
+        converter=None,
+        validate_certs=True,
+        anon=False,
+        security_token=None,
+        profile_name=None,
+    ):
         """
         :type anon: boolean
         :param anon: If this parameter is True, the ``STSConnection`` object
@@ -80,37 +95,51 @@ class STSConnection(AWSQueryConnection):
             requests.
         """
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint,
-                                connection_cls=STSConnection)
+            region = RegionInfo(
+                self,
+                self.DefaultRegionName,
+                self.DefaultRegionEndpoint,
+                connection_cls=STSConnection,
+            )
         self.region = region
         self.anon = anon
         self._mutex = threading.Semaphore()
-        provider = 'aws'
+        provider = "aws"
         # If an anonymous request is sent, do not try to look for credentials.
         # So we pass in dummy values for the access key id, secret access
         # key, and session token. It does not matter that they are
         # not actual values because the request is anonymous.
         if self.anon:
-            provider = Provider('aws', NO_CREDENTIALS_PROVIDED,
-                                NO_CREDENTIALS_PROVIDED,
-                                NO_CREDENTIALS_PROVIDED)
-        super(STSConnection, self).__init__(aws_access_key_id,
-                                    aws_secret_access_key,
-                                    is_secure, port, proxy, proxy_port,
-                                    proxy_user, proxy_pass,
-                                    self.region.endpoint, debug,
-                                    https_connection_factory, path,
-                                    validate_certs=validate_certs,
-                                    security_token=security_token,
-                                    profile_name=profile_name,
-                                    provider=provider)
+            provider = Provider(
+                "aws",
+                NO_CREDENTIALS_PROVIDED,
+                NO_CREDENTIALS_PROVIDED,
+                NO_CREDENTIALS_PROVIDED,
+            )
+        super(STSConnection, self).__init__(
+            aws_access_key_id,
+            aws_secret_access_key,
+            is_secure,
+            port,
+            proxy,
+            proxy_port,
+            proxy_user,
+            proxy_pass,
+            self.region.endpoint,
+            debug,
+            https_connection_factory,
+            path,
+            validate_certs=validate_certs,
+            security_token=security_token,
+            profile_name=profile_name,
+            provider=provider,
+        )
 
     def _required_auth_capability(self):
         if self.anon:
-            return ['sts-anon']
+            return ["sts-anon"]
         else:
-            return ['hmac-v4']
+            return ["hmac-v4"]
 
     def _check_token_cache(self, token_key, duration=None, window_seconds=60):
         token = _session_token_cache.get(token_key, None)
@@ -119,25 +148,24 @@ class STSConnection(AWSQueryConnection):
             expires = boto.utils.parse_ts(token.expiration)
             delta = expires - now
             if delta < datetime.timedelta(seconds=window_seconds):
-                msg = 'Cached session token %s is expired' % token_key
+                msg = "Cached session token %s is expired" % token_key
                 boto.log.debug(msg)
                 token = None
         return token
 
-    def _get_session_token(self, duration=None,
-                           mfa_serial_number=None, mfa_token=None):
+    def _get_session_token(self, duration=None, mfa_serial_number=None, mfa_token=None):
         params = {}
         if duration:
-            params['DurationSeconds'] = duration
+            params["DurationSeconds"] = duration
         if mfa_serial_number:
-            params['SerialNumber'] = mfa_serial_number
+            params["SerialNumber"] = mfa_serial_number
         if mfa_token:
-            params['TokenCode'] = mfa_token
-        return self.get_object('GetSessionToken', params,
-                                Credentials, verb='POST')
+            params["TokenCode"] = mfa_token
+        return self.get_object("GetSessionToken", params, Credentials, verb="POST")
 
-    def get_session_token(self, duration=None, force_new=False,
-                          mfa_serial_number=None, mfa_token=None):
+    def get_session_token(
+        self, duration=None, force_new=False, mfa_serial_number=None, mfa_token=None
+    ):
         """
         Return a valid session token.  Because retrieving new tokens
         from the Secure Token Service is a fairly heavyweight operation
@@ -170,15 +198,13 @@ class STSConnection(AWSQueryConnection):
         :param mfa_token: The 6 digit token associated with the
             MFA device.
         """
-        token_key = '%s:%s' % (self.region.name, self.provider.access_key)
+        token_key = "%s:%s" % (self.region.name, self.provider.access_key)
         token = self._check_token_cache(token_key, duration)
         if force_new or not token:
-            boto.log.debug('fetching a new token for %s' % token_key)
+            boto.log.debug("fetching a new token for %s" % token_key)
             try:
                 self._mutex.acquire()
-                token = self._get_session_token(duration,
-                                                mfa_serial_number,
-                                                mfa_token)
+                token = self._get_session_token(duration, mfa_serial_number, mfa_token)
                 _session_token_cache[token_key] = token
             finally:
                 self._mutex.release()
@@ -247,18 +273,25 @@ class STSConnection(AWSQueryConnection):
             owners defaults to one hour.
 
         """
-        params = {'Name': name}
+        params = {"Name": name}
         if duration:
-            params['DurationSeconds'] = duration
+            params["DurationSeconds"] = duration
         if policy:
-            params['Policy'] = policy
-        return self.get_object('GetFederationToken', params,
-                                FederationToken, verb='POST')
+            params["Policy"] = policy
+        return self.get_object(
+            "GetFederationToken", params, FederationToken, verb="POST"
+        )
 
-    def assume_role(self, role_arn, role_session_name, policy=None,
-                    duration_seconds=None, external_id=None,
-                    mfa_serial_number=None,
-                    mfa_token=None):
+    def assume_role(
+        self,
+        role_arn,
+        role_session_name,
+        policy=None,
+        duration_seconds=None,
+        external_id=None,
+        mfa_serial_number=None,
+        mfa_token=None,
+    ):
         """
         Returns a set of temporary security credentials (consisting of
         an access key ID, a secret access key, and a security token)
@@ -367,24 +400,27 @@ class STSConnection(AWSQueryConnection):
             Minimum length of 6. Maximum length of 6.
 
         """
-        params = {
-            'RoleArn': role_arn,
-            'RoleSessionName': role_session_name
-        }
+        params = {"RoleArn": role_arn, "RoleSessionName": role_session_name}
         if policy is not None:
-            params['Policy'] = policy
+            params["Policy"] = policy
         if duration_seconds is not None:
-            params['DurationSeconds'] = duration_seconds
+            params["DurationSeconds"] = duration_seconds
         if external_id is not None:
-            params['ExternalId'] = external_id
+            params["ExternalId"] = external_id
         if mfa_serial_number is not None:
-            params['SerialNumber'] = mfa_serial_number
+            params["SerialNumber"] = mfa_serial_number
         if mfa_token is not None:
-            params['TokenCode'] = mfa_token
-        return self.get_object('AssumeRole', params, AssumedRole, verb='POST')
+            params["TokenCode"] = mfa_token
+        return self.get_object("AssumeRole", params, AssumedRole, verb="POST")
 
-    def assume_role_with_saml(self, role_arn, principal_arn, saml_assertion,
-                              policy=None, duration_seconds=None):
+    def assume_role_with_saml(
+        self,
+        role_arn,
+        principal_arn,
+        saml_assertion,
+        policy=None,
+        duration_seconds=None,
+    ):
         """
         Returns a set of temporary security credentials for users who
         have been authenticated via a SAML authentication response.
@@ -481,20 +517,25 @@ class STSConnection(AWSQueryConnection):
 
         """
         params = {
-            'RoleArn': role_arn,
-            'PrincipalArn': principal_arn,
-            'SAMLAssertion': saml_assertion,
+            "RoleArn": role_arn,
+            "PrincipalArn": principal_arn,
+            "SAMLAssertion": saml_assertion,
         }
         if policy is not None:
-            params['Policy'] = policy
+            params["Policy"] = policy
         if duration_seconds is not None:
-            params['DurationSeconds'] = duration_seconds
-        return self.get_object('AssumeRoleWithSAML', params, AssumedRole,
-                               verb='POST')
+            params["DurationSeconds"] = duration_seconds
+        return self.get_object("AssumeRoleWithSAML", params, AssumedRole, verb="POST")
 
-    def assume_role_with_web_identity(self, role_arn, role_session_name,
-                                      web_identity_token, provider_id=None,
-                                      policy=None, duration_seconds=None):
+    def assume_role_with_web_identity(
+        self,
+        role_arn,
+        role_session_name,
+        web_identity_token,
+        provider_id=None,
+        policy=None,
+        duration_seconds=None,
+    ):
         """
         Returns a set of temporary security credentials for users who
         have been authenticated in a mobile or web application with a
@@ -581,21 +622,18 @@ class STSConnection(AWSQueryConnection):
 
         """
         params = {
-            'RoleArn': role_arn,
-            'RoleSessionName': role_session_name,
-            'WebIdentityToken': web_identity_token,
+            "RoleArn": role_arn,
+            "RoleSessionName": role_session_name,
+            "WebIdentityToken": web_identity_token,
         }
         if provider_id is not None:
-            params['ProviderId'] = provider_id
+            params["ProviderId"] = provider_id
         if policy is not None:
-            params['Policy'] = policy
+            params["Policy"] = policy
         if duration_seconds is not None:
-            params['DurationSeconds'] = duration_seconds
+            params["DurationSeconds"] = duration_seconds
         return self.get_object(
-            'AssumeRoleWithWebIdentity',
-            params,
-            AssumedRole,
-            verb='POST'
+            "AssumeRoleWithWebIdentity", params, AssumedRole, verb="POST"
         )
 
     def decode_authorization_message(self, encoded_message):
@@ -642,11 +680,11 @@ class STSConnection(AWSQueryConnection):
 
         """
         params = {
-            'EncodedMessage': encoded_message,
+            "EncodedMessage": encoded_message,
         }
         return self.get_object(
-            'DecodeAuthorizationMessage',
+            "DecodeAuthorizationMessage",
             params,
             DecodeAuthorizationMessage,
-            verb='POST'
+            verb="POST",
         )

@@ -179,7 +179,8 @@ def test_functional_noproxy_star_http(monkeypatch):
     def handler(request):
         if request.method == "CONNECT":
             return tests.http_response_bytes(
-                status="400 Expected direct", headers={"connection": "close"},
+                status="400 Expected direct",
+                headers={"connection": "close"},
             )
         return tests.http_response_bytes()
 
@@ -195,7 +196,8 @@ def test_functional_noproxy_star_https(monkeypatch):
     def handler(request):
         if request.method == "CONNECT":
             return tests.http_response_bytes(
-                status="400 Expected direct", headers={"connection": "close"},
+                status="400 Expected direct",
+                headers={"connection": "close"},
             )
         return tests.http_response_bytes()
 

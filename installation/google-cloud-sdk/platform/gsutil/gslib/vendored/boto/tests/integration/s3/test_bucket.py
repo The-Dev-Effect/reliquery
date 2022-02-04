@@ -43,12 +43,12 @@ from boto.s3.website import RedirectLocation
 from boto.compat import unquote_str
 
 
-class S3BucketTest (unittest.TestCase):
+class S3BucketTest(unittest.TestCase):
     s3 = True
 
     def setUp(self):
         self.conn = S3Connection()
-        self.bucket_name = 'bucket-%d' % int(time.time())
+        self.bucket_name = "bucket-%d" % int(time.time())
         self.bucket = self.conn.create_bucket(self.bucket_name)
 
     def tearDown(self):
@@ -88,7 +88,6 @@ class S3BucketTest (unittest.TestCase):
             self.assertEqual(element.name, expected.pop(0))
         self.assertEqual(expected, [])
 
-
     def test_list_with_url_encoding(self):
         expected = [u"α", u"β", u"γ"]
         for key_name in expected:
@@ -99,7 +98,7 @@ class S3BucketTest (unittest.TestCase):
         # popping elements off the front of expected.
         orig_getall = self.bucket._get_all
         getall = lambda *a, **k: orig_getall(*a, max_keys=2, **k)
-        with patch.object(self.bucket, '_get_all', getall):
+        with patch.object(self.bucket, "_get_all", getall):
             rs = self.bucket.list(encoding_type="url")
             for element in rs:
                 name = unquote_str(element.name)
@@ -147,16 +146,15 @@ class S3BucketTest (unittest.TestCase):
         """
         self.bucket.set_xml_tags(tagging)
         response = self.bucket.get_tags()
-        self.assertEqual(response[0][0].key, 'tagkey')
-        self.assertEqual(response[0][0].value, 'tagvalue')
+        self.assertEqual(response[0][0].key, "tagkey")
+        self.assertEqual(response[0][0].value, "tagvalue")
         self.bucket.delete_tags()
         try:
             self.bucket.get_tags()
         except S3ResponseError as e:
-            self.assertEqual(e.code, 'NoSuchTagSet')
+            self.assertEqual(e.code, "NoSuchTagSet")
         except Exception as e:
-            self.fail("Wrong exception raised (expected S3ResponseError): %s"
-                      % e)
+            self.fail("Wrong exception raised (expected S3ResponseError): %s" % e)
         else:
             self.fail("Expected S3ResponseError, but no exception raised.")
 
@@ -164,87 +162,103 @@ class S3BucketTest (unittest.TestCase):
         """Create tags from python objects rather than raw xml."""
         t = Tags()
         tag_set = TagSet()
-        tag_set.add_tag('akey', 'avalue')
-        tag_set.add_tag('anotherkey', 'anothervalue')
+        tag_set.add_tag("akey", "avalue")
+        tag_set.add_tag("anotherkey", "anothervalue")
         t.add_tag_set(tag_set)
         self.bucket.set_tags(t)
         response = self.bucket.get_tags()
         tags = sorted(response[0], key=lambda tag: tag.key)
-        self.assertEqual(tags[0].key, 'akey')
-        self.assertEqual(tags[0].value, 'avalue')
-        self.assertEqual(tags[1].key, 'anotherkey')
-        self.assertEqual(tags[1].value, 'anothervalue')
+        self.assertEqual(tags[0].key, "akey")
+        self.assertEqual(tags[0].value, "avalue")
+        self.assertEqual(tags[1].key, "anotherkey")
+        self.assertEqual(tags[1].value, "anothervalue")
 
     def test_website_configuration(self):
-        response = self.bucket.configure_website('index.html')
+        response = self.bucket.configure_website("index.html")
         self.assertTrue(response)
         config = self.bucket.get_website_configuration()
-        self.assertEqual(config, {'WebsiteConfiguration':
-                                  {'IndexDocument': {'Suffix': 'index.html'}}})
+        self.assertEqual(
+            config,
+            {"WebsiteConfiguration": {"IndexDocument": {"Suffix": "index.html"}}},
+        )
         config2, xml = self.bucket.get_website_configuration_with_xml()
         self.assertEqual(config, config2)
-        self.assertTrue('<Suffix>index.html</Suffix>' in xml, xml)
+        self.assertTrue("<Suffix>index.html</Suffix>" in xml, xml)
 
     def test_website_redirect_all_requests(self):
         response = self.bucket.configure_website(
-            redirect_all_requests_to=RedirectLocation('example.com'))
+            redirect_all_requests_to=RedirectLocation("example.com")
+        )
         config = self.bucket.get_website_configuration()
-        self.assertEqual(config, {
-            'WebsiteConfiguration': {
-                'RedirectAllRequestsTo': {
-                    'HostName': 'example.com'}}})
+        self.assertEqual(
+            config,
+            {
+                "WebsiteConfiguration": {
+                    "RedirectAllRequestsTo": {"HostName": "example.com"}
+                }
+            },
+        )
 
         # Can configure the protocol as well.
         response = self.bucket.configure_website(
-            redirect_all_requests_to=RedirectLocation('example.com', 'https'))
+            redirect_all_requests_to=RedirectLocation("example.com", "https")
+        )
         config = self.bucket.get_website_configuration()
-        self.assertEqual(config, {
-            'WebsiteConfiguration': {'RedirectAllRequestsTo': {
-                'HostName': 'example.com',
-                'Protocol': 'https',
-            }}}
+        self.assertEqual(
+            config,
+            {
+                "WebsiteConfiguration": {
+                    "RedirectAllRequestsTo": {
+                        "HostName": "example.com",
+                        "Protocol": "https",
+                    }
+                }
+            },
         )
 
     def test_lifecycle(self):
         lifecycle = Lifecycle()
-        lifecycle.add_rule('myid', '', 'Enabled', 30)
+        lifecycle.add_rule("myid", "", "Enabled", 30)
         self.assertTrue(self.bucket.configure_lifecycle(lifecycle))
         response = self.bucket.get_lifecycle_config()
         self.assertEqual(len(response), 1)
         actual_lifecycle = response[0]
-        self.assertEqual(actual_lifecycle.id, 'myid')
-        self.assertEqual(actual_lifecycle.prefix, '')
-        self.assertEqual(actual_lifecycle.status, 'Enabled')
+        self.assertEqual(actual_lifecycle.id, "myid")
+        self.assertEqual(actual_lifecycle.prefix, "")
+        self.assertEqual(actual_lifecycle.status, "Enabled")
         self.assertEqual(actual_lifecycle.transition, [])
 
     def test_lifecycle_with_glacier_transition(self):
         lifecycle = Lifecycle()
-        transition = Transition(days=30, storage_class='GLACIER')
-        rule = Rule('myid', prefix='', status='Enabled', expiration=None,
-                    transition=transition)
+        transition = Transition(days=30, storage_class="GLACIER")
+        rule = Rule(
+            "myid", prefix="", status="Enabled", expiration=None, transition=transition
+        )
         lifecycle.append(rule)
         self.assertTrue(self.bucket.configure_lifecycle(lifecycle))
         response = self.bucket.get_lifecycle_config()
         transition = response[0].transition
         self.assertEqual(transition.days, 30)
-        self.assertEqual(transition.storage_class, 'GLACIER')
+        self.assertEqual(transition.storage_class, "GLACIER")
         self.assertEqual(transition.date, None)
 
     def test_lifecycle_multi(self):
-        date = '2022-10-12T00:00:00.000Z'
-        sc = 'GLACIER'
+        date = "2022-10-12T00:00:00.000Z"
+        sc = "GLACIER"
         lifecycle = Lifecycle()
         lifecycle.add_rule("1", "1/", "Enabled", 1)
         lifecycle.add_rule("2", "2/", "Enabled", Expiration(days=2))
         lifecycle.add_rule("3", "3/", "Enabled", Expiration(date=date))
-        lifecycle.add_rule("4", "4/", "Enabled", None,
-            Transition(days=4, storage_class=sc))
-        lifecycle.add_rule("5", "5/", "Enabled", None,
-            Transition(date=date, storage_class=sc))
+        lifecycle.add_rule(
+            "4", "4/", "Enabled", None, Transition(days=4, storage_class=sc)
+        )
+        lifecycle.add_rule(
+            "5", "5/", "Enabled", None, Transition(date=date, storage_class=sc)
+        )
         # set the lifecycle
         self.bucket.configure_lifecycle(lifecycle)
         # read the lifecycle back
-        readlifecycle = self.bucket.get_lifecycle_config();
+        readlifecycle = self.bucket.get_lifecycle_config()
         for rule in readlifecycle:
             if rule.id == "1":
                 self.assertEqual(rule.prefix, "1/")
@@ -276,12 +290,12 @@ class S3BucketTest (unittest.TestCase):
         # set the lifecycle
         self.bucket.configure_lifecycle(lifecycle)
         # read the lifecycle back
-        readlifecycle = self.bucket.get_lifecycle_config();
+        readlifecycle = self.bucket.get_lifecycle_config()
         for rule in readlifecycle:
             self.assertEqual(rule.id, name)
             self.assertEqual(rule.expiration.days, days)
-            #Note: Boto seems correct? AWS seems broken?
-            #self.assertEqual(rule.prefix, prefix)
+            # Note: Boto seems correct? AWS seems broken?
+            # self.assertEqual(rule.prefix, prefix)
 
     def test_lifecycle_with_defaults(self):
         lifecycle = Lifecycle()
@@ -291,11 +305,11 @@ class S3BucketTest (unittest.TestCase):
         self.assertEqual(len(response), 1)
         actual_lifecycle = response[0]
         self.assertNotEqual(len(actual_lifecycle.id), 0)
-        self.assertEqual(actual_lifecycle.prefix, '')
+        self.assertEqual(actual_lifecycle.prefix, "")
 
     def test_lifecycle_rule_xml(self):
         # create a rule directly with id, prefix defaults
-        rule = Rule(status='Enabled', expiration=30)
+        rule = Rule(status="Enabled", expiration=30)
         s = rule.to_xml()
         # Confirm no ID is set in the rule.
         self.assertEqual(s.find("<ID>"), -1)

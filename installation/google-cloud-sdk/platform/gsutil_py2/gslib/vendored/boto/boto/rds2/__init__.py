@@ -31,7 +31,8 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.rds2.layer1 import RDSConnection
-    return get_regions('rds', connection_cls=RDSConnection)
+
+    return get_regions("rds", connection_cls=RDSConnection)
 
 
 def connect_to_region(region_name, **kw_params):
@@ -49,5 +50,5 @@ def connect_to_region(region_name, **kw_params):
              name is given
     """
     from boto.rds2.layer1 import RDSConnection
-    return connect('rds', region_name, connection_cls=RDSConnection,
-                   **kw_params)
+
+    return connect("rds", region_name, connection_cls=RDSConnection, **kw_params)

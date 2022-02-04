@@ -33,8 +33,7 @@ class InstanceType(EC2Object):
     :ivar disk: The amount of disk space in gigabytes for this vm type
     """
 
-    def __init__(self, connection=None, name=None, cores=None,
-                 memory=None, disk=None):
+    def __init__(self, connection=None, name=None, cores=None, memory=None, disk=None):
         super(InstanceType, self).__init__(connection)
         self.connection = connection
         self.name = name
@@ -43,17 +42,21 @@ class InstanceType(EC2Object):
         self.disk = disk
 
     def __repr__(self):
-        return 'InstanceType:%s-%s,%s,%s' % (self.name, self.cores,
-                                             self.memory, self.disk)
+        return "InstanceType:%s-%s,%s,%s" % (
+            self.name,
+            self.cores,
+            self.memory,
+            self.disk,
+        )
 
     def endElement(self, name, value, connection):
-        if name == 'name':
+        if name == "name":
             self.name = value
-        elif name == 'cpu':
+        elif name == "cpu":
             self.cores = value
-        elif name == 'disk':
+        elif name == "disk":
             self.disk = value
-        elif name == 'memory':
+        elif name == "memory":
             self.memory = value
         else:
             setattr(self, name, value)

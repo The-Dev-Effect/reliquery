@@ -37,18 +37,18 @@ class TestJob(unittest.TestCase):
 
     def test_get_job_validate_checksum_success(self):
         response = GlacierResponse(mock.Mock(), None)
-        response['TreeHash'] = 'tree_hash'
+        response["TreeHash"] = "tree_hash"
         self.api.get_job_output.return_value = response
-        with mock.patch('boto.glacier.job.tree_hash_from_str') as t:
-            t.return_value = 'tree_hash'
+        with mock.patch("boto.glacier.job.tree_hash_from_str") as t:
+            t.return_value = "tree_hash"
             self.job.get_output(byte_range=(1, 1024), validate_checksum=True)
 
     def test_get_job_validation_fails(self):
         response = GlacierResponse(mock.Mock(), None)
-        response['TreeHash'] = 'tree_hash'
+        response["TreeHash"] = "tree_hash"
         self.api.get_job_output.return_value = response
-        with mock.patch('boto.glacier.job.tree_hash_from_str') as t:
-            t.return_value = 'BAD_TREE_HASH_VALUE'
+        with mock.patch("boto.glacier.job.tree_hash_from_str") as t:
+            t.return_value = "BAD_TREE_HASH_VALUE"
             with self.assertRaises(TreeHashDoesNotMatchError):
                 # With validate_checksum set to True, this call fails.
                 self.job.get_output(byte_range=(1, 1024), validate_checksum=True)
@@ -56,14 +56,14 @@ class TestJob(unittest.TestCase):
             self.job.get_output(byte_range=(1, 1024), validate_checksum=False)
 
     def test_download_to_fileobj(self):
-        http_response = mock.Mock(read=mock.Mock(return_value='xyz'))
+        http_response = mock.Mock(read=mock.Mock(return_value="xyz"))
         response = GlacierResponse(http_response, None)
-        response['TreeHash'] = 'tree_hash'
+        response["TreeHash"] = "tree_hash"
         self.api.get_job_output.return_value = response
         fileobj = StringIO()
         self.job.archive_size = 3
-        with mock.patch('boto.glacier.job.tree_hash_from_str') as t:
-            t.return_value = 'tree_hash'
+        with mock.patch("boto.glacier.job.tree_hash_from_str") as t:
+            t.return_value = "tree_hash"
             self.job.download_to_fileobj(fileobj)
         fileobj.seek(0)
         self.assertEqual(http_response.read.return_value, fileobj.read())
@@ -77,5 +77,5 @@ class TestJob(unittest.TestCase):
         self.assertEqual(self.job._calc_num_chunks(self.job.DefaultPartSize), 2)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

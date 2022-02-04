@@ -87,6 +87,7 @@ class SupportConnection(AWSQueryConnection):
     your support cases, and how to call Trusted Advisor for results of
     checks on your resources.
     """
+
     APIVersion = "2013-04-15"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "support.us-east-1.amazonaws.com"
@@ -106,21 +107,21 @@ class SupportConnection(AWSQueryConnection):
         "AttachmentSetSizeLimitExceeded": exceptions.AttachmentSetSizeLimitExceeded,
     }
 
-
     def __init__(self, **kwargs):
-        region = kwargs.pop('region', None)
+        region = kwargs.pop("region", None)
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
 
-        if 'host' not in kwargs or kwargs['host'] is None:
-            kwargs['host'] = region.endpoint
+        if "host" not in kwargs or kwargs["host"] is None:
+            kwargs["host"] = region.endpoint
 
         super(SupportConnection, self).__init__(**kwargs)
         self.region = region
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
     def add_attachments_to_set(self, attachments, attachment_set_id=None):
         """
@@ -150,15 +151,20 @@ class SupportConnection(AWSQueryConnection):
             attachment.
 
         """
-        params = {'attachments': attachments, }
+        params = {
+            "attachments": attachments,
+        }
         if attachment_set_id is not None:
-            params['attachmentSetId'] = attachment_set_id
-        return self.make_request(action='AddAttachmentsToSet',
-                                 body=json.dumps(params))
+            params["attachmentSetId"] = attachment_set_id
+        return self.make_request(action="AddAttachmentsToSet", body=json.dumps(params))
 
-    def add_communication_to_case(self, communication_body, case_id=None,
-                                  cc_email_addresses=None,
-                                  attachment_set_id=None):
+    def add_communication_to_case(
+        self,
+        communication_body,
+        case_id=None,
+        cc_email_addresses=None,
+        attachment_set_id=None,
+    ):
         """
         Adds additional customer communication to an AWS Support case.
         You use the `CaseId` value to identify the case to add
@@ -191,20 +197,31 @@ class SupportConnection(AWSQueryConnection):
             AddAttachmentsToSet
 
         """
-        params = {'communicationBody': communication_body, }
+        params = {
+            "communicationBody": communication_body,
+        }
         if case_id is not None:
-            params['caseId'] = case_id
+            params["caseId"] = case_id
         if cc_email_addresses is not None:
-            params['ccEmailAddresses'] = cc_email_addresses
+            params["ccEmailAddresses"] = cc_email_addresses
         if attachment_set_id is not None:
-            params['attachmentSetId'] = attachment_set_id
-        return self.make_request(action='AddCommunicationToCase',
-                                 body=json.dumps(params))
+            params["attachmentSetId"] = attachment_set_id
+        return self.make_request(
+            action="AddCommunicationToCase", body=json.dumps(params)
+        )
 
-    def create_case(self, subject, communication_body, service_code=None,
-                    severity_code=None, category_code=None,
-                    cc_email_addresses=None, language=None, issue_type=None,
-                    attachment_set_id=None):
+    def create_case(
+        self,
+        subject,
+        communication_body,
+        service_code=None,
+        severity_code=None,
+        category_code=None,
+        cc_email_addresses=None,
+        language=None,
+        issue_type=None,
+        attachment_set_id=None,
+    ):
         """
         Creates a new case in the AWS Support Center. This operation
         is modeled on the behavior of the AWS Support Center `Open a
@@ -286,25 +303,24 @@ class SupportConnection(AWSQueryConnection):
 
         """
         params = {
-            'subject': subject,
-            'communicationBody': communication_body,
+            "subject": subject,
+            "communicationBody": communication_body,
         }
         if service_code is not None:
-            params['serviceCode'] = service_code
+            params["serviceCode"] = service_code
         if severity_code is not None:
-            params['severityCode'] = severity_code
+            params["severityCode"] = severity_code
         if category_code is not None:
-            params['categoryCode'] = category_code
+            params["categoryCode"] = category_code
         if cc_email_addresses is not None:
-            params['ccEmailAddresses'] = cc_email_addresses
+            params["ccEmailAddresses"] = cc_email_addresses
         if language is not None:
-            params['language'] = language
+            params["language"] = language
         if issue_type is not None:
-            params['issueType'] = issue_type
+            params["issueType"] = issue_type
         if attachment_set_id is not None:
-            params['attachmentSetId'] = attachment_set_id
-        return self.make_request(action='CreateCase',
-                                 body=json.dumps(params))
+            params["attachmentSetId"] = attachment_set_id
+        return self.make_request(action="CreateCase", body=json.dumps(params))
 
     def describe_attachment(self, attachment_id):
         """
@@ -319,15 +335,23 @@ class SupportConnection(AWSQueryConnection):
             IDs are returned by the DescribeCommunications operation.
 
         """
-        params = {'attachmentId': attachment_id, }
-        return self.make_request(action='DescribeAttachment',
-                                 body=json.dumps(params))
+        params = {
+            "attachmentId": attachment_id,
+        }
+        return self.make_request(action="DescribeAttachment", body=json.dumps(params))
 
-    def describe_cases(self, case_id_list=None, display_id=None,
-                       after_time=None, before_time=None,
-                       include_resolved_cases=None, next_token=None,
-                       max_results=None, language=None,
-                       include_communications=None):
+    def describe_cases(
+        self,
+        case_id_list=None,
+        display_id=None,
+        after_time=None,
+        before_time=None,
+        include_resolved_cases=None,
+        next_token=None,
+        max_results=None,
+        language=None,
+        include_communications=None,
+    ):
         """
         Returns a list of cases that you specify by passing one or
         more case IDs. In addition, you can filter the cases by date
@@ -389,29 +413,33 @@ class SupportConnection(AWSQueryConnection):
         """
         params = {}
         if case_id_list is not None:
-            params['caseIdList'] = case_id_list
+            params["caseIdList"] = case_id_list
         if display_id is not None:
-            params['displayId'] = display_id
+            params["displayId"] = display_id
         if after_time is not None:
-            params['afterTime'] = after_time
+            params["afterTime"] = after_time
         if before_time is not None:
-            params['beforeTime'] = before_time
+            params["beforeTime"] = before_time
         if include_resolved_cases is not None:
-            params['includeResolvedCases'] = include_resolved_cases
+            params["includeResolvedCases"] = include_resolved_cases
         if next_token is not None:
-            params['nextToken'] = next_token
+            params["nextToken"] = next_token
         if max_results is not None:
-            params['maxResults'] = max_results
+            params["maxResults"] = max_results
         if language is not None:
-            params['language'] = language
+            params["language"] = language
         if include_communications is not None:
-            params['includeCommunications'] = include_communications
-        return self.make_request(action='DescribeCases',
-                                 body=json.dumps(params))
+            params["includeCommunications"] = include_communications
+        return self.make_request(action="DescribeCases", body=json.dumps(params))
 
-    def describe_communications(self, case_id, before_time=None,
-                                after_time=None, next_token=None,
-                                max_results=None):
+    def describe_communications(
+        self,
+        case_id,
+        before_time=None,
+        after_time=None,
+        next_token=None,
+        max_results=None,
+    ):
         """
         Returns communications (and attachments) for one or more
         support cases. You can use the `AfterTime` and `BeforeTime`
@@ -450,17 +478,20 @@ class SupportConnection(AWSQueryConnection):
             paginating.
 
         """
-        params = {'caseId': case_id, }
+        params = {
+            "caseId": case_id,
+        }
         if before_time is not None:
-            params['beforeTime'] = before_time
+            params["beforeTime"] = before_time
         if after_time is not None:
-            params['afterTime'] = after_time
+            params["afterTime"] = after_time
         if next_token is not None:
-            params['nextToken'] = next_token
+            params["nextToken"] = next_token
         if max_results is not None:
-            params['maxResults'] = max_results
-        return self.make_request(action='DescribeCommunications',
-                                 body=json.dumps(params))
+            params["maxResults"] = max_results
+        return self.make_request(
+            action="DescribeCommunications", body=json.dumps(params)
+        )
 
     def describe_services(self, service_code_list=None, language=None):
         """
@@ -492,11 +523,10 @@ class SupportConnection(AWSQueryConnection):
         """
         params = {}
         if service_code_list is not None:
-            params['serviceCodeList'] = service_code_list
+            params["serviceCodeList"] = service_code_list
         if language is not None:
-            params['language'] = language
-        return self.make_request(action='DescribeServices',
-                                 body=json.dumps(params))
+            params["language"] = language
+        return self.make_request(action="DescribeServices", body=json.dumps(params))
 
     def describe_severity_levels(self, language=None):
         """
@@ -514,9 +544,10 @@ class SupportConnection(AWSQueryConnection):
         """
         params = {}
         if language is not None:
-            params['language'] = language
-        return self.make_request(action='DescribeSeverityLevels',
-                                 body=json.dumps(params))
+            params["language"] = language
+        return self.make_request(
+            action="DescribeSeverityLevels", body=json.dumps(params)
+        )
 
     def describe_trusted_advisor_check_refresh_statuses(self, check_ids):
         """
@@ -528,9 +559,12 @@ class SupportConnection(AWSQueryConnection):
         :param check_ids: The IDs of the Trusted Advisor checks.
 
         """
-        params = {'checkIds': check_ids, }
-        return self.make_request(action='DescribeTrustedAdvisorCheckRefreshStatuses',
-                                 body=json.dumps(params))
+        params = {
+            "checkIds": check_ids,
+        }
+        return self.make_request(
+            action="DescribeTrustedAdvisorCheckRefreshStatuses", body=json.dumps(params)
+        )
 
     def describe_trusted_advisor_check_result(self, check_id, language=None):
         """
@@ -565,11 +599,14 @@ class SupportConnection(AWSQueryConnection):
             operations that take them.
 
         """
-        params = {'checkId': check_id, }
+        params = {
+            "checkId": check_id,
+        }
         if language is not None:
-            params['language'] = language
-        return self.make_request(action='DescribeTrustedAdvisorCheckResult',
-                                 body=json.dumps(params))
+            params["language"] = language
+        return self.make_request(
+            action="DescribeTrustedAdvisorCheckResult", body=json.dumps(params)
+        )
 
     def describe_trusted_advisor_check_summaries(self, check_ids):
         """
@@ -584,9 +621,12 @@ class SupportConnection(AWSQueryConnection):
         :param check_ids: The IDs of the Trusted Advisor checks.
 
         """
-        params = {'checkIds': check_ids, }
-        return self.make_request(action='DescribeTrustedAdvisorCheckSummaries',
-                                 body=json.dumps(params))
+        params = {
+            "checkIds": check_ids,
+        }
+        return self.make_request(
+            action="DescribeTrustedAdvisorCheckSummaries", body=json.dumps(params)
+        )
 
     def describe_trusted_advisor_checks(self, language):
         """
@@ -603,9 +643,12 @@ class SupportConnection(AWSQueryConnection):
             operations that take them.
 
         """
-        params = {'language': language, }
-        return self.make_request(action='DescribeTrustedAdvisorChecks',
-                                 body=json.dumps(params))
+        params = {
+            "language": language,
+        }
+        return self.make_request(
+            action="DescribeTrustedAdvisorChecks", body=json.dumps(params)
+        )
 
     def refresh_trusted_advisor_check(self, check_id):
         """
@@ -627,9 +670,12 @@ class SupportConnection(AWSQueryConnection):
         :param check_id: The unique identifier for the Trusted Advisor check.
 
         """
-        params = {'checkId': check_id, }
-        return self.make_request(action='RefreshTrustedAdvisorCheck',
-                                 body=json.dumps(params))
+        params = {
+            "checkId": check_id,
+        }
+        return self.make_request(
+            action="RefreshTrustedAdvisorCheck", body=json.dumps(params)
+        )
 
     def resolve_case(self, case_id=None):
         """
@@ -645,30 +691,32 @@ class SupportConnection(AWSQueryConnection):
         """
         params = {}
         if case_id is not None:
-            params['caseId'] = case_id
-        return self.make_request(action='ResolveCase',
-                                 body=json.dumps(params))
+            params["caseId"] = case_id
+        return self.make_request(action="ResolveCase", body=json.dumps(params))
 
     def make_request(self, action, body):
         headers = {
-            'X-Amz-Target': '%s.%s' % (self.TargetPrefix, action),
-            'Host': self.region.endpoint,
-            'Content-Type': 'application/x-amz-json-1.1',
-            'Content-Length': str(len(body)),
+            "X-Amz-Target": "%s.%s" % (self.TargetPrefix, action),
+            "Host": self.region.endpoint,
+            "Content-Type": "application/x-amz-json-1.1",
+            "Content-Length": str(len(body)),
         }
         http_request = self.build_base_http_request(
-            method='POST', path='/', auth_path='/', params={},
-            headers=headers, data=body)
-        response = self._mexe(http_request, sender=None,
-                              override_num_retries=10)
-        response_body = response.read().decode('utf-8')
+            method="POST",
+            path="/",
+            auth_path="/",
+            params={},
+            headers=headers,
+            data=body,
+        )
+        response = self._mexe(http_request, sender=None, override_num_retries=10)
+        response_body = response.read().decode("utf-8")
         boto.log.debug(response_body)
         if response.status == 200:
             if response_body:
                 return json.loads(response_body)
         else:
             json_body = json.loads(response_body)
-            fault_name = json_body.get('__type', None)
+            fault_name = json_body.get("__type", None)
             exception_class = self._faults.get(fault_name, self.ResponseError)
-            raise exception_class(response.status, response.reason,
-                                  body=json_body)
+            raise exception_class(response.status, response.reason, body=json_body)

@@ -45,7 +45,7 @@ def read_locked(*args, **kwargs):
     """
 
     def decorator(f):
-        attr_name = kwargs.get('lock', '_lock')
+        attr_name = kwargs.get("lock", "_lock")
 
         @six.wraps(f)
         def wrapper(self, *args, **kwargs):
@@ -76,7 +76,7 @@ def write_locked(*args, **kwargs):
     """
 
     def decorator(f):
-        attr_name = kwargs.get('lock', '_lock')
+        attr_name = kwargs.get("lock", "_lock")
 
         @six.wraps(f)
         def wrapper(self, *args, **kwargs):
@@ -114,10 +114,10 @@ class ReaderWriterLock(object):
     """
 
     #: Writer owner type/string constant.
-    WRITER = 'w'
+    WRITER = "w"
 
     #: Reader owner type/string constant.
-    READER = 'r'
+    READER = "r"
 
     @staticmethod
     def _fetch_current_thread_functor():
@@ -128,13 +128,11 @@ class ReaderWriterLock(object):
         # reliable to use (and breaks badly when used as all threads share
         # the same current_thread() object)...
         if eventlet is not None and eventlet_patcher is not None:
-            if eventlet_patcher.is_monkey_patched('thread'):
+            if eventlet_patcher.is_monkey_patched("thread"):
                 return eventlet.getcurrent
         return threading.current_thread
 
-    def __init__(self,
-                 condition_cls=threading.Condition,
-                 current_thread_functor=None):
+    def __init__(self, condition_cls=threading.Condition, current_thread_functor=None):
         self._writer = None
         self._pending_writers = collections.deque()
         self._readers = {}
@@ -183,9 +181,10 @@ class ReaderWriterLock(object):
         """
         me = self._current_thread()
         if me in self._pending_writers:
-            raise RuntimeError("Writer %s can not acquire a read lock"
-                               " while waiting for the write lock"
-                               % me)
+            raise RuntimeError(
+                "Writer %s can not acquire a read lock"
+                " while waiting for the write lock" % me
+            )
         with self._cond:
             while True:
                 # No active writer, or we are the writer;
@@ -228,8 +227,9 @@ class ReaderWriterLock(object):
         me = self._current_thread()
         i_am_writer = self.is_writer(check_pending=False)
         if self.is_reader() and not i_am_writer:
-            raise RuntimeError("Reader %s to writer privilege"
-                               " escalation not allowed" % me)
+            raise RuntimeError(
+                "Reader %s to writer privilege" " escalation not allowed" % me
+            )
         if i_am_writer:
             # Already the writer; this allows for basic reentrancy.
             yield self
@@ -287,8 +287,8 @@ def locked(*args, **kwargs):
     """
 
     def decorator(f):
-        attr_name = kwargs.get('lock', '_lock')
-        logger = kwargs.get('logger')
+        attr_name = kwargs.get("lock", "_lock")
+        logger = kwargs.get("logger")
 
         @six.wraps(f)
         def wrapper(self, *args, **kwargs):
@@ -297,8 +297,9 @@ def locked(*args, **kwargs):
                 with _utils.LockStack(logger=logger) as stack:
                     for i, lock in enumerate(attr_value):
                         if not stack.acquire_lock(lock):
-                            raise threading.ThreadError("Unable to acquire"
-                                                        " lock %s" % (i + 1))
+                            raise threading.ThreadError(
+                                "Unable to acquire" " lock %s" % (i + 1)
+                            )
                     return f(self, *args, **kwargs)
             else:
                 lock = attr_value

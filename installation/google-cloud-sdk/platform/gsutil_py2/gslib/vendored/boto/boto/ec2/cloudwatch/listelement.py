@@ -21,10 +21,9 @@
 
 
 class ListElement(list):
-
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'member':
+        if name == "member":
             self.append(value)

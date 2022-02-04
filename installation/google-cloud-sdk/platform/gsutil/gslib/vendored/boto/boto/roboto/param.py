@@ -22,8 +22,8 @@
 
 import os
 
-class Converter(object):
 
+class Converter(object):
     @classmethod
     def convert_string(cls, param, value):
         # TODO: could do length validation, etc. here
@@ -59,20 +59,31 @@ class Converter(object):
     @classmethod
     def convert(cls, param, value):
         try:
-            if hasattr(cls, 'convert_'+param.ptype):
-                mthd = getattr(cls, 'convert_'+param.ptype)
+            if hasattr(cls, "convert_" + param.ptype):
+                mthd = getattr(cls, "convert_" + param.ptype)
             else:
                 mthd = cls.convert_string
             return mthd(param, value)
         except:
-            raise ValidationException(param, '')
+            raise ValidationException(param, "")
+
 
 class Param(Converter):
-
-    def __init__(self, name=None, ptype='string', optional=True,
-                 short_name=None, long_name=None, doc='',
-                 metavar=None, cardinality=1, default=None,
-                 choices=None, encoder=None, request_param=True):
+    def __init__(
+        self,
+        name=None,
+        ptype="string",
+        optional=True,
+        short_name=None,
+        long_name=None,
+        doc="",
+        metavar=None,
+        cardinality=1,
+        default=None,
+        choices=None,
+        encoder=None,
+        request_param=True,
+    ):
         self.name = name
         self.ptype = ptype
         self.optional = optional
@@ -90,46 +101,46 @@ class Param(Converter):
     def optparse_long_name(self):
         ln = None
         if self.long_name:
-            ln = '--%s' % self.long_name
+            ln = "--%s" % self.long_name
         return ln
 
     @property
     def synopsis_long_name(self):
         ln = None
         if self.long_name:
-            ln = '--%s' % self.long_name
+            ln = "--%s" % self.long_name
         return ln
 
     @property
     def getopt_long_name(self):
         ln = None
         if self.long_name:
-            ln = '%s' % self.long_name
-            if self.ptype != 'boolean':
-                ln += '='
+            ln = "%s" % self.long_name
+            if self.ptype != "boolean":
+                ln += "="
         return ln
 
     @property
     def optparse_short_name(self):
         sn = None
         if self.short_name:
-            sn = '-%s' % self.short_name
+            sn = "-%s" % self.short_name
         return sn
 
     @property
     def synopsis_short_name(self):
         sn = None
         if self.short_name:
-            sn = '-%s' % self.short_name
+            sn = "-%s" % self.short_name
         return sn
 
     @property
     def getopt_short_name(self):
         sn = None
         if self.short_name:
-            sn = '%s' % self.short_name
-            if self.ptype != 'boolean':
-                sn += ':'
+            sn = "%s" % self.short_name
+            if self.ptype != "boolean":
+                sn += ":"
         return sn
 
     def convert(self, value):
@@ -142,6 +153,4 @@ class Param(Converter):
         :param value: The value to convert.  This should always
                       be a string.
         """
-        return super(Param, self).convert(self,value)
-
-
+        return super(Param, self).convert(self, value)

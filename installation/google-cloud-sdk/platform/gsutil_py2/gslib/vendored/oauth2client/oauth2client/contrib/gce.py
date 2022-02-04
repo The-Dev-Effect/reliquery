@@ -62,9 +62,9 @@ class AppAssertionCredentials(client.AssertionCredentials):
                    Only necessary if using custom service accounts
                    (see https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances#createdefaultserviceaccount).
         """
-        if 'scopes' in kwargs:
+        if "scopes" in kwargs:
             warnings.warn(_SCOPES_WARNING)
-            kwargs['scopes'] = None
+            kwargs["scopes"] = None
 
         # Assertion type is no longer used, but still in the
         # parent class signature.
@@ -77,11 +77,13 @@ class AppAssertionCredentials(client.AssertionCredentials):
     @classmethod
     def from_json(cls, json_data):
         raise NotImplementedError(
-            'Cannot serialize credentials for GCE service accounts.')
+            "Cannot serialize credentials for GCE service accounts."
+        )
 
     def to_json(self):
         raise NotImplementedError(
-            'Cannot serialize credentials for GCE service accounts.')
+            "Cannot serialize credentials for GCE service accounts."
+        )
 
     def retrieve_scopes(self, http):
         """Retrieves the canonical list of scopes for this access token.
@@ -107,11 +109,11 @@ class AppAssertionCredentials(client.AssertionCredentials):
         """
         if self.invalid:
             info = _metadata.get_service_account_info(
-                http,
-                service_account=self.service_account_email or 'default')
+                http, service_account=self.service_account_email or "default"
+            )
             self.invalid = False
-            self.service_account_email = info['email']
-            self.scopes = info['scopes']
+            self.service_account_email = info["email"]
+            self.scopes = info["scopes"]
 
     def _refresh(self, http):
         """Refreshes the access token.
@@ -127,14 +129,16 @@ class AppAssertionCredentials(client.AssertionCredentials):
         try:
             self._retrieve_info(http)
             self.access_token, self.token_expiry = _metadata.get_token(
-                http, service_account=self.service_account_email)
+                http, service_account=self.service_account_email
+            )
         except http_client.HTTPException as err:
             raise client.HttpAccessTokenRefreshError(str(err))
 
     @property
     def serialization_data(self):
         raise NotImplementedError(
-            'Cannot serialize credentials for GCE service accounts.')
+            "Cannot serialize credentials for GCE service accounts."
+        )
 
     def create_scoped_required(self):
         return False
@@ -152,5 +156,4 @@ class AppAssertionCredentials(client.AssertionCredentials):
         Raises:
             NotImplementedError, always.
         """
-        raise NotImplementedError(
-            'Compute Engine service accounts cannot sign blobs')
+        raise NotImplementedError("Compute Engine service accounts cannot sign blobs")

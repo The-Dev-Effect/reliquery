@@ -22,7 +22,7 @@ def pytest_addoption(parser):
 
     This is used to enable the GAE tests. This has to be in this conftest.py
     due to the way py.test collects conftest files."""
-    parser.addoption('--gae-sdk')
+    parser.addoption("--gae-sdk")
 
 
 def pytest_configure(config):

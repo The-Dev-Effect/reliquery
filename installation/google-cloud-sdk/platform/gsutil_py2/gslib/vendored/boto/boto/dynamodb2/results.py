@@ -20,6 +20,7 @@ class ResultSet(object):
         ...     print res['username']
 
     """
+
     def __init__(self, max_page_size=None):
         super(ResultSet, self).__init__()
         self.the_callable = None
@@ -35,7 +36,7 @@ class ResultSet(object):
 
     @property
     def first_key(self):
-        return 'exclusive_start_key'
+        return "exclusive_start_key"
 
     def _reset(self):
         """
@@ -99,14 +100,12 @@ class ResultSet(object):
 
         """
         if not callable(the_callable):
-            raise ValueError(
-                'You must supply an object or function to be called.'
-            )
+            raise ValueError("You must supply an object or function to be called.")
 
         # We pop the ``limit``, if present, to track how many we should return
         # to the user. This isn't the same as the ``limit`` that the low-level
         # DDB api calls use (which limit page size, not the overall result set).
-        self._limit = kwargs.pop('limit', None)
+        self._limit = kwargs.pop("limit", None)
 
         if self._limit is not None and self._limit < 0:
             self._limit = None
@@ -137,24 +136,24 @@ class ResultSet(object):
 
         # Put in the max page size.
         if self._max_page_size is not None:
-            kwargs['limit'] = self._max_page_size
+            kwargs["limit"] = self._max_page_size
         elif self._limit is not None:
             # If max_page_size is not set and limit is available
             #   use it as the page size
-            kwargs['limit'] = self._limit
+            kwargs["limit"] = self._limit
 
         results = self.the_callable(*args, **kwargs)
         self._fetches += 1
-        new_results = results.get('results', [])
-        self._last_key_seen = results.get('last_key', None)
+        new_results = results.get("results", [])
+        self._last_key_seen = results.get("last_key", None)
 
         if len(new_results):
-            self._results.extend(results['results'])
+            self._results.extend(results["results"])
 
         # Check the limit, if it's present.
         if self._limit is not None and self._limit >= 0:
             limit = self._limit
-            limit -= len(results['results'])
+            limit -= len(results["results"])
             # If we've exceeded the limit, we don't have any more
             # results to look for.
             if limit <= 0:
@@ -166,8 +165,8 @@ class ResultSet(object):
 
 class BatchGetResultSet(ResultSet):
     def __init__(self, *args, **kwargs):
-        self._keys_left = kwargs.pop('keys', [])
-        self._max_batch_get = kwargs.pop('max_batch_get', 100)
+        self._keys_left = kwargs.pop("keys", [])
+        self._max_batch_get = kwargs.pop("max_batch_get", 100)
         super(BatchGetResultSet, self).__init__(*args, **kwargs)
 
     def fetch_more(self):
@@ -177,20 +176,20 @@ class BatchGetResultSet(ResultSet):
         kwargs = self.call_kwargs.copy()
 
         # Slice off the max we can fetch.
-        kwargs['keys'] = self._keys_left[:self._max_batch_get]
-        self._keys_left = self._keys_left[self._max_batch_get:]
+        kwargs["keys"] = self._keys_left[: self._max_batch_get]
+        self._keys_left = self._keys_left[self._max_batch_get :]
 
         if len(self._keys_left) <= 0:
             self._results_left = False
 
         results = self.the_callable(*args, **kwargs)
 
-        if not len(results.get('results', [])):
+        if not len(results.get("results", [])):
             return
 
-        self._results.extend(results['results'])
+        self._results.extend(results["results"])
 
-        for offset, key_data in enumerate(results.get('unprocessed_keys', [])):
+        for offset, key_data in enumerate(results.get("unprocessed_keys", [])):
             # We've got an unprocessed key. Reinsert it into the list.
             # DynamoDB only returns valid keys, so there should be no risk of
             # missing keys ever making it here.
@@ -200,5 +199,5 @@ class BatchGetResultSet(ResultSet):
             self._results_left = True
 
         # Decrease the limit, if it's present.
-        if self.call_kwargs.get('limit'):
-            self.call_kwargs['limit'] -= len(results['results'])
+        if self.call_kwargs.get("limit"):
+            self.call_kwargs["limit"] -= len(results["results"])

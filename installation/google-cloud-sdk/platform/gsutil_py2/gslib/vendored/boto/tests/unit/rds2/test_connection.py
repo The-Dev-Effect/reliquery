@@ -130,80 +130,69 @@ class TestRDS2Connection(AWSMockServiceTestCase):
 
     def test_describe_db_instances(self):
         self.set_http_response(status_code=200)
-        response = self.service_connection.describe_db_instances('instance_id')
+        response = self.service_connection.describe_db_instances("instance_id")
         self.assertEqual(len(response), 1)
-        self.assert_request_parameters({
-            'Action': 'DescribeDBInstances',
-            'ContentType': 'JSON',
-            'DBInstanceIdentifier': 'instance_id',
-        }, ignore_params_values=['Version'])
-        db = response['DescribeDBInstancesResponse']\
-                     ['DescribeDBInstancesResult']['DBInstances'][0]\
-                     ['DBInstance']
-        self.assertEqual(db['DBInstanceIdentifier'], 'mydbinstance2')
-        self.assertEqual(db['InstanceCreateTime'], '2012-10-03T22:01:51.047Z')
-        self.assertEqual(db['Engine'], 'mysql')
-        self.assertEqual(db['DBInstanceStatus'], 'backing-up')
-        self.assertEqual(db['AllocatedStorage'], 200)
-        self.assertEqual(db['Endpoint']['Port'], 3306)
-        self.assertEqual(db['DBInstanceClass'], 'db.m1.large')
-        self.assertEqual(db['MasterUsername'], 'awsuser')
-        self.assertEqual(db['AvailabilityZone'], 'us-west-2b')
-        self.assertEqual(db['BackupRetentionPeriod'], 1)
-        self.assertEqual(db['PreferredBackupWindow'], '10:30-11:00')
-        self.assertEqual(db['PreferredMaintenanceWindow'],
-                         'wed:06:30-wed:07:00')
-        self.assertEqual(db['MultiAZ'], False)
-        self.assertEqual(db['Iops'], 2000)
-        self.assertEqual(db['PendingModifiedValues'], None)
+        self.assert_request_parameters(
+            {
+                "Action": "DescribeDBInstances",
+                "ContentType": "JSON",
+                "DBInstanceIdentifier": "instance_id",
+            },
+            ignore_params_values=["Version"],
+        )
+        db = response["DescribeDBInstancesResponse"]["DescribeDBInstancesResult"][
+            "DBInstances"
+        ][0]["DBInstance"]
+        self.assertEqual(db["DBInstanceIdentifier"], "mydbinstance2")
+        self.assertEqual(db["InstanceCreateTime"], "2012-10-03T22:01:51.047Z")
+        self.assertEqual(db["Engine"], "mysql")
+        self.assertEqual(db["DBInstanceStatus"], "backing-up")
+        self.assertEqual(db["AllocatedStorage"], 200)
+        self.assertEqual(db["Endpoint"]["Port"], 3306)
+        self.assertEqual(db["DBInstanceClass"], "db.m1.large")
+        self.assertEqual(db["MasterUsername"], "awsuser")
+        self.assertEqual(db["AvailabilityZone"], "us-west-2b")
+        self.assertEqual(db["BackupRetentionPeriod"], 1)
+        self.assertEqual(db["PreferredBackupWindow"], "10:30-11:00")
+        self.assertEqual(db["PreferredMaintenanceWindow"], "wed:06:30-wed:07:00")
+        self.assertEqual(db["MultiAZ"], False)
+        self.assertEqual(db["Iops"], 2000)
+        self.assertEqual(db["PendingModifiedValues"], None)
         self.assertEqual(
-            db['DBParameterGroups'][0]['DBParameterGroup']\
-              ['DBParameterGroupName'],
-            'default.mysql5.5'
+            db["DBParameterGroups"][0]["DBParameterGroup"]["DBParameterGroupName"],
+            "default.mysql5.5",
         )
         self.assertEqual(
-            db['DBSecurityGroups'][0]['DBSecurityGroup']['DBSecurityGroupName'],
-            'default'
+            db["DBSecurityGroups"][0]["DBSecurityGroup"]["DBSecurityGroupName"],
+            "default",
         )
         self.assertEqual(
-            db['DBSecurityGroups'][0]['DBSecurityGroup']['Status'],
-            'active'
+            db["DBSecurityGroups"][0]["DBSecurityGroup"]["Status"], "active"
         )
-        self.assertEqual(len(db['StatusInfos']), 1)
+        self.assertEqual(len(db["StatusInfos"]), 1)
+        self.assertEqual(db["StatusInfos"][0]["DBInstanceStatusInfo"]["Message"], None)
+        self.assertEqual(db["StatusInfos"][0]["DBInstanceStatusInfo"]["Normal"], True)
         self.assertEqual(
-            db['StatusInfos'][0]['DBInstanceStatusInfo']['Message'],
-            None
-        )
-        self.assertEqual(
-            db['StatusInfos'][0]['DBInstanceStatusInfo']['Normal'],
-            True
+            db["StatusInfos"][0]["DBInstanceStatusInfo"]["Status"], "replicating"
         )
         self.assertEqual(
-            db['StatusInfos'][0]['DBInstanceStatusInfo']['Status'],
-            'replicating'
+            db["StatusInfos"][0]["DBInstanceStatusInfo"]["StatusType"],
+            "read replication",
         )
         self.assertEqual(
-            db['StatusInfos'][0]['DBInstanceStatusInfo']['StatusType'],
-            'read replication'
+            db["VpcSecurityGroups"][0]["VpcSecurityGroupMembership"]["Status"], "active"
         )
         self.assertEqual(
-            db['VpcSecurityGroups'][0]['VpcSecurityGroupMembership']['Status'],
-            'active'
+            db["VpcSecurityGroups"][0]["VpcSecurityGroupMembership"][
+                "VpcSecurityGroupId"
+            ],
+            "sg-1",
         )
-        self.assertEqual(
-            db['VpcSecurityGroups'][0]['VpcSecurityGroupMembership']\
-              ['VpcSecurityGroupId'],
-            'sg-1'
-        )
-        self.assertEqual(db['LicenseModel'], 'general-public-license')
-        self.assertEqual(db['EngineVersion'], '5.5.27')
-        self.assertEqual(db['AutoMinorVersionUpgrade'], True)
-        self.assertEqual(
-            db['DBSubnetGroup']['DBSubnetGroupName'],
-            'mydbsubnetgroup'
-        )
+        self.assertEqual(db["LicenseModel"], "general-public-license")
+        self.assertEqual(db["EngineVersion"], "5.5.27")
+        self.assertEqual(db["AutoMinorVersionUpgrade"], True)
+        self.assertEqual(db["DBSubnetGroup"]["DBSubnetGroupName"], "mydbsubnetgroup")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
-

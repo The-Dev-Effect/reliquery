@@ -16,7 +16,7 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 # OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
 # ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
@@ -49,44 +49,45 @@ json_policy = """{
    ]
 }"""
 
-class S3EncryptionTest (unittest.TestCase):
+
+class S3EncryptionTest(unittest.TestCase):
     s3 = True
 
     def test_1_versions(self):
-        print('--- running S3Encryption tests ---')
+        print("--- running S3Encryption tests ---")
         c = S3Connection()
         # create a new, empty bucket
-        bucket_name = 'encryption-%d' % int(time.time())
+        bucket_name = "encryption-%d" % int(time.time())
         bucket = c.create_bucket(bucket_name)
-        
+
         # now try a get_bucket call and see if it's really there
         bucket = c.get_bucket(bucket_name)
-        
+
         # create an unencrypted key
-        k = bucket.new_key('foobar')
-        s1 = 'This is unencrypted data'
-        s2 = 'This is encrypted data'
+        k = bucket.new_key("foobar")
+        s1 = "This is unencrypted data"
+        s2 = "This is encrypted data"
         k.set_contents_from_string(s1)
         time.sleep(5)
-        
-        # now get the contents from s3 
-        o = k.get_contents_as_string().decode('utf-8')
-        
+
+        # now get the contents from s3
+        o = k.get_contents_as_string().decode("utf-8")
+
         # check to make sure content read from s3 is identical to original
         assert o == s1
-        
+
         # now overwrite that same key with encrypted data
         k.set_contents_from_string(s2, encrypt_key=True)
         time.sleep(5)
-        
+
         # now retrieve the contents as a string and compare
-        o = k.get_contents_as_string().decode('utf-8')
+        o = k.get_contents_as_string().decode("utf-8")
         assert o == s2
-        
+
         # now set bucket policy to require encrypted objects
         bucket.set_policy(json_policy % bucket.name)
         time.sleep(5)
-        
+
         # now try to write unencrypted key
         write_failed = False
         try:
@@ -95,7 +96,7 @@ class S3EncryptionTest (unittest.TestCase):
             write_failed = True
 
         assert write_failed
-        
+
         # now try to write unencrypted key
         write_failed = False
         try:
@@ -104,11 +105,11 @@ class S3EncryptionTest (unittest.TestCase):
             write_failed = True
 
         assert not write_failed
-        
+
         # Now do regular delete
         k.delete()
         time.sleep(5)
 
         # now delete bucket
         bucket.delete()
-        print('--- tests completed ---')
+        print("--- tests completed ---")

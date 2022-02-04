@@ -50,26 +50,26 @@ class Attachment(object):
         self.delete_on_termination = False
 
     def __repr__(self):
-        return 'Attachment:%s' % self.id
+        return "Attachment:%s" % self.id
 
     def startElement(self, name, attrs, connection):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'attachmentId':
+        if name == "attachmentId":
             self.id = value
-        elif name == 'instanceId':
+        elif name == "instanceId":
             self.instance_id = value
-        elif name == 'deviceIndex':
+        elif name == "deviceIndex":
             self.device_index = int(value)
-        elif name == 'instanceOwnerId':
+        elif name == "instanceOwnerId":
             self.instance_owner_id = value
-        elif name == 'status':
+        elif name == "status":
             self.status = value
-        elif name == 'attachTime':
+        elif name == "attachTime":
             self.attach_time = value
-        elif name == 'deleteOnTermination':
-            if value.lower() == 'true':
+        elif name == "deleteOnTermination":
+            if value.lower() == "true":
                 self.delete_on_termination = True
             else:
                 self.delete_on_termination = False
@@ -116,50 +116,50 @@ class NetworkInterface(TaggedEC2Object):
         self.private_ip_addresses = []
 
     def __repr__(self):
-        return 'NetworkInterface:%s' % self.id
+        return "NetworkInterface:%s" % self.id
 
     def startElement(self, name, attrs, connection):
         retval = super(NetworkInterface, self).startElement(name, attrs, connection)
         if retval is not None:
             return retval
-        if name == 'groupSet':
-            self.groups = ResultSet([('item', Group)])
+        if name == "groupSet":
+            self.groups = ResultSet([("item", Group)])
             return self.groups
-        elif name == 'attachment':
+        elif name == "attachment":
             self.attachment = Attachment()
             return self.attachment
-        elif name == 'privateIpAddressesSet':
-            self.private_ip_addresses = ResultSet([('item', PrivateIPAddress)])
+        elif name == "privateIpAddressesSet":
+            self.private_ip_addresses = ResultSet([("item", PrivateIPAddress)])
             return self.private_ip_addresses
         else:
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'networkInterfaceId':
+        if name == "networkInterfaceId":
             self.id = value
-        elif name == 'subnetId':
+        elif name == "subnetId":
             self.subnet_id = value
-        elif name == 'vpcId':
+        elif name == "vpcId":
             self.vpc_id = value
-        elif name == 'availabilityZone':
+        elif name == "availabilityZone":
             self.availability_zone = value
-        elif name == 'description':
+        elif name == "description":
             self.description = value
-        elif name == 'ownerId':
+        elif name == "ownerId":
             self.owner_id = value
-        elif name == 'requesterManaged':
-            if value.lower() == 'true':
+        elif name == "requesterManaged":
+            if value.lower() == "true":
                 self.requester_managed = True
             else:
                 self.requester_managed = False
-        elif name == 'status':
+        elif name == "status":
             self.status = value
-        elif name == 'macAddress':
+        elif name == "macAddress":
             self.mac_address = value
-        elif name == 'privateIpAddress':
+        elif name == "privateIpAddress":
             self.private_ip_address = value
-        elif name == 'sourceDestCheck':
-            if value.lower() == 'true':
+        elif name == "sourceDestCheck":
+            if value.lower() == "true":
                 self.source_dest_check = True
             else:
                 self.source_dest_check = False
@@ -180,14 +180,11 @@ class NetworkInterface(TaggedEC2Object):
                          raise a ValueError exception if no data is
                          returned from EC2.
         """
-        rs = self.connection.get_all_network_interfaces(
-            [self.id],
-            dry_run=dry_run
-        )
+        rs = self.connection.get_all_network_interfaces([self.id], dry_run=dry_run)
         if len(rs) > 0:
             self._update(rs[0])
         elif validate:
-            raise ValueError('%s is not a valid ENI ID' % self.id)
+            raise ValueError("%s is not a valid ENI ID" % self.id)
         return self.status
 
     def attach(self, instance_id, device_index, dry_run=False):
@@ -205,10 +202,7 @@ class NetworkInterface(TaggedEC2Object):
         :return: True if successful
         """
         return self.connection.attach_network_interface(
-            self.id,
-            instance_id,
-            device_index,
-            dry_run=dry_run
+            self.id, instance_id, device_index, dry_run=dry_run
         )
 
     def detach(self, force=False, dry_run=False):
@@ -222,24 +216,18 @@ class NetworkInterface(TaggedEC2Object):
         :rtype: bool
         :return: True if successful
         """
-        attachment_id = getattr(self.attachment, 'id', None)
+        attachment_id = getattr(self.attachment, "id", None)
 
         return self.connection.detach_network_interface(
-            attachment_id,
-            force,
-            dry_run=dry_run
+            attachment_id, force, dry_run=dry_run
         )
 
     def delete(self, dry_run=False):
-        return self.connection.delete_network_interface(
-            self.id,
-            dry_run=dry_run
-        )
+        return self.connection.delete_network_interface(self.id, dry_run=dry_run)
 
 
 class PrivateIPAddress(object):
-    def __init__(self, connection=None, private_ip_address=None,
-                 primary=None):
+    def __init__(self, connection=None, private_ip_address=None, primary=None):
         self.connection = connection
         self.private_ip_address = private_ip_address
         self.primary = primary
@@ -248,57 +236,64 @@ class PrivateIPAddress(object):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'privateIpAddress':
+        if name == "privateIpAddress":
             self.private_ip_address = value
-        elif name == 'primary':
-            self.primary = True if value.lower() == 'true' else False
+        elif name == "primary":
+            self.primary = True if value.lower() == "true" else False
 
     def __repr__(self):
-        return "PrivateIPAddress(%s, primary=%s)" % (self.private_ip_address,
-                                                     self.primary)
+        return "PrivateIPAddress(%s, primary=%s)" % (
+            self.private_ip_address,
+            self.primary,
+        )
 
 
 class NetworkInterfaceCollection(list):
     def __init__(self, *interfaces):
         self.extend(interfaces)
 
-    def build_list_params(self, params, prefix=''):
+    def build_list_params(self, params, prefix=""):
         for i, spec in enumerate(self):
-            full_prefix = '%sNetworkInterface.%s.' % (prefix, i)
+            full_prefix = "%sNetworkInterface.%s." % (prefix, i)
             if spec.network_interface_id is not None:
-                params[full_prefix + 'NetworkInterfaceId'] = \
-                        str(spec.network_interface_id)
+                params[full_prefix + "NetworkInterfaceId"] = str(
+                    spec.network_interface_id
+                )
             if spec.device_index is not None:
-                params[full_prefix + 'DeviceIndex'] = \
-                        str(spec.device_index)
+                params[full_prefix + "DeviceIndex"] = str(spec.device_index)
             else:
-                params[full_prefix + 'DeviceIndex'] = 0
+                params[full_prefix + "DeviceIndex"] = 0
             if spec.subnet_id is not None:
-                params[full_prefix + 'SubnetId'] = str(spec.subnet_id)
+                params[full_prefix + "SubnetId"] = str(spec.subnet_id)
             if spec.description is not None:
-                params[full_prefix + 'Description'] = str(spec.description)
+                params[full_prefix + "Description"] = str(spec.description)
             if spec.delete_on_termination is not None:
-                params[full_prefix + 'DeleteOnTermination'] = \
-                        'true' if spec.delete_on_termination else 'false'
+                params[full_prefix + "DeleteOnTermination"] = (
+                    "true" if spec.delete_on_termination else "false"
+                )
             if spec.secondary_private_ip_address_count is not None:
-                params[full_prefix + 'SecondaryPrivateIpAddressCount'] = \
-                        str(spec.secondary_private_ip_address_count)
+                params[full_prefix + "SecondaryPrivateIpAddressCount"] = str(
+                    spec.secondary_private_ip_address_count
+                )
             if spec.private_ip_address is not None:
-                params[full_prefix + 'PrivateIpAddress'] = \
-                        str(spec.private_ip_address)
+                params[full_prefix + "PrivateIpAddress"] = str(spec.private_ip_address)
             if spec.groups is not None:
                 for j, group_id in enumerate(spec.groups):
-                    query_param_key = '%sSecurityGroupId.%s' % (full_prefix, j)
+                    query_param_key = "%sSecurityGroupId.%s" % (full_prefix, j)
                     params[query_param_key] = str(group_id)
             if spec.private_ip_addresses is not None:
                 for k, ip_addr in enumerate(spec.private_ip_addresses):
-                    query_param_key_prefix = (
-                        '%sPrivateIpAddresses.%s' % (full_prefix, k))
-                    params[query_param_key_prefix + '.PrivateIpAddress'] = \
-                            str(ip_addr.private_ip_address)
+                    query_param_key_prefix = "%sPrivateIpAddresses.%s" % (
+                        full_prefix,
+                        k,
+                    )
+                    params[query_param_key_prefix + ".PrivateIpAddress"] = str(
+                        ip_addr.private_ip_address
+                    )
                     if ip_addr.primary is not None:
-                        params[query_param_key_prefix + '.Primary'] = \
-                                'true' if ip_addr.primary else 'false'
+                        params[query_param_key_prefix + ".Primary"] = (
+                            "true" if ip_addr.primary else "false"
+                        )
 
             # Associating Public IPs have special logic around them:
             #
@@ -310,34 +305,41 @@ class NetworkInterfaceCollection(list):
             #
             # More details on http://docs.aws.amazon.com/AWSEC2/latest/APIReference/ApiReference-query-RunInstances.html
             if spec.associate_public_ip_address is not None:
-                if not params[full_prefix + 'DeviceIndex'] in (0, '0'):
+                if not params[full_prefix + "DeviceIndex"] in (0, "0"):
                     raise BotoClientError(
-                        "Only the interface with device index of 0 can " + \
-                        "be provided when using " + \
-                        "'associate_public_ip_address'."
+                        "Only the interface with device index of 0 can "
+                        + "be provided when using "
+                        + "'associate_public_ip_address'."
                     )
 
                 if len(self) > 1:
                     raise BotoClientError(
-                        "Only one interface can be provided when using " + \
-                        "'associate_public_ip_address'."
+                        "Only one interface can be provided when using "
+                        + "'associate_public_ip_address'."
                     )
 
-                key = full_prefix + 'AssociatePublicIpAddress'
+                key = full_prefix + "AssociatePublicIpAddress"
 
                 if spec.associate_public_ip_address:
-                    params[key] = 'true'
+                    params[key] = "true"
                 else:
-                    params[key] = 'false'
+                    params[key] = "false"
 
 
 class NetworkInterfaceSpecification(object):
-    def __init__(self, network_interface_id=None, device_index=None,
-                 subnet_id=None, description=None, private_ip_address=None,
-                 groups=None, delete_on_termination=None,
-                 private_ip_addresses=None,
-                 secondary_private_ip_address_count=None,
-                 associate_public_ip_address=None):
+    def __init__(
+        self,
+        network_interface_id=None,
+        device_index=None,
+        subnet_id=None,
+        description=None,
+        private_ip_address=None,
+        groups=None,
+        delete_on_termination=None,
+        private_ip_addresses=None,
+        secondary_private_ip_address_count=None,
+        associate_public_ip_address=None,
+    ):
         self.network_interface_id = network_interface_id
         self.device_index = device_index
         self.subnet_id = subnet_id
@@ -346,6 +348,5 @@ class NetworkInterfaceSpecification(object):
         self.groups = groups
         self.delete_on_termination = delete_on_termination
         self.private_ip_addresses = private_ip_addresses
-        self.secondary_private_ip_address_count = \
-                secondary_private_ip_address_count
+        self.secondary_private_ip_address_count = secondary_private_ip_address_count
         self.associate_public_ip_address = associate_public_ip_address

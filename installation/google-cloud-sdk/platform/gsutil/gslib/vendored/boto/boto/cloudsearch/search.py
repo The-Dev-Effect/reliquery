@@ -36,23 +36,28 @@ class CommitMismatchError(Exception):
 
 class SearchResults(object):
     def __init__(self, **attrs):
-        self.rid = attrs['info']['rid']
+        self.rid = attrs["info"]["rid"]
         # self.doc_coverage_pct = attrs['info']['doc-coverage-pct']
-        self.cpu_time_ms = attrs['info']['cpu-time-ms']
-        self.time_ms = attrs['info']['time-ms']
-        self.hits = attrs['hits']['found']
-        self.docs = attrs['hits']['hit']
-        self.start = attrs['hits']['start']
-        self.rank = attrs['rank']
-        self.match_expression = attrs['match-expr']
-        self.query = attrs['query']
-        self.search_service = attrs['search_service']
+        self.cpu_time_ms = attrs["info"]["cpu-time-ms"]
+        self.time_ms = attrs["info"]["time-ms"]
+        self.hits = attrs["hits"]["found"]
+        self.docs = attrs["hits"]["hit"]
+        self.start = attrs["hits"]["start"]
+        self.rank = attrs["rank"]
+        self.match_expression = attrs["match-expr"]
+        self.query = attrs["query"]
+        self.search_service = attrs["search_service"]
 
         self.facets = {}
-        if 'facets' in attrs:
-            for (facet, values) in attrs['facets'].items():
-                if 'constraints' in values:
-                    self.facets[facet] = dict((k, v) for (k, v) in map(lambda x: (x['value'], x['count']), values['constraints']))
+        if "facets" in attrs:
+            for (facet, values) in attrs["facets"].items():
+                if "constraints" in values:
+                    self.facets[facet] = dict(
+                        (k, v)
+                        for (k, v) in map(
+                            lambda x: (x["value"], x["count"]), values["constraints"]
+                        )
+                    )
 
         self.num_pages_needed = ceil(self.hits / self.query.real_size)
 
@@ -80,10 +85,20 @@ class Query(object):
 
     RESULTS_PER_PAGE = 500
 
-    def __init__(self, q=None, bq=None, rank=None,
-                 return_fields=None, size=10,
-                 start=0, facet=None, facet_constraints=None,
-                 facet_sort=None, facet_top_n=None, t=None):
+    def __init__(
+        self,
+        q=None,
+        bq=None,
+        rank=None,
+        return_fields=None,
+        size=10,
+        start=0,
+        facet=None,
+        facet_constraints=None,
+        facet_sort=None,
+        facet_top_n=None,
+        t=None,
+    ):
 
         self.q = q
         self.bq = bq
@@ -100,8 +115,11 @@ class Query(object):
 
     def update_size(self, new_size):
         self.size = new_size
-        self.real_size = Query.RESULTS_PER_PAGE if (self.size >
-            Query.RESULTS_PER_PAGE or self.size == 0) else self.size
+        self.real_size = (
+            Query.RESULTS_PER_PAGE
+            if (self.size > Query.RESULTS_PER_PAGE or self.size == 0)
+            else self.size
+        )
 
     def to_params(self):
         """Transform search parameters from instance properties to a dictionary
@@ -109,60 +127,90 @@ class Query(object):
         :rtype: dict
         :return: search parameters
         """
-        params = {'start': self.start, 'size': self.real_size}
+        params = {"start": self.start, "size": self.real_size}
 
         if self.q:
-            params['q'] = self.q
+            params["q"] = self.q
 
         if self.bq:
-            params['bq'] = self.bq
+            params["bq"] = self.bq
 
         if self.rank:
-            params['rank'] = ','.join(self.rank)
+            params["rank"] = ",".join(self.rank)
 
         if self.return_fields:
-            params['return-fields'] = ','.join(self.return_fields)
+            params["return-fields"] = ",".join(self.return_fields)
 
         if self.facet:
-            params['facet'] = ','.join(self.facet)
+            params["facet"] = ",".join(self.facet)
 
         if self.facet_constraints:
             for k, v in six.iteritems(self.facet_constraints):
-                params['facet-%s-constraints' % k] = v
+                params["facet-%s-constraints" % k] = v
 
         if self.facet_sort:
             for k, v in six.iteritems(self.facet_sort):
-                params['facet-%s-sort' % k] = v
+                params["facet-%s-sort" % k] = v
 
         if self.facet_top_n:
             for k, v in six.iteritems(self.facet_top_n):
-                params['facet-%s-top-n' % k] = v
+                params["facet-%s-top-n" % k] = v
 
         if self.t:
             for k, v in six.iteritems(self.t):
-                params['t-%s' % k] = v
+                params["t-%s" % k] = v
         return params
 
 
 class SearchConnection(object):
-
     def __init__(self, domain=None, endpoint=None):
         self.domain = domain
         self.endpoint = endpoint
         if not endpoint:
             self.endpoint = domain.search_service_endpoint
 
-    def build_query(self, q=None, bq=None, rank=None, return_fields=None,
-                    size=10, start=0, facet=None, facet_constraints=None,
-                    facet_sort=None, facet_top_n=None, t=None):
-        return Query(q=q, bq=bq, rank=rank, return_fields=return_fields,
-                     size=size, start=start, facet=facet,
-                     facet_constraints=facet_constraints,
-                     facet_sort=facet_sort, facet_top_n=facet_top_n, t=t)
+    def build_query(
+        self,
+        q=None,
+        bq=None,
+        rank=None,
+        return_fields=None,
+        size=10,
+        start=0,
+        facet=None,
+        facet_constraints=None,
+        facet_sort=None,
+        facet_top_n=None,
+        t=None,
+    ):
+        return Query(
+            q=q,
+            bq=bq,
+            rank=rank,
+            return_fields=return_fields,
+            size=size,
+            start=start,
+            facet=facet,
+            facet_constraints=facet_constraints,
+            facet_sort=facet_sort,
+            facet_top_n=facet_top_n,
+            t=t,
+        )
 
-    def search(self, q=None, bq=None, rank=None, return_fields=None,
-               size=10, start=0, facet=None, facet_constraints=None,
-               facet_sort=None, facet_top_n=None, t=None):
+    def search(
+        self,
+        q=None,
+        bq=None,
+        rank=None,
+        return_fields=None,
+        size=10,
+        start=0,
+        facet=None,
+        facet_constraints=None,
+        facet_sort=None,
+        facet_top_n=None,
+        t=None,
+    ):
         """
         Send a query to CloudSearch
 
@@ -265,12 +313,19 @@ class SearchConnection(object):
         ...     facet_sort={'author': 'count'})
         """
 
-        query = self.build_query(q=q, bq=bq, rank=rank,
-                                 return_fields=return_fields,
-                                 size=size, start=start, facet=facet,
-                                 facet_constraints=facet_constraints,
-                                 facet_sort=facet_sort,
-                                 facet_top_n=facet_top_n, t=t)
+        query = self.build_query(
+            q=q,
+            bq=bq,
+            rank=rank,
+            return_fields=return_fields,
+            size=size,
+            start=start,
+            facet=facet,
+            facet_constraints=facet_constraints,
+            facet_sort=facet_sort,
+            facet_top_n=facet_top_n,
+            t=t,
+        )
         return self(query)
 
     def __call__(self, query):
@@ -286,32 +341,38 @@ class SearchConnection(object):
         params = query.to_params()
 
         r = requests.get(url, params=params)
-        body = r.content.decode('utf-8')
+        body = r.content.decode("utf-8")
         try:
             data = json.loads(body)
         except ValueError as e:
             if r.status_code == 403:
-                msg = ''
+                msg = ""
                 import re
-                g = re.search('<html><body><h1>403 Forbidden</h1>([^<]+)<', body)
+
+                g = re.search("<html><body><h1>403 Forbidden</h1>([^<]+)<", body)
                 try:
-                    msg = ': %s' % (g.groups()[0].strip())
+                    msg = ": %s" % (g.groups()[0].strip())
                 except AttributeError:
                     pass
-                raise SearchServiceException('Authentication error from Amazon%s' % msg)
-            raise SearchServiceException("Got non-json response from Amazon. %s" % body, query)
+                raise SearchServiceException("Authentication error from Amazon%s" % msg)
+            raise SearchServiceException(
+                "Got non-json response from Amazon. %s" % body, query
+            )
 
-        if 'messages' in data and 'error' in data:
-            for m in data['messages']:
-                if m['severity'] == 'fatal':
-                    raise SearchServiceException("Error processing search %s "
-                        "=> %s" % (params, m['message']), query)
-        elif 'error' in data:
-            raise SearchServiceException("Unknown error processing search %s"
-                % json.dumps(data), query)
+        if "messages" in data and "error" in data:
+            for m in data["messages"]:
+                if m["severity"] == "fatal":
+                    raise SearchServiceException(
+                        "Error processing search %s " "=> %s" % (params, m["message"]),
+                        query,
+                    )
+        elif "error" in data:
+            raise SearchServiceException(
+                "Unknown error processing search %s" % json.dumps(data), query
+            )
 
-        data['query'] = query
-        data['search_service'] = self
+        data["query"] = query
+        data["search_service"] = self
 
         return SearchResults(**data)
 
@@ -372,6 +433,3 @@ class SearchConnection(object):
         """
         query.update_size(1)
         return self(query).hits
-
-
-

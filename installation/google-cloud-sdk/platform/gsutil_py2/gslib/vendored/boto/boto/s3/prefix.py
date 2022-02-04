@@ -14,10 +14,11 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 # OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
 # ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
+
 
 class Prefix(object):
     def __init__(self, bucket=None, name=None):
@@ -28,7 +29,7 @@ class Prefix(object):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'Prefix':
+        if name == "Prefix":
             self.name = value
         else:
             setattr(self, name, value)
@@ -39,4 +40,3 @@ class Prefix(object):
         if self.bucket and self.bucket.connection:
             provider = self.bucket.connection.provider
         return provider
-

@@ -57,6 +57,7 @@ class ConfigServiceConnection(AWSQueryConnection):
     Management Console, see `What Is AWS Config?`_ in the AWS Config
     Developer Guide .
     """
+
     APIVersion = "2014-11-12"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "config.us-east-1.amazonaws.com"
@@ -87,21 +88,21 @@ class ConfigServiceConnection(AWSQueryConnection):
         "MaxNumberOfConfigurationRecordersExceededException": exceptions.MaxNumberOfConfigurationRecordersExceededException,
     }
 
-
     def __init__(self, **kwargs):
-        region = kwargs.pop('region', None)
+        region = kwargs.pop("region", None)
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
 
-        if 'host' not in kwargs or kwargs['host'] is None:
-            kwargs['host'] = region.endpoint
+        if "host" not in kwargs or kwargs["host"] is None:
+            kwargs["host"] = region.endpoint
 
         super(ConfigServiceConnection, self).__init__(**kwargs)
         self.region = region
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
     def delete_delivery_channel(self, delivery_channel_name):
         """
@@ -118,9 +119,12 @@ class ConfigServiceConnection(AWSQueryConnection):
             delete.
 
         """
-        params = {'DeliveryChannelName': delivery_channel_name, }
-        return self.make_request(action='DeleteDeliveryChannel',
-                                 body=json.dumps(params))
+        params = {
+            "DeliveryChannelName": delivery_channel_name,
+        }
+        return self.make_request(
+            action="DeleteDeliveryChannel", body=json.dumps(params)
+        )
 
     def deliver_config_snapshot(self, delivery_channel_name):
         """
@@ -141,12 +145,14 @@ class ConfigServiceConnection(AWSQueryConnection):
             which the snapshot is delivered.
 
         """
-        params = {'deliveryChannelName': delivery_channel_name, }
-        return self.make_request(action='DeliverConfigSnapshot',
-                                 body=json.dumps(params))
+        params = {
+            "deliveryChannelName": delivery_channel_name,
+        }
+        return self.make_request(
+            action="DeliverConfigSnapshot", body=json.dumps(params)
+        )
 
-    def describe_configuration_recorder_status(self,
-                                               configuration_recorder_names=None):
+    def describe_configuration_recorder_status(self, configuration_recorder_names=None):
         """
         Returns the current status of the specified configuration
         recorder. If a configuration recorder is not specified, this
@@ -162,12 +168,12 @@ class ConfigServiceConnection(AWSQueryConnection):
         """
         params = {}
         if configuration_recorder_names is not None:
-            params['ConfigurationRecorderNames'] = configuration_recorder_names
-        return self.make_request(action='DescribeConfigurationRecorderStatus',
-                                 body=json.dumps(params))
+            params["ConfigurationRecorderNames"] = configuration_recorder_names
+        return self.make_request(
+            action="DescribeConfigurationRecorderStatus", body=json.dumps(params)
+        )
 
-    def describe_configuration_recorders(self,
-                                         configuration_recorder_names=None):
+    def describe_configuration_recorders(self, configuration_recorder_names=None):
         """
         Returns the name of one or more specified configuration
         recorders. If the recorder name is not specified, this action
@@ -181,9 +187,10 @@ class ConfigServiceConnection(AWSQueryConnection):
         """
         params = {}
         if configuration_recorder_names is not None:
-            params['ConfigurationRecorderNames'] = configuration_recorder_names
-        return self.make_request(action='DescribeConfigurationRecorders',
-                                 body=json.dumps(params))
+            params["ConfigurationRecorderNames"] = configuration_recorder_names
+        return self.make_request(
+            action="DescribeConfigurationRecorders", body=json.dumps(params)
+        )
 
     def describe_delivery_channel_status(self, delivery_channel_names=None):
         """
@@ -198,9 +205,10 @@ class ConfigServiceConnection(AWSQueryConnection):
         """
         params = {}
         if delivery_channel_names is not None:
-            params['DeliveryChannelNames'] = delivery_channel_names
-        return self.make_request(action='DescribeDeliveryChannelStatus',
-                                 body=json.dumps(params))
+            params["DeliveryChannelNames"] = delivery_channel_names
+        return self.make_request(
+            action="DescribeDeliveryChannelStatus", body=json.dumps(params)
+        )
 
     def describe_delivery_channels(self, delivery_channel_names=None):
         """
@@ -214,14 +222,21 @@ class ConfigServiceConnection(AWSQueryConnection):
         """
         params = {}
         if delivery_channel_names is not None:
-            params['DeliveryChannelNames'] = delivery_channel_names
-        return self.make_request(action='DescribeDeliveryChannels',
-                                 body=json.dumps(params))
+            params["DeliveryChannelNames"] = delivery_channel_names
+        return self.make_request(
+            action="DescribeDeliveryChannels", body=json.dumps(params)
+        )
 
-    def get_resource_config_history(self, resource_type, resource_id,
-                                    later_time=None, earlier_time=None,
-                                    chronological_order=None, limit=None,
-                                    next_token=None):
+    def get_resource_config_history(
+        self,
+        resource_type,
+        resource_id,
+        later_time=None,
+        earlier_time=None,
+        chronological_order=None,
+        limit=None,
+        next_token=None,
+    ):
         """
         Returns a list of configuration items for the specified
         resource. The list contains details about each state of the
@@ -262,21 +277,22 @@ class ConfigServiceConnection(AWSQueryConnection):
 
         """
         params = {
-            'resourceType': resource_type,
-            'resourceId': resource_id,
+            "resourceType": resource_type,
+            "resourceId": resource_id,
         }
         if later_time is not None:
-            params['laterTime'] = later_time
+            params["laterTime"] = later_time
         if earlier_time is not None:
-            params['earlierTime'] = earlier_time
+            params["earlierTime"] = earlier_time
         if chronological_order is not None:
-            params['chronologicalOrder'] = chronological_order
+            params["chronologicalOrder"] = chronological_order
         if limit is not None:
-            params['limit'] = limit
+            params["limit"] = limit
         if next_token is not None:
-            params['nextToken'] = next_token
-        return self.make_request(action='GetResourceConfigHistory',
-                                 body=json.dumps(params))
+            params["nextToken"] = next_token
+        return self.make_request(
+            action="GetResourceConfigHistory", body=json.dumps(params)
+        )
 
     def put_configuration_recorder(self, configuration_recorder):
         """
@@ -296,9 +312,12 @@ class ConfigServiceConnection(AWSQueryConnection):
              'roleARN': 'arn:aws:iam::123456789012:role/trusted-aws-config'}
 
         """
-        params = {'ConfigurationRecorder': configuration_recorder, }
-        return self.make_request(action='PutConfigurationRecorder',
-                                 body=json.dumps(params))
+        params = {
+            "ConfigurationRecorder": configuration_recorder,
+        }
+        return self.make_request(
+            action="PutConfigurationRecorder", body=json.dumps(params)
+        )
 
     def put_delivery_channel(self, delivery_channel):
         """
@@ -320,9 +339,10 @@ class ConfigServiceConnection(AWSQueryConnection):
             to an Amazon SNS topic.
 
         """
-        params = {'DeliveryChannel': delivery_channel, }
-        return self.make_request(action='PutDeliveryChannel',
-                                 body=json.dumps(params))
+        params = {
+            "DeliveryChannel": delivery_channel,
+        }
+        return self.make_request(action="PutDeliveryChannel", body=json.dumps(params))
 
     def start_configuration_recorder(self, configuration_recorder_name):
         """
@@ -338,10 +358,11 @@ class ConfigServiceConnection(AWSQueryConnection):
 
         """
         params = {
-            'ConfigurationRecorderName': configuration_recorder_name,
+            "ConfigurationRecorderName": configuration_recorder_name,
         }
-        return self.make_request(action='StartConfigurationRecorder',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="StartConfigurationRecorder", body=json.dumps(params)
+        )
 
     def stop_configuration_recorder(self, configuration_recorder_name):
         """
@@ -354,32 +375,35 @@ class ConfigServiceConnection(AWSQueryConnection):
 
         """
         params = {
-            'ConfigurationRecorderName': configuration_recorder_name,
+            "ConfigurationRecorderName": configuration_recorder_name,
         }
-        return self.make_request(action='StopConfigurationRecorder',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="StopConfigurationRecorder", body=json.dumps(params)
+        )
 
     def make_request(self, action, body):
         headers = {
-            'X-Amz-Target': '%s.%s' % (self.TargetPrefix, action),
-            'Host': self.region.endpoint,
-            'Content-Type': 'application/x-amz-json-1.1',
-            'Content-Length': str(len(body)),
+            "X-Amz-Target": "%s.%s" % (self.TargetPrefix, action),
+            "Host": self.region.endpoint,
+            "Content-Type": "application/x-amz-json-1.1",
+            "Content-Length": str(len(body)),
         }
         http_request = self.build_base_http_request(
-            method='POST', path='/', auth_path='/', params={},
-            headers=headers, data=body)
-        response = self._mexe(http_request, sender=None,
-                              override_num_retries=10)
-        response_body = response.read().decode('utf-8')
+            method="POST",
+            path="/",
+            auth_path="/",
+            params={},
+            headers=headers,
+            data=body,
+        )
+        response = self._mexe(http_request, sender=None, override_num_retries=10)
+        response_body = response.read().decode("utf-8")
         boto.log.debug(response_body)
         if response.status == 200:
             if response_body:
                 return json.loads(response_body)
         else:
             json_body = json.loads(response_body)
-            fault_name = json_body.get('__type', None)
+            fault_name = json_body.get("__type", None)
             exception_class = self._faults.get(fault_name, self.ResponseError)
-            raise exception_class(response.status, response.reason,
-                                  body=json_body)
-
+            raise exception_class(response.status, response.reason, body=json_body)

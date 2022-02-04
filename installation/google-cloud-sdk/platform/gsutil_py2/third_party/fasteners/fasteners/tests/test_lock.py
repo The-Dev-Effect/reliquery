@@ -224,7 +224,7 @@ class ReadWriteLockTest(test.TestCase):
                 else:
                     e.submit(happy_writer)
 
-        self.assertEqual(10, len([a for a in activated if a == 'w']))
+        self.assertEqual(10, len([a for a in activated if a == "w"]))
 
     def test_double_reader_writer(self):
         lock = fasteners.ReaderWriterLock()
@@ -254,7 +254,7 @@ class ReadWriteLockTest(test.TestCase):
         reader.join()
         writer.join()
         self.assertEqual(2, len(activated))
-        self.assertEqual(['r', 'w'], list(activated))
+        self.assertEqual(["r", "w"], list(activated))
 
     def test_reader_chaotic(self):
         lock = fasteners.ReaderWriterLock()
@@ -278,8 +278,8 @@ class ReadWriteLockTest(test.TestCase):
                 else:
                     e.submit(happy_writer)
 
-        writers = [a for a in activated if a == 'w']
-        readers = [a for a in activated if a == 'r']
+        writers = [a for a in activated if a == "w"]
+        readers = [a for a in activated if a == "r"]
         self.assertEqual(10, len(writers))
         self.assertEqual(5, len(readers))
 
@@ -305,8 +305,8 @@ class ReadWriteLockTest(test.TestCase):
                 else:
                     e.submit(happy_reader)
 
-        writers = [a for a in activated if a == 'w']
-        readers = [a for a in activated if a == 'r']
+        writers = [a for a in activated if a == "w"]
+        readers = [a for a in activated if a == "r"]
         self.assertEqual(5, len(writers))
         self.assertEqual(10, len(readers))
 

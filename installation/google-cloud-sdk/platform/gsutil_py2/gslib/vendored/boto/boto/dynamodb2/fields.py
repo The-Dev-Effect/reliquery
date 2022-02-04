@@ -8,6 +8,7 @@ class BaseSchemaField(object):
     Contains most of the core functionality for the field. Subclasses must
     define an ``attr_type`` to pass to DynamoDB.
     """
+
     attr_type = None
 
     def __init__(self, name, data_type=STRING):
@@ -38,8 +39,8 @@ class BaseSchemaField(object):
 
         """
         return {
-            'AttributeName': self.name,
-            'AttributeType': self.data_type,
+            "AttributeName": self.name,
+            "AttributeType": self.data_type,
         }
 
     def schema(self):
@@ -56,8 +57,8 @@ class BaseSchemaField(object):
 
         """
         return {
-            'AttributeName': self.name,
-            'KeyType': self.attr_type,
+            "AttributeName": self.name,
+            "KeyType": self.attr_type,
         }
 
 
@@ -72,7 +73,8 @@ class HashKey(BaseSchemaField):
         >>> HashKey('date_joined', data_type=NUMBER)
 
     """
-    attr_type = 'HASH'
+
+    attr_type = "HASH"
 
 
 class RangeKey(BaseSchemaField):
@@ -86,7 +88,8 @@ class RangeKey(BaseSchemaField):
         >>> HashKey('date_joined', data_type=NUMBER)
 
     """
-    attr_type = 'RANGE'
+
+    attr_type = "RANGE"
 
 
 class BaseIndexField(object):
@@ -96,6 +99,7 @@ class BaseIndexField(object):
     Contains most of the core functionality for the index. Subclasses must
     define a ``projection_type`` to pass to DynamoDB.
     """
+
     def __init__(self, name, parts):
         self.name = name
         self.parts = parts
@@ -116,10 +120,12 @@ class BaseIndexField(object):
         definition = []
 
         for part in self.parts:
-            definition.append({
-                'AttributeName': part.name,
-                'AttributeType': part.data_type,
-            })
+            definition.append(
+                {
+                    "AttributeName": part.name,
+                    "AttributeType": part.data_type,
+                }
+            )
 
         return definition
 
@@ -150,11 +156,11 @@ class BaseIndexField(object):
             key_schema.append(part.schema())
 
         return {
-            'IndexName': self.name,
-            'KeySchema': key_schema,
-            'Projection': {
-                'ProjectionType': self.projection_type,
-            }
+            "IndexName": self.name,
+            "KeySchema": key_schema,
+            "Projection": {
+                "ProjectionType": self.projection_type,
+            },
         }
 
 
@@ -170,7 +176,8 @@ class AllIndex(BaseIndexField):
         ... ])
 
     """
-    projection_type = 'ALL'
+
+    projection_type = "ALL"
 
 
 class KeysOnlyIndex(BaseIndexField):
@@ -185,7 +192,8 @@ class KeysOnlyIndex(BaseIndexField):
         ... ])
 
     """
-    projection_type = 'KEYS_ONLY'
+
+    projection_type = "KEYS_ONLY"
 
 
 class IncludeIndex(BaseIndexField):
@@ -200,15 +208,16 @@ class IncludeIndex(BaseIndexField):
         ... ], includes=['gender'])
 
     """
-    projection_type = 'INCLUDE'
+
+    projection_type = "INCLUDE"
 
     def __init__(self, *args, **kwargs):
-        self.includes_fields = kwargs.pop('includes', [])
+        self.includes_fields = kwargs.pop("includes", [])
         super(IncludeIndex, self).__init__(*args, **kwargs)
 
     def schema(self):
         schema_data = super(IncludeIndex, self).schema()
-        schema_data['Projection']['NonKeyAttributes'] = self.includes_fields
+        schema_data["Projection"]["NonKeyAttributes"] = self.includes_fields
         return schema_data
 
 
@@ -219,13 +228,14 @@ class GlobalBaseIndexField(BaseIndexField):
     Contains most of the core functionality for the index. Subclasses must
     define a ``projection_type`` to pass to DynamoDB.
     """
+
     throughput = {
-        'read': 5,
-        'write': 5,
+        "read": 5,
+        "write": 5,
     }
 
     def __init__(self, *args, **kwargs):
-        throughput = kwargs.pop('throughput', None)
+        throughput = kwargs.pop("throughput", None)
 
         if throughput is not None:
             self.throughput = throughput
@@ -258,9 +268,9 @@ class GlobalBaseIndexField(BaseIndexField):
 
         """
         schema_data = super(GlobalBaseIndexField, self).schema()
-        schema_data['ProvisionedThroughput'] = {
-            'ReadCapacityUnits': int(self.throughput['read']),
-            'WriteCapacityUnits': int(self.throughput['write']),
+        schema_data["ProvisionedThroughput"] = {
+            "ReadCapacityUnits": int(self.throughput["read"]),
+            "WriteCapacityUnits": int(self.throughput["write"]),
         }
         return schema_data
 
@@ -281,7 +291,8 @@ class GlobalAllIndex(GlobalBaseIndexField):
         ... })
 
     """
-    projection_type = 'ALL'
+
+    projection_type = "ALL"
 
 
 class GlobalKeysOnlyIndex(GlobalBaseIndexField):
@@ -300,7 +311,8 @@ class GlobalKeysOnlyIndex(GlobalBaseIndexField):
         ... })
 
     """
-    projection_type = 'KEYS_ONLY'
+
+    projection_type = "KEYS_ONLY"
 
 
 class GlobalIncludeIndex(GlobalBaseIndexField, IncludeIndex):
@@ -320,13 +332,14 @@ class GlobalIncludeIndex(GlobalBaseIndexField, IncludeIndex):
         ... })
 
     """
-    projection_type = 'INCLUDE'
+
+    projection_type = "INCLUDE"
 
     def __init__(self, *args, **kwargs):
-        throughput = kwargs.pop('throughput', None)
+        throughput = kwargs.pop("throughput", None)
         IncludeIndex.__init__(self, *args, **kwargs)
         if throughput:
-            kwargs['throughput'] = throughput
+            kwargs["throughput"] = throughput
         GlobalBaseIndexField.__init__(self, *args, **kwargs)
 
     def schema(self):

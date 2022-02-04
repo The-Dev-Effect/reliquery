@@ -28,6 +28,7 @@ Represents a VPN Connectionn
 
 from boto.ec2.ec2object import TaggedEC2Object
 
+
 class VpnConnectionOptions(object):
     """
     Represents VPN connection options
@@ -37,20 +38,22 @@ class VpnConnectionOptions(object):
         BGP.
 
     """
+
     def __init__(self, static_routes_only=None):
         self.static_routes_only = static_routes_only
 
     def __repr__(self):
-        return 'VpnConnectionOptions'
+        return "VpnConnectionOptions"
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'staticRoutesOnly':
-            self.static_routes_only = True if value == 'true' else False
+        if name == "staticRoutesOnly":
+            self.static_routes_only = True if value == "true" else False
         else:
             setattr(self, name, value)
+
 
 class VpnStaticRoute(object):
     """
@@ -61,26 +64,28 @@ class VpnStaticRoute(object):
     :ivar source: Indicates how the routes were provided.
     :ivar state: The current state of the static route.
     """
+
     def __init__(self, destination_cidr_block=None, source=None, state=None):
         self.destination_cidr_block = destination_cidr_block
         self.source = source
         self.available = state
 
     def __repr__(self):
-        return 'VpnStaticRoute: %s' % self.destination_cidr_block
+        return "VpnStaticRoute: %s" % self.destination_cidr_block
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'destinationCidrBlock':
+        if name == "destinationCidrBlock":
             self.destination_cidr_block = value
-        elif name == 'source':
+        elif name == "source":
             self.source = value
-        elif name == 'state':
+        elif name == "state":
             self.state = value
         else:
             setattr(self, name, value)
+
 
 class VpnTunnel(object):
     """
@@ -93,8 +98,15 @@ class VpnTunnel(object):
     :ivar status_message: If an error occurs, a description of the error.
     :ivar accepted_route_count: The number of accepted routes.
     """
-    def __init__(self, outside_ip_address=None, status=None, last_status_change=None,
-                 status_message=None, accepted_route_count=None):
+
+    def __init__(
+        self,
+        outside_ip_address=None,
+        status=None,
+        last_status_change=None,
+        status_message=None,
+        accepted_route_count=None,
+    ):
         self.outside_ip_address = outside_ip_address
         self.status = status
         self.last_status_change = last_status_change
@@ -102,29 +114,29 @@ class VpnTunnel(object):
         self.accepted_route_count = accepted_route_count
 
     def __repr__(self):
-        return 'VpnTunnel: %s' % self.outside_ip_address
+        return "VpnTunnel: %s" % self.outside_ip_address
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'outsideIpAddress':
+        if name == "outsideIpAddress":
             self.outside_ip_address = value
-        elif name == 'status':
+        elif name == "status":
             self.status = value
-        elif name == 'lastStatusChange':
-            self.last_status_change =  datetime.strptime(value,
-                                        '%Y-%m-%dT%H:%M:%S.%fZ')
-        elif name == 'statusMessage':
+        elif name == "lastStatusChange":
+            self.last_status_change = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ")
+        elif name == "statusMessage":
             self.status_message = value
-        elif name == 'acceptedRouteCount':
+        elif name == "acceptedRouteCount":
             try:
                 value = int(value)
             except ValueError:
-                boto.log.warning('Error converting code (%s) to int' % value)
+                boto.log.warning("Error converting code (%s) to int" % value)
             self.accepted_route_count = value
         else:
             setattr(self, name, value)
+
 
 class VpnConnection(TaggedEC2Object):
     """
@@ -151,6 +163,7 @@ class VpnConnection(TaggedEC2Object):
         connection.
 
     """
+
     def __init__(self, connection=None):
         super(VpnConnection, self).__init__(connection)
         self.id = None
@@ -164,41 +177,38 @@ class VpnConnection(TaggedEC2Object):
         self.static_routes = []
 
     def __repr__(self):
-        return 'VpnConnection:%s' % self.id
+        return "VpnConnection:%s" % self.id
 
     def startElement(self, name, attrs, connection):
         retval = super(VpnConnection, self).startElement(name, attrs, connection)
         if retval is not None:
             return retval
-        if name == 'vgwTelemetry':
-            self.tunnels = ResultSet([('item', VpnTunnel)])
+        if name == "vgwTelemetry":
+            self.tunnels = ResultSet([("item", VpnTunnel)])
             return self.tunnels
-        elif name == 'routes':
-            self.static_routes = ResultSet([('item', VpnStaticRoute)])
+        elif name == "routes":
+            self.static_routes = ResultSet([("item", VpnStaticRoute)])
             return self.static_routes
-        elif name == 'options':
+        elif name == "options":
             self.options = VpnConnectionOptions()
             return self.options
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'vpnConnectionId':
+        if name == "vpnConnectionId":
             self.id = value
-        elif name == 'state':
+        elif name == "state":
             self.state = value
-        elif name == 'customerGatewayConfiguration':
+        elif name == "customerGatewayConfiguration":
             self.customer_gateway_configuration = value
-        elif name == 'type':
+        elif name == "type":
             self.type = value
-        elif name == 'customerGatewayId':
+        elif name == "customerGatewayId":
             self.customer_gateway_id = value
-        elif name == 'vpnGatewayId':
+        elif name == "vpnGatewayId":
             self.vpn_gateway_id = value
         else:
             setattr(self, name, value)
 
     def delete(self, dry_run=False):
-        return self.connection.delete_vpn_connection(
-            self.id,
-            dry_run=dry_run
-        )
+        return self.connection.delete_vpn_connection(self.id, dry_run=dry_run)

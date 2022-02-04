@@ -26,16 +26,16 @@ from boto.sns import connect_to_region
 
 class StubResponse(object):
     status = 403
-    reason = 'nopenopenope'
+    reason = "nopenopenope"
 
     def getheader(self, val):
-        return b''
+        return b""
 
     def getheaders(self):
-        return b''
+        return b""
 
     def read(self):
-        return b''
+        return b""
 
 
 class TestSNSConnection(unittest.TestCase):
@@ -43,7 +43,7 @@ class TestSNSConnection(unittest.TestCase):
     sns = True
 
     def setUp(self):
-        self.connection = connect_to_region('us-west-2')
+        self.connection = connect_to_region("us-west-2")
 
     def test_list_platform_applications(self):
         response = self.connection.list_platform_applications()
@@ -56,13 +56,13 @@ class TestSNSConnection(unittest.TestCase):
         https = http_client.HTTPConnection
         mpo = mock.patch.object
 
-        with mpo(https, 'request') as mock_request:
-            with mpo(https, 'getresponse', return_value=StubResponse()):
+        with mpo(https, "request") as mock_request:
+            with mpo(https, "getresponse", return_value=StubResponse()):
                 with self.assertRaises(self.connection.ResponseError):
                     self.connection.list_platform_applications()
 
         # Now, assert that the ``Host`` was there & correct.
         call = mock_request.call_args_list[0]
         headers = call[0][3]
-        self.assertTrue('Host' in headers)
-        self.assertEqual(headers['Host'], 'sns.us-west-2.amazonaws.com')
+        self.assertTrue("Host" in headers)
+        self.assertEqual(headers["Host"], "sns.us-west-2.amazonaws.com")

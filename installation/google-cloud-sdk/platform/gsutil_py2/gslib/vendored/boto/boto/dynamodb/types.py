@@ -25,16 +25,28 @@ Some utility functions to deal with mapping Amazon DynamoDB types to
 Python types and vice-versa.
 """
 import base64
-from decimal import (Decimal, DecimalException, Context,
-                     Clamped, Overflow, Inexact, Underflow, Rounded)
+from decimal import (
+    Decimal,
+    DecimalException,
+    Context,
+    Clamped,
+    Overflow,
+    Inexact,
+    Underflow,
+    Rounded,
+)
 from collections import Mapping
 from boto.dynamodb.exceptions import DynamoDBNumberError
 from boto.compat import filter, map, six, long_type
 
 
 DYNAMODB_CONTEXT = Context(
-    Emin=-128, Emax=126, rounding=None, prec=38,
-    traps=[Clamped, Overflow, Inexact, Rounded, Underflow])
+    Emin=-128,
+    Emax=126,
+    rounding=None,
+    prec=38,
+    traps=[Clamped, Overflow, Inexact, Rounded, Underflow],
+)
 
 
 # python2.6 cannot convert floats directly to
@@ -62,17 +74,22 @@ def is_num(n, boolean_as_int=True):
 
 
 if six.PY2:
+
     def is_str(n):
-        return (isinstance(n, basestring) or
-                isinstance(n, type) and issubclass(n, basestring))
+        return (
+            isinstance(n, basestring)
+            or isinstance(n, type)
+            and issubclass(n, basestring)
+        )
 
     def is_binary(n):
         return isinstance(n, Binary)
 
+
 else:  # PY3
+
     def is_str(n):
-        return (isinstance(n, str) or
-                isinstance(n, type) and issubclass(n, str))
+        return isinstance(n, str) or isinstance(n, type) and issubclass(n, str)
 
     def is_binary(n):
         return isinstance(n, bytes)  # Binary is subclass of bytes.
@@ -80,7 +97,7 @@ else:  # PY3
 
 def serialize_num(val):
     """Cast a number to a string and perform
-       validation to ensure no loss of precision.
+    validation to ensure no loss of precision.
     """
     if isinstance(val, bool):
         return str(int(val))
@@ -88,7 +105,7 @@ def serialize_num(val):
 
 
 def convert_num(s):
-    if '.' in s:
+    if "." in s:
         n = float(s)
     else:
         n = int(s)
@@ -107,27 +124,27 @@ def get_dynamodb_type(val, use_boolean=True):
     """
     dynamodb_type = None
     if val is None:
-        dynamodb_type = 'NULL'
+        dynamodb_type = "NULL"
     elif is_num(val):
         if isinstance(val, bool) and use_boolean:
-            dynamodb_type = 'BOOL'
+            dynamodb_type = "BOOL"
         else:
-            dynamodb_type = 'N'
+            dynamodb_type = "N"
     elif is_str(val):
-        dynamodb_type = 'S'
+        dynamodb_type = "S"
     elif isinstance(val, (set, frozenset)):
         if False not in map(is_num, val):
-            dynamodb_type = 'NS'
+            dynamodb_type = "NS"
         elif False not in map(is_str, val):
-            dynamodb_type = 'SS'
+            dynamodb_type = "SS"
         elif False not in map(is_binary, val):
-            dynamodb_type = 'BS'
+            dynamodb_type = "BS"
     elif is_binary(val):
-        dynamodb_type = 'B'
+        dynamodb_type = "B"
     elif isinstance(val, Mapping):
-        dynamodb_type = 'M'
+        dynamodb_type = "M"
     elif isinstance(val, list):
-        dynamodb_type = 'L'
+        dynamodb_type = "L"
     if dynamodb_type is None:
         msg = 'Unsupported type "%s" for value "%s"' % (type(val), val)
         raise TypeError(msg)
@@ -142,35 +159,36 @@ def dynamize_value(val):
     is not supported, raise a TypeError
     """
     dynamodb_type = get_dynamodb_type(val)
-    if dynamodb_type == 'N':
+    if dynamodb_type == "N":
         val = {dynamodb_type: serialize_num(val)}
-    elif dynamodb_type == 'S':
+    elif dynamodb_type == "S":
         val = {dynamodb_type: val}
-    elif dynamodb_type == 'NS':
+    elif dynamodb_type == "NS":
         val = {dynamodb_type: list(map(serialize_num, val))}
-    elif dynamodb_type == 'SS':
+    elif dynamodb_type == "SS":
         val = {dynamodb_type: [n for n in val]}
-    elif dynamodb_type == 'B':
+    elif dynamodb_type == "B":
         if isinstance(val, bytes):
             val = Binary(val)
         val = {dynamodb_type: val.encode()}
-    elif dynamodb_type == 'BS':
+    elif dynamodb_type == "BS":
         val = {dynamodb_type: [n.encode() for n in val]}
     return val
 
 
 if six.PY2:
+
     class Binary(object):
         def __init__(self, value):
             if not isinstance(value, (bytes, six.text_type)):
-                raise TypeError('Value must be a string of binary data!')
+                raise TypeError("Value must be a string of binary data!")
             if not isinstance(value, bytes):
                 value = value.encode("utf-8")
 
             self.value = value
 
         def encode(self):
-            return base64.b64encode(self.value).decode('utf-8')
+            return base64.b64encode(self.value).decode("utf-8")
 
         def __eq__(self, other):
             if isinstance(other, Binary):
@@ -182,17 +200,20 @@ if six.PY2:
             return not self.__eq__(other)
 
         def __repr__(self):
-            return 'Binary(%r)' % self.value
+            return "Binary(%r)" % self.value
 
         def __str__(self):
             return self.value
 
         def __hash__(self):
             return hash(self.value)
+
+
 else:
+
     class Binary(bytes):
         def encode(self):
-            return base64.b64encode(self).decode('utf-8')
+            return base64.b64encode(self).decode("utf-8")
 
         @property
         def value(self):
@@ -202,7 +223,7 @@ else:
             return bytes(self)
 
         def __repr__(self):
-            return 'Binary(%r)' % self.value
+            return "Binary(%r)" % self.value
 
 
 def item_object_hook(dct):
@@ -213,18 +234,18 @@ def item_object_hook(dct):
     """
     if len(dct.keys()) > 1:
         return dct
-    if 'S' in dct:
-        return dct['S']
-    if 'N' in dct:
-        return convert_num(dct['N'])
-    if 'SS' in dct:
-        return set(dct['SS'])
-    if 'NS' in dct:
-        return set(map(convert_num, dct['NS']))
-    if 'B' in dct:
-        return convert_binary(dct['B'])
-    if 'BS' in dct:
-        return set(map(convert_binary, dct['BS']))
+    if "S" in dct:
+        return dct["S"]
+    if "N" in dct:
+        return convert_num(dct["N"])
+    if "SS" in dct:
+        return set(dct["SS"])
+    if "NS" in dct:
+        return set(map(convert_num, dct["NS"]))
+    if "B" in dct:
+        return convert_binary(dct["B"])
+    if "BS" in dct:
+        return set(map(convert_binary, dct["BS"]))
     return dct
 
 
@@ -261,6 +282,7 @@ class Dynamizer(object):
         'foo'     (Python type)
 
     """
+
     def _get_dynamodb_type(self, attr):
         return get_dynamodb_type(attr)
 
@@ -272,31 +294,31 @@ class Dynamizer(object):
         """
         dynamodb_type = self._get_dynamodb_type(attr)
         try:
-            encoder = getattr(self, '_encode_%s' % dynamodb_type.lower())
+            encoder = getattr(self, "_encode_%s" % dynamodb_type.lower())
         except AttributeError:
-            raise ValueError("Unable to encode dynamodb type: %s" %
-                             dynamodb_type)
+            raise ValueError("Unable to encode dynamodb type: %s" % dynamodb_type)
         return {dynamodb_type: encoder(attr)}
 
     def _encode_n(self, attr):
         try:
-            if isinstance(attr, float) and not hasattr(Decimal, 'from_float'):
+            if isinstance(attr, float) and not hasattr(Decimal, "from_float"):
                 # python2.6 does not support creating Decimals directly
                 # from floats so we have to do this ourself.
                 n = str(float_to_decimal(attr))
             else:
                 n = str(DYNAMODB_CONTEXT.create_decimal(attr))
-            if list(filter(lambda x: x in n, ('Infinity', 'NaN'))):
-                raise TypeError('Infinity and NaN not supported')
+            if list(filter(lambda x: x in n, ("Infinity", "NaN"))):
+                raise TypeError("Infinity and NaN not supported")
             return n
         except (TypeError, DecimalException) as e:
-            msg = '{0} numeric for `{1}`\n{2}'.format(
-                e.__class__.__name__, attr, str(e) or '')
+            msg = "{0} numeric for `{1}`\n{2}".format(
+                e.__class__.__name__, attr, str(e) or ""
+            )
         raise DynamoDBNumberError(msg)
 
     def _encode_s(self, attr):
         if isinstance(attr, bytes):
-            attr = attr.decode('utf-8')
+            attr = attr.decode("utf-8")
         elif not isinstance(attr, six.text_type):
             attr = str(attr)
         return attr
@@ -341,7 +363,7 @@ class Dynamizer(object):
             # overlaps with the DDB types. Return it.
             return attr
         try:
-            decoder = getattr(self, '_decode_%s' % dynamodb_type.lower())
+            decoder = getattr(self, "_decode_%s" % dynamodb_type.lower())
         except AttributeError:
             return attr
         return decoder(attr[dynamodb_type])
@@ -382,6 +404,7 @@ class NonBooleanDynamizer(Dynamizer):
 
     This class is provided for backward compatibility.
     """
+
     def _get_dynamodb_type(self, attr):
         return get_dynamodb_type(attr, use_boolean=False)
 
@@ -397,6 +420,7 @@ class LossyFloatDynamizer(NonBooleanDynamizer):
     `Dynamizer` class instead.
 
     """
+
     def _encode_n(self, attr):
         return serialize_num(attr)
 

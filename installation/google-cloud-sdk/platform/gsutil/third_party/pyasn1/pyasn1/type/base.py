@@ -12,7 +12,12 @@ from pyasn1.type import constraint
 from pyasn1.type import tag
 from pyasn1.type import tagmap
 
-__all__ = ['Asn1Item', 'Asn1ItemBase', 'AbstractSimpleAsn1Item', 'AbstractConstructedAsn1Item']
+__all__ = [
+    "Asn1Item",
+    "Asn1ItemBase",
+    "AbstractSimpleAsn1Item",
+    "AbstractConstructedAsn1Item",
+]
 
 
 class Asn1Item(object):
@@ -38,10 +43,7 @@ class Asn1ItemBase(Asn1Item):
     typeId = None
 
     def __init__(self, **kwargs):
-        readOnly = {
-            'tagSet': self.tagSet,
-            'subtypeSpec': self.subtypeSpec
-        }
+        readOnly = {"tagSet": self.tagSet, "subtypeSpec": self.subtypeSpec}
 
         readOnly.update(kwargs)
 
@@ -50,7 +52,7 @@ class Asn1ItemBase(Asn1Item):
         self._readOnly = readOnly
 
     def __setattr__(self, name, value):
-        if name[0] != '_' and name in self._readOnly:
+        if name[0] != "_" and name in self._readOnly:
             raise error.PyAsn1Error('read-only instance attribute "%s"' % name)
 
         self.__dict__[name] = value
@@ -64,14 +66,12 @@ class Asn1ItemBase(Asn1Item):
 
     @property
     def effectiveTagSet(self):
-        """For |ASN.1| type is equivalent to *tagSet*
-        """
+        """For |ASN.1| type is equivalent to *tagSet*"""
         return self.tagSet  # used by untagged types
 
     @property
     def tagMap(self):
-        """Return a :class:`~pyasn1.type.tagmap.TagMap` object mapping ASN.1 tags to ASN.1 objects within callee object.
-        """
+        """Return a :class:`~pyasn1.type.tagmap.TagMap` object mapping ASN.1 tags to ASN.1 objects within callee object."""
         return tagmap.TagMap({self.tagSet: self})
 
     def isSameTypeWith(self, other, matchTags=True, matchConstraints=True):
@@ -94,9 +94,11 @@ class Asn1ItemBase(Asn1Item):
             :class:`True` if *other* is |ASN.1| type,
             :class:`False` otherwise.
         """
-        return (self is other or
-                (not matchTags or self.tagSet == other.tagSet) and
-                (not matchConstraints or self.subtypeSpec == other.subtypeSpec))
+        return (
+            self is other
+            or (not matchTags or self.tagSet == other.tagSet)
+            and (not matchConstraints or self.subtypeSpec == other.subtypeSpec)
+        )
 
     def isSuperTypeOf(self, other, matchTags=True, matchConstraints=True):
         """Examine |ASN.1| type for subtype relationship with other ASN.1 type.
@@ -118,9 +120,14 @@ class Asn1ItemBase(Asn1Item):
                 :class:`True` if *other* is a subtype of |ASN.1| type,
                 :class:`False` otherwise.
         """
-        return (not matchTags or
-                (self.tagSet.isSuperTagSetOf(other.tagSet)) and
-                 (not matchConstraints or self.subtypeSpec.isSuperTypeOf(other.subtypeSpec)))
+        return (
+            not matchTags
+            or (self.tagSet.isSuperTagSetOf(other.tagSet))
+            and (
+                not matchConstraints
+                or self.subtypeSpec.isSuperTypeOf(other.subtypeSpec)
+            )
+        )
 
     @staticmethod
     def isNoValue(*values):
@@ -164,48 +171,59 @@ class NoValue(object):
     Any operation attempted on the *noValue* object will raise the
     *PyAsn1Error* exception.
     """
+
     skipMethods = set(
-        ('__slots__',
-         # attributes
-         '__getattribute__',
-         '__getattr__',
-         '__setattr__',
-         '__delattr__',
-         # class instance
-         '__class__',
-         '__init__',
-         '__del__',
-         '__new__',
-         '__repr__',
-         '__qualname__',
-         '__objclass__',
-         'im_class',
-         '__sizeof__',
-         # pickle protocol
-         '__reduce__',
-         '__reduce_ex__',
-         '__getnewargs__',
-         '__getinitargs__',
-         '__getstate__',
-         '__setstate__')
+        (
+            "__slots__",
+            # attributes
+            "__getattribute__",
+            "__getattr__",
+            "__setattr__",
+            "__delattr__",
+            # class instance
+            "__class__",
+            "__init__",
+            "__del__",
+            "__new__",
+            "__repr__",
+            "__qualname__",
+            "__objclass__",
+            "im_class",
+            "__sizeof__",
+            # pickle protocol
+            "__reduce__",
+            "__reduce_ex__",
+            "__getnewargs__",
+            "__getinitargs__",
+            "__getstate__",
+            "__setstate__",
+        )
     )
 
     _instance = None
 
     def __new__(cls):
         if cls._instance is None:
+
             def getPlug(name):
                 def plug(self, *args, **kw):
-                    raise error.PyAsn1Error('Attempted "%s" operation on ASN.1 schema object' % name)
+                    raise error.PyAsn1Error(
+                        'Attempted "%s" operation on ASN.1 schema object' % name
+                    )
+
                 return plug
 
-            op_names = [name
-                        for typ in (str, int, list, dict)
-                        for name in dir(typ)
-                        if (name not in cls.skipMethods and
-                            name.startswith('__') and
-                            name.endswith('__') and
-                            calling.callable(getattr(typ, name)))]
+            op_names = [
+                name
+                for typ in (str, int, list, dict)
+                for name in dir(typ)
+                if (
+                    name not in cls.skipMethods
+                    and name.startswith("__")
+                    and name.endswith("__")
+                    and calling.callable(getattr(typ, name))
+                )
+            ]
 
             for name in set(op_names):
                 setattr(cls, name, getPlug(name))
@@ -216,12 +234,14 @@ class NoValue(object):
 
     def __getattr__(self, attr):
         if attr in self.skipMethods:
-            raise AttributeError('Attribute %s not present' % attr)
+            raise AttributeError("Attribute %s not present" % attr)
 
-        raise error.PyAsn1Error('Attempted "%s" operation on ASN.1 schema object' % attr)
+        raise error.PyAsn1Error(
+            'Attempted "%s" operation on ASN.1 schema object' % attr
+        )
 
     def __repr__(self):
-        return '<%s object at %s>' % (self.__class__.__name__, id(self))
+        return "<%s object at %s>" % (self.__class__.__name__, id(self))
 
 
 noValue = NoValue()
@@ -243,26 +263,28 @@ class AbstractSimpleAsn1Item(Asn1ItemBase):
 
             except error.PyAsn1Error:
                 exType, exValue, exTb = sys.exc_info()
-                raise exType('%s at %s' % (exValue, self.__class__.__name__))
+                raise exType("%s at %s" % (exValue, self.__class__.__name__))
 
         self._value = value
 
     def __repr__(self):
-        representation = '%s %s object at 0x%x' % (
-            self.__class__.__name__, self.isValue and 'value' or 'schema', id(self)
+        representation = "%s %s object at 0x%x" % (
+            self.__class__.__name__,
+            self.isValue and "value" or "schema",
+            id(self),
         )
 
         for attr, value in self.readOnly.items():
             if value:
-                representation += ' %s %s' % (attr, value)
+                representation += " %s %s" % (attr, value)
 
         if self.isValue:
             value = self.prettyPrint()
             if len(value) > 32:
-                value = value[:16] + '...' + value[-16:]
-            representation += ' payload [%s]' % value
+                value = value[:16] + "..." + value[-16:]
+            representation += " payload [%s]" % value
 
-        return '<%s>' % representation
+        return "<%s>" % representation
 
     def __eq__(self, other):
         return self is other and True or self._value == other
@@ -283,9 +305,12 @@ class AbstractSimpleAsn1Item(Asn1ItemBase):
         return self._value >= other
 
     if sys.version_info[0] <= 2:
+
         def __nonzero__(self):
             return self._value and True or False
+
     else:
+
         def __bool__(self):
             return self._value and True or False
 
@@ -355,7 +380,7 @@ class AbstractSimpleAsn1Item(Asn1ItemBase):
         subtype relationship between Python types. ASN.1 type is mainly identified
         by its tag(s) (:py:class:`~pyasn1.type.tag.TagSet`) and value range
         constraints (:py:class:`~pyasn1.type.constraint.ConstraintsIntersection`).
-        These ASN.1 type properties are implemented as |ASN.1| attributes.  
+        These ASN.1 type properties are implemented as |ASN.1| attributes.
 
         The `subtype()` method accepts the same set arguments as |ASN.1|
         class takes on instantiation except that all parameters
@@ -403,13 +428,13 @@ class AbstractSimpleAsn1Item(Asn1ItemBase):
 
         initializers = self.readOnly.copy()
 
-        implicitTag = kwargs.pop('implicitTag', None)
+        implicitTag = kwargs.pop("implicitTag", None)
         if implicitTag is not None:
-            initializers['tagSet'] = self.tagSet.tagImplicitly(implicitTag)
+            initializers["tagSet"] = self.tagSet.tagImplicitly(implicitTag)
 
-        explicitTag = kwargs.pop('explicitTag', None)
+        explicitTag = kwargs.pop("explicitTag", None)
         if explicitTag is not None:
-            initializers['tagSet'] = self.tagSet.tagExplicitly(explicitTag)
+            initializers["tagSet"] = self.tagSet.tagExplicitly(explicitTag)
 
         for arg, option in kwargs.items():
             initializers[arg] += option
@@ -427,7 +452,8 @@ class AbstractSimpleAsn1Item(Asn1ItemBase):
 
     # noinspection PyUnusedLocal
     def prettyPrintType(self, scope=0):
-        return '%s -> %s' % (self.tagSet, self.__class__.__name__)
+        return "%s -> %s" % (self.tagSet, self.__class__.__name__)
+
 
 #
 # Constructed types:
@@ -459,10 +485,7 @@ class AbstractConstructedAsn1Item(Asn1ItemBase):
     sizeSpec = None
 
     def __init__(self, **kwargs):
-        readOnly = {
-            'componentType': self.componentType,
-            'sizeSpec': self.sizeSpec
-        }
+        readOnly = {"componentType": self.componentType, "sizeSpec": self.sizeSpec}
         readOnly.update(kwargs)
 
         Asn1ItemBase.__init__(self, **readOnly)
@@ -470,18 +493,22 @@ class AbstractConstructedAsn1Item(Asn1ItemBase):
         self._componentValues = []
 
     def __repr__(self):
-        representation = '%s %s object at 0x%x' % (
-            self.__class__.__name__, self.isValue and 'value' or 'schema', id(self)
+        representation = "%s %s object at 0x%x" % (
+            self.__class__.__name__,
+            self.isValue and "value" or "schema",
+            id(self),
         )
 
         for attr, value in self.readOnly.items():
             if value is not noValue:
-                representation += ' %s=%r' % (attr, value)
+                representation += " %s=%r" % (attr, value)
 
         if self.isValue and self._componentValues:
-            representation += ' payload [%s]' % ', '.join([repr(x) for x in self._componentValues])
+            representation += " payload [%s]" % ", ".join(
+                [repr(x) for x in self._componentValues]
+            )
 
-        return '<%s>' % representation
+        return "<%s>" % representation
 
     def __eq__(self, other):
         return self is other and True or self._componentValues == other
@@ -502,9 +529,12 @@ class AbstractConstructedAsn1Item(Asn1ItemBase):
         return self._componentValues >= other
 
     if sys.version_info[0] <= 2:
+
         def __nonzero__(self):
             return self._componentValues and True or False
+
     else:
+
         def __bool__(self):
             return self._componentValues and True or False
 
@@ -538,7 +568,7 @@ class AbstractConstructedAsn1Item(Asn1ItemBase):
         are supplied, new |ASN.1| object will always be created as a shallow
         copy of `self`.
         """
-        cloneValueFlag = kwargs.pop('cloneValueFlag', False)
+        cloneValueFlag = kwargs.pop("cloneValueFlag", False)
 
         initilaizers = self.readOnly.copy()
         initilaizers.update(kwargs)
@@ -595,15 +625,15 @@ class AbstractConstructedAsn1Item(Asn1ItemBase):
 
         initializers = self.readOnly.copy()
 
-        cloneValueFlag = kwargs.pop('cloneValueFlag', False)
+        cloneValueFlag = kwargs.pop("cloneValueFlag", False)
 
-        implicitTag = kwargs.pop('implicitTag', None)
+        implicitTag = kwargs.pop("implicitTag", None)
         if implicitTag is not None:
-            initializers['tagSet'] = self.tagSet.tagImplicitly(implicitTag)
+            initializers["tagSet"] = self.tagSet.tagImplicitly(implicitTag)
 
-        explicitTag = kwargs.pop('explicitTag', None)
+        explicitTag = kwargs.pop("explicitTag", None)
         if explicitTag is not None:
-            initializers['tagSet'] = self.tagSet.tagExplicitly(explicitTag)
+            initializers["tagSet"] = self.tagSet.tagExplicitly(explicitTag)
 
         for arg, option in kwargs.items():
             initializers[arg] += option
@@ -619,10 +649,10 @@ class AbstractConstructedAsn1Item(Asn1ItemBase):
         self.sizeSpec(self)
 
     def getComponentByPosition(self, idx):
-        raise error.PyAsn1Error('Method not implemented')
+        raise error.PyAsn1Error("Method not implemented")
 
     def setComponentByPosition(self, idx, value, verifyConstraints=True):
-        raise error.PyAsn1Error('Method not implemented')
+        raise error.PyAsn1Error("Method not implemented")
 
     def setComponents(self, *args, **kwargs):
         for idx, value in enumerate(args):

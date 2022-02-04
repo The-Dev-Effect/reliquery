@@ -31,10 +31,11 @@ class TestEC2ContainerService(unittest.TestCase):
 
     def test_list_clusters(self):
         response = self.ecs.list_clusters()
-        self.assertIn('clusterArns',
-                      response['ListClustersResponse']['ListClustersResult'])
+        self.assertIn(
+            "clusterArns", response["ListClustersResponse"]["ListClustersResult"]
+        )
 
     def test_handle_not_found_exception(self):
         with self.assertRaises(ClientException):
             # Try to stop a task with an invalid arn.
-            self.ecs.stop_task(task='foo')
+            self.ecs.stop_task(task="foo")

@@ -27,12 +27,14 @@ from boto.compat import json
 import requests
 import boto
 
+
 class SearchServiceException(Exception):
     pass
 
 
 class CommitMismatchError(Exception):
     pass
+
 
 class EncodingError(Exception):
     """
@@ -41,7 +43,9 @@ class EncodingError(Exception):
     This usually happens when a document is marked as unicode but non-unicode
     characters are present.
     """
+
     pass
+
 
 class ContentTooLongError(Exception):
     """
@@ -51,7 +55,9 @@ class ContentTooLongError(Exception):
     than the limit allowed per upload batch (5MB)
 
     """
+
     pass
+
 
 class DocumentServiceConnection(object):
     """
@@ -87,7 +93,7 @@ class DocumentServiceConnection(object):
         self.documents_batch = []
         self._sdf = None
 
-    def add(self, _id, version, fields, lang='en'):
+    def add(self, _id, version, fields, lang="en"):
         """
         Add a document to be processed by the DocumentService
 
@@ -109,8 +115,13 @@ class DocumentServiceConnection(object):
             supported
         """
 
-        d = {'type': 'add', 'id': _id, 'version': version, 'lang': lang,
-            'fields': fields}
+        d = {
+            "type": "add",
+            "id": _id,
+            "version": version,
+            "lang": lang,
+            "fields": fields,
+        }
         self.documents_batch.append(d)
 
     def delete(self, _id, version):
@@ -128,7 +139,7 @@ class DocumentServiceConnection(object):
             in the index.
         """
 
-        d = {'type': 'delete', 'id': _id, 'version': version}
+        d = {"type": "delete", "id": _id, "version": version}
         self.documents_batch.append(d)
 
     def get_sdf(self):
@@ -162,7 +173,7 @@ class DocumentServiceConnection(object):
         :type key_obj: :class:`boto.s3.key.Key`
         :param key_obj: An S3 key which contains an SDF
         """
-        #@todo:: (lucas) would be nice if this could just take an s3://uri..."
+        # @todo:: (lucas) would be nice if this could just take an s3://uri..."
 
         self._sdf = key_obj.get_contents_as_string()
 
@@ -179,24 +190,23 @@ class DocumentServiceConnection(object):
 
         sdf = self.get_sdf()
 
-        if ': null' in sdf:
-            boto.log.error('null value in sdf detected.  This will probably raise '
-                '500 error.')
-            index = sdf.index(': null')
-            boto.log.error(sdf[index - 100:index + 100])
+        if ": null" in sdf:
+            boto.log.error(
+                "null value in sdf detected.  This will probably raise " "500 error."
+            )
+            index = sdf.index(": null")
+            boto.log.error(sdf[index - 100 : index + 100])
 
         url = "http://%s/2011-02-01/documents/batch" % (self.endpoint)
 
         # Keep-alive is automatic in a post-1.0 requests world.
         session = requests.Session()
         adapter = requests.adapters.HTTPAdapter(
-            pool_connections=20,
-            pool_maxsize=50,
-            max_retries=5
+            pool_connections=20, pool_maxsize=50, max_retries=5
         )
-        session.mount('http://', adapter)
-        session.mount('https://', adapter)
-        r = session.post(url, data=sdf, headers={'Content-Type': 'application/json'})
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
+        r = session.post(url, data=sdf, headers={"Content-Type": "application/json"})
 
         return CommitResponse(r, self, sdf)
 
@@ -216,40 +226,45 @@ class CommitResponse(object):
     :raises: :class:`boto.cloudsearch.document.EncodingError`
     :raises: :class:`boto.cloudsearch.document.ContentTooLongError`
     """
+
     def __init__(self, response, doc_service, sdf):
         self.response = response
         self.doc_service = doc_service
         self.sdf = sdf
 
-        _body = response.content.decode('utf-8')
+        _body = response.content.decode("utf-8")
 
         try:
             self.content = json.loads(_body)
         except:
-            boto.log.error('Error indexing documents.\nResponse Content:\n{0}\n\n'
-                'SDF:\n{1}'.format(_body, self.sdf))
-            raise boto.exception.BotoServerError(self.response.status_code, '',
-                body=_body)
+            boto.log.error(
+                "Error indexing documents.\nResponse Content:\n{0}\n\n"
+                "SDF:\n{1}".format(_body, self.sdf)
+            )
+            raise boto.exception.BotoServerError(
+                self.response.status_code, "", body=_body
+            )
 
-        self.status = self.content['status']
-        if self.status == 'error':
-            self.errors = [e.get('message') for e in self.content.get('errors',
-                [])]
+        self.status = self.content["status"]
+        if self.status == "error":
+            self.errors = [e.get("message") for e in self.content.get("errors", [])]
             for e in self.errors:
                 if "Illegal Unicode character" in e:
                     raise EncodingError("Illegal Unicode character in document")
                 elif e == "The Content-Length is too long":
                     raise ContentTooLongError("Content was too long")
-            if 'adds' not in self.content or 'deletes' not in self.content:
-                raise SearchServiceException("Error indexing documents"
-                    " => %s" % self.content.get('message', ''))
+            if "adds" not in self.content or "deletes" not in self.content:
+                raise SearchServiceException(
+                    "Error indexing documents"
+                    " => %s" % self.content.get("message", "")
+                )
         else:
             self.errors = []
 
-        self.adds = self.content['adds']
-        self.deletes = self.content['deletes']
-        self._check_num_ops('add', self.adds)
-        self._check_num_ops('delete', self.deletes)
+        self.adds = self.content["adds"]
+        self.deletes = self.content["deletes"]
+        self._check_num_ops("add", self.adds)
+        self._check_num_ops("delete", self.deletes)
 
     def _check_num_ops(self, type_, response_num):
         """Raise exception if number of ops in response doesn't match commit
@@ -262,10 +277,13 @@ class CommitResponse(object):
 
         :raises: :class:`boto.cloudsearch.document.CommitMismatchError`
         """
-        commit_num = len([d for d in self.doc_service.documents_batch
-            if d['type'] == type_])
+        commit_num = len(
+            [d for d in self.doc_service.documents_batch if d["type"] == type_]
+        )
 
         if response_num != commit_num:
             raise CommitMismatchError(
-                'Incorrect number of {0}s returned. Commit: {1} Response: {2}'\
-                .format(type_, commit_num, response_num))
+                "Incorrect number of {0}s returned. Commit: {1} Response: {2}".format(
+                    type_, commit_num, response_num
+                )
+            )

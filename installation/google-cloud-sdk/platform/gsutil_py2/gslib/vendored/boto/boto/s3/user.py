@@ -19,8 +19,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+
 class User(object):
-    def __init__(self, parent=None, id='', display_name=''):
+    def __init__(self, parent=None, id="", display_name=""):
         if parent:
             parent.owner = self
         self.type = None
@@ -31,19 +32,19 @@ class User(object):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'DisplayName':
+        if name == "DisplayName":
             self.display_name = value
-        elif name == 'ID':
+        elif name == "ID":
             self.id = value
         else:
             setattr(self, name, value)
 
-    def to_xml(self, element_name='Owner'):
+    def to_xml(self, element_name="Owner"):
         if self.type:
             s = '<%s xsi:type="%s">' % (element_name, self.type)
         else:
-            s = '<%s>' % element_name
-        s += '<ID>%s</ID>' % self.id
-        s += '<DisplayName>%s</DisplayName>' % self.display_name
-        s += '</%s>' % element_name
+            s = "<%s>" % element_name
+        s += "<ID>%s</ID>" % self.id
+        s += "<DisplayName>%s</DisplayName>" % self.display_name
+        s += "</%s>" % element_name
         return s

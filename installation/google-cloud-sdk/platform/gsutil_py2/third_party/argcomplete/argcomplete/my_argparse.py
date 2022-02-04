@@ -9,8 +9,7 @@ _num_consumed_args = {}
 
 
 def action_is_satisfied(action):
-    ''' Returns False if the parse would raise an error if no more arguments are given to this action, True otherwise.
-    '''
+    """Returns False if the parse would raise an error if no more arguments are given to this action, True otherwise."""
     num_consumed_args = _num_consumed_args.get(action, 0)
 
     if action.nargs in [OPTIONAL, ZERO_OR_MORE, REMAINDER]:
@@ -24,13 +23,14 @@ def action_is_satisfied(action):
     if action.nargs is None:
         return num_consumed_args == 1
 
-    assert isinstance(action.nargs, int), 'failed to handle a possible nargs value: %r' % action.nargs
+    assert isinstance(action.nargs, int), (
+        "failed to handle a possible nargs value: %r" % action.nargs
+    )
     return num_consumed_args == action.nargs
 
 
 def action_is_open(action):
-    ''' Returns True if action could consume more arguments (i.e., its pattern is open).
-    '''
+    """Returns True if action could consume more arguments (i.e., its pattern is open)."""
     num_consumed_args = _num_consumed_args.get(action, 0)
 
     if action.nargs in [ZERO_OR_MORE, ONE_OR_MORE, PARSER, REMAINDER]:
@@ -38,14 +38,16 @@ def action_is_open(action):
     if action.nargs == OPTIONAL or action.nargs is None:
         return num_consumed_args == 0
 
-    assert isinstance(action.nargs, int), 'failed to handle a possible nargs value: %r' % action.nargs
+    assert isinstance(action.nargs, int), (
+        "failed to handle a possible nargs value: %r" % action.nargs
+    )
     return num_consumed_args < action.nargs
 
 
 def action_is_greedy(action, isoptional=False):
-    ''' Returns True if action will necessarily consume the next argument.
+    """Returns True if action will necessarily consume the next argument.
     isoptional indicates whether the argument is an optional (starts with -).
-    '''
+    """
     num_consumed_args = _num_consumed_args.get(action, 0)
 
     if action.option_strings:
@@ -57,9 +59,9 @@ def action_is_greedy(action, isoptional=False):
 
 
 class IntrospectiveArgumentParser(ArgumentParser):
-    ''' The following is a verbatim copy of ArgumentParser._parse_known_args (Python 2.7.3),
+    """The following is a verbatim copy of ArgumentParser._parse_known_args (Python 2.7.3),
     except for the lines that contain the string "Added by argcomplete".
-    '''
+    """
 
     def _parse_known_args(self, arg_strings, namespace):
         _num_consumed_args.clear()  # Added by argcomplete
@@ -78,7 +80,7 @@ class IntrospectiveArgumentParser(ArgumentParser):
             for i, mutex_action in enumerate(mutex_group._group_actions):
                 conflicts = action_conflicts.setdefault(mutex_action, [])
                 conflicts.extend(group_actions[:i])
-                conflicts.extend(group_actions[i + 1:])
+                conflicts.extend(group_actions[i + 1 :])
 
         # find all option indices, and determine the arg_string_pattern
         # which has an 'O' if there is an option at an index,
@@ -89,29 +91,31 @@ class IntrospectiveArgumentParser(ArgumentParser):
         for i, arg_string in enumerate(arg_strings_iter):
 
             # all args after -- are non-options
-            if arg_string == '--':
-                arg_string_pattern_parts.append('-')
+            if arg_string == "--":
+                arg_string_pattern_parts.append("-")
                 for arg_string in arg_strings_iter:
-                    arg_string_pattern_parts.append('A')
+                    arg_string_pattern_parts.append("A")
 
             # otherwise, add the arg to the arg strings
             # and note the index if it was an option
             else:
                 option_tuple = self._parse_optional(arg_string)
                 if option_tuple is None:
-                    pattern = 'A'
+                    pattern = "A"
                 else:
                     option_string_indices[i] = option_tuple
-                    pattern = 'O'
+                    pattern = "O"
                 arg_string_pattern_parts.append(pattern)
 
         # join the pieces together to form the pattern
-        arg_strings_pattern = ''.join(arg_string_pattern_parts)
+        arg_strings_pattern = "".join(arg_string_pattern_parts)
 
         # converts arg strings to the appropriate and then takes the action
         seen_actions = set()
         seen_non_default_actions = set()
-        self._seen_non_default_actions = seen_non_default_actions  # Added by argcomplete
+        self._seen_non_default_actions = (
+            seen_non_default_actions  # Added by argcomplete
+        )
 
         def take_action(action, argument_strings, option_string=None):
             seen_actions.add(action)
@@ -124,14 +128,13 @@ class IntrospectiveArgumentParser(ArgumentParser):
                 seen_non_default_actions.add(action)
                 for conflict_action in action_conflicts.get(action, []):
                     if conflict_action in seen_non_default_actions:
-                        msg = _('not allowed with argument %s')
+                        msg = _("not allowed with argument %s")
                         action_name = _get_action_name(conflict_action)
                         raise ArgumentError(action, msg % action_name)
 
             # take the action if we didn't receive a SUPPRESS value
             # (e.g. from a default)
-            if argument_values is not SUPPRESS \
-                    or isinstance(action, _SubParsersAction):
+            if argument_values is not SUPPRESS or isinstance(action, _SubParsersAction):
                 try:
                     action(self, namespace, argument_values, option_string)
                 except:
@@ -140,7 +143,9 @@ class IntrospectiveArgumentParser(ArgumentParser):
                     # contents of its parsed namespace into the parent namespace. Do that here to allow completers to
                     # access the partially parsed arguments for the subparser.
                     if isinstance(action, _SubParsersAction):
-                        subnamespace = action._name_parser_map[argument_values[0]]._argcomplete_namespace
+                        subnamespace = action._name_parser_map[
+                            argument_values[0]
+                        ]._argcomplete_namespace
                         for key, value in vars(subnamespace).items():
                             setattr(namespace, key, value)
                     # End added by argcomplete
@@ -167,7 +172,7 @@ class IntrospectiveArgumentParser(ArgumentParser):
                 # if there is an explicit argument, try to match the
                 # optional's string arguments to only this
                 if explicit_arg is not None:
-                    arg_count = match_argument(action, 'A')
+                    arg_count = match_argument(action, "A")
 
                     # if the action is a single-dash option and takes no
                     # arguments, try to parse more single-dash options out
@@ -183,7 +188,7 @@ class IntrospectiveArgumentParser(ArgumentParser):
                             action = optionals_map[option_string]
                             explicit_arg = new_explicit_arg
                         else:
-                            msg = _('ignored explicit argument %r')
+                            msg = _("ignored explicit argument %r")
                             raise ArgumentError(action, msg % explicit_arg)
 
                     # if the action expect exactly one argument, we've
@@ -197,7 +202,7 @@ class IntrospectiveArgumentParser(ArgumentParser):
                     # error if a double-dash option did not use the
                     # explicit argument
                     else:
-                        msg = _('ignored explicit argument %r')
+                        msg = _("ignored explicit argument %r")
                         raise ArgumentError(action, msg % explicit_arg)
 
                 # if there is no explicit argument, try to match the
@@ -243,17 +248,19 @@ class IntrospectiveArgumentParser(ArgumentParser):
 
             # slice off the appropriate arg strings for each Positional
             # and add the Positional and its args to the list
-            for action, arg_count in zip(positionals, arg_counts):  # Added by argcomplete
+            for action, arg_count in zip(
+                positionals, arg_counts
+            ):  # Added by argcomplete
                 self.active_actions.append(action)  # Added by argcomplete
             for action, arg_count in zip(positionals, arg_counts):
-                args = arg_strings[start_index: start_index + arg_count]
+                args = arg_strings[start_index : start_index + arg_count]
                 start_index += arg_count
-                _num_consumed_args[action] = len(args)   # Added by argcomplete
+                _num_consumed_args[action] = len(args)  # Added by argcomplete
                 take_action(action, args)
 
             # slice off the Positionals that we just parsed and return the
             # index at which the Positionals' string args stopped
-            positionals[:] = positionals[len(arg_counts):]
+            positionals[:] = positionals[len(arg_counts) :]
             return start_index
 
         # consume Positionals and Optionals alternately, until we have
@@ -267,10 +274,9 @@ class IntrospectiveArgumentParser(ArgumentParser):
         while start_index <= max_option_string_index:
 
             # consume any Positionals preceding the next option
-            next_option_string_index = min([
-                index
-                for index in option_string_indices
-                if index >= start_index])
+            next_option_string_index = min(
+                [index for index in option_string_indices if index >= start_index]
+            )
             if start_index != next_option_string_index:
                 positionals_end_index = consume_positionals(start_index)
 
@@ -303,14 +309,14 @@ class IntrospectiveArgumentParser(ArgumentParser):
 
         if positionals:
             self.active_actions.append(positionals[0])  # Added by argcomplete
-            self.error(_('too few arguments'))
+            self.error(_("too few arguments"))
 
         # make sure all required actions were present
         for action in self._actions:
             if action.required:
                 if action not in seen_actions:
                     name = _get_action_name(action)
-                    self.error(_('argument %s is required') % name)
+                    self.error(_("argument %s is required") % name)
 
         # make sure all required groups had one option present
         for group in self._mutually_exclusive_groups:
@@ -321,11 +327,13 @@ class IntrospectiveArgumentParser(ArgumentParser):
 
                 # if no actions were used, report the error
                 else:
-                    names = [_get_action_name(action)
-                             for action in group._group_actions
-                             if action.help is not SUPPRESS]
-                    msg = _('one of the arguments %s is required')
-                    self.error(msg % ' '.join(names))
+                    names = [
+                        _get_action_name(action)
+                        for action in group._group_actions
+                        if action.help is not SUPPRESS
+                    ]
+                    msg = _("one of the arguments %s is required")
+                    self.error(msg % " ".join(names))
 
         # return the updated namespace and the extra arguments
         return namespace, extras
