@@ -21,7 +21,13 @@
 from __future__ import print_function
 
 from boto.sdb.db.model import Model
-from boto.sdb.db.property import StringProperty, IntegerProperty, ListProperty, ReferenceProperty, CalculatedProperty
+from boto.sdb.db.property import (
+    StringProperty,
+    IntegerProperty,
+    ListProperty,
+    ReferenceProperty,
+    CalculatedProperty,
+)
 from boto.manage.server import Server
 from boto.manage import propget
 import boto.utils
@@ -33,81 +39,88 @@ import datetime
 
 
 class CommandLineGetter(object):
-
     def get_region(self, params):
-        if not params.get('region', None):
-            prop = self.cls.find_property('region_name')
-            params['region'] = propget.get(prop, choices=boto.ec2.regions)
+        if not params.get("region", None):
+            prop = self.cls.find_property("region_name")
+            params["region"] = propget.get(prop, choices=boto.ec2.regions)
 
     def get_zone(self, params):
-        if not params.get('zone', None):
-            prop = StringProperty(name='zone', verbose_name='EC2 Availability Zone',
-                                  choices=self.ec2.get_all_zones)
-            params['zone'] = propget.get(prop)
+        if not params.get("zone", None):
+            prop = StringProperty(
+                name="zone",
+                verbose_name="EC2 Availability Zone",
+                choices=self.ec2.get_all_zones,
+            )
+            params["zone"] = propget.get(prop)
 
     def get_name(self, params):
-        if not params.get('name', None):
-            prop = self.cls.find_property('name')
-            params['name'] = propget.get(prop)
+        if not params.get("name", None):
+            prop = self.cls.find_property("name")
+            params["name"] = propget.get(prop)
 
     def get_size(self, params):
-        if not params.get('size', None):
-            prop = IntegerProperty(name='size', verbose_name='Size (GB)')
-            params['size'] = propget.get(prop)
+        if not params.get("size", None):
+            prop = IntegerProperty(name="size", verbose_name="Size (GB)")
+            params["size"] = propget.get(prop)
 
     def get_mount_point(self, params):
-        if not params.get('mount_point', None):
-            prop = self.cls.find_property('mount_point')
-            params['mount_point'] = propget.get(prop)
+        if not params.get("mount_point", None):
+            prop = self.cls.find_property("mount_point")
+            params["mount_point"] = propget.get(prop)
 
     def get_device(self, params):
-        if not params.get('device', None):
-            prop = self.cls.find_property('device')
-            params['device'] = propget.get(prop)
+        if not params.get("device", None):
+            prop = self.cls.find_property("device")
+            params["device"] = propget.get(prop)
 
     def get(self, cls, params):
         self.cls = cls
         self.get_region(params)
-        self.ec2 = params['region'].connect()
+        self.ec2 = params["region"].connect()
         self.get_zone(params)
         self.get_name(params)
         self.get_size(params)
         self.get_mount_point(params)
         self.get_device(params)
 
+
 class Volume(Model):
 
-    name = StringProperty(required=True, unique=True, verbose_name='Name')
-    region_name = StringProperty(required=True, verbose_name='EC2 Region')
-    zone_name = StringProperty(required=True, verbose_name='EC2 Zone')
-    mount_point = StringProperty(verbose_name='Mount Point')
-    device = StringProperty(verbose_name="Device Name", default='/dev/sdp')
+    name = StringProperty(required=True, unique=True, verbose_name="Name")
+    region_name = StringProperty(required=True, verbose_name="EC2 Region")
+    zone_name = StringProperty(required=True, verbose_name="EC2 Zone")
+    mount_point = StringProperty(verbose_name="Mount Point")
+    device = StringProperty(verbose_name="Device Name", default="/dev/sdp")
     volume_id = StringProperty(required=True)
     past_volume_ids = ListProperty(item_type=str)
-    server = ReferenceProperty(Server, collection_name='volumes',
-                               verbose_name='Server Attached To')
-    volume_state = CalculatedProperty(verbose_name="Volume State",
-                                      calculated_type=str, use_method=True)
-    attachment_state = CalculatedProperty(verbose_name="Attachment State",
-                                          calculated_type=str, use_method=True)
-    size = CalculatedProperty(verbose_name="Size (GB)",
-                              calculated_type=int, use_method=True)
+    server = ReferenceProperty(
+        Server, collection_name="volumes", verbose_name="Server Attached To"
+    )
+    volume_state = CalculatedProperty(
+        verbose_name="Volume State", calculated_type=str, use_method=True
+    )
+    attachment_state = CalculatedProperty(
+        verbose_name="Attachment State", calculated_type=str, use_method=True
+    )
+    size = CalculatedProperty(
+        verbose_name="Size (GB)", calculated_type=int, use_method=True
+    )
 
     @classmethod
     def create(cls, **params):
         getter = CommandLineGetter()
         getter.get(cls, params)
-        region = params.get('region')
+        region = params.get("region")
         ec2 = region.connect()
-        zone = params.get('zone')
-        size = params.get('size')
+        zone = params.get("zone")
+        size = params.get("size")
         ebs_volume = ec2.create_volume(size, zone.name)
         v = cls()
         v.ec2 = ec2
         v.volume_id = ebs_volume.id
-        v.name = params.get('name')
-        v.mount_point = params.get('mount_point')
-        v.device = params.get('device')
+        v.name = params.get("name")
+        v.mount_point = params.get("mount_point")
+        v.device = params.get("device")
         v.region_name = region.name
         v.zone_name = zone.name
         v.put()
@@ -136,7 +149,7 @@ class Volume(Model):
         if size < self.size:
             size = self.size
         ec2 = self.get_ec2_connection()
-        if self.zone_name is None or self.zone_name == '':
+        if self.zone_name is None or self.zone_name == "":
             # deal with the migration case where the zone is not set in the logical volume:
             current_volume = ec2.get_all_volumes([self.volume_id])[0]
             self.zone_name = current_volume.zone
@@ -155,7 +168,7 @@ class Volume(Model):
     def get_ec2_connection(self):
         if self.server:
             return self.server.ec2
-        if not hasattr(self, 'ec2') or self.ec2 is None:
+        if not hasattr(self, "ec2") or self.ec2 is None:
             self.ec2 = boto.ec2.connect_to_region(self.region_name)
         return self.ec2
 
@@ -170,7 +183,7 @@ class Volume(Model):
         return rs[0].attachment_state()
 
     def _size(self):
-        if not hasattr(self, '__size'):
+        if not hasattr(self, "__size"):
             ec2 = self.get_ec2_connection()
             rs = ec2.get_all_volumes([self.volume_id])
             self.__size = rs[0].size
@@ -178,7 +191,7 @@ class Volume(Model):
 
     def install_xfs(self):
         if self.server:
-            self.server.install('xfsprogs xfsdump')
+            self.server.install("xfsprogs xfsdump")
 
     def get_snapshots(self):
         """
@@ -190,7 +203,7 @@ class Volume(Model):
         snaps = []
         for snapshot in rs:
             if snapshot.volume_id in all_vols:
-                if snapshot.progress == '100%':
+                if snapshot.progress == "100%":
                     snapshot.date = boto.utils.parse_ts(snapshot.start_time)
                     snapshot.keep = True
                     snaps.append(snapshot)
@@ -198,8 +211,8 @@ class Volume(Model):
         return snaps
 
     def attach(self, server=None):
-        if self.attachment_state == 'attached':
-            print('already attached')
+        if self.attachment_state == "attached":
+            print("already attached")
             return None
         if server:
             self.server = server
@@ -209,8 +222,8 @@ class Volume(Model):
 
     def detach(self, force=False):
         state = self.attachment_state
-        if state == 'available' or state is None or state == 'detaching':
-            print('already detached')
+        if state == "available" or state is None or state == "detaching":
+            print("already detached")
             return None
         ec2 = self.get_ec2_connection()
         ec2.detach_volume(self.volume_id, self.server.instance_id, self.device, force)
@@ -219,66 +232,68 @@ class Volume(Model):
 
     def checkfs(self, use_cmd=None):
         if self.server is None:
-            raise ValueError('server attribute must be set to run this command')
+            raise ValueError("server attribute must be set to run this command")
         # detemine state of file system on volume, only works if attached
         if use_cmd:
             cmd = use_cmd
         else:
             cmd = self.server.get_cmdshell()
-        status = cmd.run('xfs_check %s' % self.device)
+        status = cmd.run("xfs_check %s" % self.device)
         if not use_cmd:
             cmd.close()
-        if status[1].startswith('bad superblock magic number 0'):
+        if status[1].startswith("bad superblock magic number 0"):
             return False
         return True
 
     def wait(self):
         if self.server is None:
-            raise ValueError('server attribute must be set to run this command')
+            raise ValueError("server attribute must be set to run this command")
         with closing(self.server.get_cmdshell()) as cmd:
             # wait for the volume device to appear
             cmd = self.server.get_cmdshell()
             while not cmd.exists(self.device):
-                boto.log.info('%s still does not exist, waiting 10 seconds' % self.device)
+                boto.log.info(
+                    "%s still does not exist, waiting 10 seconds" % self.device
+                )
                 time.sleep(10)
 
     def format(self):
         if self.server is None:
-            raise ValueError('server attribute must be set to run this command')
+            raise ValueError("server attribute must be set to run this command")
         status = None
         with closing(self.server.get_cmdshell()) as cmd:
             if not self.checkfs(cmd):
-                boto.log.info('make_fs...')
-                status = cmd.run('mkfs -t xfs %s' % self.device)
+                boto.log.info("make_fs...")
+                status = cmd.run("mkfs -t xfs %s" % self.device)
         return status
 
     def mount(self):
         if self.server is None:
-            raise ValueError('server attribute must be set to run this command')
-        boto.log.info('handle_mount_point')
+            raise ValueError("server attribute must be set to run this command")
+        boto.log.info("handle_mount_point")
         with closing(self.server.get_cmdshell()) as cmd:
             cmd = self.server.get_cmdshell()
             if not cmd.isdir(self.mount_point):
-                boto.log.info('making directory')
+                boto.log.info("making directory")
                 # mount directory doesn't exist so create it
                 cmd.run("mkdir %s" % self.mount_point)
             else:
-                boto.log.info('directory exists already')
-                status = cmd.run('mount -l')
-                lines = status[1].split('\n')
+                boto.log.info("directory exists already")
+                status = cmd.run("mount -l")
+                lines = status[1].split("\n")
                 for line in lines:
                     t = line.split()
                     if t and t[2] == self.mount_point:
                         # something is already mounted at the mount point
                         # unmount that and mount it as /tmp
                         if t[0] != self.device:
-                            cmd.run('umount %s' % self.mount_point)
-                            cmd.run('mount %s /tmp' % t[0])
-                            cmd.run('chmod 777 /tmp')
+                            cmd.run("umount %s" % self.mount_point)
+                            cmd.run("mount %s /tmp" % t[0])
+                            cmd.run("chmod 777 /tmp")
                             break
             # Mount up our new EBS volume onto mount_point
             cmd.run("mount %s %s" % (self.device, self.mount_point))
-            cmd.run('xfs_growfs %s' % self.mount_point)
+            cmd.run("xfs_growfs %s" % self.mount_point)
 
     def make_ready(self, server):
         self.server = server
@@ -306,9 +321,9 @@ class Volume(Model):
                 snapshot = self.get_ec2_connection().create_snapshot(self.volume_id)
             else:
                 snapshot = self.server.ec2.create_snapshot(self.volume_id)
-            boto.log.info('Snapshot of Volume %s created: %s' %  (self.name, snapshot))
+            boto.log.info("Snapshot of Volume %s created: %s" % (self.name, snapshot))
         except Exception:
-            boto.log.info('Snapshot error')
+            boto.log.info("Snapshot error")
             boto.log.info(traceback.format_exc())
         finally:
             status = self.unfreeze()
@@ -349,12 +364,13 @@ class Volume(Model):
             return snaps
         snaps = snaps[1:-1]
         now = datetime.datetime.now(snaps[0].date.tzinfo)
-        midnight = datetime.datetime(year=now.year, month=now.month,
-                                     day=now.day, tzinfo=now.tzinfo)
+        midnight = datetime.datetime(
+            year=now.year, month=now.month, day=now.day, tzinfo=now.tzinfo
+        )
         # Keep the first snapshot from each day of the previous week
-        one_week = datetime.timedelta(days=7, seconds=60*60)
-        print(midnight-one_week, midnight)
-        previous_week = self.get_snapshot_range(snaps, midnight-one_week, midnight)
+        one_week = datetime.timedelta(days=7, seconds=60 * 60)
+        print(midnight - one_week, midnight)
+        previous_week = self.get_snapshot_range(snaps, midnight - one_week, midnight)
         print(previous_week)
         if not previous_week:
             return snaps
@@ -371,13 +387,17 @@ class Volume(Model):
                 delta = datetime.timedelta(days=week_boundary.weekday())
                 week_boundary = week_boundary - delta
         # Keep one within this partial week
-        partial_week = self.get_snapshot_range(snaps, week_boundary, previous_week[0].date)
+        partial_week = self.get_snapshot_range(
+            snaps, week_boundary, previous_week[0].date
+        )
         if len(partial_week) > 1:
             for snap in partial_week[1:]:
                 snap.keep = False
         # Keep the first snapshot of each week for the previous 4 weeks
         for i in range(0, 4):
-            weeks_worth = self.get_snapshot_range(snaps, week_boundary-one_week, week_boundary)
+            weeks_worth = self.get_snapshot_range(
+                snaps, week_boundary - one_week, week_boundary
+            )
             if len(weeks_worth) > 1:
                 for snap in weeks_worth[1:]:
                     snap.keep = False
@@ -393,7 +413,9 @@ class Volume(Model):
         if delete:
             for snap in snaps:
                 if not snap.keep:
-                    boto.log.info('Deleting %s(%s) for %s' % (snap, snap.date, self.name))
+                    boto.log.info(
+                        "Deleting %s(%s) for %s" % (snap, snap.date, self.name)
+                    )
                     snap.delete()
         return snaps
 
@@ -416,5 +438,3 @@ class Volume(Model):
     def archive(self):
         # snapshot volume, trim snaps, delete volume-id
         pass
-
-

@@ -21,6 +21,7 @@
 # IN THE SOFTWARE.
 
 from boto.ec2.elb.listelement import ListElement
+
 # Namespacing issue with deprecated local class
 from boto.ec2.blockdevicemapping import BlockDeviceMapping as BDM
 from boto.resultset import ResultSet
@@ -37,31 +38,31 @@ class Ebs(object):
         self.volume_size = volume_size
 
     def __repr__(self):
-        return 'Ebs(%s, %s)' % (self.snapshot_id, self.volume_size)
+        return "Ebs(%s, %s)" % (self.snapshot_id, self.volume_size)
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'SnapshotId':
+        if name == "SnapshotId":
             self.snapshot_id = value
-        elif name == 'VolumeSize':
+        elif name == "VolumeSize":
             self.volume_size = value
 
 
 class InstanceMonitoring(object):
-    def __init__(self, connection=None, enabled='false'):
+    def __init__(self, connection=None, enabled="false"):
         self.connection = connection
         self.enabled = enabled
 
     def __repr__(self):
-        return 'InstanceMonitoring(%s)' % self.enabled
+        return "InstanceMonitoring(%s)" % self.enabled
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'Enabled':
+        if name == "Enabled":
             self.enabled = value
 
 
@@ -69,8 +70,14 @@ class InstanceMonitoring(object):
 # Currently in use by deprecated code for backwards compatability
 # Removing this class can also remove the Ebs class in this same file
 class BlockDeviceMapping(object):
-    def __init__(self, connection=None, device_name=None, virtual_name=None,
-                 ebs=None, no_device=None):
+    def __init__(
+        self,
+        connection=None,
+        device_name=None,
+        virtual_name=None,
+        ebs=None,
+        no_device=None,
+    ):
         self.connection = connection
         self.device_name = device_name
         self.virtual_name = virtual_name
@@ -78,34 +85,47 @@ class BlockDeviceMapping(object):
         self.no_device = no_device
 
     def __repr__(self):
-        return 'BlockDeviceMapping(%s, %s)' % (self.device_name,
-                                               self.virtual_name)
+        return "BlockDeviceMapping(%s, %s)" % (self.device_name, self.virtual_name)
 
     def startElement(self, name, attrs, connection):
-        if name == 'Ebs':
+        if name == "Ebs":
             self.ebs = Ebs(self)
             return self.ebs
 
     def endElement(self, name, value, connection):
-        if name == 'DeviceName':
+        if name == "DeviceName":
             self.device_name = value
-        elif name == 'VirtualName':
+        elif name == "VirtualName":
             self.virtual_name = value
-        elif name == 'NoDevice':
+        elif name == "NoDevice":
             self.no_device = bool(value)
 
 
 class LaunchConfiguration(object):
-    def __init__(self, connection=None, name=None, image_id=None,
-                 key_name=None, security_groups=None, user_data=None,
-                 instance_type='m1.small', kernel_id=None,
-                 ramdisk_id=None, block_device_mappings=None,
-                 instance_monitoring=False, spot_price=None,
-                 instance_profile_name=None, ebs_optimized=False,
-                 associate_public_ip_address=None, volume_type=None,
-                 delete_on_termination=True, iops=None,
-                 use_block_device_types=False, classic_link_vpc_id=None,
-                 classic_link_vpc_security_groups=None):
+    def __init__(
+        self,
+        connection=None,
+        name=None,
+        image_id=None,
+        key_name=None,
+        security_groups=None,
+        user_data=None,
+        instance_type="m1.small",
+        kernel_id=None,
+        ramdisk_id=None,
+        block_device_mappings=None,
+        instance_monitoring=False,
+        spot_price=None,
+        instance_profile_name=None,
+        ebs_optimized=False,
+        associate_public_ip_address=None,
+        volume_type=None,
+        delete_on_termination=True,
+        iops=None,
+        use_block_device_types=False,
+        classic_link_vpc_id=None,
+        classic_link_vpc_security_groups=None,
+    ):
         """
         A launch configuration.
 
@@ -195,76 +215,77 @@ class LaunchConfiguration(object):
         self.use_block_device_types = use_block_device_types
         self.classic_link_vpc_id = classic_link_vpc_id
         classic_link_vpc_sec_groups = classic_link_vpc_security_groups or []
-        self.classic_link_vpc_security_groups = \
-            ListElement(classic_link_vpc_sec_groups)
+        self.classic_link_vpc_security_groups = ListElement(classic_link_vpc_sec_groups)
 
         if connection is not None:
             self.use_block_device_types = connection.use_block_device_types
 
     def __repr__(self):
-        return 'LaunchConfiguration:%s' % self.name
+        return "LaunchConfiguration:%s" % self.name
 
     def startElement(self, name, attrs, connection):
-        if name == 'SecurityGroups':
+        if name == "SecurityGroups":
             return self.security_groups
-        elif name == 'ClassicLinkVPCSecurityGroups':
+        elif name == "ClassicLinkVPCSecurityGroups":
             return self.classic_link_vpc_security_groups
-        elif name == 'BlockDeviceMappings':
+        elif name == "BlockDeviceMappings":
             if self.use_block_device_types:
                 self.block_device_mappings = BDM()
             else:
-                self.block_device_mappings = ResultSet([('member', BlockDeviceMapping)])
+                self.block_device_mappings = ResultSet([("member", BlockDeviceMapping)])
             return self.block_device_mappings
-        elif name == 'InstanceMonitoring':
+        elif name == "InstanceMonitoring":
             self.instance_monitoring = InstanceMonitoring(self)
             return self.instance_monitoring
 
     def endElement(self, name, value, connection):
-        if name == 'InstanceType':
+        if name == "InstanceType":
             self.instance_type = value
-        elif name == 'LaunchConfigurationName':
+        elif name == "LaunchConfigurationName":
             self.name = value
-        elif name == 'KeyName':
+        elif name == "KeyName":
             self.key_name = value
-        elif name == 'ImageId':
+        elif name == "ImageId":
             self.image_id = value
-        elif name == 'CreatedTime':
+        elif name == "CreatedTime":
             self.created_time = boto.utils.parse_ts(value)
-        elif name == 'KernelId':
+        elif name == "KernelId":
             self.kernel_id = value
-        elif name == 'RamdiskId':
+        elif name == "RamdiskId":
             self.ramdisk_id = value
-        elif name == 'UserData':
+        elif name == "UserData":
             try:
                 self.user_data = base64.b64decode(value)
             except TypeError:
                 self.user_data = value
-        elif name == 'LaunchConfigurationARN':
+        elif name == "LaunchConfigurationARN":
             self.launch_configuration_arn = value
-        elif name == 'InstanceMonitoring':
+        elif name == "InstanceMonitoring":
             self.instance_monitoring = value
-        elif name == 'SpotPrice':
+        elif name == "SpotPrice":
             self.spot_price = float(value)
-        elif name == 'IamInstanceProfile':
+        elif name == "IamInstanceProfile":
             self.instance_profile_name = value
-        elif name == 'EbsOptimized':
-            self.ebs_optimized = True if value.lower() == 'true' else False
-        elif name == 'AssociatePublicIpAddress':
-            self.associate_public_ip_address = True if value.lower() == 'true' else False
-        elif name == 'VolumeType':
+        elif name == "EbsOptimized":
+            self.ebs_optimized = True if value.lower() == "true" else False
+        elif name == "AssociatePublicIpAddress":
+            self.associate_public_ip_address = (
+                True if value.lower() == "true" else False
+            )
+        elif name == "VolumeType":
             self.volume_type = value
-        elif name == 'DeleteOnTermination':
-            if value.lower() == 'true':
+        elif name == "DeleteOnTermination":
+            if value.lower() == "true":
                 self.delete_on_termination = True
             else:
                 self.delete_on_termination = False
-        elif name == 'Iops':
+        elif name == "Iops":
             self.iops = int(value)
-        elif name == 'ClassicLinkVPCId':
+        elif name == "ClassicLinkVPCId":
             self.classic_link_vpc_id = value
         else:
             setattr(self, name, value)
 
     def delete(self):
-        """ Delete this launch configuration. """
+        """Delete this launch configuration."""
         return self.connection.delete_launch_configuration(self.name)

@@ -21,13 +21,13 @@ from boto.compat import filter, map
 
 
 class ComplexType(dict):
-    _value = 'Value'
+    _value = "Value"
 
     def __repr__(self):
-        return '{0}{1}'.format(getattr(self, self._value, None), self.copy())
+        return "{0}{1}".format(getattr(self, self._value, None), self.copy())
 
     def __str__(self):
-        return str(getattr(self, self._value, ''))
+        return str(getattr(self, self._value, ""))
 
 
 class DeclarativeType(object):
@@ -39,18 +39,22 @@ class DeclarativeType(object):
 
         class JITResponse(ResponseElement):
             pass
+
         self._hint = JITResponse
-        self._hint.__name__ = 'JIT_{0}/{1}'.format(self.__class__.__name__,
-                                                   hex(id(self._hint))[2:])
+        self._hint.__name__ = "JIT_{0}/{1}".format(
+            self.__class__.__name__, hex(id(self._hint))[2:]
+        )
         for name, value in kw.items():
             setattr(self._hint, name, value)
 
     def __repr__(self):
-        parent = getattr(self, '_parent', None)
-        return '<{0}_{1}/{2}_{3}>'.format(self.__class__.__name__,
-                                          parent and parent._name or '?',
-                                          getattr(self, '_name', '?'),
-                                          hex(id(self.__class__)))
+        parent = getattr(self, "_parent", None)
+        return "<{0}_{1}/{2}_{3}>".format(
+            self.__class__.__name__,
+            parent and parent._name or "?",
+            getattr(self, "_name", "?"),
+            hex(id(self.__class__)),
+        )
 
     def setup(self, parent, name, *args, **kw):
         self._parent = parent
@@ -103,8 +107,10 @@ class ElementList(SimpleList):
 
 class MemberList(Element):
     def __init__(self, _member=None, _hint=None, *args, **kw):
-        message = 'Invalid `member` specification in {0}'.format(self.__class__.__name__)
-        assert 'member' not in kw, message
+        message = "Invalid `member` specification in {0}".format(
+            self.__class__.__name__
+        )
+        assert "member" not in kw, message
         if _member is None:
             if _hint is None:
                 super(MemberList, self).__init__(*args, member=ElementList(**kw))
@@ -118,8 +124,9 @@ class MemberList(Element):
                     member = ElementList(_member, **kw)
                 super(MemberList, self).__init__(*args, member=member)
             else:
-                message = 'Nonsensical {0} hint {1!r}'.format(self.__class__.__name__,
-                                                              _hint)
+                message = "Nonsensical {0} hint {1!r}".format(
+                    self.__class__.__name__, _hint
+                )
                 raise AssertionError(message)
 
     def teardown(self, *args, **kw):
@@ -139,14 +146,15 @@ class ResponseFactory(object):
     def element_factory(self, name, parent):
         class DynamicElement(parent):
             _name = name
-        setattr(DynamicElement, '__name__', str(name))
+
+        setattr(DynamicElement, "__name__", str(name))
         return DynamicElement
 
     def search_scopes(self, key):
         for scope in self.scopes:
             if hasattr(scope, key):
                 return getattr(scope, key)
-            if hasattr(scope, '__getitem__'):
+            if hasattr(scope, "__getitem__"):
                 if key in scope:
                     return scope[key]
 
@@ -154,26 +162,27 @@ class ResponseFactory(object):
         element = self.search_scopes(action + suffix)
         if element is not None:
             return element
-        if action.endswith('ByNextToken'):
-            element = self.search_scopes(action[:-len('ByNextToken')] + suffix)
+        if action.endswith("ByNextToken"):
+            element = self.search_scopes(action[: -len("ByNextToken")] + suffix)
             if element is not None:
                 return self.element_factory(action + suffix, element)
         return self.element_factory(action + suffix, parent)
 
     def __call__(self, action, connection=None):
-        response = self.find_element(action, 'Response', Response)
-        if not hasattr(response, action + 'Result'):
-            result = self.find_element(action, 'Result', ResponseElement)
-            setattr(response, action + 'Result', Element(result))
+        response = self.find_element(action, "Response", Response)
+        if not hasattr(response, action + "Result"):
+            result = self.find_element(action, "Result", ResponseElement)
+            setattr(response, action + "Result", Element(result))
         return response(connection=connection)
 
 
 def strip_namespace(func):
     def wrapper(self, name, *args, **kw):
         if self._namespace is not None:
-            if name.startswith(self._namespace + ':'):
-                name = name[len(self._namespace + ':'):]
+            if name.startswith(self._namespace + ":"):
+                name = name[len(self._namespace + ":") :]
         return func(self, name, *args, **kw)
+
     return wrapper
 
 
@@ -188,13 +197,13 @@ class ResponseElement(dict):
         if connection is not None:
             self._connection = connection
         self._name = name or self._name or self.__class__.__name__
-        self._declared('setup', attrs=attrs)
+        self._declared("setup", attrs=attrs)
         dict.__init__(self, attrs and attrs.copy() or {})
 
     def _declared(self, op, **kw):
         def inherit(obj):
             result = {}
-            for cls in getattr(obj, '__bases__', ()):
+            for cls in getattr(obj, "__bases__", ()):
                 result.update(inherit(cls))
             result.update(obj.__dict__)
             return result
@@ -210,14 +219,13 @@ class ResponseElement(dict):
         return self._connection
 
     def __repr__(self):
-        render = lambda pair: '{0!s}: {1!r}'.format(*pair)
-        do_show = lambda pair: not pair[0].startswith('_')
+        render = lambda pair: "{0!s}: {1!r}".format(*pair)
+        do_show = lambda pair: not pair[0].startswith("_")
         attrs = filter(do_show, self.__dict__.items())
         name = self.__class__.__name__
-        if name.startswith('JIT_'):
-            name = '^{0}^'.format(self._name or '')
-        return '{0}{1!r}({2})'.format(
-            name, self.copy(), ', '.join(map(render, attrs)))
+        if name.startswith("JIT_"):
+            name = "^{0}^".format(self._name or "")
+        return "{0}{1!r}({2})".format(name, self.copy(), ", ".join(map(render, attrs)))
 
     def _type_for(self, name, attrs):
         return self._override.get(name, globals().get(name, ResponseElement))
@@ -226,8 +234,7 @@ class ResponseElement(dict):
     def startElement(self, name, attrs, connection):
         attribute = getattr(self, name, None)
         if isinstance(attribute, DeclarativeType):
-            return attribute.start(name=name, attrs=attrs,
-                                   connection=connection)
+            return attribute.start(name=name, attrs=attrs, connection=connection)
         elif attrs.getLength():
             setattr(self, name, ComplexType(attrs.copy()))
         else:
@@ -237,7 +244,7 @@ class ResponseElement(dict):
     def endElement(self, name, value, connection):
         attribute = getattr(self, name, None)
         if name == self._name:
-            self._declared('teardown')
+            self._declared("teardown")
         elif isinstance(attribute, DeclarativeType):
             attribute.end(name=name, value=value, connection=connection)
         elif isinstance(attribute, ComplexType):
@@ -258,18 +265,18 @@ class Response(ResponseElement):
 
     @property
     def _result(self):
-        return getattr(self, self._action + 'Result', None)
+        return getattr(self, self._action + "Result", None)
 
     @property
     def _action(self):
-        return (self._name or self.__class__.__name__)[:-len('Response')]
+        return (self._name or self.__class__.__name__)[: -len("Response")]
 
 
 class ResponseResultList(Response):
     _ResultClass = ResponseElement
 
     def __init__(self, *args, **kw):
-        setattr(self, self._action + 'Result', ElementList(self._ResultClass))
+        setattr(self, self._action + "Result", ElementList(self._ResultClass))
         super(ResponseResultList, self).__init__(*args, **kw)
 
 
@@ -330,8 +337,7 @@ class UpdateReportAcknowledgementsResult(GetReportListResult):
 
 
 class CreateInboundShipmentPlanResult(ResponseElement):
-    InboundShipmentPlans = MemberList(ShipToAddress=Element(),
-                                      Items=MemberList())
+    InboundShipmentPlans = MemberList(ShipToAddress=Element(), Items=MemberList())
 
 
 class ListInboundShipmentsResult(ResponseElement):
@@ -348,15 +354,15 @@ class ListInventorySupplyResult(ResponseElement):
         SupplyDetail=MemberList(
             EarliestAvailableToPick=Element(),
             LatestAvailableToPick=Element(),
-        )
+        ),
     )
 
 
 class ComplexAmount(ResponseElement):
-    _amount = 'Value'
+    _amount = "Value"
 
     def __repr__(self):
-        return '{0} {1}'.format(self.CurrencyCode, getattr(self, self._amount))
+        return "{0} {1}".format(self.CurrencyCode, getattr(self, self._amount))
 
     def __float__(self):
         return float(getattr(self, self._amount))
@@ -366,8 +372,8 @@ class ComplexAmount(ResponseElement):
 
     @strip_namespace
     def startElement(self, name, attrs, connection):
-        if name not in ('CurrencyCode', self._amount):
-            message = 'Unrecognized tag {0} in ComplexAmount'.format(name)
+        if name not in ("CurrencyCode", self._amount):
+            message = "Unrecognized tag {0} in ComplexAmount".format(name)
             raise AssertionError(message)
         return super(ComplexAmount, self).startElement(name, attrs, connection)
 
@@ -379,12 +385,12 @@ class ComplexAmount(ResponseElement):
 
 
 class ComplexMoney(ComplexAmount):
-    _amount = 'Amount'
+    _amount = "Amount"
 
 
 class ComplexWeight(ResponseElement):
     def __repr__(self):
-        return '{0} {1}'.format(self.Value, self.Unit)
+        return "{0} {1}".format(self.Value, self.Unit)
 
     def __float__(self):
         return float(self.Value)
@@ -394,41 +400,41 @@ class ComplexWeight(ResponseElement):
 
     @strip_namespace
     def startElement(self, name, attrs, connection):
-        if name not in ('Unit', 'Value'):
-            message = 'Unrecognized tag {0} in ComplexWeight'.format(name)
+        if name not in ("Unit", "Value"):
+            message = "Unrecognized tag {0} in ComplexWeight".format(name)
             raise AssertionError(message)
         return super(ComplexWeight, self).startElement(name, attrs, connection)
 
     @strip_namespace
     def endElement(self, name, value, connection):
-        if name == 'Value':
+        if name == "Value":
             value = Decimal(value)
         super(ComplexWeight, self).endElement(name, value, connection)
 
 
 class Dimension(ComplexType):
-    _value = 'Value'
+    _value = "Value"
 
 
 class ComplexDimensions(ResponseElement):
-    _dimensions = ('Height', 'Length', 'Width', 'Weight')
+    _dimensions = ("Height", "Length", "Width", "Weight")
 
     def __repr__(self):
         values = [getattr(self, key, None) for key in self._dimensions]
         values = filter(None, values)
-        return 'x'.join(map('{0.Value:0.2f}{0[Units]}'.format, values))
+        return "x".join(map("{0.Value:0.2f}{0[Units]}".format, values))
 
     @strip_namespace
     def startElement(self, name, attrs, connection):
         if name not in self._dimensions:
-            message = 'Unrecognized tag {0} in ComplexDimensions'.format(name)
+            message = "Unrecognized tag {0} in ComplexDimensions".format(name)
             raise AssertionError(message)
         setattr(self, name, Dimension(attrs.copy()))
 
     @strip_namespace
     def endElement(self, name, value, connection):
         if name in self._dimensions:
-            value = Decimal(value or '0')
+            value = Decimal(value or "0")
         ResponseElement.endElement(self, name, value, connection)
 
 
@@ -487,17 +493,27 @@ class ItemAttributes(AttributeSet):
     Languages = Element(Language=ElementList())
 
     def __init__(self, *args, **kw):
-        names = ('Actor', 'Artist', 'Author', 'Creator', 'Director',
-                 'Feature', 'Format', 'GemType', 'MaterialType',
-                 'MediaType', 'OperatingSystem', 'Platform')
+        names = (
+            "Actor",
+            "Artist",
+            "Author",
+            "Creator",
+            "Director",
+            "Feature",
+            "Format",
+            "GemType",
+            "MaterialType",
+            "MediaType",
+            "OperatingSystem",
+            "Platform",
+        )
         for name in names:
             setattr(self, name, SimpleList())
         super(ItemAttributes, self).__init__(*args, **kw)
 
 
 class VariationRelationship(ResponseElement):
-    Identifiers = Element(MarketplaceASIN=Element(),
-                          SKUIdentifier=Element())
+    Identifiers = Element(MarketplaceASIN=Element(), SKUIdentifier=Element())
     GemType = SimpleList()
     MaterialType = SimpleList()
     OperatingSystem = SimpleList()
@@ -538,9 +554,8 @@ class Offer(ResponseElement):
 
 
 class Product(ResponseElement):
-    _namespace = 'ns2'
-    Identifiers = Element(MarketplaceASIN=Element(),
-                          SKUIdentifier=Element())
+    _namespace = "ns2"
+    Identifiers = Element(MarketplaceASIN=Element(), SKUIdentifier=Element())
     AttributeSets = Element(
         ItemAttributes=ElementList(ItemAttributes),
     )
@@ -609,9 +624,8 @@ class GetMyPriceForASINResponse(ProductsBulkOperationResponse):
 
 
 class ProductCategory(ResponseElement):
-
     def __init__(self, *args, **kw):
-        setattr(self, 'Parent', Element(ProductCategory))
+        setattr(self, "Parent", Element(ProductCategory))
         super(ProductCategory, self).__init__(*args, **kw)
 
 
@@ -632,9 +646,7 @@ class Order(ResponseElement):
     ShippingAddress = Element()
     PaymentExecutionDetail = Element(
         PaymentExecutionDetailItem=ElementList(
-            PaymentExecutionDetailItem=Element(
-                Payment=Element(ComplexMoney)
-            )
+            PaymentExecutionDetailItem=Element(Payment=Element(ComplexMoney))
         )
     )
 

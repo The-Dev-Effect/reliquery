@@ -60,18 +60,18 @@ class BigMessage(RawMessage):
     def _get_bucket_key(self, s3_url):
         bucket_name = key_name = None
         if s3_url:
-            if s3_url.startswith('s3://'):
+            if s3_url.startswith("s3://"):
                 # We need to split out the bucket from the key (if
                 # supplied).  We also have to be aware that someone
                 # may provide a trailing '/' character as in:
                 # s3://foo/ and we want to handle that.
-                s3_components = s3_url[5:].split('/', 1)
+                s3_components = s3_url[5:].split("/", 1)
                 bucket_name = s3_components[0]
                 if len(s3_components) > 1:
                     if s3_components[1]:
                         key_name = s3_components[1]
             else:
-                msg = 's3_url parameter should start with s3://'
+                msg = "s3_url parameter should start with s3://"
                 raise SQSDecodeError(msg, self)
         return bucket_name, key_name
 
@@ -91,7 +91,7 @@ class BigMessage(RawMessage):
         s3_bucket = s3_conn.get_bucket(bucket_name)
         key = s3_bucket.new_key(key_name)
         key.set_contents_from_file(value)
-        self.s3_url = 's3://%s/%s' % (bucket_name, key_name)
+        self.s3_url = "s3://%s/%s" % (bucket_name, key_name)
         return self.s3_url
 
     def _get_s3_object(self, s3_url):
@@ -102,7 +102,7 @@ class BigMessage(RawMessage):
             key = s3_bucket.get_key(key_name)
             return key
         else:
-            msg = 'Unable to decode S3 URL: %s' % s3_url
+            msg = "Unable to decode S3 URL: %s" % s3_url
             raise SQSDecodeError(msg, self)
 
     def decode(self, value):
@@ -116,4 +116,3 @@ class BigMessage(RawMessage):
             key = self._get_s3_object(self.s3_url)
             key.delete()
         super(BigMessage, self).delete()
-

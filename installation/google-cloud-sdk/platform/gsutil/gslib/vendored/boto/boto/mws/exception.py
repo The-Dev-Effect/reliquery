@@ -23,10 +23,9 @@ from boto.mws.response import ResponseFactory
 
 
 class ResponseErrorFactory(ResponseFactory):
-
     def __call__(self, status, reason, body=None):
         server = BotoServerError(status, reason, body=body)
-        supplied = self.find_element(server.error_code, '', ResponseError)
+        supplied = self.find_element(server.error_code, "", ResponseError)
         print(supplied.__name__)
         return supplied(status, reason, body=body)
 
@@ -35,17 +34,17 @@ class ResponseError(BotoServerError):
     """
     Undefined response error.
     """
+
     retry = False
 
     def __repr__(self):
-        return '{0.__name__}({1.reason}: "{1.message}")' \
-            .format(self.__class__, self)
+        return '{0.__name__}({1.reason}: "{1.message}")'.format(self.__class__, self)
 
     def __str__(self):
-        doc = self.__doc__ and self.__doc__.strip() + "\n" or ''
-        return '{1.__name__}: {0.reason} {2}\n{3}' \
-               '{0.message}'.format(self, self.__class__,
-                                    self.retry and '(Retriable)' or '', doc)
+        doc = self.__doc__ and self.__doc__.strip() + "\n" or ""
+        return "{1.__name__}: {0.reason} {2}\n{3}" "{0.message}".format(
+            self, self.__class__, self.retry and "(Retriable)" or "", doc
+        )
 
 
 class RetriableResponseError(ResponseError):

@@ -38,11 +38,12 @@ class AppIdentityError(Exception):
 
 
 def _bad_pkcs12_key_as_pem(*args, **kwargs):
-    raise NotImplementedError('pkcs12_key_as_pem requires OpenSSL.')
+    raise NotImplementedError("pkcs12_key_as_pem requires OpenSSL.")
 
 
 try:
     from oauth2client import _openssl_crypt
+
     OpenSSLSigner = _openssl_crypt.OpenSSLSigner
     OpenSSLVerifier = _openssl_crypt.OpenSSLVerifier
     pkcs12_key_as_pem = _openssl_crypt.pkcs12_key_as_pem
@@ -53,6 +54,7 @@ except ImportError:  # pragma: NO COVER
 
 try:
     from oauth2client import _pycrypto_crypt
+
     PyCryptoSigner = _pycrypto_crypt.PyCryptoSigner
     PyCryptoVerifier = _pycrypto_crypt.PyCryptoVerifier
 except ImportError:  # pragma: NO COVER
@@ -84,22 +86,22 @@ def make_signed_jwt(signer, payload, key_id=None):
     Returns:
         string, The JWT for the payload.
     """
-    header = {'typ': 'JWT', 'alg': 'RS256'}
+    header = {"typ": "JWT", "alg": "RS256"}
     if key_id is not None:
-        header['kid'] = key_id
+        header["kid"] = key_id
 
     segments = [
         _helpers._urlsafe_b64encode(_helpers._json_encode(header)),
         _helpers._urlsafe_b64encode(_helpers._json_encode(payload)),
     ]
-    signing_input = b'.'.join(segments)
+    signing_input = b".".join(segments)
 
     signature = signer.sign(signing_input)
     segments.append(_helpers._urlsafe_b64encode(signature))
 
     logger.debug(str(segments))
 
-    return b'.'.join(segments)
+    return b".".join(segments)
 
 
 def _verify_signature(message, signature, certs):
@@ -120,7 +122,7 @@ def _verify_signature(message, signature, certs):
             return
 
     # If we have not returned, no certificate confirms the signature.
-    raise AppIdentityError('Invalid token signature')
+    raise AppIdentityError("Invalid token signature")
 
 
 def _check_audience(payload_dict, audience):
@@ -142,13 +144,15 @@ def _check_audience(payload_dict, audience):
     if audience is None:
         return
 
-    audience_in_payload = payload_dict.get('aud')
+    audience_in_payload = payload_dict.get("aud")
     if audience_in_payload is None:
-        raise AppIdentityError(
-            'No aud field in token: {0}'.format(payload_dict))
+        raise AppIdentityError("No aud field in token: {0}".format(payload_dict))
     if audience_in_payload != audience:
-        raise AppIdentityError('Wrong recipient, {0} != {1}: {2}'.format(
-            audience_in_payload, audience, payload_dict))
+        raise AppIdentityError(
+            "Wrong recipient, {0} != {1}: {2}".format(
+                audience_in_payload, audience, payload_dict
+            )
+        )
 
 
 def _verify_time_range(payload_dict):
@@ -178,30 +182,29 @@ def _verify_time_range(payload_dict):
     now = int(time.time())
 
     # Make sure issued at and expiration are in the payload.
-    issued_at = payload_dict.get('iat')
+    issued_at = payload_dict.get("iat")
     if issued_at is None:
-        raise AppIdentityError(
-            'No iat field in token: {0}'.format(payload_dict))
-    expiration = payload_dict.get('exp')
+        raise AppIdentityError("No iat field in token: {0}".format(payload_dict))
+    expiration = payload_dict.get("exp")
     if expiration is None:
-        raise AppIdentityError(
-            'No exp field in token: {0}'.format(payload_dict))
+        raise AppIdentityError("No exp field in token: {0}".format(payload_dict))
 
     # Make sure the expiration gives an acceptable token lifetime.
     if expiration >= now + MAX_TOKEN_LIFETIME_SECS:
-        raise AppIdentityError(
-            'exp field too far in future: {0}'.format(payload_dict))
+        raise AppIdentityError("exp field too far in future: {0}".format(payload_dict))
 
     # Make sure (up to clock skew) that the token wasn't issued in the future.
     earliest = issued_at - CLOCK_SKEW_SECS
     if now < earliest:
-        raise AppIdentityError('Token used too early, {0} < {1}: {2}'.format(
-            now, earliest, payload_dict))
+        raise AppIdentityError(
+            "Token used too early, {0} < {1}: {2}".format(now, earliest, payload_dict)
+        )
     # Make sure (up to clock skew) that the token isn't already expired.
     latest = expiration + CLOCK_SKEW_SECS
     if now > latest:
-        raise AppIdentityError('Token used too late, {0} > {1}: {2}'.format(
-            now, latest, payload_dict))
+        raise AppIdentityError(
+            "Token used too late, {0} > {1}: {2}".format(now, latest, payload_dict)
+        )
 
 
 def verify_signed_jwt_with_certs(jwt, certs, audience=None):
@@ -223,12 +226,11 @@ def verify_signed_jwt_with_certs(jwt, certs, audience=None):
     """
     jwt = _helpers._to_bytes(jwt)
 
-    if jwt.count(b'.') != 2:
-        raise AppIdentityError(
-            'Wrong number of segments in token: {0}'.format(jwt))
+    if jwt.count(b".") != 2:
+        raise AppIdentityError("Wrong number of segments in token: {0}".format(jwt))
 
-    header, payload, signature = jwt.split(b'.')
-    message_to_sign = header + b'.' + payload
+    header, payload, signature = jwt.split(b".")
+    message_to_sign = header + b"." + payload
     signature = _helpers._urlsafe_b64decode(signature)
 
     # Parse token.
@@ -236,7 +238,7 @@ def verify_signed_jwt_with_certs(jwt, certs, audience=None):
     try:
         payload_dict = json.loads(_helpers._from_bytes(payload_bytes))
     except:
-        raise AppIdentityError('Can\'t parse token: {0}'.format(payload_bytes))
+        raise AppIdentityError("Can't parse token: {0}".format(payload_bytes))
 
     # Verify that the signature matches the message.
     _verify_signature(message_to_sign, signature, certs.values())

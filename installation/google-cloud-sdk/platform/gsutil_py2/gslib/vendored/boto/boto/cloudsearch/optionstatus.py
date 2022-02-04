@@ -58,10 +58,10 @@ class OptionStatus(dict):
         self.refresh(data)
 
     def _update_status(self, status):
-        self.creation_date = status['creation_date']
-        self.status = status['state']
-        self.update_date = status['update_date']
-        self.update_version = int(status['update_version'])
+        self.creation_date = status["creation_date"]
+        self.status = status["state"]
+        self.update_date = status["update_date"]
+        self.update_version = int(status["update_version"])
 
     def _update_options(self, options):
         if options:
@@ -77,8 +77,8 @@ class OptionStatus(dict):
             if self.refresh_fn:
                 data = self.refresh_fn(self.domain.name)
         if data:
-            self._update_status(data['status'])
-            self._update_options(data['options'])
+            self._update_status(data["status"])
+            self._update_options(data["options"])
 
     def to_json(self):
         """
@@ -90,15 +90,15 @@ class OptionStatus(dict):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'CreationDate':
+        if name == "CreationDate":
             self.created = value
-        elif name == 'State':
+        elif name == "State":
             self.state = value
-        elif name == 'UpdateDate':
+        elif name == "UpdateDate":
             self.updated = value
-        elif name == 'UpdateVersion':
+        elif name == "UpdateVersion":
             self.update_version = int(value)
-        elif name == 'Options':
+        elif name == "Options":
             self.update_from_json_doc(value)
         else:
             setattr(self, name, value)
@@ -123,7 +123,6 @@ class OptionStatus(dict):
 
 
 class IndexFieldStatus(OptionStatus):
-
     def _update_options(self, options):
         self.update(options)
 
@@ -135,8 +134,8 @@ class RankExpressionStatus(IndexFieldStatus):
 
     pass
 
-class ServicePoliciesStatus(OptionStatus):
 
+class ServicePoliciesStatus(OptionStatus):
     def new_statement(self, arn, ip):
         """
         Returns a new policy statement that will allow
@@ -153,35 +152,31 @@ class ServicePoliciesStatus(OptionStatus):
             to.
         """
         return {
-                    "Effect":"Allow",
-                    "Action":"*",  # Docs say use GET, but denies unless *
-                    "Resource": arn,
-                    "Condition": {
-                        "IpAddress": {
-                            "aws:SourceIp": [ip]
-                            }
-                        }
-                    }
+            "Effect": "Allow",
+            "Action": "*",  # Docs say use GET, but denies unless *
+            "Resource": arn,
+            "Condition": {"IpAddress": {"aws:SourceIp": [ip]}},
+        }
 
     def _allow_ip(self, arn, ip):
-        if 'Statement' not in self:
+        if "Statement" not in self:
             s = self.new_statement(arn, ip)
-            self['Statement'] = [s]
+            self["Statement"] = [s]
             self.save()
         else:
             add_statement = True
-            for statement in self['Statement']:
-                if statement['Resource'] == arn:
-                    for condition_name in statement['Condition']:
-                        if condition_name == 'IpAddress':
+            for statement in self["Statement"]:
+                if statement["Resource"] == arn:
+                    for condition_name in statement["Condition"]:
+                        if condition_name == "IpAddress":
                             add_statement = False
-                            condition = statement['Condition'][condition_name]
-                            if ip not in condition['aws:SourceIp']:
-                                condition['aws:SourceIp'].append(ip)
+                            condition = statement["Condition"][condition_name]
+                            if ip not in condition["aws:SourceIp"]:
+                                condition["aws:SourceIp"].append(ip)
 
             if add_statement:
                 s = self.new_statement(arn, ip)
-                self['Statement'].append(s)
+                self["Statement"].append(s)
             self.save()
 
     def allow_search_ip(self, ip):
@@ -209,16 +204,16 @@ class ServicePoliciesStatus(OptionStatus):
         self._allow_ip(arn, ip)
 
     def _disallow_ip(self, arn, ip):
-        if 'Statement' not in self:
+        if "Statement" not in self:
             return
         need_update = False
-        for statement in self['Statement']:
-            if statement['Resource'] == arn:
-                for condition_name in statement['Condition']:
-                    if condition_name == 'IpAddress':
-                        condition = statement['Condition'][condition_name]
-                        if ip in condition['aws:SourceIp']:
-                            condition['aws:SourceIp'].remove(ip)
+        for statement in self["Statement"]:
+            if statement["Resource"] == arn:
+                for condition_name in statement["Condition"]:
+                    if condition_name == "IpAddress":
+                        condition = statement["Condition"][condition_name]
+                        if ip in condition["aws:SourceIp"]:
+                            condition["aws:SourceIp"].remove(ip)
                             need_update = True
         if need_update:
             self.save()

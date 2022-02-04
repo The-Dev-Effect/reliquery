@@ -18,26 +18,29 @@ from pyasn1_modules.rfc2459 import *
 
 class Attribute(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('type', AttributeType()),
-        namedtype.NamedType('values', univ.SetOf(componentType=AttributeValue()))
+        namedtype.NamedType("type", AttributeType()),
+        namedtype.NamedType("values", univ.SetOf(componentType=AttributeValue())),
     )
 
 
 class AttributeValueAssertion(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('attributeType', AttributeType()),
-        namedtype.NamedType('attributeValue', AttributeValue(),
-                            openType=opentype.OpenType('type', certificateAttributesMap))
+        namedtype.NamedType("attributeType", AttributeType()),
+        namedtype.NamedType(
+            "attributeValue",
+            AttributeValue(),
+            openType=opentype.OpenType("type", certificateAttributesMap),
+        ),
     )
 
 
-pkcs_7 = univ.ObjectIdentifier('1.2.840.113549.1.7')
-data = univ.ObjectIdentifier('1.2.840.113549.1.7.1')
-signedData = univ.ObjectIdentifier('1.2.840.113549.1.7.2')
-envelopedData = univ.ObjectIdentifier('1.2.840.113549.1.7.3')
-signedAndEnvelopedData = univ.ObjectIdentifier('1.2.840.113549.1.7.4')
-digestedData = univ.ObjectIdentifier('1.2.840.113549.1.7.5')
-encryptedData = univ.ObjectIdentifier('1.2.840.113549.1.7.6')
+pkcs_7 = univ.ObjectIdentifier("1.2.840.113549.1.7")
+data = univ.ObjectIdentifier("1.2.840.113549.1.7.1")
+signedData = univ.ObjectIdentifier("1.2.840.113549.1.7.2")
+envelopedData = univ.ObjectIdentifier("1.2.840.113549.1.7.3")
+signedAndEnvelopedData = univ.ObjectIdentifier("1.2.840.113549.1.7.4")
+digestedData = univ.ObjectIdentifier("1.2.840.113549.1.7.5")
+encryptedData = univ.ObjectIdentifier("1.2.840.113549.1.7.6")
 
 
 class ContentType(univ.ObjectIdentifier):
@@ -57,14 +60,17 @@ contentTypeMap = {}
 
 class EncryptedContentInfo(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('contentType', ContentType()),
-        namedtype.NamedType('contentEncryptionAlgorithm', ContentEncryptionAlgorithmIdentifier()),
+        namedtype.NamedType("contentType", ContentType()),
+        namedtype.NamedType(
+            "contentEncryptionAlgorithm", ContentEncryptionAlgorithmIdentifier()
+        ),
         namedtype.OptionalNamedType(
-            'encryptedContent', EncryptedContent().subtype(
+            "encryptedContent",
+            EncryptedContent().subtype(
                 implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0)
             ),
-            openType=opentype.OpenType('contentType', contentTypeMap)
-        )
+            openType=opentype.OpenType("contentType", contentTypeMap),
+        ),
     )
 
 
@@ -74,8 +80,8 @@ class Version(univ.Integer):  # overrides x509.Version
 
 class EncryptedData(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('version', Version()),
-        namedtype.NamedType('encryptedContentInfo', EncryptedContentInfo())
+        namedtype.NamedType("version", Version()),
+        namedtype.NamedType("encryptedContentInfo", EncryptedContentInfo()),
     )
 
 
@@ -93,28 +99,30 @@ class Digest(univ.OctetString):
 
 class ContentInfo(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('contentType', ContentType()),
+        namedtype.NamedType("contentType", ContentType()),
         namedtype.OptionalNamedType(
-            'content',
-            univ.Any().subtype(explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0)),
-            openType=opentype.OpenType('contentType', contentTypeMap)
-        )
+            "content",
+            univ.Any().subtype(
+                explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0)
+            ),
+            openType=opentype.OpenType("contentType", contentTypeMap),
+        ),
     )
 
 
 class DigestedData(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('version', Version()),
-        namedtype.NamedType('digestAlgorithm', DigestAlgorithmIdentifier()),
-        namedtype.NamedType('contentInfo', ContentInfo()),
-        namedtype.NamedType('digest', Digest())
+        namedtype.NamedType("version", Version()),
+        namedtype.NamedType("digestAlgorithm", DigestAlgorithmIdentifier()),
+        namedtype.NamedType("contentInfo", ContentInfo()),
+        namedtype.NamedType("digest", Digest()),
     )
 
 
 class IssuerAndSerialNumber(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('issuer', Name()),
-        namedtype.NamedType('serialNumber', CertificateSerialNumber())
+        namedtype.NamedType("issuer", Name()),
+        namedtype.NamedType("serialNumber", CertificateSerialNumber()),
     )
 
 
@@ -128,10 +136,12 @@ class EncryptedKey(univ.OctetString):
 
 class RecipientInfo(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('version', Version()),
-        namedtype.NamedType('issuerAndSerialNumber', IssuerAndSerialNumber()),
-        namedtype.NamedType('keyEncryptionAlgorithm', KeyEncryptionAlgorithmIdentifier()),
-        namedtype.NamedType('encryptedKey', EncryptedKey())
+        namedtype.NamedType("version", Version()),
+        namedtype.NamedType("issuerAndSerialNumber", IssuerAndSerialNumber()),
+        namedtype.NamedType(
+            "keyEncryptionAlgorithm", KeyEncryptionAlgorithmIdentifier()
+        ),
+        namedtype.NamedType("encryptedKey", EncryptedKey()),
     )
 
 
@@ -145,9 +155,9 @@ class Attributes(univ.SetOf):
 
 class ExtendedCertificateInfo(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('version', Version()),
-        namedtype.NamedType('certificate', Certificate()),
-        namedtype.NamedType('attributes', Attributes())
+        namedtype.NamedType("version", Version()),
+        namedtype.NamedType("certificate", Certificate()),
+        namedtype.NamedType("attributes", Attributes()),
     )
 
 
@@ -161,17 +171,21 @@ class Signature(univ.BitString):
 
 class ExtendedCertificate(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('extendedCertificateInfo', ExtendedCertificateInfo()),
-        namedtype.NamedType('signatureAlgorithm', SignatureAlgorithmIdentifier()),
-        namedtype.NamedType('signature', Signature())
+        namedtype.NamedType("extendedCertificateInfo", ExtendedCertificateInfo()),
+        namedtype.NamedType("signatureAlgorithm", SignatureAlgorithmIdentifier()),
+        namedtype.NamedType("signature", Signature()),
     )
 
 
 class ExtendedCertificateOrCertificate(univ.Choice):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('certificate', Certificate()),
-        namedtype.NamedType('extendedCertificate', ExtendedCertificate().subtype(
-            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0)))
+        namedtype.NamedType("certificate", Certificate()),
+        namedtype.NamedType(
+            "extendedCertificate",
+            ExtendedCertificate().subtype(
+                implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0)
+            ),
+        ),
     )
 
 
@@ -185,26 +199,30 @@ class SerialNumber(univ.Integer):
 
 class CRLEntry(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('userCertificate', SerialNumber()),
-        namedtype.NamedType('revocationDate', useful.UTCTime())
+        namedtype.NamedType("userCertificate", SerialNumber()),
+        namedtype.NamedType("revocationDate", useful.UTCTime()),
     )
 
 
 class TBSCertificateRevocationList(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('signature', AlgorithmIdentifier()),
-        namedtype.NamedType('issuer', Name()),
-        namedtype.NamedType('lastUpdate', useful.UTCTime()),
-        namedtype.NamedType('nextUpdate', useful.UTCTime()),
-        namedtype.OptionalNamedType('revokedCertificates', univ.SequenceOf(componentType=CRLEntry()))
+        namedtype.NamedType("signature", AlgorithmIdentifier()),
+        namedtype.NamedType("issuer", Name()),
+        namedtype.NamedType("lastUpdate", useful.UTCTime()),
+        namedtype.NamedType("nextUpdate", useful.UTCTime()),
+        namedtype.OptionalNamedType(
+            "revokedCertificates", univ.SequenceOf(componentType=CRLEntry())
+        ),
     )
 
 
 class CertificateRevocationList(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('tbsCertificateRevocationList', TBSCertificateRevocationList()),
-        namedtype.NamedType('signatureAlgorithm', AlgorithmIdentifier()),
-        namedtype.NamedType('signature', univ.BitString())
+        namedtype.NamedType(
+            "tbsCertificateRevocationList", TBSCertificateRevocationList()
+        ),
+        namedtype.NamedType("signatureAlgorithm", AlgorithmIdentifier()),
+        namedtype.NamedType("signature", univ.BitString()),
     )
 
 
@@ -222,15 +240,25 @@ class EncryptedDigest(univ.OctetString):
 
 class SignerInfo(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('version', Version()),
-        namedtype.NamedType('issuerAndSerialNumber', IssuerAndSerialNumber()),
-        namedtype.NamedType('digestAlgorithm', DigestAlgorithmIdentifier()),
-        namedtype.OptionalNamedType('authenticatedAttributes', Attributes().subtype(
-            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0))),
-        namedtype.NamedType('digestEncryptionAlgorithm', DigestEncryptionAlgorithmIdentifier()),
-        namedtype.NamedType('encryptedDigest', EncryptedDigest()),
-        namedtype.OptionalNamedType('unauthenticatedAttributes', Attributes().subtype(
-            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1)))
+        namedtype.NamedType("version", Version()),
+        namedtype.NamedType("issuerAndSerialNumber", IssuerAndSerialNumber()),
+        namedtype.NamedType("digestAlgorithm", DigestAlgorithmIdentifier()),
+        namedtype.OptionalNamedType(
+            "authenticatedAttributes",
+            Attributes().subtype(
+                implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0)
+            ),
+        ),
+        namedtype.NamedType(
+            "digestEncryptionAlgorithm", DigestEncryptionAlgorithmIdentifier()
+        ),
+        namedtype.NamedType("encryptedDigest", EncryptedDigest()),
+        namedtype.OptionalNamedType(
+            "unauthenticatedAttributes",
+            Attributes().subtype(
+                implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1)
+            ),
+        ),
     )
 
 
@@ -240,48 +268,65 @@ class SignerInfos(univ.SetOf):
 
 class SignedAndEnvelopedData(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('version', Version()),
-        namedtype.NamedType('recipientInfos', RecipientInfos()),
-        namedtype.NamedType('digestAlgorithms', DigestAlgorithmIdentifiers()),
-        namedtype.NamedType('encryptedContentInfo', EncryptedContentInfo()),
-        namedtype.OptionalNamedType('certificates', ExtendedCertificatesAndCertificates().subtype(
-            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0))),
-        namedtype.OptionalNamedType('crls', CertificateRevocationLists().subtype(
-            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1))),
-        namedtype.NamedType('signerInfos', SignerInfos())
+        namedtype.NamedType("version", Version()),
+        namedtype.NamedType("recipientInfos", RecipientInfos()),
+        namedtype.NamedType("digestAlgorithms", DigestAlgorithmIdentifiers()),
+        namedtype.NamedType("encryptedContentInfo", EncryptedContentInfo()),
+        namedtype.OptionalNamedType(
+            "certificates",
+            ExtendedCertificatesAndCertificates().subtype(
+                implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0)
+            ),
+        ),
+        namedtype.OptionalNamedType(
+            "crls",
+            CertificateRevocationLists().subtype(
+                implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1)
+            ),
+        ),
+        namedtype.NamedType("signerInfos", SignerInfos()),
     )
 
 
 class EnvelopedData(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('version', Version()),
-        namedtype.NamedType('recipientInfos', RecipientInfos()),
-        namedtype.NamedType('encryptedContentInfo', EncryptedContentInfo())
+        namedtype.NamedType("version", Version()),
+        namedtype.NamedType("recipientInfos", RecipientInfos()),
+        namedtype.NamedType("encryptedContentInfo", EncryptedContentInfo()),
     )
 
 
 class DigestInfo(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('digestAlgorithm', DigestAlgorithmIdentifier()),
-        namedtype.NamedType('digest', Digest())
+        namedtype.NamedType("digestAlgorithm", DigestAlgorithmIdentifier()),
+        namedtype.NamedType("digest", Digest()),
     )
 
 
 class SignedData(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('version', Version()),
-        namedtype.NamedType('digestAlgorithms', DigestAlgorithmIdentifiers()),
-        namedtype.NamedType('contentInfo', ContentInfo()),
-        namedtype.OptionalNamedType('certificates', ExtendedCertificatesAndCertificates().subtype(
-            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0))),
-        namedtype.OptionalNamedType('crls', CertificateRevocationLists().subtype(
-            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1))),
-        namedtype.NamedType('signerInfos', SignerInfos())
+        namedtype.NamedType("version", Version()),
+        namedtype.NamedType("digestAlgorithms", DigestAlgorithmIdentifiers()),
+        namedtype.NamedType("contentInfo", ContentInfo()),
+        namedtype.OptionalNamedType(
+            "certificates",
+            ExtendedCertificatesAndCertificates().subtype(
+                implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0)
+            ),
+        ),
+        namedtype.OptionalNamedType(
+            "crls",
+            CertificateRevocationLists().subtype(
+                implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1)
+            ),
+        ),
+        namedtype.NamedType("signerInfos", SignerInfos()),
     )
 
 
 class Data(univ.OctetString):
     pass
+
 
 _contentTypeMapUpdate = {
     data: Data(),
@@ -289,7 +334,7 @@ _contentTypeMapUpdate = {
     envelopedData: EnvelopedData(),
     signedAndEnvelopedData: SignedAndEnvelopedData(),
     digestedData: DigestedData(),
-    encryptedData: EncryptedData()
+    encryptedData: EncryptedData(),
 }
 
 contentTypeMap.update(_contentTypeMapUpdate)

@@ -23,8 +23,7 @@
 import math
 import socket
 
-from boto.glacier.exceptions import TreeHashDoesNotMatchError, \
-                                    DownloadArchiveError
+from boto.glacier.exceptions import TreeHashDoesNotMatchError, DownloadArchiveError
 from boto.glacier.utils import tree_hash_from_str
 
 
@@ -32,20 +31,22 @@ class Job(object):
 
     DefaultPartSize = 4 * 1024 * 1024
 
-    ResponseDataElements = (('Action', 'action', None),
-                            ('ArchiveId', 'archive_id', None),
-                            ('ArchiveSizeInBytes', 'archive_size', 0),
-                            ('Completed', 'completed', False),
-                            ('CompletionDate', 'completion_date', None),
-                            ('CreationDate', 'creation_date', None),
-                            ('InventorySizeInBytes', 'inventory_size', 0),
-                            ('JobDescription', 'description', None),
-                            ('JobId', 'id', None),
-                            ('SHA256TreeHash', 'sha256_treehash', None),
-                            ('SNSTopic', 'sns_topic', None),
-                            ('StatusCode', 'status_code', None),
-                            ('StatusMessage', 'status_message', None),
-                            ('VaultARN', 'arn', None))
+    ResponseDataElements = (
+        ("Action", "action", None),
+        ("ArchiveId", "archive_id", None),
+        ("ArchiveSizeInBytes", "archive_size", 0),
+        ("Completed", "completed", False),
+        ("CompletionDate", "completion_date", None),
+        ("CreationDate", "creation_date", None),
+        ("InventorySizeInBytes", "inventory_size", 0),
+        ("JobDescription", "description", None),
+        ("JobId", "id", None),
+        ("SHA256TreeHash", "sha256_treehash", None),
+        ("SNSTopic", "sns_topic", None),
+        ("StatusCode", "status_code", None),
+        ("StatusMessage", "status_message", None),
+        ("VaultARN", "arn", None),
+    )
 
     def __init__(self, vault, response_data=None):
         self.vault = vault
@@ -57,7 +58,7 @@ class Job(object):
                 setattr(self, attr_name, default)
 
     def __repr__(self):
-        return 'Job(%s)' % self.arn
+        return "Job(%s)" % self.arn
 
     def get_output(self, byte_range=None, validate_checksum=False):
         """
@@ -84,24 +85,30 @@ class Job(object):
             a TreeHash, then no checksum will be verified.
 
         """
-        response = self.vault.layer1.get_job_output(self.vault.name,
-                                                    self.id,
-                                                    byte_range)
-        if validate_checksum and 'TreeHash' in response:
+        response = self.vault.layer1.get_job_output(
+            self.vault.name, self.id, byte_range
+        )
+        if validate_checksum and "TreeHash" in response:
             data = response.read()
             actual_tree_hash = tree_hash_from_str(data)
-            if response['TreeHash'] != actual_tree_hash:
+            if response["TreeHash"] != actual_tree_hash:
                 raise TreeHashDoesNotMatchError(
                     "The calculated tree hash %s does not match the "
-                    "expected tree hash %s for the byte range %s" % (
-                        actual_tree_hash, response['TreeHash'], byte_range))
+                    "expected tree hash %s for the byte range %s"
+                    % (actual_tree_hash, response["TreeHash"], byte_range)
+                )
         return response
 
     def _calc_num_chunks(self, chunk_size):
         return int(math.ceil(self.archive_size / float(chunk_size)))
 
-    def download_to_file(self, filename, chunk_size=DefaultPartSize,
-                         verify_hashes=True, retry_exceptions=(socket.error,)):
+    def download_to_file(
+        self,
+        filename,
+        chunk_size=DefaultPartSize,
+        verify_hashes=True,
+        retry_exceptions=(socket.error,),
+    ):
         """Download an archive to a file by name.
 
         :type filename: str
@@ -118,13 +125,18 @@ class Job(object):
 
         """
         num_chunks = self._calc_num_chunks(chunk_size)
-        with open(filename, 'wb') as output_file:
-            self._download_to_fileob(output_file, num_chunks, chunk_size,
-                                     verify_hashes, retry_exceptions)
+        with open(filename, "wb") as output_file:
+            self._download_to_fileob(
+                output_file, num_chunks, chunk_size, verify_hashes, retry_exceptions
+            )
 
-    def download_to_fileobj(self, output_file, chunk_size=DefaultPartSize,
-                            verify_hashes=True,
-                            retry_exceptions=(socket.error,)):
+    def download_to_fileobj(
+        self,
+        output_file,
+        chunk_size=DefaultPartSize,
+        verify_hashes=True,
+        retry_exceptions=(socket.error,),
+    ):
         """Download an archive to a file object.
 
         :type output_file: file
@@ -141,22 +153,26 @@ class Job(object):
 
         """
         num_chunks = self._calc_num_chunks(chunk_size)
-        self._download_to_fileob(output_file, num_chunks, chunk_size,
-                                 verify_hashes, retry_exceptions)
+        self._download_to_fileob(
+            output_file, num_chunks, chunk_size, verify_hashes, retry_exceptions
+        )
 
-    def _download_to_fileob(self, fileobj, num_chunks, chunk_size, verify_hashes,
-                            retry_exceptions):
+    def _download_to_fileob(
+        self, fileobj, num_chunks, chunk_size, verify_hashes, retry_exceptions
+    ):
         for i in range(num_chunks):
             byte_range = ((i * chunk_size), ((i + 1) * chunk_size) - 1)
             data, expected_tree_hash = self._download_byte_range(
-                byte_range, retry_exceptions)
+                byte_range, retry_exceptions
+            )
             if verify_hashes:
                 actual_tree_hash = tree_hash_from_str(data)
                 if expected_tree_hash != actual_tree_hash:
                     raise TreeHashDoesNotMatchError(
                         "The calculated tree hash %s does not match the "
-                        "expected tree hash %s for the byte range %s" % (
-                            actual_tree_hash, expected_tree_hash, byte_range))
+                        "expected tree hash %s for the byte range %s"
+                        % (actual_tree_hash, expected_tree_hash, byte_range)
+                    )
             fileobj.write(data)
 
     def _download_byte_range(self, byte_range, retry_exceptions):
@@ -167,11 +183,11 @@ class Job(object):
             try:
                 response = self.get_output(byte_range)
                 data = response.read()
-                expected_tree_hash = response['TreeHash']
+                expected_tree_hash = response["TreeHash"]
                 return data, expected_tree_hash
             except retry_exceptions as e:
                 continue
         else:
-            raise DownloadArchiveError("There was an error downloading"
-                                       "byte range %s: %s" % (byte_range,
-                                                              e))
+            raise DownloadArchiveError(
+                "There was an error downloading" "byte range %s: %s" % (byte_range, e)
+            )

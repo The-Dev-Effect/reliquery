@@ -6,31 +6,30 @@ import unittest2 as unittest
 from mock.tests.support import is_instance, X, SomeClass
 
 from mock import (
-    Mock, MagicMock, NonCallableMagicMock,
-    NonCallableMock, patch, create_autospec,
-    CallableMixin
+    Mock,
+    MagicMock,
+    NonCallableMagicMock,
+    NonCallableMock,
+    patch,
+    create_autospec,
+    CallableMixin,
 )
 
 
-
 class TestCallable(unittest.TestCase):
-
     def assertNotCallable(self, mock):
         self.assertTrue(is_instance(mock, NonCallableMagicMock))
         self.assertFalse(is_instance(mock, CallableMixin))
 
-
     def test_non_callable(self):
         for mock in NonCallableMagicMock(), NonCallableMock():
             self.assertRaises(TypeError, mock)
-            self.assertFalse(hasattr(mock, '__call__'))
+            self.assertFalse(hasattr(mock, "__call__"))
             self.assertIn(mock.__class__.__name__, repr(mock))
-
 
     def test_heirarchy(self):
         self.assertTrue(issubclass(MagicMock, Mock))
         self.assertTrue(issubclass(NonCallableMagicMock, NonCallableMock))
-
 
     def test_attributes(self):
         one = NonCallableMock()
@@ -38,7 +37,6 @@ class TestCallable(unittest.TestCase):
 
         two = NonCallableMagicMock()
         self.assertTrue(issubclass(type(two.two), MagicMock))
-
 
     def test_subclasses(self):
         class MockSub(Mock):
@@ -53,9 +51,8 @@ class TestCallable(unittest.TestCase):
         two = MagicSub()
         self.assertTrue(issubclass(type(two.two), MagicSub))
 
-
     def test_patch_spec(self):
-        patcher = patch('%s.X' % __name__, spec=True)
+        patcher = patch("%s.X" % __name__, spec=True)
         mock = patcher.start()
         self.addCleanup(patcher.stop)
 
@@ -64,10 +61,9 @@ class TestCallable(unittest.TestCase):
 
         self.assertNotCallable(instance)
         self.assertRaises(TypeError, instance)
-
 
     def test_patch_spec_set(self):
-        patcher = patch('%s.X' % __name__, spec_set=True)
+        patcher = patch("%s.X" % __name__, spec_set=True)
         mock = patcher.start()
         self.addCleanup(patcher.stop)
 
@@ -77,24 +73,21 @@ class TestCallable(unittest.TestCase):
         self.assertNotCallable(instance)
         self.assertRaises(TypeError, instance)
 
-
     def test_patch_spec_instance(self):
-        patcher = patch('%s.X' % __name__, spec=X())
+        patcher = patch("%s.X" % __name__, spec=X())
         mock = patcher.start()
         self.addCleanup(patcher.stop)
 
         self.assertNotCallable(mock)
         self.assertRaises(TypeError, mock)
-
 
     def test_patch_spec_set_instance(self):
-        patcher = patch('%s.X' % __name__, spec_set=X())
+        patcher = patch("%s.X" % __name__, spec_set=X())
         mock = patcher.start()
         self.addCleanup(patcher.stop)
 
         self.assertNotCallable(mock)
         self.assertRaises(TypeError, mock)
-
 
     def test_patch_spec_callable_class(self):
         class CallableX(X):
@@ -114,16 +107,15 @@ class TestCallable(unittest.TestCase):
         class OldStyleSub(OldStyle):
             pass
 
-        for arg in 'spec', 'spec_set':
+        for arg in "spec", "spec_set":
             for Klass in CallableX, Sub, Multi, OldStyle, OldStyleSub:
-                with patch('%s.X' % __name__, **{arg: Klass}) as mock:
+                with patch("%s.X" % __name__, **{arg: Klass}) as mock:
                     instance = mock()
                     mock.assert_called_once_with()
 
                     self.assertTrue(is_instance(instance, MagicMock))
                     # inherited spec
-                    self.assertRaises(AttributeError, getattr, instance,
-                                      'foobarbaz')
+                    self.assertRaises(AttributeError, getattr, instance, "foobarbaz")
 
                     result = instance()
                     # instance is callable, result has no spec
@@ -134,7 +126,6 @@ class TestCallable(unittest.TestCase):
                     result.foo(3, 2, 1)
                     result.foo.assert_called_once_with(3, 2, 1)
 
-
     def test_create_autospec(self):
         mock = create_autospec(X)
         instance = mock()
@@ -143,7 +134,6 @@ class TestCallable(unittest.TestCase):
         mock = create_autospec(X())
         self.assertRaises(TypeError, mock)
 
-
     def test_create_autospec_instance(self):
         mock = create_autospec(SomeClass, instance=True)
 
@@ -151,7 +141,7 @@ class TestCallable(unittest.TestCase):
         mock.wibble()
         mock.wibble.assert_called_once_with()
 
-        self.assertRaises(TypeError, mock.wibble, 'some',  'args')
+        self.assertRaises(TypeError, mock.wibble, "some", "args")
 
 
 if __name__ == "__main__":

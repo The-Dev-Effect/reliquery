@@ -68,6 +68,7 @@ class DataPipelineConnection(AWSQueryConnection):
     Process`_. In the code examples in this reference, the Signature
     Version 4 Request parameters are represented as AuthParams.
     """
+
     APIVersion = "2012-10-29"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "datapipeline.us-east-1.amazonaws.com"
@@ -84,16 +85,17 @@ class DataPipelineConnection(AWSQueryConnection):
     }
 
     def __init__(self, **kwargs):
-        region = kwargs.pop('region', None)
+        region = kwargs.pop("region", None)
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
-        kwargs['host'] = region.endpoint
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
+        kwargs["host"] = region.endpoint
         super(DataPipelineConnection, self).__init__(**kwargs)
         self.region = region
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
     def activate_pipeline(self, pipeline_id):
         """
@@ -109,9 +111,10 @@ class DataPipelineConnection(AWSQueryConnection):
         :param pipeline_id: The identifier of the pipeline to activate.
 
         """
-        params = {'pipelineId': pipeline_id, }
-        return self.make_request(action='ActivatePipeline',
-                                 body=json.dumps(params))
+        params = {
+            "pipelineId": pipeline_id,
+        }
+        return self.make_request(action="ActivatePipeline", body=json.dumps(params))
 
     def create_pipeline(self, name, unique_id, description=None):
         """
@@ -144,11 +147,13 @@ class DataPipelineConnection(AWSQueryConnection):
         :param description: The description of the new pipeline.
 
         """
-        params = {'name': name, 'uniqueId': unique_id, }
+        params = {
+            "name": name,
+            "uniqueId": unique_id,
+        }
         if description is not None:
-            params['description'] = description
-        return self.make_request(action='CreatePipeline',
-                                 body=json.dumps(params))
+            params["description"] = description
+        return self.make_request(action="CreatePipeline", body=json.dumps(params))
 
     def delete_pipeline(self, pipeline_id):
         """
@@ -168,12 +173,14 @@ class DataPipelineConnection(AWSQueryConnection):
         :param pipeline_id: The identifier of the pipeline to be deleted.
 
         """
-        params = {'pipelineId': pipeline_id, }
-        return self.make_request(action='DeletePipeline',
-                                 body=json.dumps(params))
+        params = {
+            "pipelineId": pipeline_id,
+        }
+        return self.make_request(action="DeletePipeline", body=json.dumps(params))
 
-    def describe_objects(self, object_ids, pipeline_id, marker=None,
-                         evaluate_expressions=None):
+    def describe_objects(
+        self, object_ids, pipeline_id, marker=None, evaluate_expressions=None
+    ):
         """
         Returns the object definitions for a set of objects associated
         with the pipeline. Object definitions are composed of a set of
@@ -202,15 +209,14 @@ class DataPipelineConnection(AWSQueryConnection):
 
         """
         params = {
-            'pipelineId': pipeline_id,
-            'objectIds': object_ids,
+            "pipelineId": pipeline_id,
+            "objectIds": object_ids,
         }
         if evaluate_expressions is not None:
-            params['evaluateExpressions'] = evaluate_expressions
+            params["evaluateExpressions"] = evaluate_expressions
         if marker is not None:
-            params['marker'] = marker
-        return self.make_request(action='DescribeObjects',
-                                 body=json.dumps(params))
+            params["marker"] = marker
+        return self.make_request(action="DescribeObjects", body=json.dumps(params))
 
     def describe_pipelines(self, pipeline_ids):
         """
@@ -233,9 +239,10 @@ class DataPipelineConnection(AWSQueryConnection):
             ListPipelines.
 
         """
-        params = {'pipelineIds': pipeline_ids, }
-        return self.make_request(action='DescribePipelines',
-                                 body=json.dumps(params))
+        params = {
+            "pipelineIds": pipeline_ids,
+        }
+        return self.make_request(action="DescribePipelines", body=json.dumps(params))
 
     def evaluate_expression(self, pipeline_id, expression, object_id):
         """
@@ -254,12 +261,11 @@ class DataPipelineConnection(AWSQueryConnection):
 
         """
         params = {
-            'pipelineId': pipeline_id,
-            'objectId': object_id,
-            'expression': expression,
+            "pipelineId": pipeline_id,
+            "objectId": object_id,
+            "expression": expression,
         }
-        return self.make_request(action='EvaluateExpression',
-                                 body=json.dumps(params))
+        return self.make_request(action="EvaluateExpression", body=json.dumps(params))
 
     def get_pipeline_definition(self, pipeline_id, version=None):
         """
@@ -278,11 +284,14 @@ class DataPipelineConnection(AWSQueryConnection):
             activated.
 
         """
-        params = {'pipelineId': pipeline_id, }
+        params = {
+            "pipelineId": pipeline_id,
+        }
         if version is not None:
-            params['version'] = version
-        return self.make_request(action='GetPipelineDefinition',
-                                 body=json.dumps(params))
+            params["version"] = version
+        return self.make_request(
+            action="GetPipelineDefinition", body=json.dumps(params)
+        )
 
     def list_pipelines(self, marker=None):
         """
@@ -300,12 +309,10 @@ class DataPipelineConnection(AWSQueryConnection):
         """
         params = {}
         if marker is not None:
-            params['marker'] = marker
-        return self.make_request(action='ListPipelines',
-                                 body=json.dumps(params))
+            params["marker"] = marker
+        return self.make_request(action="ListPipelines", body=json.dumps(params))
 
-    def poll_for_task(self, worker_group, hostname=None,
-                      instance_identity=None):
+    def poll_for_task(self, worker_group, hostname=None, instance_identity=None):
         """
         Task runners call this action to receive a task to perform
         from AWS Data Pipeline. The task runner specifies which tasks
@@ -348,13 +355,14 @@ class DataPipelineConnection(AWSQueryConnection):
             are applied to your pipeline.
 
         """
-        params = {'workerGroup': worker_group, }
+        params = {
+            "workerGroup": worker_group,
+        }
         if hostname is not None:
-            params['hostname'] = hostname
+            params["hostname"] = hostname
         if instance_identity is not None:
-            params['instanceIdentity'] = instance_identity
-        return self.make_request(action='PollForTask',
-                                 body=json.dumps(params))
+            params["instanceIdentity"] = instance_identity
+        return self.make_request(action="PollForTask", body=json.dumps(params))
 
     def put_pipeline_definition(self, pipeline_objects, pipeline_id):
         """
@@ -388,14 +396,14 @@ class DataPipelineConnection(AWSQueryConnection):
 
         """
         params = {
-            'pipelineId': pipeline_id,
-            'pipelineObjects': pipeline_objects,
+            "pipelineId": pipeline_id,
+            "pipelineObjects": pipeline_objects,
         }
-        return self.make_request(action='PutPipelineDefinition',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="PutPipelineDefinition", body=json.dumps(params)
+        )
 
-    def query_objects(self, pipeline_id, sphere, marker=None, query=None,
-                      limit=None):
+    def query_objects(self, pipeline_id, sphere, marker=None, query=None, limit=None):
         """
         Queries a pipeline for the names of objects that match a
         specified set of conditions.
@@ -435,15 +443,17 @@ class DataPipelineConnection(AWSQueryConnection):
             100.
 
         """
-        params = {'pipelineId': pipeline_id, 'sphere': sphere, }
+        params = {
+            "pipelineId": pipeline_id,
+            "sphere": sphere,
+        }
         if query is not None:
-            params['query'] = query
+            params["query"] = query
         if marker is not None:
-            params['marker'] = marker
+            params["marker"] = marker
         if limit is not None:
-            params['limit'] = limit
-        return self.make_request(action='QueryObjects',
-                                 body=json.dumps(params))
+            params["limit"] = limit
+        return self.make_request(action="QueryObjects", body=json.dumps(params))
 
     def report_task_progress(self, task_id):
         """
@@ -469,12 +479,14 @@ class DataPipelineConnection(AWSQueryConnection):
             with the response for the PollForTask action.
 
         """
-        params = {'taskId': task_id, }
-        return self.make_request(action='ReportTaskProgress',
-                                 body=json.dumps(params))
+        params = {
+            "taskId": task_id,
+        }
+        return self.make_request(action="ReportTaskProgress", body=json.dumps(params))
 
-    def report_task_runner_heartbeat(self, taskrunner_id, worker_group=None,
-                                     hostname=None):
+    def report_task_runner_heartbeat(
+        self, taskrunner_id, worker_group=None, hostname=None
+    ):
         """
         Task runners call ReportTaskRunnerHeartbeat every 15 minutes
         to indicate that they are operational. In the case of AWS Data
@@ -504,13 +516,16 @@ class DataPipelineConnection(AWSQueryConnection):
         :param hostname: The public DNS name of the calling task runner.
 
         """
-        params = {'taskrunnerId': taskrunner_id, }
+        params = {
+            "taskrunnerId": taskrunner_id,
+        }
         if worker_group is not None:
-            params['workerGroup'] = worker_group
+            params["workerGroup"] = worker_group
         if hostname is not None:
-            params['hostname'] = hostname
-        return self.make_request(action='ReportTaskRunnerHeartbeat',
-                                 body=json.dumps(params))
+            params["hostname"] = hostname
+        return self.make_request(
+            action="ReportTaskRunnerHeartbeat", body=json.dumps(params)
+        )
 
     def set_status(self, object_ids, status, pipeline_id):
         """
@@ -535,15 +550,20 @@ class DataPipelineConnection(AWSQueryConnection):
 
         """
         params = {
-            'pipelineId': pipeline_id,
-            'objectIds': object_ids,
-            'status': status,
+            "pipelineId": pipeline_id,
+            "objectIds": object_ids,
+            "status": status,
         }
-        return self.make_request(action='SetStatus',
-                                 body=json.dumps(params))
+        return self.make_request(action="SetStatus", body=json.dumps(params))
 
-    def set_task_status(self, task_id, task_status, error_id=None,
-                        error_message=None, error_stack_trace=None):
+    def set_task_status(
+        self,
+        task_id,
+        task_status,
+        error_id=None,
+        error_message=None,
+        error_stack_trace=None,
+    ):
         """
         Notifies AWS Data Pipeline that a task is completed and
         provides information about the final status. The task runner
@@ -583,15 +603,17 @@ class DataPipelineConnection(AWSQueryConnection):
             value.
 
         """
-        params = {'taskId': task_id, 'taskStatus': task_status, }
+        params = {
+            "taskId": task_id,
+            "taskStatus": task_status,
+        }
         if error_id is not None:
-            params['errorId'] = error_id
+            params["errorId"] = error_id
         if error_message is not None:
-            params['errorMessage'] = error_message
+            params["errorMessage"] = error_message
         if error_stack_trace is not None:
-            params['errorStackTrace'] = error_stack_trace
-        return self.make_request(action='SetTaskStatus',
-                                 body=json.dumps(params))
+            params["errorStackTrace"] = error_stack_trace
+        return self.make_request(action="SetTaskStatus", body=json.dumps(params))
 
     def validate_pipeline_definition(self, pipeline_objects, pipeline_id):
         """
@@ -608,32 +630,36 @@ class DataPipelineConnection(AWSQueryConnection):
 
         """
         params = {
-            'pipelineId': pipeline_id,
-            'pipelineObjects': pipeline_objects,
+            "pipelineId": pipeline_id,
+            "pipelineObjects": pipeline_objects,
         }
-        return self.make_request(action='ValidatePipelineDefinition',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="ValidatePipelineDefinition", body=json.dumps(params)
+        )
 
     def make_request(self, action, body):
         headers = {
-            'X-Amz-Target': '%s.%s' % (self.TargetPrefix, action),
-            'Host': self.region.endpoint,
-            'Content-Type': 'application/x-amz-json-1.1',
-            'Content-Length': str(len(body)),
+            "X-Amz-Target": "%s.%s" % (self.TargetPrefix, action),
+            "Host": self.region.endpoint,
+            "Content-Type": "application/x-amz-json-1.1",
+            "Content-Length": str(len(body)),
         }
         http_request = self.build_base_http_request(
-            method='POST', path='/', auth_path='/', params={},
-            headers=headers, data=body)
-        response = self._mexe(http_request, sender=None,
-                              override_num_retries=10)
-        response_body = response.read().decode('utf-8')
+            method="POST",
+            path="/",
+            auth_path="/",
+            params={},
+            headers=headers,
+            data=body,
+        )
+        response = self._mexe(http_request, sender=None, override_num_retries=10)
+        response_body = response.read().decode("utf-8")
         boto.log.debug(response_body)
         if response.status == 200:
             if response_body:
                 return json.loads(response_body)
         else:
             json_body = json.loads(response_body)
-            fault_name = json_body.get('__type', None)
+            fault_name = json_body.get("__type", None)
             exception_class = self._faults.get(fault_name, self.ResponseError)
-            raise exception_class(response.status, response.reason,
-                                  body=json_body)
+            raise exception_class(response.status, response.reason, body=json_body)

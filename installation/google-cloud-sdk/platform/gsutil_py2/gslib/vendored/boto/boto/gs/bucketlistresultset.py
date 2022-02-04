@@ -20,23 +20,30 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-def versioned_bucket_lister(bucket, prefix='', delimiter='',
-                            marker='', generation_marker='', headers=None):
+
+def versioned_bucket_lister(
+    bucket, prefix="", delimiter="", marker="", generation_marker="", headers=None
+):
     """
     A generator function for listing versioned objects.
     """
     more_results = True
     k = None
     while more_results:
-        rs = bucket.get_all_versions(prefix=prefix, marker=marker,
-                                     generation_marker=generation_marker,
-                                     delimiter=delimiter, headers=headers,
-                                     max_keys=999)
+        rs = bucket.get_all_versions(
+            prefix=prefix,
+            marker=marker,
+            generation_marker=generation_marker,
+            delimiter=delimiter,
+            headers=headers,
+            max_keys=999,
+        )
         for k in rs:
             yield k
         marker = rs.next_marker
         generation_marker = rs.next_generation_marker
-        more_results= rs.is_truncated
+        more_results = rs.is_truncated
+
 
 class VersionedBucketListResultSet(object):
     """
@@ -47,8 +54,15 @@ class VersionedBucketListResultSet(object):
     keys in a reasonably efficient manner.
     """
 
-    def __init__(self, bucket=None, prefix='', delimiter='', marker='',
-                 generation_marker='', headers=None):
+    def __init__(
+        self,
+        bucket=None,
+        prefix="",
+        delimiter="",
+        marker="",
+        generation_marker="",
+        headers=None,
+    ):
         self.bucket = bucket
         self.prefix = prefix
         self.delimiter = delimiter
@@ -57,8 +71,11 @@ class VersionedBucketListResultSet(object):
         self.headers = headers
 
     def __iter__(self):
-        return versioned_bucket_lister(self.bucket, prefix=self.prefix,
-                                       delimiter=self.delimiter,
-                                       marker=self.marker,
-                                       generation_marker=self.generation_marker,
-                                       headers=self.headers)
+        return versioned_bucket_lister(
+            self.bucket,
+            prefix=self.prefix,
+            delimiter=self.delimiter,
+            marker=self.marker,
+            generation_marker=self.generation_marker,
+            headers=self.headers,
+        )

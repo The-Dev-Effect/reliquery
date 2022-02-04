@@ -39,10 +39,8 @@ to .pem format:
 """
 
 _POW2 = (128, 64, 32, 16, 8, 4, 2, 1)
-_PKCS1_MARKER = ('-----BEGIN RSA PRIVATE KEY-----',
-                 '-----END RSA PRIVATE KEY-----')
-_PKCS8_MARKER = ('-----BEGIN PRIVATE KEY-----',
-                 '-----END PRIVATE KEY-----')
+_PKCS1_MARKER = ("-----BEGIN RSA PRIVATE KEY-----", "-----END RSA PRIVATE KEY-----")
+_PKCS8_MARKER = ("-----BEGIN PRIVATE KEY-----", "-----END PRIVATE KEY-----")
 _PKCS8_SPEC = PrivateKeyInfo()
 
 
@@ -55,9 +53,8 @@ def _bit_list_to_bytes(bit_list):
     num_bits = len(bit_list)
     byte_vals = bytearray()
     for start in six.moves.xrange(0, num_bits, 8):
-        curr_bits = bit_list[start:start + 8]
-        char_val = sum(val * digit
-                       for val, digit in zip(_POW2, curr_bits))
+        curr_bits = bit_list[start : start + 8]
+        char_val = sum(val * digit for val, digit in zip(_POW2, curr_bits))
         byte_vals.append(char_val)
     return bytes(byte_vals)
 
@@ -85,7 +82,7 @@ class RsaVerifier(object):
             True if message was signed by the private key associated with the
             public key that this object was constructed with.
         """
-        message = _helpers._to_bytes(message, encoding='utf-8')
+        message = _helpers._to_bytes(message, encoding="utf-8")
         try:
             return rsa.pkcs1.verify(message, signature, self._pubkey)
         except (ValueError, rsa.pkcs1.VerificationError):
@@ -112,16 +109,16 @@ class RsaVerifier(object):
         """
         key_pem = _helpers._to_bytes(key_pem)
         if is_x509_cert:
-            der = rsa.pem.load_pem(key_pem, 'CERTIFICATE')
+            der = rsa.pem.load_pem(key_pem, "CERTIFICATE")
             asn1_cert, remaining = decoder.decode(der, asn1Spec=Certificate())
-            if remaining != b'':
-                raise ValueError('Unused bytes', remaining)
+            if remaining != b"":
+                raise ValueError("Unused bytes", remaining)
 
-            cert_info = asn1_cert['tbsCertificate']['subjectPublicKeyInfo']
-            key_bytes = _bit_list_to_bytes(cert_info['subjectPublicKey'])
-            pubkey = rsa.PublicKey.load_pkcs1(key_bytes, 'DER')
+            cert_info = asn1_cert["tbsCertificate"]["subjectPublicKeyInfo"]
+            key_bytes = _bit_list_to_bytes(cert_info["subjectPublicKey"])
+            pubkey = rsa.PublicKey.load_pkcs1(key_bytes, "DER")
         else:
-            pubkey = rsa.PublicKey.load_pkcs1(key_pem, 'PEM')
+            pubkey = rsa.PublicKey.load_pkcs1(key_pem, "PEM")
         return cls(pubkey)
 
 
@@ -144,11 +141,11 @@ class RsaSigner(object):
         Returns:
             string, The signature of the message for the given key.
         """
-        message = _helpers._to_bytes(message, encoding='utf-8')
-        return rsa.pkcs1.sign(message, self._key, 'SHA-256')
+        message = _helpers._to_bytes(message, encoding="utf-8")
+        return rsa.pkcs1.sign(message, self._key, "SHA-256")
 
     @classmethod
-    def from_string(cls, key, password='notasecret'):
+    def from_string(cls, key, password="notasecret"):
         """Construct an RsaSigner instance from a string.
 
         Args:
@@ -165,20 +162,18 @@ class RsaSigner(object):
         """
         key = _helpers._from_bytes(key)  # pem expects str in Py3
         marker_id, key_bytes = pem.readPemBlocksFromFile(
-            six.StringIO(key), _PKCS1_MARKER, _PKCS8_MARKER)
+            six.StringIO(key), _PKCS1_MARKER, _PKCS8_MARKER
+        )
 
         if marker_id == 0:
-            pkey = rsa.key.PrivateKey.load_pkcs1(key_bytes,
-                                                 format='DER')
+            pkey = rsa.key.PrivateKey.load_pkcs1(key_bytes, format="DER")
         elif marker_id == 1:
-            key_info, remaining = decoder.decode(
-                key_bytes, asn1Spec=_PKCS8_SPEC)
-            if remaining != b'':
-                raise ValueError('Unused bytes', remaining)
-            pkey_info = key_info.getComponentByName('privateKey')
-            pkey = rsa.key.PrivateKey.load_pkcs1(pkey_info.asOctets(),
-                                                 format='DER')
+            key_info, remaining = decoder.decode(key_bytes, asn1Spec=_PKCS8_SPEC)
+            if remaining != b"":
+                raise ValueError("Unused bytes", remaining)
+            pkey_info = key_info.getComponentByName("privateKey")
+            pkey = rsa.key.PrivateKey.load_pkcs1(pkey_info.asOctets(), format="DER")
         else:
-            raise ValueError('No key could be detected.')
+            raise ValueError("No key could be detected.")
 
         return cls(pkey)

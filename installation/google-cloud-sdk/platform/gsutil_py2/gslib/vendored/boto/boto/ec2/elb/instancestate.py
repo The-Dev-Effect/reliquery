@@ -25,8 +25,14 @@ class InstanceState(object):
     Represents the state of an EC2 Load Balancer Instance
     """
 
-    def __init__(self, load_balancer=None, description=None,
-                 state=None, instance_id=None, reason_code=None):
+    def __init__(
+        self,
+        load_balancer=None,
+        description=None,
+        state=None,
+        instance_id=None,
+        reason_code=None,
+    ):
         """
         :ivar boto.ec2.elb.loadbalancer.LoadBalancer load_balancer: The
             load balancer this instance is registered to.
@@ -45,19 +51,19 @@ class InstanceState(object):
         self.reason_code = reason_code
 
     def __repr__(self):
-        return 'InstanceState:(%s,%s)' % (self.instance_id, self.state)
+        return "InstanceState:(%s,%s)" % (self.instance_id, self.state)
 
     def startElement(self, name, attrs, connection):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'Description':
+        if name == "Description":
             self.description = value
-        elif name == 'State':
+        elif name == "State":
             self.state = value
-        elif name == 'InstanceId':
+        elif name == "InstanceId":
             self.instance_id = value
-        elif name == 'ReasonCode':
+        elif name == "ReasonCode":
             self.reason_code = value
         else:
             setattr(self, name, value)

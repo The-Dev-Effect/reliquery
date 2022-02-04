@@ -24,7 +24,7 @@ from oauth2client_4_0 import _helpers
 
 _LOGGER = logging.getLogger(__name__)
 # Properties present in file-like streams / buffers.
-_STREAM_PROPERTIES = ('read', 'seek', 'tell')
+_STREAM_PROPERTIES = ("read", "seek", "tell")
 
 # Google Data client libraries may need to set this to [401, 403].
 REFRESH_STATUS_CODES = (http_client.UNAUTHORIZED,)
@@ -100,10 +100,10 @@ def _apply_user_agent(headers, user_agent):
         user agent is not None.
     """
     if user_agent is not None:
-        if 'user-agent' in headers:
-            headers['user-agent'] = (user_agent + ' ' + headers['user-agent'])
+        if "user-agent" in headers:
+            headers["user-agent"] = user_agent + " " + headers["user-agent"]
         else:
-            headers['user-agent'] = user_agent
+            headers["user-agent"] = user_agent
 
     return headers
 
@@ -131,7 +131,8 @@ def clean_headers(headers):
             clean[_helpers._to_bytes(k)] = _helpers._to_bytes(v)
     except UnicodeEncodeError:
         from oauth2client_4_0.client import NonAsciiHeaderError
-        raise NonAsciiHeaderError(k, ': ', v)
+
+        raise NonAsciiHeaderError(k, ": ", v)
     return clean
 
 
@@ -151,12 +152,16 @@ def wrap_http_for_auth(credentials, http):
     orig_request_method = http.request
 
     # The closure that will replace 'httplib2.Http.request'.
-    def new_request(uri, method='GET', body=None, headers=None,
-                    redirections=httplib2.DEFAULT_MAX_REDIRECTS,
-                    connection_type=None):
+    def new_request(
+        uri,
+        method="GET",
+        body=None,
+        headers=None,
+        redirections=httplib2.DEFAULT_MAX_REDIRECTS,
+        connection_type=None,
+    ):
         if not credentials.access_token:
-            _LOGGER.info('Attempting refresh to obtain '
-                         'initial access_token')
+            _LOGGER.info("Attempting refresh to obtain " "initial access_token")
             credentials._refresh(orig_request_method)
 
         # Clone and modify the request headers to add the appropriate
@@ -167,13 +172,18 @@ def wrap_http_for_auth(credentials, http):
 
         body_stream_position = None
         # Check if the body is a file-like stream.
-        if all(getattr(body, stream_prop, None) for stream_prop in
-               _STREAM_PROPERTIES):
+        if all(getattr(body, stream_prop, None) for stream_prop in _STREAM_PROPERTIES):
             body_stream_position = body.tell()
 
-        resp, content = request(orig_request_method, uri, method, body,
-                                clean_headers(headers),
-                                redirections, connection_type)
+        resp, content = request(
+            orig_request_method,
+            uri,
+            method,
+            body,
+            clean_headers(headers),
+            redirections,
+            connection_type,
+        )
 
         # A stored token may expire between the time it is retrieved and
         # the time the request is made, so we may need to try twice.
@@ -181,17 +191,26 @@ def wrap_http_for_auth(credentials, http):
         for refresh_attempt in range(max_refresh_attempts):
             if resp.status not in REFRESH_STATUS_CODES:
                 break
-            _LOGGER.info('Refreshing due to a %s (attempt %s/%s)',
-                         resp.status, refresh_attempt + 1,
-                         max_refresh_attempts)
+            _LOGGER.info(
+                "Refreshing due to a %s (attempt %s/%s)",
+                resp.status,
+                refresh_attempt + 1,
+                max_refresh_attempts,
+            )
             credentials._refresh(orig_request_method)
             credentials.apply(headers)
             if body_stream_position is not None:
                 body.seek(body_stream_position)
 
-            resp, content = request(orig_request_method, uri, method, body,
-                                    clean_headers(headers),
-                                    redirections, connection_type)
+            resp, content = request(
+                orig_request_method,
+                uri,
+                method,
+                body,
+                clean_headers(headers),
+                redirections,
+                connection_type,
+            )
 
         return resp, content
 
@@ -221,29 +240,45 @@ def wrap_http_for_jwt_access(credentials, http):
     authenticated_request_method = http.request
 
     # The closure that will replace 'httplib2.Http.request'.
-    def new_request(uri, method='GET', body=None, headers=None,
-                    redirections=httplib2.DEFAULT_MAX_REDIRECTS,
-                    connection_type=None):
-        if 'aud' in credentials._kwargs:
+    def new_request(
+        uri,
+        method="GET",
+        body=None,
+        headers=None,
+        redirections=httplib2.DEFAULT_MAX_REDIRECTS,
+        connection_type=None,
+    ):
+        if "aud" in credentials._kwargs:
             # Preemptively refresh token, this is not done for OAuth2
-            if (credentials.access_token is None or
-                    credentials.access_token_expired):
+            if credentials.access_token is None or credentials.access_token_expired:
                 credentials.refresh(None)
-            return request(authenticated_request_method, uri,
-                           method, body, headers, redirections,
-                           connection_type)
+            return request(
+                authenticated_request_method,
+                uri,
+                method,
+                body,
+                headers,
+                redirections,
+                connection_type,
+            )
         else:
             # If we don't have an 'aud' (audience) claim,
             # create a 1-time token with the uri root as the audience
             headers = _initialize_headers(headers)
             _apply_user_agent(headers, credentials.user_agent)
-            uri_root = uri.split('?', 1)[0]
-            token, unused_expiry = credentials._create_token({'aud': uri_root})
+            uri_root = uri.split("?", 1)[0]
+            token, unused_expiry = credentials._create_token({"aud": uri_root})
 
-            headers['Authorization'] = 'Bearer ' + token
-            return request(orig_request_method, uri, method, body,
-                           clean_headers(headers),
-                           redirections, connection_type)
+            headers["Authorization"] = "Bearer " + token
+            return request(
+                orig_request_method,
+                uri,
+                method,
+                body,
+                clean_headers(headers),
+                redirections,
+                connection_type,
+            )
 
     # Replace the request method with our own closure.
     http.request = new_request
@@ -252,9 +287,15 @@ def wrap_http_for_jwt_access(credentials, http):
     http.request.credentials = credentials
 
 
-def request(http, uri, method='GET', body=None, headers=None,
-            redirections=httplib2.DEFAULT_MAX_REDIRECTS,
-            connection_type=None):
+def request(
+    http,
+    uri,
+    method="GET",
+    body=None,
+    headers=None,
+    redirections=httplib2.DEFAULT_MAX_REDIRECTS,
+    connection_type=None,
+):
     """Make an HTTP request with an HTTP object and arguments.
 
     Args:
@@ -277,10 +318,15 @@ def request(http, uri, method='GET', body=None, headers=None,
         headers and the bytes of the content returned.
     """
     # NOTE: Allowing http or http.request is temporary (See Issue 601).
-    http_callable = getattr(http, 'request', http)
-    return http_callable(uri, method=method, body=body, headers=headers,
-                         redirections=redirections,
-                         connection_type=connection_type)
+    http_callable = getattr(http, "request", http)
+    return http_callable(
+        uri,
+        method=method,
+        body=body,
+        headers=headers,
+        redirections=redirections,
+        connection_type=connection_type,
+    )
 
 
 _CACHED_HTTP = httplib2.Http(MemoryCache())

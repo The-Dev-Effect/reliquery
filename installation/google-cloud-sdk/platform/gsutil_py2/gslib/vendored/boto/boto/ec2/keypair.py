@@ -29,7 +29,6 @@ from boto.exception import BotoClientError
 
 
 class KeyPair(EC2Object):
-
     def __init__(self, connection=None):
         super(KeyPair, self).__init__(connection)
         self.name = None
@@ -37,14 +36,14 @@ class KeyPair(EC2Object):
         self.material = None
 
     def __repr__(self):
-        return 'KeyPair:%s' % self.name
+        return "KeyPair:%s" % self.name
 
     def endElement(self, name, value, connection):
-        if name == 'keyName':
+        if name == "keyName":
             self.name = value
-        elif name == 'keyFingerprint':
+        elif name == "keyFingerprint":
             self.fingerprint = value
-        elif name == 'keyMaterial':
+        elif name == "keyMaterial":
             self.material = value
         else:
             setattr(self, name, value)
@@ -78,16 +77,18 @@ class KeyPair(EC2Object):
         """
         if self.material:
             directory_path = os.path.expanduser(directory_path)
-            file_path = os.path.join(directory_path, '%s.pem' % self.name)
+            file_path = os.path.join(directory_path, "%s.pem" % self.name)
             if os.path.exists(file_path):
-                raise BotoClientError('%s already exists, it will not be overwritten' % file_path)
-            fp = open(file_path, 'wb')
+                raise BotoClientError(
+                    "%s already exists, it will not be overwritten" % file_path
+                )
+            fp = open(file_path, "wb")
             fp.write(self.material)
             fp.close()
             os.chmod(file_path, 0o600)
             return True
         else:
-            raise BotoClientError('KeyPair contains no material')
+            raise BotoClientError("KeyPair contains no material")
 
     def copy_to_region(self, region, dry_run=False):
         """
@@ -104,7 +105,7 @@ class KeyPair(EC2Object):
         :return: The new key pair
         """
         if region.name == self.region:
-            raise BotoClientError('Unable to copy to the same Region')
+            raise BotoClientError("Unable to copy to the same Region")
         conn_params = self.connection.get_params()
         rconn = region.connect(**conn_params)
         kp = rconn.create_key_pair(self.name, dry_run=dry_run)

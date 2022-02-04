@@ -26,7 +26,8 @@ from boto.compat import six, encodebytes
 from datetime import datetime
 from xml.dom.minidom import getDOMImplementation, parse, parseString, Node
 
-ISO8601 = '%Y-%m-%dT%H:%M:%SZ'
+ISO8601 = "%Y-%m-%dT%H:%M:%SZ"
+
 
 class XMLConverter(object):
     """
@@ -40,19 +41,22 @@ class XMLConverter(object):
     method to call, the generic encode/decode methods will look for the type-specific
     method by searching for a method called "encode_<type name>" or "decode_<type name>".
     """
+
     def __init__(self, manager):
         self.manager = manager
-        self.type_map = { bool : (self.encode_bool, self.decode_bool),
-                          int : (self.encode_int, self.decode_int),
-                          Model : (self.encode_reference, self.decode_reference),
-                          Key : (self.encode_reference, self.decode_reference),
-                          Password : (self.encode_password, self.decode_password),
-                          datetime : (self.encode_datetime, self.decode_datetime)}
+        self.type_map = {
+            bool: (self.encode_bool, self.decode_bool),
+            int: (self.encode_int, self.decode_int),
+            Model: (self.encode_reference, self.decode_reference),
+            Key: (self.encode_reference, self.decode_reference),
+            Password: (self.encode_password, self.decode_password),
+            datetime: (self.encode_datetime, self.decode_datetime),
+        }
         if six.PY2:
             self.type_map[long] = (self.encode_long, self.decode_long)
 
     def get_text_value(self, parent_node):
-        value = ''
+        value = ""
         for node in parent_node.childNodes:
             if node.nodeType == node.TEXT_NODE:
                 value += node.data
@@ -74,7 +78,7 @@ class XMLConverter(object):
 
     def encode_prop(self, prop, value):
         if isinstance(value, list):
-            if hasattr(prop, 'item_type'):
+            if hasattr(prop, "item_type"):
                 new_value = []
                 for v in value:
                     item_type = getattr(prop, "item_type")
@@ -89,12 +93,12 @@ class XMLConverter(object):
 
     def decode_prop(self, prop, value):
         if prop.data_type == list:
-            if hasattr(prop, 'item_type'):
+            if hasattr(prop, "item_type"):
                 item_type = getattr(prop, "item_type")
                 if Model in item_type.mro():
                     item_type = Model
                 values = []
-                for item_node in value.getElementsByTagName('item'):
+                for item_node in value.getElementsByTagName("item"):
                     value = self.decode(item_type, item_node)
                     values.append(value)
                 return values
@@ -105,7 +109,7 @@ class XMLConverter(object):
 
     def encode_int(self, value):
         value = int(value)
-        return '%d' % value
+        return "%d" % value
 
     def decode_int(self, value):
         value = self.get_text_value(value)
@@ -117,7 +121,7 @@ class XMLConverter(object):
 
     def encode_long(self, value):
         value = long(value)
-        return '%d' % value
+        return "%d" % value
 
     def decode_long(self, value):
         value = self.get_text_value(value)
@@ -125,13 +129,13 @@ class XMLConverter(object):
 
     def encode_bool(self, value):
         if value == True:
-            return 'true'
+            return "true"
         else:
-            return 'false'
+            return "false"
 
     def decode_bool(self, value):
         value = self.get_text_value(value)
-        if value.lower() == 'true':
+        if value.lower() == "true":
             return True
         else:
             return False
@@ -150,11 +154,14 @@ class XMLConverter(object):
         if isinstance(value, six.string_types):
             return value
         if value is None:
-            return ''
+            return ""
         else:
             val_node = self.manager.doc.createElement("object")
-            val_node.setAttribute('id', value.id)
-            val_node.setAttribute('class', '%s.%s' % (value.__class__.__module__, value.__class__.__name__))
+            val_node.setAttribute("id", value.id)
+            val_node.setAttribute(
+                "class",
+                "%s.%s" % (value.__class__.__module__, value.__class__.__name__),
+            )
             return val_node
 
     def decode_reference(self, value):
@@ -181,9 +188,18 @@ class XMLConverter(object):
 
 
 class XMLManager(object):
-
-    def __init__(self, cls, db_name, db_user, db_passwd,
-                 db_host, db_port, db_table, ddl_dir, enable_ssl):
+    def __init__(
+        self,
+        cls,
+        db_name,
+        db_user,
+        db_passwd,
+        db_host,
+        db_port,
+        db_table,
+        ddl_dir,
+        enable_ssl,
+    ):
         self.cls = cls
         if not db_name:
             db_name = cls.__name__.lower()
@@ -197,13 +213,13 @@ class XMLManager(object):
         self.s3 = None
         self.converter = XMLConverter(self)
         self.impl = getDOMImplementation()
-        self.doc = self.impl.createDocument(None, 'objects', None)
+        self.doc = self.impl.createDocument(None, "objects", None)
 
         self.connection = None
         self.enable_ssl = enable_ssl
         self.auth_header = None
         if self.db_user:
-            base64string = encodebytes('%s:%s' % (self.db_user, self.db_passwd))[:-1]
+            base64string = encodebytes("%s:%s" % (self.db_user, self.db_passwd))[:-1]
             authheader = "Basic %s" % base64string
             self.auth_header = authheader
 
@@ -235,20 +251,20 @@ class XMLManager(object):
         return resp
 
     def new_doc(self):
-        return self.impl.createDocument(None, 'objects', None)
+        return self.impl.createDocument(None, "objects", None)
 
     def _object_lister(self, cls, doc):
-        for obj_node in doc.getElementsByTagName('object'):
+        for obj_node in doc.getElementsByTagName("object"):
             if not cls:
-                class_name = obj_node.getAttribute('class')
+                class_name = obj_node.getAttribute("class")
                 cls = find_class(class_name)
-            id = obj_node.getAttribute('id')
+            id = obj_node.getAttribute("id")
             obj = cls(id)
-            for prop_node in obj_node.getElementsByTagName('property'):
-                prop_name = prop_node.getAttribute('name')
+            for prop_node in obj_node.getElementsByTagName("property"):
+                prop_name = prop_node.getAttribute("name")
                 prop = obj.find_property(prop_name)
                 if prop:
-                    if hasattr(prop, 'item_type'):
+                    if hasattr(prop, "item_type"):
                         value = self.get_list(prop_node, prop.item_type)
                     else:
                         value = self.decode_value(prop, prop_node)
@@ -270,30 +286,32 @@ class XMLManager(object):
 
     def get_s3_connection(self):
         if not self.s3:
-            self.s3 = boto.connect_s3(self.aws_access_key_id, self.aws_secret_access_key)
+            self.s3 = boto.connect_s3(
+                self.aws_access_key_id, self.aws_secret_access_key
+            )
         return self.s3
 
     def get_list(self, prop_node, item_type):
         values = []
         try:
-            items_node = prop_node.getElementsByTagName('items')[0]
+            items_node = prop_node.getElementsByTagName("items")[0]
         except:
             return []
-        for item_node in items_node.getElementsByTagName('item'):
+        for item_node in items_node.getElementsByTagName("item"):
             value = self.converter.decode(item_type, item_node)
             values.append(value)
         return values
 
     def get_object_from_doc(self, cls, id, doc):
-        obj_node = doc.getElementsByTagName('object')[0]
+        obj_node = doc.getElementsByTagName("object")[0]
         if not cls:
-            class_name = obj_node.getAttribute('class')
+            class_name = obj_node.getAttribute("class")
             cls = find_class(class_name)
         if not id:
-            id = obj_node.getAttribute('id')
+            id = obj_node.getAttribute("id")
         obj = cls(id)
-        for prop_node in obj_node.getElementsByTagName('property'):
-            prop_name = prop_node.getAttribute('name')
+        for prop_node in obj_node.getElementsByTagName("property"):
+            prop_name = prop_node.getAttribute("name")
             prop = obj.find_property(prop_name)
             value = self.decode_value(prop, prop_node)
             value = prop.make_value_from_datastore(value)
@@ -310,22 +328,21 @@ class XMLManager(object):
         Returns the class, the properties in a hash, and the id if provided as a tuple
         :return: (cls, props, id)
         """
-        obj_node = doc.getElementsByTagName('object')[0]
+        obj_node = doc.getElementsByTagName("object")[0]
         if not cls:
-            class_name = obj_node.getAttribute('class')
+            class_name = obj_node.getAttribute("class")
             cls = find_class(class_name)
         if not id:
-            id = obj_node.getAttribute('id')
+            id = obj_node.getAttribute("id")
         props = {}
-        for prop_node in obj_node.getElementsByTagName('property'):
-            prop_name = prop_node.getAttribute('name')
+        for prop_node in obj_node.getElementsByTagName("property"):
+            prop_name = prop_node.getAttribute("name")
             prop = cls.find_property(prop_name)
             value = self.decode_value(prop, prop_node)
             value = prop.make_value_from_datastore(value)
             if value is not None:
                 props[prop.name] = value
         return (cls, props, id)
-
 
     def get_object(self, cls, id):
         if not self.connection:
@@ -334,7 +351,7 @@ class XMLManager(object):
         if not self.connection:
             raise NotImplementedError("Can't query without a database connection")
         url = "/%s/%s" % (self.db_name, id)
-        resp = self._make_request('GET', url)
+        resp = self._make_request("GET", url)
         if resp.status == 200:
             doc = parse(resp)
         else:
@@ -355,7 +372,7 @@ class XMLManager(object):
             url = "/%s?%s" % (self.db_name, urlencode({"query": query}))
         else:
             url = "/%s" % self.db_name
-        resp = self._make_request('GET', url)
+        resp = self._make_request("GET", url)
         if resp.status == 200:
             doc = parse(resp)
         else:
@@ -364,8 +381,9 @@ class XMLManager(object):
 
     def _build_query(self, cls, filters, limit, order_by):
         import types
+
         if len(filters) > 4:
-            raise Exception('Too many filters, max is 4')
+            raise Exception("Too many filters, max is 4")
         parts = []
         properties = cls.properties(hidden=False)
         for filter, value in filters:
@@ -384,7 +402,7 @@ class XMLManager(object):
                         value = self.encode_value(property, value)
                         parts.append("['%s' %s '%s']" % (name, op, value))
             if not found:
-                raise Exception('%s is not a valid field' % name)
+                raise Exception("%s is not a valid field" % name)
         if order_by:
             if order_by.startswith("-"):
                 key = order_by[1:]
@@ -393,16 +411,16 @@ class XMLManager(object):
                 key = order_by
                 type = "asc"
             parts.append("['%s' starts-with ''] sort '%s' %s" % (key, key, type))
-        return ' intersection '.join(parts)
+        return " intersection ".join(parts)
 
     def query_gql(self, query_string, *args, **kwds):
         raise NotImplementedError("GQL queries not supported in XML")
 
     def save_list(self, doc, items, prop_node):
-        items_node = doc.createElement('items')
+        items_node = doc.createElement("items")
         prop_node.appendChild(items_node)
         for item in items:
-            item_node = doc.createElement('item')
+            item_node = doc.createElement("item")
             items_node.appendChild(item_node)
             if isinstance(item, Node):
                 item_node.appendChild(item)
@@ -433,25 +451,25 @@ class XMLManager(object):
                     setattr(obj, prop.name, value)
         return obj
 
-
     def marshal_object(self, obj, doc=None):
         if not doc:
             doc = self.new_doc()
         if not doc:
             doc = self.doc
-        obj_node = doc.createElement('object')
+        obj_node = doc.createElement("object")
 
         if obj.id:
-            obj_node.setAttribute('id', obj.id)
+            obj_node.setAttribute("id", obj.id)
 
-        obj_node.setAttribute('class', '%s.%s' % (obj.__class__.__module__,
-                                                  obj.__class__.__name__))
+        obj_node.setAttribute(
+            "class", "%s.%s" % (obj.__class__.__module__, obj.__class__.__name__)
+        )
         root = doc.documentElement
         root.appendChild(obj_node)
         for property in obj.properties(hidden=False):
-            prop_node = doc.createElement('property')
-            prop_node.setAttribute('name', property.name)
-            prop_node.setAttribute('type', property.type_name)
+            prop_node = doc.createElement("property")
+            prop_node.setAttribute("name", property.name)
+            prop_node.setAttribute("type", property.type_name)
             value = property.get_value_for_datastore(obj)
             if value is not None:
                 value = self.encode_value(property, value)
@@ -460,7 +478,9 @@ class XMLManager(object):
                 elif isinstance(value, Node):
                     prop_node.appendChild(value)
                 else:
-                    text_node = doc.createTextNode(six.text_type(value).encode("ascii", "ignore"))
+                    text_node = doc.createTextNode(
+                        six.text_type(value).encode("ascii", "ignore")
+                    )
                     prop_node.appendChild(text_node)
             obj_node.appendChild(prop_node)
 

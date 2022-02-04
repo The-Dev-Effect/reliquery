@@ -23,14 +23,14 @@ from oauth2client import _helpers
 
 
 # Delimiter character
-DELIMITER = b':'
+DELIMITER = b":"
 
 # 1 hour in seconds
 DEFAULT_TIMEOUT_SECS = 60 * 60
 
 
 @_helpers.positional(2)
-def generate_token(key, user_id, action_id='', when=None):
+def generate_token(key, user_id, action_id="", when=None):
     """Generates a URL-safe token for the given user, action, time tuple.
 
     Args:
@@ -44,12 +44,12 @@ def generate_token(key, user_id, action_id='', when=None):
     Returns:
         A string XSRF protection token.
     """
-    digester = hmac.new(_helpers._to_bytes(key, encoding='utf-8'))
-    digester.update(_helpers._to_bytes(str(user_id), encoding='utf-8'))
+    digester = hmac.new(_helpers._to_bytes(key, encoding="utf-8"))
+    digester.update(_helpers._to_bytes(str(user_id), encoding="utf-8"))
     digester.update(DELIMITER)
-    digester.update(_helpers._to_bytes(action_id, encoding='utf-8'))
+    digester.update(_helpers._to_bytes(action_id, encoding="utf-8"))
     digester.update(DELIMITER)
-    when = _helpers._to_bytes(str(when or int(time.time())), encoding='utf-8')
+    when = _helpers._to_bytes(str(when or int(time.time())), encoding="utf-8")
     digester.update(when)
     digest = digester.digest()
 
@@ -89,8 +89,7 @@ def validate_token(key, token, user_id, action_id="", current_time=None):
         return False
 
     # The given token should match the generated one with the same time.
-    expected_token = generate_token(key, user_id, action_id=action_id,
-                                    when=token_time)
+    expected_token = generate_token(key, user_id, action_id=action_id, when=token_time)
     if len(token) != len(expected_token):
         return False
 

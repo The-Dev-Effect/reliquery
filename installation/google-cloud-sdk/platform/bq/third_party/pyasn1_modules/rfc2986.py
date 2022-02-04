@@ -21,7 +21,7 @@ from pyasn1.type import tag
 from pyasn1.type import constraint
 from pyasn1.type import useful
 
-MAX = float('inf')
+MAX = float("inf")
 
 
 class AttributeType(univ.ObjectIdentifier):
@@ -37,20 +37,23 @@ certificateAttributesMap = {}
 
 class AttributeTypeAndValue(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('type', AttributeType()),
+        namedtype.NamedType("type", AttributeType()),
         namedtype.NamedType(
-            'value', AttributeValue(),
-            openType=opentype.OpenType('type', certificateAttributesMap)
-        )
+            "value",
+            AttributeValue(),
+            openType=opentype.OpenType("type", certificateAttributesMap),
+        ),
     )
 
 
 class Attribute(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('type', AttributeType()),
-        namedtype.NamedType('values',
-                            univ.SetOf(componentType=AttributeValue()),
-                            openType=opentype.OpenType('type', certificateAttributesMap))
+        namedtype.NamedType("type", AttributeType()),
+        namedtype.NamedType(
+            "values",
+            univ.SetOf(componentType=AttributeValue()),
+            openType=opentype.OpenType("type", certificateAttributesMap),
+        ),
     )
 
 
@@ -81,14 +84,14 @@ class Name(univ.Choice):
 
 
 Name.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('rdnSequence', RDNSequence())
+    namedtype.NamedType("rdnSequence", RDNSequence())
 )
 
 
 class AlgorithmIdentifier(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('algorithm', univ.ObjectIdentifier()),
-        namedtype.OptionalNamedType('parameters', univ.Any())
+        namedtype.NamedType("algorithm", univ.ObjectIdentifier()),
+        namedtype.OptionalNamedType("parameters", univ.Any()),
     )
 
 
@@ -97,8 +100,8 @@ class SubjectPublicKeyInfo(univ.Sequence):
 
 
 SubjectPublicKeyInfo.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('algorithm', AlgorithmIdentifier()),
-    namedtype.NamedType('subjectPublicKey', univ.BitString())
+    namedtype.NamedType("algorithm", AlgorithmIdentifier()),
+    namedtype.NamedType("subjectPublicKey", univ.BitString()),
 )
 
 
@@ -107,10 +110,15 @@ class CertificationRequestInfo(univ.Sequence):
 
 
 CertificationRequestInfo.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('version', univ.Integer()),
-    namedtype.NamedType('subject', Name()),
-    namedtype.NamedType('subjectPKInfo', SubjectPublicKeyInfo()),
-    namedtype.NamedType('attributes', Attributes().subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0)))
+    namedtype.NamedType("version", univ.Integer()),
+    namedtype.NamedType("subject", Name()),
+    namedtype.NamedType("subjectPKInfo", SubjectPublicKeyInfo()),
+    namedtype.NamedType(
+        "attributes",
+        Attributes().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0)
+        ),
+    ),
 )
 
 
@@ -119,7 +127,7 @@ class CertificationRequest(univ.Sequence):
 
 
 CertificationRequest.componentType = namedtype.NamedTypes(
-    namedtype.NamedType('certificationRequestInfo', CertificationRequestInfo()),
-    namedtype.NamedType('signatureAlgorithm', AlgorithmIdentifier()),
-    namedtype.NamedType('signature', univ.BitString())
+    namedtype.NamedType("certificationRequestInfo", CertificationRequestInfo()),
+    namedtype.NamedType("signatureAlgorithm", AlgorithmIdentifier()),
+    namedtype.NamedType("signature", univ.BitString()),
 )

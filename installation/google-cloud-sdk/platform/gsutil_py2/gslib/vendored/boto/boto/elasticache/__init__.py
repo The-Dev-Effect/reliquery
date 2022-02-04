@@ -32,10 +32,13 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.elasticache.layer1 import ElastiCacheConnection
-    return get_regions('elasticache', connection_cls=ElastiCacheConnection)
+
+    return get_regions("elasticache", connection_cls=ElastiCacheConnection)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.elasticache.layer1 import ElastiCacheConnection
-    return connect('elasticache', region_name,
-                   connection_cls=ElastiCacheConnection, **kw_params)
+
+    return connect(
+        "elasticache", region_name, connection_cls=ElastiCacheConnection, **kw_params
+    )

@@ -28,7 +28,7 @@ from boto.regioninfo import RegionInfo, get_regions, load_regions
 from boto.regioninfo import connect
 
 
-RegionData = load_regions().get('ec2', {})
+RegionData = load_regions().get("ec2", {})
 
 
 def regions(**kw_params):
@@ -41,7 +41,7 @@ def regions(**kw_params):
     :rtype: list
     :return: A list of :class:`boto.ec2.regioninfo.RegionInfo`
     """
-    return get_regions('ec2', connection_cls=EC2Connection)
+    return get_regions("ec2", connection_cls=EC2Connection)
 
 
 def connect_to_region(region_name, **kw_params):
@@ -58,12 +58,14 @@ def connect_to_region(region_name, **kw_params):
     :return: A connection to the given region, or None if an invalid region
              name is given
     """
-    if 'region' in kw_params and isinstance(kw_params['region'], RegionInfo)\
-       and region_name == kw_params['region'].name:
+    if (
+        "region" in kw_params
+        and isinstance(kw_params["region"], RegionInfo)
+        and region_name == kw_params["region"].name
+    ):
         return EC2Connection(**kw_params)
 
-    return connect('ec2', region_name,
-                   connection_cls=EC2Connection, **kw_params)
+    return connect("ec2", region_name, connection_cls=EC2Connection, **kw_params)
 
 
 def get_region(region_name, **kw_params):

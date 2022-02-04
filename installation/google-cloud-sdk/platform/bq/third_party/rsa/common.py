@@ -23,7 +23,8 @@ from rsa._compat import zip
 class NotRelativePrimeError(ValueError):
     def __init__(self, a, b, d, msg=None):
         super(NotRelativePrimeError, self).__init__(
-            msg or "%d and %d are not relatively prime, divider=%i" % (a, b, d))
+            msg or "%d and %d are not relatively prime, divider=%i" % (a, b, d)
+        )
         self.a = a
         self.b = b
         self.d = d
@@ -54,7 +55,7 @@ def bit_size(num):
     try:
         return num.bit_length()
     except AttributeError:
-        raise TypeError('bit_size(num) only supports integers, not %r' % type(num))
+        raise TypeError("bit_size(num) only supports integers, not %r" % type(num))
 
 
 def byte_size(number):
@@ -107,8 +108,7 @@ def ceil_div(num, div):
 
 
 def extended_gcd(a, b):
-    """Returns a tuple (r, i, j) such that r = gcd(a, b) = ia + jb
-    """
+    """Returns a tuple (r, i, j) such that r = gcd(a, b) = ia + jb"""
     # r = gcd(a,b) i = multiplicitive inverse of a mod b
     #      or      j = multiplicitive inverse of b mod a
     # Neg return values for i or j are made positive mod b or a respectively
@@ -183,7 +183,7 @@ def crt(a_values, modulo_values):
     return x
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

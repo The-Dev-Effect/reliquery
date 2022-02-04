@@ -60,10 +60,9 @@ class KeyGenTest(unittest.TestCase):
         # This exponent will cause two other primes to be generated.
         exponent = 136407
 
-        (p, q, e, d) = rsa.key.gen_keys(64,
-                                        accurate=False,
-                                        getprime_func=getprime,
-                                        exponent=exponent)
+        (p, q, e, d) = rsa.key.gen_keys(
+            64, accurate=False, getprime_func=getprime, exponent=exponent
+        )
         self.assertEqual(39317, p)
         self.assertEqual(33107, q)
 

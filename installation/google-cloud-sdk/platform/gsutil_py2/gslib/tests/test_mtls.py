@@ -26,26 +26,28 @@ from gslib.tests.testcase import integration_testcase
 from gslib.tests.util import unittest
 
 MTLS_AVAILABILITY_MESSAGE = (
-    'mTLS/DCA authentication is only available for the GCS JSON API.')
+    "mTLS/DCA authentication is only available for the GCS JSON API."
+)
 
 
 class TestMtls(testcase.GsUtilIntegrationTestCase):
-  """Integration tests for mTLS authentication."""
+    """Integration tests for mTLS authentication."""
 
-  @unittest.skipIf(
-      not config.getbool('Credentials', 'use_client_certificate'),
-      'mTLS requires "use_client_certificate" to be "True" in .boto config.')
-  @integration_testcase.SkipForXML(MTLS_AVAILABILITY_MESSAGE)
-  @integration_testcase.SkipForS3(MTLS_AVAILABILITY_MESSAGE)
-  def test_can_list_bucket_with_mtls_authentication(self):
-    # Cannot use self.CreateBucket because testing framework's authentication
-    # doesn't work with mTLS.
-    bucket_uri = 'gs://{}'.format(self.MakeTempName('bucket'))
-    self.RunGsUtil(['mb', bucket_uri])
-    stdout = self.RunGsUtil(['-D', 'ls'], return_stdout=True)
-    self.RunGsUtil(['rb', bucket_uri])
+    @unittest.skipIf(
+        not config.getbool("Credentials", "use_client_certificate"),
+        'mTLS requires "use_client_certificate" to be "True" in .boto config.',
+    )
+    @integration_testcase.SkipForXML(MTLS_AVAILABILITY_MESSAGE)
+    @integration_testcase.SkipForS3(MTLS_AVAILABILITY_MESSAGE)
+    def test_can_list_bucket_with_mtls_authentication(self):
+        # Cannot use self.CreateBucket because testing framework's authentication
+        # doesn't work with mTLS.
+        bucket_uri = "gs://{}".format(self.MakeTempName("bucket"))
+        self.RunGsUtil(["mb", bucket_uri])
+        stdout = self.RunGsUtil(["-D", "ls"], return_stdout=True)
+        self.RunGsUtil(["rb", bucket_uri])
 
-    # # Check if mTLS API endpoint was hit in debug output.
-    self.assertIn('storage.mtls.googleapis.com', stdout)
-    # # If bucket was successfully listed, it implies successful authentication.
-    self.assertIn(bucket_uri, stdout)
+        # # Check if mTLS API endpoint was hit in debug output.
+        self.assertIn("storage.mtls.googleapis.com", stdout)
+        # # If bucket was successfully listed, it implies successful authentication.
+        self.assertIn(bucket_uri, stdout)

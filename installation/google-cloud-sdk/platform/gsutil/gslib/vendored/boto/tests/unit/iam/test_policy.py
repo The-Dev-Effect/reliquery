@@ -71,21 +71,25 @@ class TestCreatePolicy(AWSMockServiceTestCase):
 }
         """
         response = self.service_connection.create_policy(
-                'S3-read-only-example-bucket',
-                policy_doc)
+            "S3-read-only-example-bucket", policy_doc
+        )
 
         self.assert_request_parameters(
-            {'Action': 'CreatePolicy',
-             'PolicyDocument': policy_doc,
-             'Path': '/',
-             'PolicyName': 'S3-read-only-example-bucket'},
-            ignore_params_values=['Version'])
+            {
+                "Action": "CreatePolicy",
+                "PolicyDocument": policy_doc,
+                "Path": "/",
+                "PolicyName": "S3-read-only-example-bucket",
+            },
+            ignore_params_values=["Version"],
+        )
 
-        self.assertEqual(response['create_policy_response']
-                                 ['create_policy_result']
-                                 ['policy']
-                                 ['policy_name'],
-                         'S3-read-only-example-bucket')
+        self.assertEqual(
+            response["create_policy_response"]["create_policy_result"]["policy"][
+                "policy_name"
+            ],
+            "S3-read-only-example-bucket",
+        )
 
 
 class TestCreatePolicyVersion(AWSMockServiceTestCase):
@@ -127,22 +131,27 @@ class TestCreatePolicyVersion(AWSMockServiceTestCase):
 }
         """
         response = self.service_connection.create_policy_version(
-                'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket',
-                policy_doc,
-                set_as_default=True)
+            "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket",
+            policy_doc,
+            set_as_default=True,
+        )
 
         self.assert_request_parameters(
-            {'Action': 'CreatePolicyVersion',
-             'PolicyDocument': policy_doc,
-             'SetAsDefault': 'true',
-             'PolicyArn': 'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket'},
-            ignore_params_values=['Version'])
+            {
+                "Action": "CreatePolicyVersion",
+                "PolicyDocument": policy_doc,
+                "SetAsDefault": "true",
+                "PolicyArn": "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket",
+            },
+            ignore_params_values=["Version"],
+        )
 
-        self.assertEqual(response['create_policy_version_response']
-                                 ['create_policy_version_result']
-                                 ['policy_version']
-                                 ['is_default_version'],
-                         'true')
+        self.assertEqual(
+            response["create_policy_version_response"]["create_policy_version_result"][
+                "policy_version"
+            ]["is_default_version"],
+            "true",
+        )
 
 
 class TestDeletePolicy(AWSMockServiceTestCase):
@@ -160,16 +169,21 @@ class TestDeletePolicy(AWSMockServiceTestCase):
     def test_delete_policy(self):
         self.set_http_response(status_code=200)
         response = self.service_connection.delete_policy(
-                'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket')
+            "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket"
+        )
 
         self.assert_request_parameters(
-            {'Action': 'DeletePolicy',
-             'PolicyArn': 'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket'},
-            ignore_params_values=['Version'])
+            {
+                "Action": "DeletePolicy",
+                "PolicyArn": "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket",
+            },
+            ignore_params_values=["Version"],
+        )
 
-        self.assertEqual('request_id' in response['delete_policy_response']
-                                                 ['response_metadata'],
-                         True)
+        self.assertEqual(
+            "request_id" in response["delete_policy_response"]["response_metadata"],
+            True,
+        )
 
 
 class TestDeletePolicyVersion(AWSMockServiceTestCase):
@@ -187,18 +201,23 @@ class TestDeletePolicyVersion(AWSMockServiceTestCase):
     def test_delete_policy_version(self):
         self.set_http_response(status_code=200)
         response = self.service_connection.delete_policy_version(
-                'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket',
-                'v1')
+            "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket", "v1"
+        )
 
         self.assert_request_parameters(
-            {'Action': 'DeletePolicyVersion',
-             'PolicyArn': 'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket',
-             'VersionId': 'v1'},
-            ignore_params_values=['Version'])
+            {
+                "Action": "DeletePolicyVersion",
+                "PolicyArn": "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket",
+                "VersionId": "v1",
+            },
+            ignore_params_values=["Version"],
+        )
 
-        self.assertEqual('request_id' in response['delete_policy_version_response']
-                                                 ['response_metadata'],
-                         True)
+        self.assertEqual(
+            "request_id"
+            in response["delete_policy_version_response"]["response_metadata"],
+            True,
+        )
 
 
 class TestGetPolicy(AWSMockServiceTestCase):
@@ -229,24 +248,28 @@ class TestGetPolicy(AWSMockServiceTestCase):
     def test_get_policy(self):
         self.set_http_response(status_code=200)
         response = self.service_connection.get_policy(
-                'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket')
+            "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket"
+        )
 
         self.assert_request_parameters(
-            {'Action': 'GetPolicy',
-             'PolicyArn': 'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket'},
-            ignore_params_values=['Version'])
+            {
+                "Action": "GetPolicy",
+                "PolicyArn": "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket",
+            },
+            ignore_params_values=["Version"],
+        )
 
-        self.assertEqual(response['get_policy_response']
-                                 ['get_policy_result']
-                                 ['policy']
-                                 ['arn'],
-                         'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket')
+        self.assertEqual(
+            response["get_policy_response"]["get_policy_result"]["policy"]["arn"],
+            "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket",
+        )
 
-        self.assertEqual(response['get_policy_response']
-                                 ['get_policy_result']
-                                 ['policy']
-                                 ['description'],
-                         'My Awesome Policy')
+        self.assertEqual(
+            response["get_policy_response"]["get_policy_result"]["policy"][
+                "description"
+            ],
+            "My Awesome Policy",
+        )
 
 
 class TestGetPolicyVersion(AWSMockServiceTestCase):
@@ -275,20 +298,24 @@ class TestGetPolicyVersion(AWSMockServiceTestCase):
     def test_get_policy_version(self):
         self.set_http_response(status_code=200)
         response = self.service_connection.get_policy_version(
-                'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket',
-                'v1')
+            "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket", "v1"
+        )
 
         self.assert_request_parameters(
-            {'Action': 'GetPolicyVersion',
-             'PolicyArn': 'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket',
-             'VersionId': 'v1'},
-            ignore_params_values=['Version'])
+            {
+                "Action": "GetPolicyVersion",
+                "PolicyArn": "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket",
+                "VersionId": "v1",
+            },
+            ignore_params_values=["Version"],
+        )
 
-        self.assertEqual(response['get_policy_version_response']
-                                 ['get_policy_version_result']
-                                 ['policy_version']
-                                 ['version_id'],
-                         'v1')
+        self.assertEqual(
+            response["get_policy_version_response"]["get_policy_version_result"][
+                "policy_version"
+            ]["version_id"],
+            "v1",
+        )
 
 
 class TestListPolicies(AWSMockServiceTestCase):
@@ -352,22 +379,20 @@ class TestListPolicies(AWSMockServiceTestCase):
 
     def test_list_policies(self):
         self.set_http_response(status_code=200)
-        response = self.service_connection.list_policies(
-            max_items=4)
+        response = self.service_connection.list_policies(max_items=4)
         self.assert_request_parameters(
-            {'Action': 'ListPolicies',
-             'MaxItems': 4},
-            ignore_params_values=['Version'])
+            {"Action": "ListPolicies", "MaxItems": 4}, ignore_params_values=["Version"]
+        )
 
-        self.assertEqual(len(response['list_policies_response']
-                                     ['list_policies_result']
-                                     ['policies']),
-                         4)
+        self.assertEqual(
+            len(response["list_policies_response"]["list_policies_result"]["policies"]),
+            4,
+        )
 
-        self.assertEqual(response['list_policies_response']
-                                 ['list_policies_result']
-                                 ['is_truncated'],
-                         'true')
+        self.assertEqual(
+            response["list_policies_response"]["list_policies_result"]["is_truncated"],
+            "true",
+        )
 
 
 class TestListPolicyVersions(AWSMockServiceTestCase):
@@ -405,19 +430,26 @@ class TestListPolicyVersions(AWSMockServiceTestCase):
     def test_list_policy_versions(self):
         self.set_http_response(status_code=200)
         response = self.service_connection.list_policy_versions(
-                'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket',
-                max_items=3)
+            "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket", max_items=3
+        )
 
         self.assert_request_parameters(
-            {'Action': 'ListPolicyVersions',
-             'PolicyArn': 'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket',
-             'MaxItems': 3},
-            ignore_params_values=['Version'])
+            {
+                "Action": "ListPolicyVersions",
+                "PolicyArn": "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket",
+                "MaxItems": 3,
+            },
+            ignore_params_values=["Version"],
+        )
 
-        self.assertEqual(len(response['list_policy_versions_response']
-                                     ['list_policy_versions_result']
-                                     ['versions']),
-                         3)
+        self.assertEqual(
+            len(
+                response["list_policy_versions_response"][
+                    "list_policy_versions_result"
+                ]["versions"]
+            ),
+            3,
+        )
 
 
 class TestSetDefaultPolicyVersion(AWSMockServiceTestCase):
@@ -435,18 +467,23 @@ class TestSetDefaultPolicyVersion(AWSMockServiceTestCase):
     def test_set_default_policy_version(self):
         self.set_http_response(status_code=200)
         response = self.service_connection.set_default_policy_version(
-                'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket',
-                'v1')
+            "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket", "v1"
+        )
 
         self.assert_request_parameters(
-            {'Action': 'SetDefaultPolicyVersion',
-             'PolicyArn': 'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket',
-             'VersionId': 'v1'},
-            ignore_params_values=['Version'])
+            {
+                "Action": "SetDefaultPolicyVersion",
+                "PolicyArn": "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket",
+                "VersionId": "v1",
+            },
+            ignore_params_values=["Version"],
+        )
 
-        self.assertEqual('request_id' in response['set_default_policy_version_response']
-                                                 ['response_metadata'],
-                         True)
+        self.assertEqual(
+            "request_id"
+            in response["set_default_policy_version_response"]["response_metadata"],
+            True,
+        )
 
 
 class TestListEntitiesForPolicy(AWSMockServiceTestCase):
@@ -485,32 +522,51 @@ class TestListEntitiesForPolicy(AWSMockServiceTestCase):
     def test_list_entities_for_policy(self):
         self.set_http_response(status_code=200)
         response = self.service_connection.list_entities_for_policy(
-                'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket')
+            "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket"
+        )
 
         self.assert_request_parameters(
-            {'Action': 'ListEntitiesForPolicy',
-             'PolicyArn': 'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket'},
-            ignore_params_values=['Version'])
+            {
+                "Action": "ListEntitiesForPolicy",
+                "PolicyArn": "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket",
+            },
+            ignore_params_values=["Version"],
+        )
 
-        self.assertEqual(len(response['list_entities_for_policy_response']
-                                     ['list_entities_for_policy_result']
-                                     ['policy_roles']),
-                         1)
+        self.assertEqual(
+            len(
+                response["list_entities_for_policy_response"][
+                    "list_entities_for_policy_result"
+                ]["policy_roles"]
+            ),
+            1,
+        )
 
-        self.assertEqual(len(response['list_entities_for_policy_response']
-                                     ['list_entities_for_policy_result']
-                                     ['policy_groups']),
-                         1)
+        self.assertEqual(
+            len(
+                response["list_entities_for_policy_response"][
+                    "list_entities_for_policy_result"
+                ]["policy_groups"]
+            ),
+            1,
+        )
 
-        self.assertEqual(len(response['list_entities_for_policy_response']
-                                     ['list_entities_for_policy_result']
-                                     ['policy_users']),
-                         2)
+        self.assertEqual(
+            len(
+                response["list_entities_for_policy_response"][
+                    "list_entities_for_policy_result"
+                ]["policy_users"]
+            ),
+            2,
+        )
 
-        self.assertEqual({'user_name': 'Alice'} in response['list_entities_for_policy_response']
-                                                           ['list_entities_for_policy_result']
-                                                           ['policy_users'],
-                         True)
+        self.assertEqual(
+            {"user_name": "Alice"}
+            in response["list_entities_for_policy_response"][
+                "list_entities_for_policy_result"
+            ]["policy_users"],
+            True,
+        )
 
 
 class TestAttachGroupPolicy(AWSMockServiceTestCase):
@@ -528,18 +584,23 @@ class TestAttachGroupPolicy(AWSMockServiceTestCase):
     def test_attach_group_policy(self):
         self.set_http_response(status_code=200)
         response = self.service_connection.attach_group_policy(
-                'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket',
-                'Dev')
+            "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket", "Dev"
+        )
 
         self.assert_request_parameters(
-            {'Action': 'AttachGroupPolicy',
-             'PolicyArn': 'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket',
-             'GroupName': 'Dev'},
-            ignore_params_values=['Version'])
+            {
+                "Action": "AttachGroupPolicy",
+                "PolicyArn": "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket",
+                "GroupName": "Dev",
+            },
+            ignore_params_values=["Version"],
+        )
 
-        self.assertEqual('request_id' in response['attach_group_policy_response']
-                                                 ['response_metadata'],
-                         True)
+        self.assertEqual(
+            "request_id"
+            in response["attach_group_policy_response"]["response_metadata"],
+            True,
+        )
 
 
 class TestAttachRolePolicy(AWSMockServiceTestCase):
@@ -557,18 +618,23 @@ class TestAttachRolePolicy(AWSMockServiceTestCase):
     def test_attach_role_policy(self):
         self.set_http_response(status_code=200)
         response = self.service_connection.attach_role_policy(
-                'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket',
-                'DevRole')
+            "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket", "DevRole"
+        )
 
         self.assert_request_parameters(
-            {'Action': 'AttachRolePolicy',
-             'PolicyArn': 'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket',
-             'RoleName': 'DevRole'},
-            ignore_params_values=['Version'])
+            {
+                "Action": "AttachRolePolicy",
+                "PolicyArn": "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket",
+                "RoleName": "DevRole",
+            },
+            ignore_params_values=["Version"],
+        )
 
-        self.assertEqual('request_id' in response['attach_role_policy_response']
-                                                 ['response_metadata'],
-                         True)
+        self.assertEqual(
+            "request_id"
+            in response["attach_role_policy_response"]["response_metadata"],
+            True,
+        )
 
 
 class TestAttachUserPolicy(AWSMockServiceTestCase):
@@ -586,18 +652,23 @@ class TestAttachUserPolicy(AWSMockServiceTestCase):
     def test_attach_user_policy(self):
         self.set_http_response(status_code=200)
         response = self.service_connection.attach_user_policy(
-                'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket',
-                'Alice')
+            "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket", "Alice"
+        )
 
         self.assert_request_parameters(
-            {'Action': 'AttachUserPolicy',
-             'PolicyArn': 'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket',
-             'UserName': 'Alice'},
-            ignore_params_values=['Version'])
+            {
+                "Action": "AttachUserPolicy",
+                "PolicyArn": "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket",
+                "UserName": "Alice",
+            },
+            ignore_params_values=["Version"],
+        )
 
-        self.assertEqual('request_id' in response['attach_user_policy_response']
-                                                 ['response_metadata'],
-                         True)
+        self.assertEqual(
+            "request_id"
+            in response["attach_user_policy_response"]["response_metadata"],
+            True,
+        )
 
 
 class TestDetachGroupPolicy(AWSMockServiceTestCase):
@@ -615,18 +686,23 @@ class TestDetachGroupPolicy(AWSMockServiceTestCase):
     def test_detach_group_policy(self):
         self.set_http_response(status_code=200)
         response = self.service_connection.detach_group_policy(
-                'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket',
-                'Dev')
+            "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket", "Dev"
+        )
 
         self.assert_request_parameters(
-            {'Action': 'DetachGroupPolicy',
-             'PolicyArn': 'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket',
-             'GroupName': 'Dev'},
-            ignore_params_values=['Version'])
+            {
+                "Action": "DetachGroupPolicy",
+                "PolicyArn": "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket",
+                "GroupName": "Dev",
+            },
+            ignore_params_values=["Version"],
+        )
 
-        self.assertEqual('request_id' in response['detach_group_policy_response']
-                                                 ['response_metadata'],
-                         True)
+        self.assertEqual(
+            "request_id"
+            in response["detach_group_policy_response"]["response_metadata"],
+            True,
+        )
 
 
 class TestDetachRolePolicy(AWSMockServiceTestCase):
@@ -644,18 +720,23 @@ class TestDetachRolePolicy(AWSMockServiceTestCase):
     def test_detach_role_policy(self):
         self.set_http_response(status_code=200)
         response = self.service_connection.detach_role_policy(
-                'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket',
-                'DevRole')
+            "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket", "DevRole"
+        )
 
         self.assert_request_parameters(
-            {'Action': 'DetachRolePolicy',
-             'PolicyArn': 'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket',
-             'RoleName': 'DevRole'},
-            ignore_params_values=['Version'])
+            {
+                "Action": "DetachRolePolicy",
+                "PolicyArn": "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket",
+                "RoleName": "DevRole",
+            },
+            ignore_params_values=["Version"],
+        )
 
-        self.assertEqual('request_id' in response['detach_role_policy_response']
-                                                 ['response_metadata'],
-                         True)
+        self.assertEqual(
+            "request_id"
+            in response["detach_role_policy_response"]["response_metadata"],
+            True,
+        )
 
 
 class TestDetachUserPolicy(AWSMockServiceTestCase):
@@ -673,15 +754,20 @@ class TestDetachUserPolicy(AWSMockServiceTestCase):
     def test_detach_user_policy(self):
         self.set_http_response(status_code=200)
         response = self.service_connection.detach_user_policy(
-                'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket',
-                'Alice')
+            "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket", "Alice"
+        )
 
         self.assert_request_parameters(
-            {'Action': 'DetachUserPolicy',
-             'PolicyArn': 'arn:aws:iam::123456789012:policy/S3-read-only-example-bucket',
-             'UserName': 'Alice'},
-            ignore_params_values=['Version'])
+            {
+                "Action": "DetachUserPolicy",
+                "PolicyArn": "arn:aws:iam::123456789012:policy/S3-read-only-example-bucket",
+                "UserName": "Alice",
+            },
+            ignore_params_values=["Version"],
+        )
 
-        self.assertEqual('request_id' in response['detach_user_policy_response']
-                                                 ['response_metadata'],
-                         True)
+        self.assertEqual(
+            "request_id"
+            in response["detach_user_policy_response"]["response_metadata"],
+            True,
+        )

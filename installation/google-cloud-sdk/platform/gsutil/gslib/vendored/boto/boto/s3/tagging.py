@@ -11,22 +11,21 @@ class Tag(object):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'Key':
+        if name == "Key":
             self.key = value
-        elif name == 'Value':
+        elif name == "Value":
             self.value = value
 
     def to_xml(self):
-        return '<Tag><Key>%s</Key><Value>%s</Value></Tag>' % (
-            self.key, self.value)
+        return "<Tag><Key>%s</Key><Value>%s</Value></Tag>" % (self.key, self.value)
 
     def __eq__(self, other):
-        return (self.key == other.key and self.value == other.value)
+        return self.key == other.key and self.value == other.value
 
 
 class TagSet(list):
     def startElement(self, name, attrs, connection):
-        if name == 'Tag':
+        if name == "Tag":
             tag = Tag()
             self.append(tag)
             return tag
@@ -40,10 +39,10 @@ class TagSet(list):
         self.append(tag)
 
     def to_xml(self):
-        xml = '<TagSet>'
+        xml = "<TagSet>"
         for tag in self:
             xml += tag.to_xml()
-        xml += '</TagSet>'
+        xml += "</TagSet>"
         return xml
 
 
@@ -51,7 +50,7 @@ class Tags(list):
     """A container for the tags associated with a bucket."""
 
     def startElement(self, name, attrs, connection):
-        if name == 'TagSet':
+        if name == "TagSet":
             tag_set = TagSet()
             self.append(tag_set)
             return tag_set
@@ -61,10 +60,10 @@ class Tags(list):
         setattr(self, name, value)
 
     def to_xml(self):
-        xml = '<Tagging>'
+        xml = "<Tagging>"
         for tag_set in self:
             xml += tag_set.to_xml()
-        xml +='</Tagging>'
+        xml += "</Tagging>"
         return xml
 
     def add_tag_set(self, tag_set):

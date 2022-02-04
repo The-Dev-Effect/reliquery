@@ -46,9 +46,8 @@ class PyCryptoVerifier(object):
             True if message was signed by the private key associated with the
             public key that this object was constructed with.
         """
-        message = _helpers._to_bytes(message, encoding='utf-8')
-        return PKCS1_v1_5.new(self._pubkey).verify(
-            SHA256.new(message), signature)
+        message = _helpers._to_bytes(message, encoding="utf-8")
+        return PKCS1_v1_5.new(self._pubkey).verify(SHA256.new(message), signature)
 
     @staticmethod
     def from_string(key_pem, is_x509_cert):
@@ -64,8 +63,8 @@ class PyCryptoVerifier(object):
         """
         if is_x509_cert:
             key_pem = _helpers._to_bytes(key_pem)
-            pemLines = key_pem.replace(b' ', b'').split()
-            certDer = _helpers._urlsafe_b64decode(b''.join(pemLines[1:-1]))
+            pemLines = key_pem.replace(b" ", b"").split()
+            certDer = _helpers._urlsafe_b64decode(b"".join(pemLines[1:-1]))
             certSeq = DerSequence()
             certSeq.decode(certDer)
             tbsSeq = DerSequence()
@@ -96,11 +95,11 @@ class PyCryptoSigner(object):
         Returns:
             string, The signature of the message for the given key.
         """
-        message = _helpers._to_bytes(message, encoding='utf-8')
+        message = _helpers._to_bytes(message, encoding="utf-8")
         return PKCS1_v1_5.new(self._key).sign(SHA256.new(message))
 
     @staticmethod
-    def from_string(key, password='notasecret'):
+    def from_string(key, password="notasecret"):
         """Construct a Signer instance from a string.
 
         Args:
@@ -119,7 +118,8 @@ class PyCryptoSigner(object):
             pkey = RSA.importKey(parsed_pem_key)
         else:
             raise NotImplementedError(
-                'No key in PEM format was detected. This implementation '
-                'can only use the PyCrypto library for keys in PEM '
-                'format.')
+                "No key in PEM format was detected. This implementation "
+                "can only use the PyCrypto library for keys in PEM "
+                "format."
+            )
         return PyCryptoSigner(pkey)

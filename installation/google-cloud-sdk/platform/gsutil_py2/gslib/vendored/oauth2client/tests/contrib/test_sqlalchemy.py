@@ -28,29 +28,28 @@ Base = sqlalchemy.ext.declarative.declarative_base()
 
 
 class DummyModel(Base):
-    __tablename__ = 'dummy'
+    __tablename__ = "dummy"
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     # we will query against this, because of ROWID
     key = sqlalchemy.Column(sqlalchemy.Integer)
-    credentials = sqlalchemy.Column(
-        oauth2client.contrib.sqlalchemy.CredentialsType)
+    credentials = sqlalchemy.Column(oauth2client.contrib.sqlalchemy.CredentialsType)
 
 
 class TestSQLAlchemyStorage(unittest.TestCase):
     def setUp(self):
-        engine = sqlalchemy.create_engine('sqlite://')
+        engine = sqlalchemy.create_engine("sqlite://")
         Base.metadata.create_all(engine)
 
         self.session = sqlalchemy.orm.sessionmaker(bind=engine)
         self.credentials = oauth2client.client.OAuth2Credentials(
-            access_token='token',
-            client_id='client_id',
-            client_secret='client_secret',
-            refresh_token='refresh_token',
+            access_token="token",
+            client_id="client_id",
+            client_secret="client_secret",
+            refresh_token="refresh_token",
             token_expiry=datetime.datetime.utcnow(),
             token_uri=oauth2client.GOOGLE_TOKEN_URI,
-            user_agent='DummyAgent',
+            user_agent="DummyAgent",
         )
 
     def tearDown(self):
@@ -67,24 +66,26 @@ class TestSQLAlchemyStorage(unittest.TestCase):
         self.assertEqual(result.token_uri, self.credentials.token_uri)
         self.assertEqual(result.user_agent, self.credentials.user_agent)
 
-    @mock.patch('oauth2client.client.OAuth2Credentials.set_store')
+    @mock.patch("oauth2client.client.OAuth2Credentials.set_store")
     def test_get(self, set_store):
         session = self.session()
         credentials_storage = oauth2client.contrib.sqlalchemy.Storage(
             session=session,
             model_class=DummyModel,
-            key_name='key',
+            key_name="key",
             key_value=1,
-            property_name='credentials',
+            property_name="credentials",
         )
         # No credentials stored
         self.assertIsNone(credentials_storage.get())
 
         # Invalid credentials stored
-        session.add(DummyModel(
-            key=1,
-            credentials=oauth2client.client.Credentials(),
-        ))
+        session.add(
+            DummyModel(
+                key=1,
+                credentials=oauth2client.client.Credentials(),
+            )
+        )
         session.commit()
         bad_credentials = credentials_storage.get()
         self.assertIsInstance(bad_credentials, oauth2client.client.Credentials)
@@ -92,10 +93,12 @@ class TestSQLAlchemyStorage(unittest.TestCase):
 
         # Valid credentials stored
         session.query(DummyModel).filter_by(key=1).delete()
-        session.add(DummyModel(
-            key=1,
-            credentials=self.credentials,
-        ))
+        session.add(
+            DummyModel(
+                key=1,
+                credentials=self.credentials,
+            )
+        )
         session.commit()
 
         self.compare_credentials(credentials_storage.get())
@@ -106,9 +109,9 @@ class TestSQLAlchemyStorage(unittest.TestCase):
         storage = oauth2client.contrib.sqlalchemy.Storage(
             session=session,
             model_class=DummyModel,
-            key_name='key',
+            key_name="key",
             key_value=1,
-            property_name='credentials',
+            property_name="credentials",
         )
         # Store invalid credentials first to verify overwriting
         storage.put(oauth2client.client.Credentials())
@@ -120,10 +123,12 @@ class TestSQLAlchemyStorage(unittest.TestCase):
 
     def test_delete(self):
         session = self.session()
-        session.add(DummyModel(
-            key=1,
-            credentials=self.credentials,
-        ))
+        session.add(
+            DummyModel(
+                key=1,
+                credentials=self.credentials,
+            )
+        )
         session.commit()
 
         query = session.query(DummyModel).filter_by(key=1)
@@ -131,9 +136,9 @@ class TestSQLAlchemyStorage(unittest.TestCase):
         oauth2client.contrib.sqlalchemy.Storage(
             session=session,
             model_class=DummyModel,
-            key_name='key',
+            key_name="key",
             key_value=1,
-            property_name='credentials',
+            property_name="credentials",
         ).delete()
         session.commit()
         self.assertIsNone(query.first())

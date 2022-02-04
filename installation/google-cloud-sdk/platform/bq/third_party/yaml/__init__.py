@@ -24,9 +24,9 @@ import sys
 
 # pylint: disable=g-import-not-at-top, wildcard-import
 if sys.version_info.major == 2:
-  import lib2
-  from .lib2 import *
+    import lib2
+    from .lib2 import *
 elif sys.version_info.major >= 3:
-  import yaml.lib3
-  from .lib3 import *
+    import yaml.lib3
+    from .lib3 import *
 # pylint: enable=g-import-not-at-top, wildcard-import

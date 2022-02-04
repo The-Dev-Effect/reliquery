@@ -35,12 +35,12 @@ from apitools.base.protorpclite import messages
 from apitools.base.protorpclite import util
 
 __all__ = [
-    'ALTERNATIVE_CONTENT_TYPES',
-    'CONTENT_TYPE',
-    'MessageJSONEncoder',
-    'encode_message',
-    'decode_message',
-    'ProtoJson',
+    "ALTERNATIVE_CONTENT_TYPES",
+    "CONTENT_TYPE",
+    "MessageJSONEncoder",
+    "encode_message",
+    "decode_message",
+    "ProtoJson",
 ]
 
 
@@ -60,14 +60,13 @@ def _load_json_module():
         not compatible with ProtoRPC.
     """
     first_import_error = None
-    for module_name in ['json',
-                        'simplejson']:
+    for module_name in ["json", "simplejson"]:
         try:
-            module = __import__(module_name, {}, {}, 'json')
-            if not hasattr(module, 'JSONEncoder'):
+            module = __import__(module_name, {}, {}, "json")
+            if not hasattr(module, "JSONEncoder"):
                 message = (
-                    'json library "%s" is not compatible with ProtoRPC' %
-                    module_name)
+                    'json library "%s" is not compatible with ProtoRPC' % module_name
+                )
                 logging.warning(message)
                 raise ImportError(message)
             else:
@@ -76,7 +75,7 @@ def _load_json_module():
             if not first_import_error:
                 first_import_error = err
 
-    logging.error('Must use valid json library (json or simplejson)')
+    logging.error("Must use valid json library (json or simplejson)")
     raise first_import_error  # pylint:disable=raising-bad-type
 
 
@@ -97,8 +96,7 @@ class MessageJSONEncoder(json.JSONEncoder):
           protojson_protocol: ProtoJson instance.
         """
         super(MessageJSONEncoder, self).__init__(**kwargs)
-        self.__protojson_protocol = (
-            protojson_protocol or ProtoJson.get_default())
+        self.__protojson_protocol = protojson_protocol or ProtoJson.get_default()
 
     def default(self, value):
         """Return dictionary instance from a message object.
@@ -111,20 +109,20 @@ class MessageJSONEncoder(json.JSONEncoder):
             return str(value)
 
         if six.PY3 and isinstance(value, bytes):
-            return value.decode('utf8')
+            return value.decode("utf8")
 
         if isinstance(value, messages.Message):
             result = {}
             for field in value.all_fields():
                 item = value.get_assigned_value(field.name)
                 if item not in (None, [], ()):
-                    result[field.name] = (
-                        self.__protojson_protocol.encode_field(field, item))
+                    result[field.name] = self.__protojson_protocol.encode_field(
+                        field, item
+                    )
             # Handle unrecognized fields, so they're included when a message is
             # decoded then encoded.
             for unknown_key in value.all_unrecognized_fields():
-                unrecognized_field, _ = value.get_unrecognized_field_info(
-                    unknown_key)
+                unrecognized_field, _ = value.get_unrecognized_field_info(unknown_key)
                 # Unknown fields are not encoded as they should have been
                 # processed before we get to here.
                 result[unknown_key] = unrecognized_field
@@ -143,13 +141,13 @@ class ProtoJson(object):
 
     """
 
-    CONTENT_TYPE = 'application/json'
+    CONTENT_TYPE = "application/json"
     ALTERNATIVE_CONTENT_TYPES = [
-        'application/x-javascript',
-        'text/javascript',
-        'text/x-javascript',
-        'text/x-json',
-        'text/json',
+        "application/x-javascript",
+        "text/javascript",
+        "text/x-javascript",
+        "text/x-json",
+        "text/json",
     ]
 
     def encode_field(self, field, value):
@@ -189,8 +187,7 @@ class ProtoJson(object):
         """
         message.check_initialized()
 
-        return json.dumps(message, cls=MessageJSONEncoder,
-                          protojson_protocol=self)
+        return json.dumps(message, cls=MessageJSONEncoder, protojson_protocol=self)
 
     def decode_message(self, message_type, encoded_message):
         """Merge JSON structure to Message instance.
@@ -236,10 +233,12 @@ class ProtoJson(object):
             return messages.Variant.STRING
         elif isinstance(value, (list, tuple)):
             # Find the most specific variant that covers all elements.
-            variant_priority = [None,
-                                messages.Variant.INT64,
-                                messages.Variant.DOUBLE,
-                                messages.Variant.STRING]
+            variant_priority = [
+                None,
+                messages.Variant.INT64,
+                messages.Variant.DOUBLE,
+                messages.Variant.STRING,
+            ]
             chosen_priority = 0
             for v in value:
                 variant = self.__find_variant(v)
@@ -283,8 +282,7 @@ class ProtoJson(object):
                 # This should be unnecessary? Or in fact become an error.
                 if not isinstance(value, list):
                     value = [value]
-                valid_value = [self.decode_field(field, item)
-                               for item in value]
+                valid_value = [self.decode_field(field, item) for item in value]
                 setattr(message, field.name, valid_value)
                 continue
             # This is just for consistency with the old behavior.
@@ -316,14 +314,13 @@ class ProtoJson(object):
             try:
                 return field.type(value)
             except TypeError:
-                raise messages.DecodeError(
-                    'Invalid enum value "%s"' % (value or ''))
+                raise messages.DecodeError('Invalid enum value "%s"' % (value or ""))
 
         elif isinstance(field, messages.BytesField):
             try:
                 return base64.b64decode(value)
             except (binascii.Error, TypeError) as err:
-                raise messages.DecodeError('Base64 decoding error: %s' % err)
+                raise messages.DecodeError("Base64 decoding error: %s" % err)
 
         elif isinstance(field, message_types.DateTimeField):
             try:
@@ -331,19 +328,22 @@ class ProtoJson(object):
             except ValueError as err:
                 raise messages.DecodeError(err)
 
-        elif (isinstance(field, messages.MessageField) and
-              issubclass(field.type, messages.Message)):
+        elif isinstance(field, messages.MessageField) and issubclass(
+            field.type, messages.Message
+        ):
             return self.__decode_dictionary(field.type, value)
 
-        elif (isinstance(field, messages.FloatField) and
-              isinstance(value, (six.integer_types, six.string_types))):
+        elif isinstance(field, messages.FloatField) and isinstance(
+            value, (six.integer_types, six.string_types)
+        ):
             try:
                 return float(value)
             except:  # pylint:disable=bare-except
                 pass
 
-        elif (isinstance(field, messages.IntegerField) and
-              isinstance(value, six.string_types)):
+        elif isinstance(field, messages.IntegerField) and isinstance(
+            value, six.string_types
+        ):
             try:
                 return int(value)
             except:  # pylint:disable=bare-except
@@ -368,7 +368,7 @@ class ProtoJson(object):
           protocol: A ProtoJson instance.
         """
         if not isinstance(protocol, ProtoJson):
-            raise TypeError('Expected protocol of type ProtoJson')
+            raise TypeError("Expected protocol of type ProtoJson")
         ProtoJson.__default = protocol
 
 

@@ -31,39 +31,61 @@ from boto.connection import AWSQueryConnection
 
 class Layer1(AWSQueryConnection):
 
-    APIVersion = '2010-12-01'
-    DefaultRegionName = 'us-east-1'
-    DefaultRegionEndpoint = 'elasticbeanstalk.us-east-1.amazonaws.com'
+    APIVersion = "2010-12-01"
+    DefaultRegionName = "us-east-1"
+    DefaultRegionEndpoint = "elasticbeanstalk.us-east-1.amazonaws.com"
 
-    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None,
-                 is_secure=True, port=None,
-                 proxy=None, proxy_port=None,
-                 proxy_user=None, proxy_pass=None, debug=0,
-                 https_connection_factory=None, region=None, path='/',
-                 api_version=None, security_token=None, profile_name=None):
+    def __init__(
+        self,
+        aws_access_key_id=None,
+        aws_secret_access_key=None,
+        is_secure=True,
+        port=None,
+        proxy=None,
+        proxy_port=None,
+        proxy_user=None,
+        proxy_pass=None,
+        debug=0,
+        https_connection_factory=None,
+        region=None,
+        path="/",
+        api_version=None,
+        security_token=None,
+        profile_name=None,
+    ):
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
         self.region = region
-        super(Layer1, self).__init__(aws_access_key_id,
-                                    aws_secret_access_key,
-                                    is_secure, port, proxy, proxy_port,
-                                    proxy_user, proxy_pass,
-                                    self.region.endpoint, debug,
-                                    https_connection_factory, path,
-                                    security_token, profile_name=profile_name)
+        super(Layer1, self).__init__(
+            aws_access_key_id,
+            aws_secret_access_key,
+            is_secure,
+            port,
+            proxy,
+            proxy_port,
+            proxy_user,
+            proxy_pass,
+            self.region.endpoint,
+            debug,
+            https_connection_factory,
+            path,
+            security_token,
+            profile_name=profile_name,
+        )
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
     def _encode_bool(self, v):
         v = bool(v)
         return {True: "true", False: "false"}[v]
 
-    def _get_response(self, action, params, path='/', verb='GET'):
-        params['ContentType'] = 'JSON'
+    def _get_response(self, action, params, path="/", verb="GET"):
+        params["ContentType"] = "JSON"
         response = self.make_request(action, params, path, verb)
-        body = response.read().decode('utf-8')
+        body = response.read().decode("utf-8")
         boto.log.debug(body)
         if response.status == 200:
             return json.loads(body)
@@ -77,8 +99,8 @@ class Layer1(AWSQueryConnection):
         :param cname_prefix: The prefix used when this CNAME is
             reserved.
         """
-        params = {'CNAMEPrefix': cname_prefix}
-        return self._get_response('CheckDNSAvailability', params)
+        params = {"CNAMEPrefix": cname_prefix}
+        return self._get_response("CheckDNSAvailability", params)
 
     def create_application(self, application_name, description=None):
         """
@@ -96,14 +118,20 @@ class Layer1(AWSQueryConnection):
 
         :raises: TooManyApplicationsException
         """
-        params = {'ApplicationName': application_name}
+        params = {"ApplicationName": application_name}
         if description:
-            params['Description'] = description
-        return self._get_response('CreateApplication', params)
+            params["Description"] = description
+        return self._get_response("CreateApplication", params)
 
-    def create_application_version(self, application_name, version_label,
-                                   description=None, s3_bucket=None,
-                                   s3_key=None, auto_create_application=None):
+    def create_application_version(
+        self,
+        application_name,
+        version_label,
+        description=None,
+        s3_bucket=None,
+        s3_key=None,
+        auto_create_application=None,
+    ):
         """Creates an application version for the specified application.
 
         :type application_name: string
@@ -143,24 +171,27 @@ class Layer1(AWSQueryConnection):
                  S3LocationNotInServiceRegionException
 
         """
-        params = {'ApplicationName': application_name,
-                  'VersionLabel': version_label}
+        params = {"ApplicationName": application_name, "VersionLabel": version_label}
         if description:
-            params['Description'] = description
+            params["Description"] = description
         if s3_bucket and s3_key:
-            params['SourceBundle.S3Bucket'] = s3_bucket
-            params['SourceBundle.S3Key'] = s3_key
+            params["SourceBundle.S3Bucket"] = s3_bucket
+            params["SourceBundle.S3Key"] = s3_key
         if auto_create_application:
-            params['AutoCreateApplication'] = self._encode_bool(
-                auto_create_application)
-        return self._get_response('CreateApplicationVersion', params)
+            params["AutoCreateApplication"] = self._encode_bool(auto_create_application)
+        return self._get_response("CreateApplicationVersion", params)
 
-    def create_configuration_template(self, application_name, template_name,
-                                      solution_stack_name=None,
-                                      source_configuration_application_name=None,
-                                      source_configuration_template_name=None,
-                                      environment_id=None, description=None,
-                                      option_settings=None):
+    def create_configuration_template(
+        self,
+        application_name,
+        template_name,
+        solution_stack_name=None,
+        source_configuration_application_name=None,
+        source_configuration_template_name=None,
+        environment_id=None,
+        description=None,
+        option_settings=None,
+    ):
         """Creates a configuration template.
 
         Templates are associated with a specific application and are used to
@@ -215,30 +246,45 @@ class Layer1(AWSQueryConnection):
         :raises: InsufficientPrivilegesException,
                  TooManyConfigurationTemplatesException
         """
-        params = {'ApplicationName': application_name,
-                  'TemplateName': template_name}
+        params = {"ApplicationName": application_name, "TemplateName": template_name}
         if solution_stack_name:
-            params['SolutionStackName'] = solution_stack_name
+            params["SolutionStackName"] = solution_stack_name
         if source_configuration_application_name:
-            params['SourceConfiguration.ApplicationName'] = source_configuration_application_name
+            params[
+                "SourceConfiguration.ApplicationName"
+            ] = source_configuration_application_name
         if source_configuration_template_name:
-            params['SourceConfiguration.TemplateName'] = source_configuration_template_name
+            params[
+                "SourceConfiguration.TemplateName"
+            ] = source_configuration_template_name
         if environment_id:
-            params['EnvironmentId'] = environment_id
+            params["EnvironmentId"] = environment_id
         if description:
-            params['Description'] = description
+            params["Description"] = description
         if option_settings:
-            self._build_list_params(params, option_settings,
-                                   'OptionSettings.member',
-                                   ('Namespace', 'OptionName', 'Value'))
-        return self._get_response('CreateConfigurationTemplate', params)
+            self._build_list_params(
+                params,
+                option_settings,
+                "OptionSettings.member",
+                ("Namespace", "OptionName", "Value"),
+            )
+        return self._get_response("CreateConfigurationTemplate", params)
 
-    def create_environment(self, application_name, environment_name,
-                           version_label=None, template_name=None,
-                           solution_stack_name=None, cname_prefix=None,
-                           description=None, option_settings=None,
-                           options_to_remove=None, tier_name=None,
-                           tier_type=None, tier_version='1.0'):
+    def create_environment(
+        self,
+        application_name,
+        environment_name,
+        version_label=None,
+        template_name=None,
+        solution_stack_name=None,
+        cname_prefix=None,
+        description=None,
+        option_settings=None,
+        options_to_remove=None,
+        tier_name=None,
+        tier_type=None,
+        tier_version="1.0",
+    ):
         """Launches an environment for the application using a configuration.
 
         :type application_name: string
@@ -331,30 +377,34 @@ class Layer1(AWSQueryConnection):
         :raises: TooManyEnvironmentsException, InsufficientPrivilegesException
 
         """
-        params = {'ApplicationName': application_name,
-                  'EnvironmentName': environment_name}
+        params = {
+            "ApplicationName": application_name,
+            "EnvironmentName": environment_name,
+        }
         if version_label:
-            params['VersionLabel'] = version_label
+            params["VersionLabel"] = version_label
         if template_name:
-            params['TemplateName'] = template_name
+            params["TemplateName"] = template_name
         if solution_stack_name:
-            params['SolutionStackName'] = solution_stack_name
+            params["SolutionStackName"] = solution_stack_name
         if cname_prefix:
-            params['CNAMEPrefix'] = cname_prefix
+            params["CNAMEPrefix"] = cname_prefix
         if description:
-            params['Description'] = description
+            params["Description"] = description
         if option_settings:
-            self._build_list_params(params, option_settings,
-                                   'OptionSettings.member',
-                                   ('Namespace', 'OptionName', 'Value'))
+            self._build_list_params(
+                params,
+                option_settings,
+                "OptionSettings.member",
+                ("Namespace", "OptionName", "Value"),
+            )
         if options_to_remove:
-            self.build_list_params(params, options_to_remove,
-                                   'OptionsToRemove.member')
+            self.build_list_params(params, options_to_remove, "OptionsToRemove.member")
         if tier_name and tier_type and tier_version:
-            params['Tier.Name'] = tier_name
-            params['Tier.Type'] = tier_type
-            params['Tier.Version'] = tier_version
-        return self._get_response('CreateEnvironment', params)
+            params["Tier.Name"] = tier_name
+            params["Tier.Type"] = tier_type
+            params["Tier.Version"] = tier_version
+        return self._get_response("CreateEnvironment", params)
 
     def create_storage_location(self):
         """
@@ -366,10 +416,9 @@ class Layer1(AWSQueryConnection):
                  InsufficientPrivilegesException
 
         """
-        return self._get_response('CreateStorageLocation', params={})
+        return self._get_response("CreateStorageLocation", params={})
 
-    def delete_application(self, application_name,
-                           terminate_env_by_force=None):
+    def delete_application(self, application_name, terminate_env_by_force=None):
         """
         Deletes the specified application along with all associated
         versions and configurations. The application versions will not
@@ -385,14 +434,14 @@ class Layer1(AWSQueryConnection):
         :raises: OperationInProgressException
 
         """
-        params = {'ApplicationName': application_name}
+        params = {"ApplicationName": application_name}
         if terminate_env_by_force:
-            params['TerminateEnvByForce'] = self._encode_bool(
-                terminate_env_by_force)
-        return self._get_response('DeleteApplication', params)
+            params["TerminateEnvByForce"] = self._encode_bool(terminate_env_by_force)
+        return self._get_response("DeleteApplication", params)
 
-    def delete_application_version(self, application_name, version_label,
-                                   delete_source_bundle=None):
+    def delete_application_version(
+        self, application_name, version_label, delete_source_bundle=None
+    ):
         """Deletes the specified version from the specified application.
 
         :type application_name: string
@@ -412,12 +461,10 @@ class Layer1(AWSQueryConnection):
                  OperationInProgressException,
                  S3LocationNotInServiceRegionException
         """
-        params = {'ApplicationName': application_name,
-                  'VersionLabel': version_label}
+        params = {"ApplicationName": application_name, "VersionLabel": version_label}
         if delete_source_bundle:
-            params['DeleteSourceBundle'] = self._encode_bool(
-                delete_source_bundle)
-        return self._get_response('DeleteApplicationVersion', params)
+            params["DeleteSourceBundle"] = self._encode_bool(delete_source_bundle)
+        return self._get_response("DeleteApplicationVersion", params)
 
     def delete_configuration_template(self, application_name, template_name):
         """Deletes the specified configuration template.
@@ -433,12 +480,10 @@ class Layer1(AWSQueryConnection):
         :raises: OperationInProgressException
 
         """
-        params = {'ApplicationName': application_name,
-                  'TemplateName': template_name}
-        return self._get_response('DeleteConfigurationTemplate', params)
+        params = {"ApplicationName": application_name, "TemplateName": template_name}
+        return self._get_response("DeleteConfigurationTemplate", params)
 
-    def delete_environment_configuration(self, application_name,
-                                         environment_name):
+    def delete_environment_configuration(self, application_name, environment_name):
         """
         Deletes the draft configuration associated with the running
         environment.  Updating a running environment with any
@@ -459,12 +504,13 @@ class Layer1(AWSQueryConnection):
             the draft configuration from.
 
         """
-        params = {'ApplicationName': application_name,
-                  'EnvironmentName': environment_name}
-        return self._get_response('DeleteEnvironmentConfiguration', params)
+        params = {
+            "ApplicationName": application_name,
+            "EnvironmentName": environment_name,
+        }
+        return self._get_response("DeleteEnvironmentConfiguration", params)
 
-    def describe_application_versions(self, application_name=None,
-                                      version_labels=None):
+    def describe_application_versions(self, application_name=None, version_labels=None):
         """Returns descriptions for existing application versions.
 
         :type application_name: string
@@ -480,11 +526,10 @@ class Layer1(AWSQueryConnection):
         """
         params = {}
         if application_name:
-            params['ApplicationName'] = application_name
+            params["ApplicationName"] = application_name
         if version_labels:
-            self.build_list_params(params, version_labels,
-                                   'VersionLabels.member')
-        return self._get_response('DescribeApplicationVersions', params)
+            self.build_list_params(params, version_labels, "VersionLabels.member")
+        return self._get_response("DescribeApplicationVersions", params)
 
     def describe_applications(self, application_names=None):
         """Returns the descriptions of existing applications.
@@ -497,14 +542,17 @@ class Layer1(AWSQueryConnection):
         """
         params = {}
         if application_names:
-            self.build_list_params(params, application_names,
-                                   'ApplicationNames.member')
-        return self._get_response('DescribeApplications', params)
+            self.build_list_params(params, application_names, "ApplicationNames.member")
+        return self._get_response("DescribeApplications", params)
 
-    def describe_configuration_options(self, application_name=None,
-                                       template_name=None,
-                                       environment_name=None,
-                                       solution_stack_name=None, options=None):
+    def describe_configuration_options(
+        self,
+        application_name=None,
+        template_name=None,
+        environment_name=None,
+        solution_stack_name=None,
+        options=None,
+    ):
         """Describes configuration options used in a template or environment.
 
         Describes the configuration options that are used in a
@@ -538,20 +586,20 @@ class Layer1(AWSQueryConnection):
         """
         params = {}
         if application_name:
-            params['ApplicationName'] = application_name
+            params["ApplicationName"] = application_name
         if template_name:
-            params['TemplateName'] = template_name
+            params["TemplateName"] = template_name
         if environment_name:
-            params['EnvironmentName'] = environment_name
+            params["EnvironmentName"] = environment_name
         if solution_stack_name:
-            params['SolutionStackName'] = solution_stack_name
+            params["SolutionStackName"] = solution_stack_name
         if options:
-            self.build_list_params(params, options, 'Options.member')
-        return self._get_response('DescribeConfigurationOptions', params)
+            self.build_list_params(params, options, "Options.member")
+        return self._get_response("DescribeConfigurationOptions", params)
 
-    def describe_configuration_settings(self, application_name,
-                                        template_name=None,
-                                        environment_name=None):
+    def describe_configuration_settings(
+        self, application_name, template_name=None, environment_name=None
+    ):
         """
         Returns a description of the settings for the specified
         configuration set, that is, either a configuration template or
@@ -582,15 +630,16 @@ class Layer1(AWSQueryConnection):
             InvalidParameterCombination error. If you do not specify either,
             AWS Elastic Beanstalk returns MissingRequiredParameter error.
         """
-        params = {'ApplicationName': application_name}
+        params = {"ApplicationName": application_name}
         if template_name:
-            params['TemplateName'] = template_name
+            params["TemplateName"] = template_name
         if environment_name:
-            params['EnvironmentName'] = environment_name
-        return self._get_response('DescribeConfigurationSettings', params)
+            params["EnvironmentName"] = environment_name
+        return self._get_response("DescribeConfigurationSettings", params)
 
-    def describe_environment_resources(self, environment_id=None,
-                                       environment_name=None):
+    def describe_environment_resources(
+        self, environment_id=None, environment_name=None
+    ):
         """Returns AWS resources for this environment.
 
         :type environment_id: string
@@ -609,15 +658,20 @@ class Layer1(AWSQueryConnection):
         """
         params = {}
         if environment_id:
-            params['EnvironmentId'] = environment_id
+            params["EnvironmentId"] = environment_id
         if environment_name:
-            params['EnvironmentName'] = environment_name
-        return self._get_response('DescribeEnvironmentResources', params)
+            params["EnvironmentName"] = environment_name
+        return self._get_response("DescribeEnvironmentResources", params)
 
-    def describe_environments(self, application_name=None, version_label=None,
-                              environment_ids=None, environment_names=None,
-                              include_deleted=None,
-                              included_deleted_back_to=None):
+    def describe_environments(
+        self,
+        application_name=None,
+        version_label=None,
+        environment_ids=None,
+        environment_names=None,
+        include_deleted=None,
+        included_deleted_back_to=None,
+    ):
         """Returns descriptions for existing environments.
 
         :type application_name: string
@@ -653,26 +707,33 @@ class Layer1(AWSQueryConnection):
         """
         params = {}
         if application_name:
-            params['ApplicationName'] = application_name
+            params["ApplicationName"] = application_name
         if version_label:
-            params['VersionLabel'] = version_label
+            params["VersionLabel"] = version_label
         if environment_ids:
-            self.build_list_params(params, environment_ids,
-                                   'EnvironmentIds.member')
+            self.build_list_params(params, environment_ids, "EnvironmentIds.member")
         if environment_names:
-            self.build_list_params(params, environment_names,
-                                   'EnvironmentNames.member')
+            self.build_list_params(params, environment_names, "EnvironmentNames.member")
         if include_deleted:
-            params['IncludeDeleted'] = self._encode_bool(include_deleted)
+            params["IncludeDeleted"] = self._encode_bool(include_deleted)
         if included_deleted_back_to:
-            params['IncludedDeletedBackTo'] = included_deleted_back_to
-        return self._get_response('DescribeEnvironments', params)
+            params["IncludedDeletedBackTo"] = included_deleted_back_to
+        return self._get_response("DescribeEnvironments", params)
 
-    def describe_events(self, application_name=None, version_label=None,
-                        template_name=None, environment_id=None,
-                        environment_name=None, request_id=None, severity=None,
-                        start_time=None, end_time=None, max_records=None,
-                        next_token=None):
+    def describe_events(
+        self,
+        application_name=None,
+        version_label=None,
+        template_name=None,
+        environment_id=None,
+        environment_name=None,
+        request_id=None,
+        severity=None,
+        start_time=None,
+        end_time=None,
+        max_records=None,
+        next_token=None,
+    ):
         """Returns event descriptions matching criteria up to the last 6 weeks.
 
         :type application_name: string
@@ -728,32 +789,32 @@ class Layer1(AWSQueryConnection):
         """
         params = {}
         if application_name:
-            params['ApplicationName'] = application_name
+            params["ApplicationName"] = application_name
         if version_label:
-            params['VersionLabel'] = version_label
+            params["VersionLabel"] = version_label
         if template_name:
-            params['TemplateName'] = template_name
+            params["TemplateName"] = template_name
         if environment_id:
-            params['EnvironmentId'] = environment_id
+            params["EnvironmentId"] = environment_id
         if environment_name:
-            params['EnvironmentName'] = environment_name
+            params["EnvironmentName"] = environment_name
         if request_id:
-            params['RequestId'] = request_id
+            params["RequestId"] = request_id
         if severity:
-            params['Severity'] = severity
+            params["Severity"] = severity
         if start_time:
-            params['StartTime'] = start_time
+            params["StartTime"] = start_time
         if end_time:
-            params['EndTime'] = end_time
+            params["EndTime"] = end_time
         if max_records:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if next_token:
-            params['NextToken'] = next_token
-        return self._get_response('DescribeEvents', params)
+            params["NextToken"] = next_token
+        return self._get_response("DescribeEvents", params)
 
     def list_available_solution_stacks(self):
         """Returns a list of the available solution stack names."""
-        return self._get_response('ListAvailableSolutionStacks', params={})
+        return self._get_response("ListAvailableSolutionStacks", params={})
 
     def rebuild_environment(self, environment_id=None, environment_name=None):
         """
@@ -778,13 +839,14 @@ class Layer1(AWSQueryConnection):
         """
         params = {}
         if environment_id:
-            params['EnvironmentId'] = environment_id
+            params["EnvironmentId"] = environment_id
         if environment_name:
-            params['EnvironmentName'] = environment_name
-        return self._get_response('RebuildEnvironment', params)
+            params["EnvironmentName"] = environment_name
+        return self._get_response("RebuildEnvironment", params)
 
-    def request_environment_info(self, info_type='tail', environment_id=None,
-                                 environment_name=None):
+    def request_environment_info(
+        self, info_type="tail", environment_id=None, environment_name=None
+    ):
         """
         Initiates a request to compile the specified type of
         information of the deployed environment.  Setting the InfoType
@@ -811,12 +873,12 @@ class Layer1(AWSQueryConnection):
             both. If you do not specify either, AWS Elastic Beanstalk returns
             MissingRequiredParameter error.
         """
-        params = {'InfoType': info_type}
+        params = {"InfoType": info_type}
         if environment_id:
-            params['EnvironmentId'] = environment_id
+            params["EnvironmentId"] = environment_id
         if environment_name:
-            params['EnvironmentName'] = environment_name
-        return self._get_response('RequestEnvironmentInfo', params)
+            params["EnvironmentName"] = environment_name
+        return self._get_response("RequestEnvironmentInfo", params)
 
     def restart_app_server(self, environment_id=None, environment_name=None):
         """
@@ -837,13 +899,14 @@ class Layer1(AWSQueryConnection):
         """
         params = {}
         if environment_id:
-            params['EnvironmentId'] = environment_id
+            params["EnvironmentId"] = environment_id
         if environment_name:
-            params['EnvironmentName'] = environment_name
-        return self._get_response('RestartAppServer', params)
+            params["EnvironmentName"] = environment_name
+        return self._get_response("RestartAppServer", params)
 
-    def retrieve_environment_info(self, info_type='tail', environment_id=None,
-                                  environment_name=None):
+    def retrieve_environment_info(
+        self, info_type="tail", environment_id=None, environment_name=None
+    ):
         """
         Retrieves the compiled information from a RequestEnvironmentInfo
         request.
@@ -865,17 +928,20 @@ class Layer1(AWSQueryConnection):
             both.  If you do not specify either, AWS Elastic Beanstalk returns
             MissingRequiredParameter error.
         """
-        params = {'InfoType': info_type}
+        params = {"InfoType": info_type}
         if environment_id:
-            params['EnvironmentId'] = environment_id
+            params["EnvironmentId"] = environment_id
         if environment_name:
-            params['EnvironmentName'] = environment_name
-        return self._get_response('RetrieveEnvironmentInfo', params)
+            params["EnvironmentName"] = environment_name
+        return self._get_response("RetrieveEnvironmentInfo", params)
 
-    def swap_environment_cnames(self, source_environment_id=None,
-                                source_environment_name=None,
-                                destination_environment_id=None,
-                                destination_environment_name=None):
+    def swap_environment_cnames(
+        self,
+        source_environment_id=None,
+        source_environment_name=None,
+        destination_environment_id=None,
+        destination_environment_name=None,
+    ):
         """Swaps the CNAMEs of two environments.
 
         :type source_environment_id: string
@@ -908,17 +974,18 @@ class Layer1(AWSQueryConnection):
         """
         params = {}
         if source_environment_id:
-            params['SourceEnvironmentId'] = source_environment_id
+            params["SourceEnvironmentId"] = source_environment_id
         if source_environment_name:
-            params['SourceEnvironmentName'] = source_environment_name
+            params["SourceEnvironmentName"] = source_environment_name
         if destination_environment_id:
-            params['DestinationEnvironmentId'] = destination_environment_id
+            params["DestinationEnvironmentId"] = destination_environment_id
         if destination_environment_name:
-            params['DestinationEnvironmentName'] = destination_environment_name
-        return self._get_response('SwapEnvironmentCNAMEs', params)
+            params["DestinationEnvironmentName"] = destination_environment_name
+        return self._get_response("SwapEnvironmentCNAMEs", params)
 
-    def terminate_environment(self, environment_id=None, environment_name=None,
-                              terminate_resources=None):
+    def terminate_environment(
+        self, environment_id=None, environment_name=None, terminate_resources=None
+    ):
         """Terminates the specified environment.
 
         :type environment_id: string
@@ -947,13 +1014,12 @@ class Layer1(AWSQueryConnection):
         """
         params = {}
         if environment_id:
-            params['EnvironmentId'] = environment_id
+            params["EnvironmentId"] = environment_id
         if environment_name:
-            params['EnvironmentName'] = environment_name
+            params["EnvironmentName"] = environment_name
         if terminate_resources:
-            params['TerminateResources'] = self._encode_bool(
-                terminate_resources)
-        return self._get_response('TerminateEnvironment', params)
+            params["TerminateResources"] = self._encode_bool(terminate_resources)
+        return self._get_response("TerminateEnvironment", params)
 
     def update_application(self, application_name, description=None):
         """
@@ -970,13 +1036,14 @@ class Layer1(AWSQueryConnection):
             not specified, AWS Elastic Beanstalk does not update the
             description.
         """
-        params = {'ApplicationName': application_name}
+        params = {"ApplicationName": application_name}
         if description:
-            params['Description'] = description
-        return self._get_response('UpdateApplication', params)
+            params["Description"] = description
+        return self._get_response("UpdateApplication", params)
 
-    def update_application_version(self, application_name, version_label,
-                                   description=None):
+    def update_application_version(
+        self, application_name, version_label, description=None
+    ):
         """Updates the application version to have the properties.
 
         :type application_name: string
@@ -992,15 +1059,19 @@ class Layer1(AWSQueryConnection):
         :type description: string
         :param description: A new description for this release.
         """
-        params = {'ApplicationName': application_name,
-                  'VersionLabel': version_label}
+        params = {"ApplicationName": application_name, "VersionLabel": version_label}
         if description:
-            params['Description'] = description
-        return self._get_response('UpdateApplicationVersion', params)
+            params["Description"] = description
+        return self._get_response("UpdateApplicationVersion", params)
 
-    def update_configuration_template(self, application_name, template_name,
-                                      description=None, option_settings=None,
-                                      options_to_remove=None):
+    def update_configuration_template(
+        self,
+        application_name,
+        template_name,
+        description=None,
+        option_settings=None,
+        options_to_remove=None,
+    ):
         """
         Updates the specified configuration template to have the
         specified properties or configuration option values.
@@ -1030,24 +1101,33 @@ class Layer1(AWSQueryConnection):
 
         :raises: InsufficientPrivilegesException
         """
-        params = {'ApplicationName': application_name,
-                  'TemplateName': template_name}
+        params = {"ApplicationName": application_name, "TemplateName": template_name}
         if description:
-            params['Description'] = description
+            params["Description"] = description
         if option_settings:
-            self._build_list_params(params, option_settings,
-                                   'OptionSettings.member',
-                                   ('Namespace', 'OptionName', 'Value'))
+            self._build_list_params(
+                params,
+                option_settings,
+                "OptionSettings.member",
+                ("Namespace", "OptionName", "Value"),
+            )
         if options_to_remove:
-            self.build_list_params(params, options_to_remove,
-                                   'OptionsToRemove.member')
-        return self._get_response('UpdateConfigurationTemplate', params)
+            self.build_list_params(params, options_to_remove, "OptionsToRemove.member")
+        return self._get_response("UpdateConfigurationTemplate", params)
 
-    def update_environment(self, environment_id=None, environment_name=None,
-                           version_label=None, template_name=None,
-                           description=None, option_settings=None,
-                           options_to_remove=None, tier_name=None,
-                           tier_type=None, tier_version='1.0'):
+    def update_environment(
+        self,
+        environment_id=None,
+        environment_name=None,
+        version_label=None,
+        template_name=None,
+        description=None,
+        option_settings=None,
+        options_to_remove=None,
+        tier_name=None,
+        tier_type=None,
+        tier_version="1.0",
+    ):
         """
         Updates the environment description, deploys a new application
         version, updates the configuration settings to an entirely new
@@ -1122,31 +1202,37 @@ class Layer1(AWSQueryConnection):
         """
         params = {}
         if environment_id:
-            params['EnvironmentId'] = environment_id
+            params["EnvironmentId"] = environment_id
         if environment_name:
-            params['EnvironmentName'] = environment_name
+            params["EnvironmentName"] = environment_name
         if version_label:
-            params['VersionLabel'] = version_label
+            params["VersionLabel"] = version_label
         if template_name:
-            params['TemplateName'] = template_name
+            params["TemplateName"] = template_name
         if description:
-            params['Description'] = description
+            params["Description"] = description
         if option_settings:
-            self._build_list_params(params, option_settings,
-                                   'OptionSettings.member',
-                                   ('Namespace', 'OptionName', 'Value'))
+            self._build_list_params(
+                params,
+                option_settings,
+                "OptionSettings.member",
+                ("Namespace", "OptionName", "Value"),
+            )
         if options_to_remove:
-            self.build_list_params(params, options_to_remove,
-                                   'OptionsToRemove.member')
+            self.build_list_params(params, options_to_remove, "OptionsToRemove.member")
         if tier_name and tier_type and tier_version:
-            params['Tier.Name'] = tier_name
-            params['Tier.Type'] = tier_type
-            params['Tier.Version'] = tier_version
-        return self._get_response('UpdateEnvironment', params)
+            params["Tier.Name"] = tier_name
+            params["Tier.Type"] = tier_type
+            params["Tier.Version"] = tier_version
+        return self._get_response("UpdateEnvironment", params)
 
-    def validate_configuration_settings(self, application_name,
-                                        option_settings, template_name=None,
-                                        environment_name=None):
+    def validate_configuration_settings(
+        self,
+        application_name,
+        option_settings,
+        template_name=None,
+        environment_name=None,
+    ):
         """
         Takes a set of configuration settings and either a
         configuration template or environment, and determines whether
@@ -1174,15 +1260,18 @@ class Layer1(AWSQueryConnection):
 
         :raises: InsufficientPrivilegesException
         """
-        params = {'ApplicationName': application_name}
-        self._build_list_params(params, option_settings,
-                               'OptionSettings.member',
-                               ('Namespace', 'OptionName', 'Value'))
+        params = {"ApplicationName": application_name}
+        self._build_list_params(
+            params,
+            option_settings,
+            "OptionSettings.member",
+            ("Namespace", "OptionName", "Value"),
+        )
         if template_name:
-            params['TemplateName'] = template_name
+            params["TemplateName"] = template_name
         if environment_name:
-            params['EnvironmentName'] = environment_name
-        return self._get_response('ValidateConfigurationSettings', params)
+            params["EnvironmentName"] = environment_name
+        return self._get_response("ValidateConfigurationSettings", params)
 
     def _build_list_params(self, params, user_values, prefix, tuple_names):
         # For params such as the ConfigurationOptionSettings,
@@ -1196,7 +1285,7 @@ class Layer1(AWSQueryConnection):
         # MyOption.member.1.Two = bar
         # MyOption.member.1.Three = baz
         for i, user_value in enumerate(user_values, 1):
-            current_prefix = '%s.%s' % (prefix, i)
+            current_prefix = "%s.%s" % (prefix, i)
             for key, value in zip(tuple_names, user_value):
-                full_key = '%s.%s' % (current_prefix, key)
+                full_key = "%s.%s" % (current_prefix, key)
                 params[full_key] = value

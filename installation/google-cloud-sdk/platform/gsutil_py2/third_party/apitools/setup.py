@@ -22,79 +22,80 @@ try:
     import setuptools
 except ImportError:
     from ez_setup import use_setuptools
+
     use_setuptools()
     import setuptools
 
 # Configure the required packages and scripts to install, depending on
 # Python version and OS.
 REQUIRED_PACKAGES = [
-    'httplib2>=0.8',
-    'fasteners>=0.14',
-    'oauth2client>=1.4.12',
-    'six>=1.12.0',
-    ]
+    "httplib2>=0.8",
+    "fasteners>=0.14",
+    "oauth2client>=1.4.12",
+    "six>=1.12.0",
+]
 
 CLI_PACKAGES = [
-    'python-gflags>=3.0.6',
+    "python-gflags>=3.0.6",
 ]
 
 TESTING_PACKAGES = [
-    'mock>=1.0.1',
+    "mock>=1.0.1",
 ]
 
 CONSOLE_SCRIPTS = [
-    'gen_client = apitools.gen.gen_client:main',
+    "gen_client = apitools.gen.gen_client:main",
 ]
 
 py_version = platform.python_version()
 
-_APITOOLS_VERSION = '0.5.32'
+_APITOOLS_VERSION = "0.5.32"
 
-with open('README.rst') as fileobj:
+with open("README.rst") as fileobj:
     README = fileobj.read()
 
 setuptools.setup(
-    name='google-apitools',
+    name="google-apitools",
     version=_APITOOLS_VERSION,
-    description='client libraries for humans',
+    description="client libraries for humans",
     long_description=README,
-    url='http://github.com/google/apitools',
-    author='Craig Citro',
-    author_email='craigcitro@google.com',
-    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*',
+    url="http://github.com/google/apitools",
+    author="Craig Citro",
+    author_email="craigcitro@google.com",
+    python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
     # Contained modules and scripts.
-    packages=setuptools.find_packages(include=['apitools']),
-    entry_points={'console_scripts': CONSOLE_SCRIPTS},
+    packages=setuptools.find_packages(include=["apitools"]),
+    entry_points={"console_scripts": CONSOLE_SCRIPTS},
     install_requires=REQUIRED_PACKAGES,
     tests_require=REQUIRED_PACKAGES + CLI_PACKAGES + TESTING_PACKAGES,
     extras_require={
-        'cli': CLI_PACKAGES,
-        'testing': TESTING_PACKAGES,
-        },
+        "cli": CLI_PACKAGES,
+        "testing": TESTING_PACKAGES,
+    },
     # Add in any packaged data.
     include_package_data=True,
     package_data={
-        'apitools.data': ['*'],
+        "apitools.data": ["*"],
     },
     exclude_package_data={
-        '': [
-            '*_test.py',
-            '*/testing/*',
-            '*/testdata/*',
-            'base/protorpclite/test_util.py',
-            'gen/test_utils.py',
+        "": [
+            "*_test.py",
+            "*/testing/*",
+            "*/testdata/*",
+            "base/protorpclite/test_util.py",
+            "gen/test_utils.py",
         ],
     },
     # PyPI package information.
     classifiers=[
-        'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
-        'Topic :: Software Development :: Libraries',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-        ],
-    license='Apache 2.0',
-    keywords='apitools',
-    )
+        "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.5",
+        "Topic :: Software Development :: Libraries",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+    ],
+    license="Apache 2.0",
+    keywords="apitools",
+)

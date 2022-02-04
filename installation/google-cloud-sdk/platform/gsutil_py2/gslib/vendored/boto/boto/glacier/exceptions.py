@@ -31,14 +31,18 @@ class UnexpectedHTTPResponseError(Exception):
         try:
             body = json.loads(self.body)
             self.code = body["code"]
-            msg = 'Expected %s, got ' % expected_responses
-            msg += '(%d, code=%s, message=%s)' % (response.status,
-                                                  self.code,
-                                                  body["message"])
+            msg = "Expected %s, got " % expected_responses
+            msg += "(%d, code=%s, message=%s)" % (
+                response.status,
+                self.code,
+                body["message"],
+            )
         except Exception:
-            msg = 'Expected %s, got (%d, %s)' % (expected_responses,
-                                                 response.status,
-                                                 self.body)
+            msg = "Expected %s, got (%d, %s)" % (
+                expected_responses,
+                response.status,
+                self.body,
+            )
         super(UnexpectedHTTPResponseError, self).__init__(msg)
 
 

@@ -21,8 +21,11 @@
 # IN THE SOFTWARE.
 #
 from boto.mws.connection import MWSConnection, api_call_map, destructure_object
-from boto.mws.response import (ResponseElement, GetFeedSubmissionListResult,
-                               ResponseFactory)
+from boto.mws.response import (
+    ResponseElement,
+    GetFeedSubmissionListResult,
+    ResponseFactory,
+)
 from boto.exception import BotoServerError
 
 from tests.compat import unittest
@@ -74,33 +77,43 @@ doc/2009-01-01/">
     def test_destructure_object(self):
         # Test that parsing of user input to Amazon input works.
         response = ResponseElement()
-        response.C = 'four'
-        response.D = 'five'
+        response.C = "four"
+        response.D = "five"
         inputs = [
-            ('A', 'B'), ['B', 'A'], set(['C']),
-            False, 'String', {'A': 'one', 'B': 'two'},
+            ("A", "B"),
+            ["B", "A"],
+            set(["C"]),
+            False,
+            "String",
+            {"A": "one", "B": "two"},
             response,
-            {'A': 'one', 'B': 'two',
-             'C': [{'D': 'four', 'E': 'five'},
-                   {'F': 'six', 'G': 'seven'}]},
+            {
+                "A": "one",
+                "B": "two",
+                "C": [{"D": "four", "E": "five"}, {"F": "six", "G": "seven"}],
+            },
         ]
         outputs = [
-            {'Prefix.1': 'A', 'Prefix.2': 'B'},
-            {'Prefix.1': 'B', 'Prefix.2': 'A'},
-            {'Prefix.1': 'C'},
-            {'Prefix': 'false'}, {'Prefix': 'String'},
-            {'Prefix.A': 'one', 'Prefix.B': 'two'},
-            {'Prefix.C': 'four', 'Prefix.D': 'five'},
-            {'Prefix.A': 'one', 'Prefix.B': 'two',
-             'Prefix.C.member.1.D': 'four',
-             'Prefix.C.member.1.E': 'five',
-             'Prefix.C.member.2.F': 'six',
-             'Prefix.C.member.2.G': 'seven'}
+            {"Prefix.1": "A", "Prefix.2": "B"},
+            {"Prefix.1": "B", "Prefix.2": "A"},
+            {"Prefix.1": "C"},
+            {"Prefix": "false"},
+            {"Prefix": "String"},
+            {"Prefix.A": "one", "Prefix.B": "two"},
+            {"Prefix.C": "four", "Prefix.D": "five"},
+            {
+                "Prefix.A": "one",
+                "Prefix.B": "two",
+                "Prefix.C.member.1.D": "four",
+                "Prefix.C.member.1.E": "five",
+                "Prefix.C.member.2.F": "six",
+                "Prefix.C.member.2.G": "seven",
+            },
         ]
         for user, amazon in zip(inputs, outputs):
             result = {}
             members = user is inputs[-1]
-            destructure_object(user, result, prefix='Prefix', members=members)
+            destructure_object(user, result, prefix="Prefix", members=members)
             self.assertEqual(result, amazon)
 
     def test_decorator_order(self):
@@ -109,17 +122,17 @@ doc/2009-01-01/">
             decs = [func.__name__]
             while func:
                 i = 0
-                if not hasattr(func, '__closure__'):
-                    func = getattr(func, '__wrapped__', None)
+                if not hasattr(func, "__closure__"):
+                    func = getattr(func, "__wrapped__", None)
                     continue
                 while i < len(func.__closure__):
                     value = func.__closure__[i].cell_contents
-                    if hasattr(value, '__call__'):
-                        if 'requires' == value.__name__:
-                            self.assertTrue(not decs or decs[-1] == 'requires')
+                    if hasattr(value, "__call__"):
+                        if "requires" == value.__name__:
+                            self.assertTrue(not decs or decs[-1] == "requires")
                         decs.append(value.__name__)
                     i += 1
-                func = getattr(func, '__wrapped__', None)
+                func = getattr(func, "__wrapped__", None)
 
     def test_built_api_call_map(self):
         # Ensure that the map is populated.
@@ -130,76 +143,81 @@ doc/2009-01-01/">
 
     def test_method_for(self):
         # First, ensure that the map is in "right enough" state.
-        self.assertTrue('GetFeedSubmissionList' in api_call_map)
+        self.assertTrue("GetFeedSubmissionList" in api_call_map)
 
         # Make sure we can find the correct method.
-        func = self.service_connection.method_for('GetFeedSubmissionList')
+        func = self.service_connection.method_for("GetFeedSubmissionList")
         # Ensure the right name was found.
         self.assertTrue(callable(func))
         ideal = self.service_connection.get_feed_submission_list
         self.assertEqual(func, ideal)
 
         # Check a non-existent action.
-        func = self.service_connection.method_for('NotHereNorThere')
+        func = self.service_connection.method_for("NotHereNorThere")
         self.assertEqual(func, None)
 
     def test_response_factory(self):
         connection = self.service_connection
         body = self.default_body()
-        action = 'GetFeedSubmissionList'
+        action = "GetFeedSubmissionList"
         parser = connection._response_factory(action, connection=connection)
-        response = connection._parse_response(parser, 'text/xml', body)
+        response = connection._parse_response(parser, "text/xml", body)
         self.assertEqual(response._action, action)
-        self.assertEqual(response.__class__.__name__, action + 'Response')
-        self.assertEqual(response._result.__class__,
-                         GetFeedSubmissionListResult)
+        self.assertEqual(response.__class__.__name__, action + "Response")
+        self.assertEqual(response._result.__class__, GetFeedSubmissionListResult)
 
         class MyResult(GetFeedSubmissionListResult):
-            _hello = '_world'
+            _hello = "_world"
 
-        scope = {'GetFeedSubmissionListResult': MyResult}
+        scope = {"GetFeedSubmissionListResult": MyResult}
         connection._setup_factories([scope])
 
         parser = connection._response_factory(action, connection=connection)
-        response = connection._parse_response(parser, 'text/xml', body)
+        response = connection._parse_response(parser, "text/xml", body)
         self.assertEqual(response._action, action)
-        self.assertEqual(response.__class__.__name__, action + 'Response')
+        self.assertEqual(response.__class__.__name__, action + "Response")
         self.assertEqual(response._result.__class__, MyResult)
-        self.assertEqual(response._result._hello, '_world')
-        self.assertEqual(response._result.HasNext, 'true')
+        self.assertEqual(response._result._hello, "_world")
+        self.assertEqual(response._result.HasNext, "true")
 
     def test_get_service_status(self):
         with self.assertRaises(AttributeError) as err:
             self.service_connection.get_service_status()
 
-        self.assertTrue('products' in str(err.exception))
-        self.assertTrue('inventory' in str(err.exception))
-        self.assertTrue('feeds' in str(err.exception))
+        self.assertTrue("products" in str(err.exception))
+        self.assertTrue("inventory" in str(err.exception))
+        self.assertTrue("feeds" in str(err.exception))
 
     def test_post_request(self):
 
         self.service_connection._mexe = MagicMock(
-            side_effect=
-                BotoServerError(500, 'You request has bee throttled', body=self.default_body_error()))
+            side_effect=BotoServerError(
+                500, "You request has bee throttled", body=self.default_body_error()
+            )
+        )
 
         with self.assertRaises(BotoServerError) as err:
             self.service_connection.get_lowest_offer_listings_for_asin(
-                MarketplaceId='12345',
-                ASINList='ASIN12345',
-                condition='Any',
-                SellerId='1234',
-                excludeme='True')
+                MarketplaceId="12345",
+                ASINList="ASIN12345",
+                condition="Any",
+                SellerId="1234",
+                excludeme="True",
+            )
 
-            self.assertTrue('throttled' in str(err.reason))
+            self.assertTrue("throttled" in str(err.reason))
             self.assertEqual(int(err.status), 200)
-            
+
     def test_sandboxify(self):
         # Create one-off connection class that has self._sandboxed = True
-        conn = MWSConnection(https_connection_factory=self.https_connection_factory,
-            aws_access_key_id='aws_access_key_id',
-            aws_secret_access_key='aws_secret_access_key',
-            sandbox=True)
-        self.assertEqual(conn._sandboxify('a/bogus/path'), 'a/bogus_Sandbox/path')
+        conn = MWSConnection(
+            https_connection_factory=self.https_connection_factory,
+            aws_access_key_id="aws_access_key_id",
+            aws_secret_access_key="aws_secret_access_key",
+            sandbox=True,
+        )
+        self.assertEqual(conn._sandboxify("a/bogus/path"), "a/bogus_Sandbox/path")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

@@ -47,15 +47,15 @@ from six.moves import http_client
 from six.moves import range
 
 
-_REAUTH_SCOPE = 'https://www.googleapis.com/auth/accounts.reauth'
+_REAUTH_SCOPE = "https://www.googleapis.com/auth/accounts.reauth"
 
-_REAUTH_NEEDED_ERROR = 'invalid_grant'
-_REAUTH_NEEDED_ERROR_INVALID_RAPT = 'invalid_rapt'
-_REAUTH_NEEDED_ERROR_RAPT_REQUIRED = 'rapt_required'
+_REAUTH_NEEDED_ERROR = "invalid_grant"
+_REAUTH_NEEDED_ERROR_INVALID_RAPT = "invalid_rapt"
+_REAUTH_NEEDED_ERROR_RAPT_REQUIRED = "rapt_required"
 
-_AUTHENTICATED = 'AUTHENTICATED'
-_CHALLENGE_REQUIRED = 'CHALLENGE_REQUIRED'
-_CHALLENGE_PENDING = 'CHALLENGE_PENDING'
+_AUTHENTICATED = "AUTHENTICATED"
+_CHALLENGE_REQUIRED = "CHALLENGE_REQUIRED"
+_CHALLENGE_PENDING = "CHALLENGE_PENDING"
 
 
 def _run_next_challenge(msg, http_request, access_token):
@@ -74,31 +74,34 @@ def _run_next_challenge(msg, http_request, access_token):
     Raises:
         errors.ReauthError if reauth failed
     """
-    for challenge in msg['challenges']:
-        if challenge['status'] != 'READY':
+    for challenge in msg["challenges"]:
+        if challenge["status"] != "READY":
             # Skip non-activated challneges.
             continue
-        c = challenges.AVAILABLE_CHALLENGES.get(
-                challenge['challengeType'], None)
+        c = challenges.AVAILABLE_CHALLENGES.get(challenge["challengeType"], None)
         if not c:
             raise errors.ReauthFailError(
-                'Unsupported challenge type {0}. Supported types: {1}'
-                .format(challenge['challengeType'],
-                        ','.join(list(challenges.AVAILABLE_CHALLENGES.keys())))
+                "Unsupported challenge type {0}. Supported types: {1}".format(
+                    challenge["challengeType"],
+                    ",".join(list(challenges.AVAILABLE_CHALLENGES.keys())),
+                )
             )
         if not c.is_locally_eligible:
             raise errors.ReauthFailError(
-                'Challenge {0} is not locally eligible'
-                .format(challenge['challengeType']))
+                "Challenge {0} is not locally eligible".format(
+                    challenge["challengeType"]
+                )
+            )
         client_input = c.obtain_challenge_input(challenge)
         if not client_input:
             return None
         return _reauth_client.send_challenge_result(
             http_request,
-            msg['sessionId'],
-            challenge['challengeId'],
+            msg["sessionId"],
+            challenge["challengeId"],
             client_input,
-            access_token)
+            access_token,
+        )
     return None
 
 
@@ -128,15 +131,16 @@ def _obtain_rapt(http_request, access_token, requested_scopes, rounds_num=5):
                 http_request,
                 list(challenges.AVAILABLE_CHALLENGES.keys()),
                 access_token,
-                requested_scopes)
+                requested_scopes,
+            )
 
-        if msg['status'] == _AUTHENTICATED:
-            return msg['encodedProofOfReauthToken']
+        if msg["status"] == _AUTHENTICATED:
+            return msg["encodedProofOfReauthToken"]
 
-        if not (msg['status'] == _CHALLENGE_REQUIRED or
-                msg['status'] == _CHALLENGE_PENDING):
-            raise errors.ReauthAPIError(
-                'Challenge status {0}'.format(msg['status']))
+        if not (
+            msg["status"] == _CHALLENGE_REQUIRED or msg["status"] == _CHALLENGE_PENDING
+        ):
+            raise errors.ReauthAPIError("Challenge status {0}".format(msg["status"]))
 
         if not _helpers.is_interactive():
             raise errors.ReauthUnattendedError()
@@ -147,8 +151,9 @@ def _obtain_rapt(http_request, access_token, requested_scopes, rounds_num=5):
     raise errors.ReauthFailError()
 
 
-def get_rapt_token(http_request, client_id, client_secret, refresh_token,
-                   token_uri, scopes=None):
+def get_rapt_token(
+    http_request, client_id, client_secret, refresh_token, token_uri, scopes=None
+):
     """Given an http request method and refresh_token, get rapt token.
 
     Args:
@@ -164,7 +169,7 @@ def get_rapt_token(http_request, client_id, client_secret, refresh_token,
     Raises:
         errors.ReauthError if reauth failed
     """
-    sys.stderr.write('Reauthentication required.\n')
+    sys.stderr.write("Reauthentication required.\n")
 
     # Get access token for reauth.
     response, content = _reauth_client.refresh_grant(
@@ -174,27 +179,30 @@ def get_rapt_token(http_request, client_id, client_secret, refresh_token,
         refresh_token=refresh_token,
         token_uri=token_uri,
         scopes=_REAUTH_SCOPE,
-        headers={'Content-Type': 'application/x-www-form-urlencoded'})
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
 
     try:
         content = json.loads(content)
     except (TypeError, ValueError):
         raise errors.ReauthAccessTokenRefreshError(
-            'Invalid response {0}'.format(_substr_for_error_message(content)))
+            "Invalid response {0}".format(_substr_for_error_message(content))
+        )
 
     if response.status != http_client.OK:
         raise errors.ReauthAccessTokenRefreshError(
-            _get_refresh_error_message(content), response.status)
+            _get_refresh_error_message(content), response.status
+        )
 
-    if 'access_token' not in content:
+    if "access_token" not in content:
         raise errors.ReauthAccessTokenRefreshError(
-            'Access token missing from the response')
+            "Access token missing from the response"
+        )
 
     # Get rapt token from reauth API.
     rapt_token = _obtain_rapt(
-        http_request,
-        content['access_token'],
-        requested_scopes=scopes)
+        http_request, content["access_token"], requested_scopes=scopes
+    )
 
     return rapt_token
 
@@ -212,10 +220,10 @@ def _rapt_refresh_required(content):
         content = json.loads(content)
     except (TypeError, ValueError):
         return False
-    return (
-        content.get('error') == _REAUTH_NEEDED_ERROR and
-        (content.get('error_subtype') == _REAUTH_NEEDED_ERROR_INVALID_RAPT or
-         content.get('error_subtype') == _REAUTH_NEEDED_ERROR_RAPT_REQUIRED))
+    return content.get("error") == _REAUTH_NEEDED_ERROR and (
+        content.get("error_subtype") == _REAUTH_NEEDED_ERROR_INVALID_RAPT
+        or content.get("error_subtype") == _REAUTH_NEEDED_ERROR_RAPT_REQUIRED
+    )
 
 
 def _get_refresh_error_message(content):
@@ -228,11 +236,11 @@ def _get_refresh_error_message(content):
     Returns:
         error message to show
     """
-    error_msg = 'Invalid response.'
-    if 'error' in content:
-        error_msg = content['error']
-        if 'error_description' in content:
-            error_msg += ': ' + content['error_description']
+    error_msg = "Invalid response."
+    if "error" in content:
+        error_msg = content["error"]
+        if "error_description" in content:
+            error_msg += ": " + content["error_description"]
     return error_msg
 
 
@@ -242,8 +250,15 @@ def _substr_for_error_message(content):
 
 
 def refresh_access_token(
-        http_request, client_id, client_secret, refresh_token,
-        token_uri, rapt=None, scopes=None, headers=None):
+    http_request,
+    client_id,
+    client_secret,
+    refresh_token,
+    token_uri,
+    rapt=None,
+    scopes=None,
+    headers=None,
+):
     """Refresh the access_token using the refresh_token.
 
     Args:
@@ -271,7 +286,8 @@ def refresh_access_token(
         refresh_token=refresh_token,
         token_uri=token_uri,
         rapt=rapt,
-        headers=headers)
+        headers=headers,
+    )
 
     if response.status != http_client.OK:
         # Check if we need a rapt token or if the rapt token is invalid.
@@ -279,7 +295,7 @@ def refresh_access_token(
         # If we did refresh the rapt token and still got an error, then the
         # refresh token is expired or revoked.
 
-        if (_rapt_refresh_required(content)):
+        if _rapt_refresh_required(content):
             rapt = get_rapt_token(
                 http_request,
                 client_id,
@@ -296,21 +312,24 @@ def refresh_access_token(
                 refresh_token=refresh_token,
                 token_uri=token_uri,
                 rapt=rapt,
-                headers=headers)
+                headers=headers,
+            )
 
     try:
         content = json.loads(content)
     except (TypeError, ValueError):
         raise errors.HttpAccessTokenRefreshError(
-            'Invalid response {0}'.format(_substr_for_error_message(content)),
-            response.status)
+            "Invalid response {0}".format(_substr_for_error_message(content)),
+            response.status,
+        )
 
     if response.status != http_client.OK:
         raise errors.HttpAccessTokenRefreshError(
-            _get_refresh_error_message(content), response.status)
+            _get_refresh_error_message(content), response.status
+        )
 
-    access_token = content['access_token']
-    refresh_token = content.get('refresh_token', None)
-    expires_in = content.get('expires_in', None)
-    id_token = content.get('id_token', None)
+    access_token = content["access_token"]
+    refresh_token = content.get("refresh_token", None)
+    expires_in = content.get("expires_in", None)
+    id_token = content.get("id_token", None)
     return rapt, content, access_token, refresh_token, expires_in, id_token

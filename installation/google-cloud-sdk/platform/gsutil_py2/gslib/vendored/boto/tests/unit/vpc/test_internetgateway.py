@@ -30,19 +30,28 @@ class TestDescribeInternetGateway(AWSMockServiceTestCase):
     def test_describe_internet_gateway(self):
         self.set_http_response(status_code=200)
         api_response = self.service_connection.get_all_internet_gateways(
-            'igw-eaad4883EXAMPLE', filters=[('attachment.state', ['available', 'pending'])])
-        self.assert_request_parameters({
-            'Action': 'DescribeInternetGateways',
-            'InternetGatewayId.1': 'igw-eaad4883EXAMPLE',
-            'Filter.1.Name': 'attachment.state',
-            'Filter.1.Value.1': 'available',
-            'Filter.1.Value.2': 'pending'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp',
-                                  'Version'])
+            "igw-eaad4883EXAMPLE",
+            filters=[("attachment.state", ["available", "pending"])],
+        )
+        self.assert_request_parameters(
+            {
+                "Action": "DescribeInternetGateways",
+                "InternetGatewayId.1": "igw-eaad4883EXAMPLE",
+                "Filter.1.Name": "attachment.state",
+                "Filter.1.Value.1": "available",
+                "Filter.1.Value.2": "pending",
+            },
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
         self.assertEquals(len(api_response), 1)
         self.assertIsInstance(api_response[0], InternetGateway)
-        self.assertEqual(api_response[0].id, 'igw-eaad4883EXAMPLE')
+        self.assertEqual(api_response[0].id, "igw-eaad4883EXAMPLE")
 
 
 class TestCreateInternetGateway(AWSMockServiceTestCase):
@@ -64,13 +73,18 @@ class TestCreateInternetGateway(AWSMockServiceTestCase):
     def test_create_internet_gateway(self):
         self.set_http_response(status_code=200)
         api_response = self.service_connection.create_internet_gateway()
-        self.assert_request_parameters({
-            'Action': 'CreateInternetGateway'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp',
-                                  'Version'])
+        self.assert_request_parameters(
+            {"Action": "CreateInternetGateway"},
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
         self.assertIsInstance(api_response, InternetGateway)
-        self.assertEqual(api_response.id, 'igw-eaad4883')
+        self.assertEqual(api_response.id, "igw-eaad4883")
 
 
 class TestDeleteInternetGateway(AWSMockServiceTestCase):
@@ -87,13 +101,17 @@ class TestDeleteInternetGateway(AWSMockServiceTestCase):
 
     def test_delete_internet_gateway(self):
         self.set_http_response(status_code=200)
-        api_response = self.service_connection.delete_internet_gateway('igw-eaad4883')
-        self.assert_request_parameters({
-            'Action': 'DeleteInternetGateway',
-            'InternetGatewayId': 'igw-eaad4883'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp',
-                                  'Version'])
+        api_response = self.service_connection.delete_internet_gateway("igw-eaad4883")
+        self.assert_request_parameters(
+            {"Action": "DeleteInternetGateway", "InternetGatewayId": "igw-eaad4883"},
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
         self.assertEquals(api_response, True)
 
 
@@ -112,14 +130,22 @@ class TestAttachInternetGateway(AWSMockServiceTestCase):
     def test_attach_internet_gateway(self):
         self.set_http_response(status_code=200)
         api_response = self.service_connection.attach_internet_gateway(
-            'igw-eaad4883', 'vpc-11ad4878')
-        self.assert_request_parameters({
-            'Action': 'AttachInternetGateway',
-            'InternetGatewayId': 'igw-eaad4883',
-            'VpcId': 'vpc-11ad4878'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp',
-                                  'Version'])
+            "igw-eaad4883", "vpc-11ad4878"
+        )
+        self.assert_request_parameters(
+            {
+                "Action": "AttachInternetGateway",
+                "InternetGatewayId": "igw-eaad4883",
+                "VpcId": "vpc-11ad4878",
+            },
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
         self.assertEquals(api_response, True)
 
 
@@ -138,15 +164,24 @@ class TestDetachInternetGateway(AWSMockServiceTestCase):
     def test_detach_internet_gateway(self):
         self.set_http_response(status_code=200)
         api_response = self.service_connection.detach_internet_gateway(
-            'igw-eaad4883', 'vpc-11ad4878')
-        self.assert_request_parameters({
-            'Action': 'DetachInternetGateway',
-            'InternetGatewayId': 'igw-eaad4883',
-            'VpcId': 'vpc-11ad4878'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp',
-                                  'Version'])
+            "igw-eaad4883", "vpc-11ad4878"
+        )
+        self.assert_request_parameters(
+            {
+                "Action": "DetachInternetGateway",
+                "InternetGatewayId": "igw-eaad4883",
+                "VpcId": "vpc-11ad4878",
+            },
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
         self.assertEquals(api_response, True)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

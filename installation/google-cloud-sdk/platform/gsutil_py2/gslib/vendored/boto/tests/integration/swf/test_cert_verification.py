@@ -36,4 +36,4 @@ class SWFCertVerificationTest(unittest.TestCase, ServiceCertVerificationTest):
     regions = boto.swf.regions()
 
     def sample_service_call(self, conn):
-        conn.list_domains('REGISTERED')
+        conn.list_domains("REGISTERED")

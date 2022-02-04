@@ -29,9 +29,8 @@ from boto.route53.domains import exceptions
 
 
 class Route53DomainsConnection(AWSQueryConnection):
-    """
-    
-    """
+    """ """
+
     APIVersion = "2014-05-15"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "route53domains.us-east-1.amazonaws.com"
@@ -48,21 +47,21 @@ class Route53DomainsConnection(AWSQueryConnection):
         "TLDRulesViolation": exceptions.TLDRulesViolation,
     }
 
-
     def __init__(self, **kwargs):
-        region = kwargs.pop('region', None)
+        region = kwargs.pop("region", None)
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
 
-        if 'host' not in kwargs or kwargs['host'] is None:
-            kwargs['host'] = region.endpoint
+        if "host" not in kwargs or kwargs["host"] is None:
+            kwargs["host"] = region.endpoint
 
         super(Route53DomainsConnection, self).__init__(**kwargs)
         self.region = region
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
     def check_domain_availability(self, domain_name, idn_lang_code=None):
         """
@@ -88,11 +87,14 @@ class Route53DomainsConnection(AWSQueryConnection):
         :param idn_lang_code: Reserved for future use.
 
         """
-        params = {'DomainName': domain_name, }
+        params = {
+            "DomainName": domain_name,
+        }
         if idn_lang_code is not None:
-            params['IdnLangCode'] = idn_lang_code
-        return self.make_request(action='CheckDomainAvailability',
-                                 body=json.dumps(params))
+            params["IdnLangCode"] = idn_lang_code
+        return self.make_request(
+            action="CheckDomainAvailability", body=json.dumps(params)
+        )
 
     def disable_domain_transfer_lock(self, domain_name):
         """
@@ -118,9 +120,12 @@ class Route53DomainsConnection(AWSQueryConnection):
         Required: Yes
 
         """
-        params = {'DomainName': domain_name, }
-        return self.make_request(action='DisableDomainTransferLock',
-                                 body=json.dumps(params))
+        params = {
+            "DomainName": domain_name,
+        }
+        return self.make_request(
+            action="DisableDomainTransferLock", body=json.dumps(params)
+        )
 
     def enable_domain_transfer_lock(self, domain_name):
         """
@@ -144,9 +149,12 @@ class Route53DomainsConnection(AWSQueryConnection):
         Required: Yes
 
         """
-        params = {'DomainName': domain_name, }
-        return self.make_request(action='EnableDomainTransferLock',
-                                 body=json.dumps(params))
+        params = {
+            "DomainName": domain_name,
+        }
+        return self.make_request(
+            action="EnableDomainTransferLock", body=json.dumps(params)
+        )
 
     def get_domain_detail(self, domain_name):
         """
@@ -167,9 +175,10 @@ class Route53DomainsConnection(AWSQueryConnection):
         Required: Yes
 
         """
-        params = {'DomainName': domain_name, }
-        return self.make_request(action='GetDomainDetail',
-                                 body=json.dumps(params))
+        params = {
+            "DomainName": domain_name,
+        }
+        return self.make_request(action="GetDomainDetail", body=json.dumps(params))
 
     def get_operation_detail(self, operation_id):
         """
@@ -187,9 +196,10 @@ class Route53DomainsConnection(AWSQueryConnection):
         Required: Yes
 
         """
-        params = {'OperationId': operation_id, }
-        return self.make_request(action='GetOperationDetail',
-                                 body=json.dumps(params))
+        params = {
+            "OperationId": operation_id,
+        }
+        return self.make_request(action="GetOperationDetail", body=json.dumps(params))
 
     def list_domains(self, marker=None, max_items=None):
         """
@@ -226,11 +236,10 @@ class Route53DomainsConnection(AWSQueryConnection):
         """
         params = {}
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if max_items is not None:
-            params['MaxItems'] = max_items
-        return self.make_request(action='ListDomains',
-                                 body=json.dumps(params))
+            params["MaxItems"] = max_items
+        return self.make_request(action="ListDomains", body=json.dumps(params))
 
     def list_operations(self, marker=None, max_items=None):
         """
@@ -264,17 +273,24 @@ class Route53DomainsConnection(AWSQueryConnection):
         """
         params = {}
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if max_items is not None:
-            params['MaxItems'] = max_items
-        return self.make_request(action='ListOperations',
-                                 body=json.dumps(params))
+            params["MaxItems"] = max_items
+        return self.make_request(action="ListOperations", body=json.dumps(params))
 
-    def register_domain(self, domain_name, duration_in_years, admin_contact,
-                        registrant_contact, tech_contact, idn_lang_code=None,
-                        auto_renew=None, privacy_protect_admin_contact=None,
-                        privacy_protect_registrant_contact=None,
-                        privacy_protect_tech_contact=None):
+    def register_domain(
+        self,
+        domain_name,
+        duration_in_years,
+        admin_contact,
+        registrant_contact,
+        tech_contact,
+        idn_lang_code=None,
+        auto_renew=None,
+        privacy_protect_admin_contact=None,
+        privacy_protect_registrant_contact=None,
+        privacy_protect_tech_contact=None,
+    ):
         """
         This operation registers a domain. Domains are registered by
         the AWS registrar partner, Gandi. For some top-level domains
@@ -419,24 +435,25 @@ class Route53DomainsConnection(AWSQueryConnection):
 
         """
         params = {
-            'DomainName': domain_name,
-            'DurationInYears': duration_in_years,
-            'AdminContact': admin_contact,
-            'RegistrantContact': registrant_contact,
-            'TechContact': tech_contact,
+            "DomainName": domain_name,
+            "DurationInYears": duration_in_years,
+            "AdminContact": admin_contact,
+            "RegistrantContact": registrant_contact,
+            "TechContact": tech_contact,
         }
         if idn_lang_code is not None:
-            params['IdnLangCode'] = idn_lang_code
+            params["IdnLangCode"] = idn_lang_code
         if auto_renew is not None:
-            params['AutoRenew'] = auto_renew
+            params["AutoRenew"] = auto_renew
         if privacy_protect_admin_contact is not None:
-            params['PrivacyProtectAdminContact'] = privacy_protect_admin_contact
+            params["PrivacyProtectAdminContact"] = privacy_protect_admin_contact
         if privacy_protect_registrant_contact is not None:
-            params['PrivacyProtectRegistrantContact'] = privacy_protect_registrant_contact
+            params[
+                "PrivacyProtectRegistrantContact"
+            ] = privacy_protect_registrant_contact
         if privacy_protect_tech_contact is not None:
-            params['PrivacyProtectTechContact'] = privacy_protect_tech_contact
-        return self.make_request(action='RegisterDomain',
-                                 body=json.dumps(params))
+            params["PrivacyProtectTechContact"] = privacy_protect_tech_contact
+        return self.make_request(action="RegisterDomain", body=json.dumps(params))
 
     def retrieve_domain_auth_code(self, domain_name):
         """
@@ -457,16 +474,28 @@ class Route53DomainsConnection(AWSQueryConnection):
         Required: Yes
 
         """
-        params = {'DomainName': domain_name, }
-        return self.make_request(action='RetrieveDomainAuthCode',
-                                 body=json.dumps(params))
+        params = {
+            "DomainName": domain_name,
+        }
+        return self.make_request(
+            action="RetrieveDomainAuthCode", body=json.dumps(params)
+        )
 
-    def transfer_domain(self, domain_name, duration_in_years, nameservers,
-                        admin_contact, registrant_contact, tech_contact,
-                        idn_lang_code=None, auth_code=None, auto_renew=None,
-                        privacy_protect_admin_contact=None,
-                        privacy_protect_registrant_contact=None,
-                        privacy_protect_tech_contact=None):
+    def transfer_domain(
+        self,
+        domain_name,
+        duration_in_years,
+        nameservers,
+        admin_contact,
+        registrant_contact,
+        tech_contact,
+        idn_lang_code=None,
+        auth_code=None,
+        auto_renew=None,
+        privacy_protect_admin_contact=None,
+        privacy_protect_registrant_contact=None,
+        privacy_protect_tech_contact=None,
+    ):
         """
         This operation transfers a domain from another registrar to
         Amazon Route 53. Domains are registered by the AWS registrar,
@@ -630,30 +659,36 @@ class Route53DomainsConnection(AWSQueryConnection):
 
         """
         params = {
-            'DomainName': domain_name,
-            'DurationInYears': duration_in_years,
-            'Nameservers': nameservers,
-            'AdminContact': admin_contact,
-            'RegistrantContact': registrant_contact,
-            'TechContact': tech_contact,
+            "DomainName": domain_name,
+            "DurationInYears": duration_in_years,
+            "Nameservers": nameservers,
+            "AdminContact": admin_contact,
+            "RegistrantContact": registrant_contact,
+            "TechContact": tech_contact,
         }
         if idn_lang_code is not None:
-            params['IdnLangCode'] = idn_lang_code
+            params["IdnLangCode"] = idn_lang_code
         if auth_code is not None:
-            params['AuthCode'] = auth_code
+            params["AuthCode"] = auth_code
         if auto_renew is not None:
-            params['AutoRenew'] = auto_renew
+            params["AutoRenew"] = auto_renew
         if privacy_protect_admin_contact is not None:
-            params['PrivacyProtectAdminContact'] = privacy_protect_admin_contact
+            params["PrivacyProtectAdminContact"] = privacy_protect_admin_contact
         if privacy_protect_registrant_contact is not None:
-            params['PrivacyProtectRegistrantContact'] = privacy_protect_registrant_contact
+            params[
+                "PrivacyProtectRegistrantContact"
+            ] = privacy_protect_registrant_contact
         if privacy_protect_tech_contact is not None:
-            params['PrivacyProtectTechContact'] = privacy_protect_tech_contact
-        return self.make_request(action='TransferDomain',
-                                 body=json.dumps(params))
+            params["PrivacyProtectTechContact"] = privacy_protect_tech_contact
+        return self.make_request(action="TransferDomain", body=json.dumps(params))
 
-    def update_domain_contact(self, domain_name, admin_contact=None,
-                              registrant_contact=None, tech_contact=None):
+    def update_domain_contact(
+        self,
+        domain_name,
+        admin_contact=None,
+        registrant_contact=None,
+        tech_contact=None,
+    ):
         """
         This operation updates the contact information for a
         particular domain. Information for at least one contact
@@ -711,19 +746,24 @@ class Route53DomainsConnection(AWSQueryConnection):
         Required: Yes
 
         """
-        params = {'DomainName': domain_name, }
+        params = {
+            "DomainName": domain_name,
+        }
         if admin_contact is not None:
-            params['AdminContact'] = admin_contact
+            params["AdminContact"] = admin_contact
         if registrant_contact is not None:
-            params['RegistrantContact'] = registrant_contact
+            params["RegistrantContact"] = registrant_contact
         if tech_contact is not None:
-            params['TechContact'] = tech_contact
-        return self.make_request(action='UpdateDomainContact',
-                                 body=json.dumps(params))
+            params["TechContact"] = tech_contact
+        return self.make_request(action="UpdateDomainContact", body=json.dumps(params))
 
-    def update_domain_contact_privacy(self, domain_name, admin_privacy=None,
-                                      registrant_privacy=None,
-                                      tech_privacy=None):
+    def update_domain_contact_privacy(
+        self,
+        domain_name,
+        admin_privacy=None,
+        registrant_privacy=None,
+        tech_privacy=None,
+    ):
         """
         This operation updates the specified domain contact's privacy
         setting. When the privacy option is enabled, personal
@@ -791,15 +831,18 @@ class Route53DomainsConnection(AWSQueryConnection):
         Required: No
 
         """
-        params = {'DomainName': domain_name, }
+        params = {
+            "DomainName": domain_name,
+        }
         if admin_privacy is not None:
-            params['AdminPrivacy'] = admin_privacy
+            params["AdminPrivacy"] = admin_privacy
         if registrant_privacy is not None:
-            params['RegistrantPrivacy'] = registrant_privacy
+            params["RegistrantPrivacy"] = registrant_privacy
         if tech_privacy is not None:
-            params['TechPrivacy'] = tech_privacy
-        return self.make_request(action='UpdateDomainContactPrivacy',
-                                 body=json.dumps(params))
+            params["TechPrivacy"] = tech_privacy
+        return self.make_request(
+            action="UpdateDomainContactPrivacy", body=json.dumps(params)
+        )
 
     def update_domain_nameservers(self, domain_name, nameservers):
         """
@@ -836,33 +879,36 @@ class Route53DomainsConnection(AWSQueryConnection):
 
         """
         params = {
-            'DomainName': domain_name,
-            'Nameservers': nameservers,
+            "DomainName": domain_name,
+            "Nameservers": nameservers,
         }
-        return self.make_request(action='UpdateDomainNameservers',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="UpdateDomainNameservers", body=json.dumps(params)
+        )
 
     def make_request(self, action, body):
         headers = {
-            'X-Amz-Target': '%s.%s' % (self.TargetPrefix, action),
-            'Host': self.region.endpoint,
-            'Content-Type': 'application/x-amz-json-1.1',
-            'Content-Length': str(len(body)),
+            "X-Amz-Target": "%s.%s" % (self.TargetPrefix, action),
+            "Host": self.region.endpoint,
+            "Content-Type": "application/x-amz-json-1.1",
+            "Content-Length": str(len(body)),
         }
         http_request = self.build_base_http_request(
-            method='POST', path='/', auth_path='/', params={},
-            headers=headers, data=body)
-        response = self._mexe(http_request, sender=None,
-                              override_num_retries=10)
-        response_body = response.read().decode('utf-8')
+            method="POST",
+            path="/",
+            auth_path="/",
+            params={},
+            headers=headers,
+            data=body,
+        )
+        response = self._mexe(http_request, sender=None, override_num_retries=10)
+        response_body = response.read().decode("utf-8")
         boto.log.debug(response_body)
         if response.status == 200:
             if response_body:
                 return json.loads(response_body)
         else:
             json_body = json.loads(response_body)
-            fault_name = json_body.get('__type', None)
+            fault_name = json_body.get("__type", None)
             exception_class = self._faults.get(fault_name, self.ResponseError)
-            raise exception_class(response.status, response.reason,
-                                  body=json_body)
-
+            raise exception_class(response.status, response.reason, body=json_body)

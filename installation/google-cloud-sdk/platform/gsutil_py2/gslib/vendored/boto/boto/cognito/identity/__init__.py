@@ -32,11 +32,16 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.cognito.identity.layer1 import CognitoIdentityConnection
-    return get_regions('cognito-identity',
-                       connection_cls=CognitoIdentityConnection)
+
+    return get_regions("cognito-identity", connection_cls=CognitoIdentityConnection)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.cognito.identity.layer1 import CognitoIdentityConnection
-    return connect('cognito-identity', region_name,
-                   connection_cls=CognitoIdentityConnection, **kw_params)
+
+    return connect(
+        "cognito-identity",
+        region_name,
+        connection_cls=CognitoIdentityConnection,
+        **kw_params
+    )

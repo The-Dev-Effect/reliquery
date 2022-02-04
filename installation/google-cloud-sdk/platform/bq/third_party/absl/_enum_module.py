@@ -44,13 +44,13 @@ import sys
 import six
 
 try:
-  import enum
+    import enum
 except ImportError:
-  if six.PY3:
-    # While not all Py3's have enum, only the ones we support do.
-    raise
-  for i, path in enumerate(sys.path):
-    if '/enum34_archive' in path:
-      sys.path[i] = path + '/enum34-1.1.6'
+    if six.PY3:
+        # While not all Py3's have enum, only the ones we support do.
+        raise
+    for i, path in enumerate(sys.path):
+        if "/enum34_archive" in path:
+            sys.path[i] = path + "/enum34-1.1.6"
 
-  import enum
+    import enum

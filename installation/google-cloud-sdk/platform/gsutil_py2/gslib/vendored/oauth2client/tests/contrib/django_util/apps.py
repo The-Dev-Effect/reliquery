@@ -22,6 +22,7 @@ from django.apps import AppConfig
 
 class DjangoOrmTestApp(AppConfig):
     """App Config for Django Helper."""
-    name = 'tests.contrib.django_util'
+
+    name = "tests.contrib.django_util"
     verbose_name = "Django Test App"
     label = "DjangoORMTestApp"

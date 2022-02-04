@@ -31,7 +31,6 @@ from boto.ec2.networkinterface import PrivateIPAddress
 
 
 class TestVPCConnection(unittest.TestCase):
-
     def setUp(self):
         # Registry of instances to be removed
         self.instances = []
@@ -40,11 +39,11 @@ class TestVPCConnection(unittest.TestCase):
         self.post_terminate_cleanups = []
 
         self.api = boto.connect_vpc()
-        self.vpc = self.api.create_vpc('10.0.0.0/16')
+        self.vpc = self.api.create_vpc("10.0.0.0/16")
 
         # Need time for the VPC to be in place. :/
         time.sleep(5)
-        self.subnet = self.api.create_subnet(self.vpc.id, '10.0.0.0/24')
+        self.subnet = self.api.create_subnet(self.vpc.id, "10.0.0.0/24")
         # Register the subnet to be deleted after instance termination
         self.post_terminate_cleanups.append((self.api.delete_subnet, (self.subnet.id,)))
 
@@ -74,7 +73,7 @@ class TestVPCConnection(unittest.TestCase):
         instance.terminate()
         for i in six.moves.range(300):
             instance.update()
-            if instance.state == 'terminated':
+            if instance.state == "terminated":
                 # Give it a litle more time to settle.
                 time.sleep(30)
                 return
@@ -91,20 +90,24 @@ class TestVPCConnection(unittest.TestCase):
 
     def test_multi_ip_create(self):
         interface = NetworkInterfaceSpecification(
-            device_index=0, subnet_id=self.subnet.id,
-            private_ip_address='10.0.0.21',
+            device_index=0,
+            subnet_id=self.subnet.id,
+            private_ip_address="10.0.0.21",
             description="This is a test interface using boto.",
-            delete_on_termination=True, private_ip_addresses=[
-                PrivateIPAddress(private_ip_address='10.0.0.22',
-                                 primary=False),
-                PrivateIPAddress(private_ip_address='10.0.0.23',
-                                 primary=False),
-                PrivateIPAddress(private_ip_address='10.0.0.24',
-                                 primary=False)])
+            delete_on_termination=True,
+            private_ip_addresses=[
+                PrivateIPAddress(private_ip_address="10.0.0.22", primary=False),
+                PrivateIPAddress(private_ip_address="10.0.0.23", primary=False),
+                PrivateIPAddress(private_ip_address="10.0.0.24", primary=False),
+            ],
+        )
         interfaces = NetworkInterfaceCollection(interface)
 
-        reservation = self.api.run_instances(image_id='ami-a0cd60c9', instance_type='m1.small',
-                                             network_interfaces=interfaces)
+        reservation = self.api.run_instances(
+            image_id="ami-a0cd60c9",
+            instance_type="m1.small",
+            network_interfaces=interfaces,
+        )
         # Give it a few seconds to start up.
         time.sleep(10)
         instance = reservation.instances[0]
@@ -120,15 +123,11 @@ class TestVPCConnection(unittest.TestCase):
 
         private_ip_addresses = interface.private_ip_addresses
         self.assertEqual(len(private_ip_addresses), 4)
-        self.assertEqual(private_ip_addresses[0].private_ip_address,
-                         '10.0.0.21')
+        self.assertEqual(private_ip_addresses[0].private_ip_address, "10.0.0.21")
         self.assertEqual(private_ip_addresses[0].primary, True)
-        self.assertEqual(private_ip_addresses[1].private_ip_address,
-                         '10.0.0.22')
-        self.assertEqual(private_ip_addresses[2].private_ip_address,
-                         '10.0.0.23')
-        self.assertEqual(private_ip_addresses[3].private_ip_address,
-                         '10.0.0.24')
+        self.assertEqual(private_ip_addresses[1].private_ip_address, "10.0.0.22")
+        self.assertEqual(private_ip_addresses[2].private_ip_address, "10.0.0.23")
+        self.assertEqual(private_ip_addresses[3].private_ip_address, "10.0.0.24")
 
     def test_associate_public_ip(self):
         # Supplying basically nothing ought to work.
@@ -136,14 +135,14 @@ class TestVPCConnection(unittest.TestCase):
             associate_public_ip_address=True,
             subnet_id=self.subnet.id,
             # Just for testing.
-            delete_on_termination=True
+            delete_on_termination=True,
         )
         interfaces = NetworkInterfaceCollection(interface)
 
         reservation = self.api.run_instances(
-            image_id='ami-a0cd60c9',
-            instance_type='m1.small',
-            network_interfaces=interfaces
+            image_id="ami-a0cd60c9",
+            instance_type="m1.small",
+            network_interfaces=interfaces,
         )
         instance = reservation.instances[0]
         self.instances.append(instance)
@@ -153,11 +152,7 @@ class TestVPCConnection(unittest.TestCase):
         # Because the public IP won't be there right away.
         time.sleep(60)
 
-        retrieved = self.api.get_all_reservations(
-            instance_ids=[
-                instance.id
-            ]
-        )
+        retrieved = self.api.get_all_reservations(instance_ids=[instance.id])
         self.assertEqual(len(retrieved), 1)
         retrieved_instances = retrieved[0].instances
         self.assertEqual(len(retrieved_instances), 1)
@@ -169,21 +164,21 @@ class TestVPCConnection(unittest.TestCase):
         # There ought to be a public IP there.
         # We can't reason about the IP itself, so just make sure it vaguely
         # resembles an IP (& isn't empty/``None``)...
-        self.assertTrue(interface.publicIp.count('.') >= 3)
+        self.assertTrue(interface.publicIp.count(".") >= 3)
 
     def test_associate_elastic_ip(self):
         interface = NetworkInterfaceSpecification(
             associate_public_ip_address=False,
             subnet_id=self.subnet.id,
             # Just for testing.
-            delete_on_termination=True
+            delete_on_termination=True,
         )
         interfaces = NetworkInterfaceCollection(interface)
 
         reservation = self.api.run_instances(
-            image_id='ami-a0cd60c9',
-            instance_type='m1.small',
-            network_interfaces=interfaces
+            image_id="ami-a0cd60c9",
+            instance_type="m1.small",
+            network_interfaces=interfaces,
         )
         instance = reservation.instances[0]
         # Register instance to be removed
@@ -197,11 +192,15 @@ class TestVPCConnection(unittest.TestCase):
         time.sleep(5)
         # Attach and register clean up tasks
         self.api.attach_internet_gateway(igw.id, self.vpc.id)
-        self.post_terminate_cleanups.append((self.api.detach_internet_gateway, (igw.id, self.vpc.id)))
-        self.post_terminate_cleanups.append((self.api.delete_internet_gateway, (igw.id,)))
+        self.post_terminate_cleanups.append(
+            (self.api.detach_internet_gateway, (igw.id, self.vpc.id))
+        )
+        self.post_terminate_cleanups.append(
+            (self.api.delete_internet_gateway, (igw.id,))
+        )
 
         # Allocate an elastic ip to this vpc
-        eip = self.api.allocate_address('vpc')
+        eip = self.api.allocate_address("vpc")
         self.post_terminate_cleanups.append((self.delete_elastic_ip, (eip,)))
 
         # Wait on instance and eip then try to associate directly to instance
@@ -209,5 +208,5 @@ class TestVPCConnection(unittest.TestCase):
         eip.associate(instance.id)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

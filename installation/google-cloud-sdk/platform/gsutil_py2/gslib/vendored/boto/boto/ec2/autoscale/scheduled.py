@@ -38,40 +38,40 @@ class ScheduledUpdateGroupAction(object):
         self.min_size = None
 
     def __repr__(self):
-        return 'ScheduledUpdateGroupAction:%s' % self.name
+        return "ScheduledUpdateGroupAction:%s" % self.name
 
     def startElement(self, name, attrs, connection):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'DesiredCapacity':
+        if name == "DesiredCapacity":
             self.desired_capacity = value
-        elif name == 'ScheduledActionName':
+        elif name == "ScheduledActionName":
             self.name = value
-        elif name == 'AutoScalingGroupName':
+        elif name == "AutoScalingGroupName":
             self.as_group = value
-        elif name == 'MaxSize':
+        elif name == "MaxSize":
             self.max_size = int(value)
-        elif name == 'MinSize':
+        elif name == "MinSize":
             self.min_size = int(value)
-        elif name == 'ScheduledActionARN':
+        elif name == "ScheduledActionARN":
             self.action_arn = value
-        elif name == 'Recurrence':
+        elif name == "Recurrence":
             self.recurrence = value
-        elif name == 'Time':
+        elif name == "Time":
             try:
-                self.time = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
+                self.time = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ")
             except ValueError:
-                self.time = datetime.strptime(value, '%Y-%m-%dT%H:%M:%SZ')
-        elif name == 'StartTime':
+                self.time = datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
+        elif name == "StartTime":
             try:
-                self.start_time = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
+                self.start_time = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ")
             except ValueError:
-                self.start_time = datetime.strptime(value, '%Y-%m-%dT%H:%M:%SZ')
-        elif name == 'EndTime':
+                self.start_time = datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
+        elif name == "EndTime":
             try:
-                self.end_time = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
+                self.end_time = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ")
             except ValueError:
-                self.end_time = datetime.strptime(value, '%Y-%m-%dT%H:%M:%SZ')
+                self.end_time = datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
         else:
             setattr(self, name, value)

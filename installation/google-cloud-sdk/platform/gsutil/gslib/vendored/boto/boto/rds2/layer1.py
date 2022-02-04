@@ -58,6 +58,7 @@ class RDSConnection(AWSQueryConnection):
     more information on Amazon RDS concepts and usage scenarios, go to
     the `Amazon RDS User Guide`_.
     """
+
     APIVersion = "2013-09-09"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "rds.us-east-1.amazonaws.com"
@@ -119,24 +120,25 @@ class RDSConnection(AWSQueryConnection):
         "SubnetAlreadyInUse": exceptions.SubnetAlreadyInUse,
     }
 
-
     def __init__(self, **kwargs):
-        region = kwargs.pop('region', None)
+        region = kwargs.pop("region", None)
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
 
-        if 'host' not in kwargs:
-            kwargs['host'] = region.endpoint
+        if "host" not in kwargs:
+            kwargs["host"] = region.endpoint
 
         super(RDSConnection, self).__init__(**kwargs)
         self.region = region
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
-    def add_source_identifier_to_subscription(self, subscription_name,
-                                              source_identifier):
+    def add_source_identifier_to_subscription(
+        self, subscription_name, source_identifier
+    ):
         """
         Adds a source identifier to an existing RDS event notification
         subscription.
@@ -166,13 +168,15 @@ class RDSConnection(AWSQueryConnection):
 
         """
         params = {
-            'SubscriptionName': subscription_name,
-            'SourceIdentifier': source_identifier,
+            "SubscriptionName": subscription_name,
+            "SourceIdentifier": source_identifier,
         }
         return self._make_request(
-            action='AddSourceIdentifierToSubscription',
-            verb='POST',
-            path='/', params=params)
+            action="AddSourceIdentifierToSubscription",
+            verb="POST",
+            path="/",
+            params=params,
+        )
 
     def add_tags_to_resource(self, resource_name, tags):
         """
@@ -196,21 +200,22 @@ class RDSConnection(AWSQueryConnection):
             [('key1', 'valueForKey1'), ('key2', 'valueForKey2')]
 
         """
-        params = {'ResourceName': resource_name, }
-        self.build_complex_list_params(
-            params, tags,
-            'Tags.member',
-            ('Key', 'Value'))
+        params = {
+            "ResourceName": resource_name,
+        }
+        self.build_complex_list_params(params, tags, "Tags.member", ("Key", "Value"))
         return self._make_request(
-            action='AddTagsToResource',
-            verb='POST',
-            path='/', params=params)
+            action="AddTagsToResource", verb="POST", path="/", params=params
+        )
 
-    def authorize_db_security_group_ingress(self, db_security_group_name,
-                                            cidrip=None,
-                                            ec2_security_group_name=None,
-                                            ec2_security_group_id=None,
-                                            ec2_security_group_owner_id=None):
+    def authorize_db_security_group_ingress(
+        self,
+        db_security_group_name,
+        cidrip=None,
+        ec2_security_group_name=None,
+        ec2_security_group_id=None,
+        ec2_security_group_owner_id=None,
+    ):
         """
         Enables ingress to a DBSecurityGroup using one of two forms of
         authorization. First, EC2 or VPC security groups can be added
@@ -256,22 +261,27 @@ class RDSConnection(AWSQueryConnection):
             `EC2SecurityGroupName` or `EC2SecurityGroupId` must be provided.
 
         """
-        params = {'DBSecurityGroupName': db_security_group_name, }
+        params = {
+            "DBSecurityGroupName": db_security_group_name,
+        }
         if cidrip is not None:
-            params['CIDRIP'] = cidrip
+            params["CIDRIP"] = cidrip
         if ec2_security_group_name is not None:
-            params['EC2SecurityGroupName'] = ec2_security_group_name
+            params["EC2SecurityGroupName"] = ec2_security_group_name
         if ec2_security_group_id is not None:
-            params['EC2SecurityGroupId'] = ec2_security_group_id
+            params["EC2SecurityGroupId"] = ec2_security_group_id
         if ec2_security_group_owner_id is not None:
-            params['EC2SecurityGroupOwnerId'] = ec2_security_group_owner_id
+            params["EC2SecurityGroupOwnerId"] = ec2_security_group_owner_id
         return self._make_request(
-            action='AuthorizeDBSecurityGroupIngress',
-            verb='POST',
-            path='/', params=params)
+            action="AuthorizeDBSecurityGroupIngress",
+            verb="POST",
+            path="/",
+            params=params,
+        )
 
-    def copy_db_snapshot(self, source_db_snapshot_identifier,
-                         target_db_snapshot_identifier, tags=None):
+    def copy_db_snapshot(
+        self, source_db_snapshot_identifier, target_db_snapshot_identifier, tags=None
+    ):
         """
         Copies the specified DBSnapshot. The source DBSnapshot must be
         in the "available" state.
@@ -307,34 +317,45 @@ class RDSConnection(AWSQueryConnection):
             [('key1', 'valueForKey1'), ('key2', 'valueForKey2')]
         """
         params = {
-            'SourceDBSnapshotIdentifier': source_db_snapshot_identifier,
-            'TargetDBSnapshotIdentifier': target_db_snapshot_identifier,
+            "SourceDBSnapshotIdentifier": source_db_snapshot_identifier,
+            "TargetDBSnapshotIdentifier": target_db_snapshot_identifier,
         }
         if tags is not None:
             self.build_complex_list_params(
-                params, tags,
-                'Tags.member',
-                ('Key', 'Value'))
+                params, tags, "Tags.member", ("Key", "Value")
+            )
         return self._make_request(
-            action='CopyDBSnapshot',
-            verb='POST',
-            path='/', params=params)
+            action="CopyDBSnapshot", verb="POST", path="/", params=params
+        )
 
-    def create_db_instance(self, db_instance_identifier, allocated_storage,
-                           db_instance_class, engine, master_username,
-                           master_user_password, db_name=None,
-                           db_security_groups=None,
-                           vpc_security_group_ids=None,
-                           availability_zone=None, db_subnet_group_name=None,
-                           preferred_maintenance_window=None,
-                           db_parameter_group_name=None,
-                           backup_retention_period=None,
-                           preferred_backup_window=None, port=None,
-                           multi_az=None, engine_version=None,
-                           auto_minor_version_upgrade=None,
-                           license_model=None, iops=None,
-                           option_group_name=None, character_set_name=None,
-                           publicly_accessible=None, tags=None):
+    def create_db_instance(
+        self,
+        db_instance_identifier,
+        allocated_storage,
+        db_instance_class,
+        engine,
+        master_username,
+        master_user_password,
+        db_name=None,
+        db_security_groups=None,
+        vpc_security_group_ids=None,
+        availability_zone=None,
+        db_subnet_group_name=None,
+        preferred_maintenance_window=None,
+        db_parameter_group_name=None,
+        backup_retention_period=None,
+        preferred_backup_window=None,
+        port=None,
+        multi_az=None,
+        engine_version=None,
+        auto_minor_version_upgrade=None,
+        license_model=None,
+        iops=None,
+        option_group_name=None,
+        character_set_name=None,
+        publicly_accessible=None,
+        tags=None,
+    ):
         """
         Creates a new DB instance.
 
@@ -652,73 +673,74 @@ class RDSConnection(AWSQueryConnection):
 
         """
         params = {
-            'DBInstanceIdentifier': db_instance_identifier,
-            'AllocatedStorage': allocated_storage,
-            'DBInstanceClass': db_instance_class,
-            'Engine': engine,
-            'MasterUsername': master_username,
-            'MasterUserPassword': master_user_password,
+            "DBInstanceIdentifier": db_instance_identifier,
+            "AllocatedStorage": allocated_storage,
+            "DBInstanceClass": db_instance_class,
+            "Engine": engine,
+            "MasterUsername": master_username,
+            "MasterUserPassword": master_user_password,
         }
         if db_name is not None:
-            params['DBName'] = db_name
+            params["DBName"] = db_name
         if db_security_groups is not None:
-            self.build_list_params(params,
-                                   db_security_groups,
-                                   'DBSecurityGroups.member')
+            self.build_list_params(
+                params, db_security_groups, "DBSecurityGroups.member"
+            )
         if vpc_security_group_ids is not None:
-            self.build_list_params(params,
-                                   vpc_security_group_ids,
-                                   'VpcSecurityGroupIds.member')
+            self.build_list_params(
+                params, vpc_security_group_ids, "VpcSecurityGroupIds.member"
+            )
         if availability_zone is not None:
-            params['AvailabilityZone'] = availability_zone
+            params["AvailabilityZone"] = availability_zone
         if db_subnet_group_name is not None:
-            params['DBSubnetGroupName'] = db_subnet_group_name
+            params["DBSubnetGroupName"] = db_subnet_group_name
         if preferred_maintenance_window is not None:
-            params['PreferredMaintenanceWindow'] = preferred_maintenance_window
+            params["PreferredMaintenanceWindow"] = preferred_maintenance_window
         if db_parameter_group_name is not None:
-            params['DBParameterGroupName'] = db_parameter_group_name
+            params["DBParameterGroupName"] = db_parameter_group_name
         if backup_retention_period is not None:
-            params['BackupRetentionPeriod'] = backup_retention_period
+            params["BackupRetentionPeriod"] = backup_retention_period
         if preferred_backup_window is not None:
-            params['PreferredBackupWindow'] = preferred_backup_window
+            params["PreferredBackupWindow"] = preferred_backup_window
         if port is not None:
-            params['Port'] = port
+            params["Port"] = port
         if multi_az is not None:
-            params['MultiAZ'] = str(
-                multi_az).lower()
+            params["MultiAZ"] = str(multi_az).lower()
         if engine_version is not None:
-            params['EngineVersion'] = engine_version
+            params["EngineVersion"] = engine_version
         if auto_minor_version_upgrade is not None:
-            params['AutoMinorVersionUpgrade'] = str(
-                auto_minor_version_upgrade).lower()
+            params["AutoMinorVersionUpgrade"] = str(auto_minor_version_upgrade).lower()
         if license_model is not None:
-            params['LicenseModel'] = license_model
+            params["LicenseModel"] = license_model
         if iops is not None:
-            params['Iops'] = iops
+            params["Iops"] = iops
         if option_group_name is not None:
-            params['OptionGroupName'] = option_group_name
+            params["OptionGroupName"] = option_group_name
         if character_set_name is not None:
-            params['CharacterSetName'] = character_set_name
+            params["CharacterSetName"] = character_set_name
         if publicly_accessible is not None:
-            params['PubliclyAccessible'] = str(
-                publicly_accessible).lower()
+            params["PubliclyAccessible"] = str(publicly_accessible).lower()
         if tags is not None:
             self.build_complex_list_params(
-                params, tags,
-                'Tags.member',
-                ('Key', 'Value'))
+                params, tags, "Tags.member", ("Key", "Value")
+            )
         return self._make_request(
-            action='CreateDBInstance',
-            verb='POST',
-            path='/', params=params)
+            action="CreateDBInstance", verb="POST", path="/", params=params
+        )
 
-    def create_db_instance_read_replica(self, db_instance_identifier,
-                                        source_db_instance_identifier,
-                                        db_instance_class=None,
-                                        availability_zone=None, port=None,
-                                        auto_minor_version_upgrade=None,
-                                        iops=None, option_group_name=None,
-                                        publicly_accessible=None, tags=None):
+    def create_db_instance_read_replica(
+        self,
+        db_instance_identifier,
+        source_db_instance_identifier,
+        db_instance_class=None,
+        availability_zone=None,
+        port=None,
+        auto_minor_version_upgrade=None,
+        iops=None,
+        option_group_name=None,
+        publicly_accessible=None,
+        tags=None,
+    ):
         """
         Creates a DB instance that acts as a read replica of a source
         DB instance.
@@ -807,38 +829,34 @@ class RDSConnection(AWSQueryConnection):
 
         """
         params = {
-            'DBInstanceIdentifier': db_instance_identifier,
-            'SourceDBInstanceIdentifier': source_db_instance_identifier,
+            "DBInstanceIdentifier": db_instance_identifier,
+            "SourceDBInstanceIdentifier": source_db_instance_identifier,
         }
         if db_instance_class is not None:
-            params['DBInstanceClass'] = db_instance_class
+            params["DBInstanceClass"] = db_instance_class
         if availability_zone is not None:
-            params['AvailabilityZone'] = availability_zone
+            params["AvailabilityZone"] = availability_zone
         if port is not None:
-            params['Port'] = port
+            params["Port"] = port
         if auto_minor_version_upgrade is not None:
-            params['AutoMinorVersionUpgrade'] = str(
-                auto_minor_version_upgrade).lower()
+            params["AutoMinorVersionUpgrade"] = str(auto_minor_version_upgrade).lower()
         if iops is not None:
-            params['Iops'] = iops
+            params["Iops"] = iops
         if option_group_name is not None:
-            params['OptionGroupName'] = option_group_name
+            params["OptionGroupName"] = option_group_name
         if publicly_accessible is not None:
-            params['PubliclyAccessible'] = str(
-                publicly_accessible).lower()
+            params["PubliclyAccessible"] = str(publicly_accessible).lower()
         if tags is not None:
             self.build_complex_list_params(
-                params, tags,
-                'Tags.member',
-                ('Key', 'Value'))
+                params, tags, "Tags.member", ("Key", "Value")
+            )
         return self._make_request(
-            action='CreateDBInstanceReadReplica',
-            verb='POST',
-            path='/', params=params)
+            action="CreateDBInstanceReadReplica", verb="POST", path="/", params=params
+        )
 
-    def create_db_parameter_group(self, db_parameter_group_name,
-                                  db_parameter_group_family, description,
-                                  tags=None):
+    def create_db_parameter_group(
+        self, db_parameter_group_name, db_parameter_group_family, description, tags=None
+    ):
         """
         Creates a new DB parameter group.
 
@@ -883,22 +901,21 @@ class RDSConnection(AWSQueryConnection):
 
         """
         params = {
-            'DBParameterGroupName': db_parameter_group_name,
-            'DBParameterGroupFamily': db_parameter_group_family,
-            'Description': description,
+            "DBParameterGroupName": db_parameter_group_name,
+            "DBParameterGroupFamily": db_parameter_group_family,
+            "Description": description,
         }
         if tags is not None:
             self.build_complex_list_params(
-                params, tags,
-                'Tags.member',
-                ('Key', 'Value'))
+                params, tags, "Tags.member", ("Key", "Value")
+            )
         return self._make_request(
-            action='CreateDBParameterGroup',
-            verb='POST',
-            path='/', params=params)
+            action="CreateDBParameterGroup", verb="POST", path="/", params=params
+        )
 
-    def create_db_security_group(self, db_security_group_name,
-                                 db_security_group_description, tags=None):
+    def create_db_security_group(
+        self, db_security_group_name, db_security_group_description, tags=None
+    ):
         """
         Creates a new DB security group. DB security groups control
         access to a DB instance.
@@ -928,21 +945,20 @@ class RDSConnection(AWSQueryConnection):
 
         """
         params = {
-            'DBSecurityGroupName': db_security_group_name,
-            'DBSecurityGroupDescription': db_security_group_description,
+            "DBSecurityGroupName": db_security_group_name,
+            "DBSecurityGroupDescription": db_security_group_description,
         }
         if tags is not None:
             self.build_complex_list_params(
-                params, tags,
-                'Tags.member',
-                ('Key', 'Value'))
+                params, tags, "Tags.member", ("Key", "Value")
+            )
         return self._make_request(
-            action='CreateDBSecurityGroup',
-            verb='POST',
-            path='/', params=params)
+            action="CreateDBSecurityGroup", verb="POST", path="/", params=params
+        )
 
-    def create_db_snapshot(self, db_snapshot_identifier,
-                           db_instance_identifier, tags=None):
+    def create_db_snapshot(
+        self, db_snapshot_identifier, db_instance_identifier, tags=None
+    ):
         """
         Creates a DBSnapshot. The source DBInstance must be in
         "available" state.
@@ -978,22 +994,20 @@ class RDSConnection(AWSQueryConnection):
 
         """
         params = {
-            'DBSnapshotIdentifier': db_snapshot_identifier,
-            'DBInstanceIdentifier': db_instance_identifier,
+            "DBSnapshotIdentifier": db_snapshot_identifier,
+            "DBInstanceIdentifier": db_instance_identifier,
         }
         if tags is not None:
             self.build_complex_list_params(
-                params, tags,
-                'Tags.member',
-                ('Key', 'Value'))
+                params, tags, "Tags.member", ("Key", "Value")
+            )
         return self._make_request(
-            action='CreateDBSnapshot',
-            verb='POST',
-            path='/', params=params)
+            action="CreateDBSnapshot", verb="POST", path="/", params=params
+        )
 
-    def create_db_subnet_group(self, db_subnet_group_name,
-                               db_subnet_group_description, subnet_ids,
-                               tags=None):
+    def create_db_subnet_group(
+        self, db_subnet_group_name, db_subnet_group_description, subnet_ids, tags=None
+    ):
         """
         Creates a new DB subnet group. DB subnet groups must contain
         at least one subnet in at least two AZs in the region.
@@ -1019,25 +1033,28 @@ class RDSConnection(AWSQueryConnection):
 
         """
         params = {
-            'DBSubnetGroupName': db_subnet_group_name,
-            'DBSubnetGroupDescription': db_subnet_group_description,
+            "DBSubnetGroupName": db_subnet_group_name,
+            "DBSubnetGroupDescription": db_subnet_group_description,
         }
-        self.build_list_params(params,
-                               subnet_ids,
-                               'SubnetIds.member')
+        self.build_list_params(params, subnet_ids, "SubnetIds.member")
         if tags is not None:
             self.build_complex_list_params(
-                params, tags,
-                'Tags.member',
-                ('Key', 'Value'))
+                params, tags, "Tags.member", ("Key", "Value")
+            )
         return self._make_request(
-            action='CreateDBSubnetGroup',
-            verb='POST',
-            path='/', params=params)
+            action="CreateDBSubnetGroup", verb="POST", path="/", params=params
+        )
 
-    def create_event_subscription(self, subscription_name, sns_topic_arn,
-                                  source_type=None, event_categories=None,
-                                  source_ids=None, enabled=None, tags=None):
+    def create_event_subscription(
+        self,
+        subscription_name,
+        sns_topic_arn,
+        source_type=None,
+        event_categories=None,
+        source_ids=None,
+        enabled=None,
+        tags=None,
+    ):
         """
         Creates an RDS event notification subscription. This action
         requires a topic ARN (Amazon Resource Name) created by either
@@ -1119,35 +1136,33 @@ class RDSConnection(AWSQueryConnection):
 
         """
         params = {
-            'SubscriptionName': subscription_name,
-            'SnsTopicArn': sns_topic_arn,
+            "SubscriptionName": subscription_name,
+            "SnsTopicArn": sns_topic_arn,
         }
         if source_type is not None:
-            params['SourceType'] = source_type
+            params["SourceType"] = source_type
         if event_categories is not None:
-            self.build_list_params(params,
-                                   event_categories,
-                                   'EventCategories.member')
+            self.build_list_params(params, event_categories, "EventCategories.member")
         if source_ids is not None:
-            self.build_list_params(params,
-                                   source_ids,
-                                   'SourceIds.member')
+            self.build_list_params(params, source_ids, "SourceIds.member")
         if enabled is not None:
-            params['Enabled'] = str(
-                enabled).lower()
+            params["Enabled"] = str(enabled).lower()
         if tags is not None:
             self.build_complex_list_params(
-                params, tags,
-                'Tags.member',
-                ('Key', 'Value'))
+                params, tags, "Tags.member", ("Key", "Value")
+            )
         return self._make_request(
-            action='CreateEventSubscription',
-            verb='POST',
-            path='/', params=params)
+            action="CreateEventSubscription", verb="POST", path="/", params=params
+        )
 
-    def create_option_group(self, option_group_name, engine_name,
-                            major_engine_version, option_group_description,
-                            tags=None):
+    def create_option_group(
+        self,
+        option_group_name,
+        engine_name,
+        major_engine_version,
+        option_group_description,
+        tags=None,
+    ):
         """
         Creates a new option group. You can create up to 20 option
         groups.
@@ -1182,24 +1197,25 @@ class RDSConnection(AWSQueryConnection):
 
         """
         params = {
-            'OptionGroupName': option_group_name,
-            'EngineName': engine_name,
-            'MajorEngineVersion': major_engine_version,
-            'OptionGroupDescription': option_group_description,
+            "OptionGroupName": option_group_name,
+            "EngineName": engine_name,
+            "MajorEngineVersion": major_engine_version,
+            "OptionGroupDescription": option_group_description,
         }
         if tags is not None:
             self.build_complex_list_params(
-                params, tags,
-                'Tags.member',
-                ('Key', 'Value'))
+                params, tags, "Tags.member", ("Key", "Value")
+            )
         return self._make_request(
-            action='CreateOptionGroup',
-            verb='POST',
-            path='/', params=params)
+            action="CreateOptionGroup", verb="POST", path="/", params=params
+        )
 
-    def delete_db_instance(self, db_instance_identifier,
-                           skip_final_snapshot=None,
-                           final_db_snapshot_identifier=None):
+    def delete_db_instance(
+        self,
+        db_instance_identifier,
+        skip_final_snapshot=None,
+        final_db_snapshot_identifier=None,
+    ):
         """
         The DeleteDBInstance action deletes a previously provisioned
         DB instance. A successful response from the web service
@@ -1252,16 +1268,16 @@ class RDSConnection(AWSQueryConnection):
         + Cannot end with a hyphen or contain two consecutive hyphens
 
         """
-        params = {'DBInstanceIdentifier': db_instance_identifier, }
+        params = {
+            "DBInstanceIdentifier": db_instance_identifier,
+        }
         if skip_final_snapshot is not None:
-            params['SkipFinalSnapshot'] = str(
-                skip_final_snapshot).lower()
+            params["SkipFinalSnapshot"] = str(skip_final_snapshot).lower()
         if final_db_snapshot_identifier is not None:
-            params['FinalDBSnapshotIdentifier'] = final_db_snapshot_identifier
+            params["FinalDBSnapshotIdentifier"] = final_db_snapshot_identifier
         return self._make_request(
-            action='DeleteDBInstance',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteDBInstance", verb="POST", path="/", params=params
+        )
 
     def delete_db_parameter_group(self, db_parameter_group_name):
         """
@@ -1282,11 +1298,12 @@ class RDSConnection(AWSQueryConnection):
         + Cannot be associated with any DB instances
 
         """
-        params = {'DBParameterGroupName': db_parameter_group_name, }
+        params = {
+            "DBParameterGroupName": db_parameter_group_name,
+        }
         return self._make_request(
-            action='DeleteDBParameterGroup',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteDBParameterGroup", verb="POST", path="/", params=params
+        )
 
     def delete_db_security_group(self, db_security_group_name):
         """
@@ -1310,11 +1327,12 @@ class RDSConnection(AWSQueryConnection):
         + May not contain spaces
 
         """
-        params = {'DBSecurityGroupName': db_security_group_name, }
+        params = {
+            "DBSecurityGroupName": db_security_group_name,
+        }
         return self._make_request(
-            action='DeleteDBSecurityGroup',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteDBSecurityGroup", verb="POST", path="/", params=params
+        )
 
     def delete_db_snapshot(self, db_snapshot_identifier):
         """
@@ -1327,11 +1345,12 @@ class RDSConnection(AWSQueryConnection):
             `available` state.
 
         """
-        params = {'DBSnapshotIdentifier': db_snapshot_identifier, }
+        params = {
+            "DBSnapshotIdentifier": db_snapshot_identifier,
+        }
         return self._make_request(
-            action='DeleteDBSnapshot',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteDBSnapshot", verb="POST", path="/", params=params
+        )
 
     def delete_db_subnet_group(self, db_subnet_group_name):
         """
@@ -1353,11 +1372,12 @@ class RDSConnection(AWSQueryConnection):
         + Cannot end with a hyphen or contain two consecutive hyphens
 
         """
-        params = {'DBSubnetGroupName': db_subnet_group_name, }
+        params = {
+            "DBSubnetGroupName": db_subnet_group_name,
+        }
         return self._make_request(
-            action='DeleteDBSubnetGroup',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteDBSubnetGroup", verb="POST", path="/", params=params
+        )
 
     def delete_event_subscription(self, subscription_name):
         """
@@ -1368,11 +1388,12 @@ class RDSConnection(AWSQueryConnection):
             subscription you want to delete.
 
         """
-        params = {'SubscriptionName': subscription_name, }
+        params = {
+            "SubscriptionName": subscription_name,
+        }
         return self._make_request(
-            action='DeleteEventSubscription',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteEventSubscription", verb="POST", path="/", params=params
+        )
 
     def delete_option_group(self, option_group_name):
         """
@@ -1385,17 +1406,23 @@ class RDSConnection(AWSQueryConnection):
         You cannot delete default option groups.
 
         """
-        params = {'OptionGroupName': option_group_name, }
+        params = {
+            "OptionGroupName": option_group_name,
+        }
         return self._make_request(
-            action='DeleteOptionGroup',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteOptionGroup", verb="POST", path="/", params=params
+        )
 
-    def describe_db_engine_versions(self, engine=None, engine_version=None,
-                                    db_parameter_group_family=None,
-                                    max_records=None, marker=None,
-                                    default_only=None,
-                                    list_supported_character_sets=None):
+    def describe_db_engine_versions(
+        self,
+        engine=None,
+        engine_version=None,
+        db_parameter_group_family=None,
+        max_records=None,
+        marker=None,
+        default_only=None,
+        list_supported_character_sets=None,
+    ):
         """
         Returns a list of the available DB engines.
 
@@ -1446,28 +1473,28 @@ class RDSConnection(AWSQueryConnection):
         """
         params = {}
         if engine is not None:
-            params['Engine'] = engine
+            params["Engine"] = engine
         if engine_version is not None:
-            params['EngineVersion'] = engine_version
+            params["EngineVersion"] = engine_version
         if db_parameter_group_family is not None:
-            params['DBParameterGroupFamily'] = db_parameter_group_family
+            params["DBParameterGroupFamily"] = db_parameter_group_family
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if default_only is not None:
-            params['DefaultOnly'] = str(
-                default_only).lower()
+            params["DefaultOnly"] = str(default_only).lower()
         if list_supported_character_sets is not None:
-            params['ListSupportedCharacterSets'] = str(
-                list_supported_character_sets).lower()
+            params["ListSupportedCharacterSets"] = str(
+                list_supported_character_sets
+            ).lower()
         return self._make_request(
-            action='DescribeDBEngineVersions',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeDBEngineVersions", verb="POST", path="/", params=params
+        )
 
-    def describe_db_instances(self, db_instance_identifier=None,
-                              filters=None, max_records=None, marker=None):
+    def describe_db_instances(
+        self, db_instance_identifier=None, filters=None, max_records=None, marker=None
+    ):
         """
         Returns information about provisioned RDS instances. This API
         supports pagination.
@@ -1506,24 +1533,28 @@ class RDSConnection(AWSQueryConnection):
         """
         params = {}
         if db_instance_identifier is not None:
-            params['DBInstanceIdentifier'] = db_instance_identifier
+            params["DBInstanceIdentifier"] = db_instance_identifier
         if filters is not None:
             self.build_complex_list_params(
-                params, filters,
-                'Filters.member',
-                ('FilterName', 'FilterValue'))
+                params, filters, "Filters.member", ("FilterName", "FilterValue")
+            )
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeDBInstances',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeDBInstances", verb="POST", path="/", params=params
+        )
 
-    def describe_db_log_files(self, db_instance_identifier,
-                              filename_contains=None, file_last_written=None,
-                              file_size=None, max_records=None, marker=None):
+    def describe_db_log_files(
+        self,
+        db_instance_identifier,
+        filename_contains=None,
+        file_last_written=None,
+        file_size=None,
+        max_records=None,
+        marker=None,
+    ):
         """
         Returns a list of DB log files for the DB instance.
 
@@ -1563,25 +1594,26 @@ class RDSConnection(AWSQueryConnection):
             beyond the marker, up to MaxRecords.
 
         """
-        params = {'DBInstanceIdentifier': db_instance_identifier, }
+        params = {
+            "DBInstanceIdentifier": db_instance_identifier,
+        }
         if filename_contains is not None:
-            params['FilenameContains'] = filename_contains
+            params["FilenameContains"] = filename_contains
         if file_last_written is not None:
-            params['FileLastWritten'] = file_last_written
+            params["FileLastWritten"] = file_last_written
         if file_size is not None:
-            params['FileSize'] = file_size
+            params["FileSize"] = file_size
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeDBLogFiles',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeDBLogFiles", verb="POST", path="/", params=params
+        )
 
-    def describe_db_parameter_groups(self, db_parameter_group_name=None,
-                                     filters=None, max_records=None,
-                                     marker=None):
+    def describe_db_parameter_groups(
+        self, db_parameter_group_name=None, filters=None, max_records=None, marker=None
+    ):
         """
         Returns a list of `DBParameterGroup` descriptions. If a
         `DBParameterGroupName` is specified, the list will contain
@@ -1619,23 +1651,22 @@ class RDSConnection(AWSQueryConnection):
         """
         params = {}
         if db_parameter_group_name is not None:
-            params['DBParameterGroupName'] = db_parameter_group_name
+            params["DBParameterGroupName"] = db_parameter_group_name
         if filters is not None:
             self.build_complex_list_params(
-                params, filters,
-                'Filters.member',
-                ('FilterName', 'FilterValue'))
+                params, filters, "Filters.member", ("FilterName", "FilterValue")
+            )
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeDBParameterGroups',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeDBParameterGroups", verb="POST", path="/", params=params
+        )
 
-    def describe_db_parameters(self, db_parameter_group_name, source=None,
-                               max_records=None, marker=None):
+    def describe_db_parameters(
+        self, db_parameter_group_name, source=None, max_records=None, marker=None
+    ):
         """
         Returns the detailed parameter list for a particular DB
         parameter group.
@@ -1673,21 +1704,22 @@ class RDSConnection(AWSQueryConnection):
             specified by `MaxRecords`.
 
         """
-        params = {'DBParameterGroupName': db_parameter_group_name, }
+        params = {
+            "DBParameterGroupName": db_parameter_group_name,
+        }
         if source is not None:
-            params['Source'] = source
+            params["Source"] = source
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeDBParameters',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeDBParameters", verb="POST", path="/", params=params
+        )
 
-    def describe_db_security_groups(self, db_security_group_name=None,
-                                    filters=None, max_records=None,
-                                    marker=None):
+    def describe_db_security_groups(
+        self, db_security_group_name=None, filters=None, max_records=None, marker=None
+    ):
         """
         Returns a list of `DBSecurityGroup` descriptions. If a
         `DBSecurityGroupName` is specified, the list will contain only
@@ -1718,25 +1750,28 @@ class RDSConnection(AWSQueryConnection):
         """
         params = {}
         if db_security_group_name is not None:
-            params['DBSecurityGroupName'] = db_security_group_name
+            params["DBSecurityGroupName"] = db_security_group_name
         if filters is not None:
             self.build_complex_list_params(
-                params, filters,
-                'Filters.member',
-                ('FilterName', 'FilterValue'))
+                params, filters, "Filters.member", ("FilterName", "FilterValue")
+            )
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeDBSecurityGroups',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeDBSecurityGroups", verb="POST", path="/", params=params
+        )
 
-    def describe_db_snapshots(self, db_instance_identifier=None,
-                              db_snapshot_identifier=None,
-                              snapshot_type=None, filters=None,
-                              max_records=None, marker=None):
+    def describe_db_snapshots(
+        self,
+        db_instance_identifier=None,
+        db_snapshot_identifier=None,
+        snapshot_type=None,
+        filters=None,
+        max_records=None,
+        marker=None,
+    ):
         """
         Returns information about DB snapshots. This API supports
         pagination.
@@ -1795,28 +1830,26 @@ class RDSConnection(AWSQueryConnection):
         """
         params = {}
         if db_instance_identifier is not None:
-            params['DBInstanceIdentifier'] = db_instance_identifier
+            params["DBInstanceIdentifier"] = db_instance_identifier
         if db_snapshot_identifier is not None:
-            params['DBSnapshotIdentifier'] = db_snapshot_identifier
+            params["DBSnapshotIdentifier"] = db_snapshot_identifier
         if snapshot_type is not None:
-            params['SnapshotType'] = snapshot_type
+            params["SnapshotType"] = snapshot_type
         if filters is not None:
             self.build_complex_list_params(
-                params, filters,
-                'Filters.member',
-                ('FilterName', 'FilterValue'))
+                params, filters, "Filters.member", ("FilterName", "FilterValue")
+            )
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeDBSnapshots',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeDBSnapshots", verb="POST", path="/", params=params
+        )
 
-    def describe_db_subnet_groups(self, db_subnet_group_name=None,
-                                  filters=None, max_records=None,
-                                  marker=None):
+    def describe_db_subnet_groups(
+        self, db_subnet_group_name=None, filters=None, max_records=None, marker=None
+    ):
         """
         Returns a list of DBSubnetGroup descriptions. If a
         DBSubnetGroupName is specified, the list will contain only the
@@ -1850,23 +1883,22 @@ class RDSConnection(AWSQueryConnection):
         """
         params = {}
         if db_subnet_group_name is not None:
-            params['DBSubnetGroupName'] = db_subnet_group_name
+            params["DBSubnetGroupName"] = db_subnet_group_name
         if filters is not None:
             self.build_complex_list_params(
-                params, filters,
-                'Filters.member',
-                ('FilterName', 'FilterValue'))
+                params, filters, "Filters.member", ("FilterName", "FilterValue")
+            )
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeDBSubnetGroups',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeDBSubnetGroups", verb="POST", path="/", params=params
+        )
 
-    def describe_engine_default_parameters(self, db_parameter_group_family,
-                                           max_records=None, marker=None):
+    def describe_engine_default_parameters(
+        self, db_parameter_group_family, max_records=None, marker=None
+    ):
         """
         Returns the default engine and system parameter information
         for the specified database engine.
@@ -1892,16 +1924,18 @@ class RDSConnection(AWSQueryConnection):
 
         """
         params = {
-            'DBParameterGroupFamily': db_parameter_group_family,
+            "DBParameterGroupFamily": db_parameter_group_family,
         }
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeEngineDefaultParameters',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeEngineDefaultParameters",
+            verb="POST",
+            path="/",
+            params=params,
+        )
 
     def describe_event_categories(self, source_type=None):
         """
@@ -1919,15 +1953,14 @@ class RDSConnection(AWSQueryConnection):
         """
         params = {}
         if source_type is not None:
-            params['SourceType'] = source_type
+            params["SourceType"] = source_type
         return self._make_request(
-            action='DescribeEventCategories',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeEventCategories", verb="POST", path="/", params=params
+        )
 
-    def describe_event_subscriptions(self, subscription_name=None,
-                                     filters=None, max_records=None,
-                                     marker=None):
+    def describe_event_subscriptions(
+        self, subscription_name=None, filters=None, max_records=None, marker=None
+    ):
         """
         Lists all the subscription descriptions for a customer
         account. The description for a subscription includes
@@ -1962,24 +1995,30 @@ class RDSConnection(AWSQueryConnection):
         """
         params = {}
         if subscription_name is not None:
-            params['SubscriptionName'] = subscription_name
+            params["SubscriptionName"] = subscription_name
         if filters is not None:
             self.build_complex_list_params(
-                params, filters,
-                'Filters.member',
-                ('FilterName', 'FilterValue'))
+                params, filters, "Filters.member", ("FilterName", "FilterValue")
+            )
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeEventSubscriptions',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeEventSubscriptions", verb="POST", path="/", params=params
+        )
 
-    def describe_events(self, source_identifier=None, source_type=None,
-                        start_time=None, end_time=None, duration=None,
-                        event_categories=None, max_records=None, marker=None):
+    def describe_events(
+        self,
+        source_identifier=None,
+        source_type=None,
+        start_time=None,
+        end_time=None,
+        duration=None,
+        event_categories=None,
+        max_records=None,
+        marker=None,
+    ):
         """
         Returns events related to DB instances, DB security groups, DB
         snapshots, and DB parameter groups for the past 14 days.
@@ -2049,31 +2088,28 @@ class RDSConnection(AWSQueryConnection):
         """
         params = {}
         if source_identifier is not None:
-            params['SourceIdentifier'] = source_identifier
+            params["SourceIdentifier"] = source_identifier
         if source_type is not None:
-            params['SourceType'] = source_type
+            params["SourceType"] = source_type
         if start_time is not None:
-            params['StartTime'] = start_time
+            params["StartTime"] = start_time
         if end_time is not None:
-            params['EndTime'] = end_time
+            params["EndTime"] = end_time
         if duration is not None:
-            params['Duration'] = duration
+            params["Duration"] = duration
         if event_categories is not None:
-            self.build_list_params(params,
-                                   event_categories,
-                                   'EventCategories.member')
+            self.build_list_params(params, event_categories, "EventCategories.member")
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeEvents',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeEvents", verb="POST", path="/", params=params
+        )
 
-    def describe_option_group_options(self, engine_name,
-                                      major_engine_version=None,
-                                      max_records=None, marker=None):
+    def describe_option_group_options(
+        self, engine_name, major_engine_version=None, max_records=None, marker=None
+    ):
         """
         Describes all available options.
 
@@ -2101,21 +2137,28 @@ class RDSConnection(AWSQueryConnection):
             `MaxRecords`.
 
         """
-        params = {'EngineName': engine_name, }
+        params = {
+            "EngineName": engine_name,
+        }
         if major_engine_version is not None:
-            params['MajorEngineVersion'] = major_engine_version
+            params["MajorEngineVersion"] = major_engine_version
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeOptionGroupOptions',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeOptionGroupOptions", verb="POST", path="/", params=params
+        )
 
-    def describe_option_groups(self, option_group_name=None, filters=None,
-                               marker=None, max_records=None,
-                               engine_name=None, major_engine_version=None):
+    def describe_option_groups(
+        self,
+        option_group_name=None,
+        filters=None,
+        marker=None,
+        max_records=None,
+        engine_name=None,
+        major_engine_version=None,
+    ):
         """
         Describes the available option groups.
 
@@ -2153,30 +2196,33 @@ class RDSConnection(AWSQueryConnection):
         """
         params = {}
         if option_group_name is not None:
-            params['OptionGroupName'] = option_group_name
+            params["OptionGroupName"] = option_group_name
         if filters is not None:
             self.build_complex_list_params(
-                params, filters,
-                'Filters.member',
-                ('FilterName', 'FilterValue'))
+                params, filters, "Filters.member", ("FilterName", "FilterValue")
+            )
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if engine_name is not None:
-            params['EngineName'] = engine_name
+            params["EngineName"] = engine_name
         if major_engine_version is not None:
-            params['MajorEngineVersion'] = major_engine_version
+            params["MajorEngineVersion"] = major_engine_version
         return self._make_request(
-            action='DescribeOptionGroups',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeOptionGroups", verb="POST", path="/", params=params
+        )
 
-    def describe_orderable_db_instance_options(self, engine,
-                                               engine_version=None,
-                                               db_instance_class=None,
-                                               license_model=None, vpc=None,
-                                               max_records=None, marker=None):
+    def describe_orderable_db_instance_options(
+        self,
+        engine,
+        engine_version=None,
+        db_instance_class=None,
+        license_model=None,
+        vpc=None,
+        max_records=None,
+        marker=None,
+    ):
         """
         Returns a list of orderable DB instance options for the
         specified engine.
@@ -2220,32 +2266,41 @@ class RDSConnection(AWSQueryConnection):
             to the value specified by `MaxRecords` .
 
         """
-        params = {'Engine': engine, }
+        params = {
+            "Engine": engine,
+        }
         if engine_version is not None:
-            params['EngineVersion'] = engine_version
+            params["EngineVersion"] = engine_version
         if db_instance_class is not None:
-            params['DBInstanceClass'] = db_instance_class
+            params["DBInstanceClass"] = db_instance_class
         if license_model is not None:
-            params['LicenseModel'] = license_model
+            params["LicenseModel"] = license_model
         if vpc is not None:
-            params['Vpc'] = str(
-                vpc).lower()
+            params["Vpc"] = str(vpc).lower()
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeOrderableDBInstanceOptions',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeOrderableDBInstanceOptions",
+            verb="POST",
+            path="/",
+            params=params,
+        )
 
-    def describe_reserved_db_instances(self, reserved_db_instance_id=None,
-                                       reserved_db_instances_offering_id=None,
-                                       db_instance_class=None, duration=None,
-                                       product_description=None,
-                                       offering_type=None, multi_az=None,
-                                       filters=None, max_records=None,
-                                       marker=None):
+    def describe_reserved_db_instances(
+        self,
+        reserved_db_instance_id=None,
+        reserved_db_instances_offering_id=None,
+        db_instance_class=None,
+        duration=None,
+        product_description=None,
+        offering_type=None,
+        multi_az=None,
+        filters=None,
+        max_records=None,
+        marker=None,
+    ):
         """
         Returns information about reserved DB instances for this
         account, or about a specified reserved DB instance.
@@ -2309,43 +2364,42 @@ class RDSConnection(AWSQueryConnection):
         """
         params = {}
         if reserved_db_instance_id is not None:
-            params['ReservedDBInstanceId'] = reserved_db_instance_id
+            params["ReservedDBInstanceId"] = reserved_db_instance_id
         if reserved_db_instances_offering_id is not None:
-            params['ReservedDBInstancesOfferingId'] = reserved_db_instances_offering_id
+            params["ReservedDBInstancesOfferingId"] = reserved_db_instances_offering_id
         if db_instance_class is not None:
-            params['DBInstanceClass'] = db_instance_class
+            params["DBInstanceClass"] = db_instance_class
         if duration is not None:
-            params['Duration'] = duration
+            params["Duration"] = duration
         if product_description is not None:
-            params['ProductDescription'] = product_description
+            params["ProductDescription"] = product_description
         if offering_type is not None:
-            params['OfferingType'] = offering_type
+            params["OfferingType"] = offering_type
         if multi_az is not None:
-            params['MultiAZ'] = str(
-                multi_az).lower()
+            params["MultiAZ"] = str(multi_az).lower()
         if filters is not None:
             self.build_complex_list_params(
-                params, filters,
-                'Filters.member',
-                ('FilterName', 'FilterValue'))
+                params, filters, "Filters.member", ("FilterName", "FilterValue")
+            )
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeReservedDBInstances',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeReservedDBInstances", verb="POST", path="/", params=params
+        )
 
-    def describe_reserved_db_instances_offerings(self,
-                                                 reserved_db_instances_offering_id=None,
-                                                 db_instance_class=None,
-                                                 duration=None,
-                                                 product_description=None,
-                                                 offering_type=None,
-                                                 multi_az=None,
-                                                 max_records=None,
-                                                 marker=None):
+    def describe_reserved_db_instances_offerings(
+        self,
+        reserved_db_instances_offering_id=None,
+        db_instance_class=None,
+        duration=None,
+        product_description=None,
+        offering_type=None,
+        multi_az=None,
+        max_records=None,
+        marker=None,
+    ):
         """
         Lists available reserved DB instance offerings.
 
@@ -2400,30 +2454,31 @@ class RDSConnection(AWSQueryConnection):
         """
         params = {}
         if reserved_db_instances_offering_id is not None:
-            params['ReservedDBInstancesOfferingId'] = reserved_db_instances_offering_id
+            params["ReservedDBInstancesOfferingId"] = reserved_db_instances_offering_id
         if db_instance_class is not None:
-            params['DBInstanceClass'] = db_instance_class
+            params["DBInstanceClass"] = db_instance_class
         if duration is not None:
-            params['Duration'] = duration
+            params["Duration"] = duration
         if product_description is not None:
-            params['ProductDescription'] = product_description
+            params["ProductDescription"] = product_description
         if offering_type is not None:
-            params['OfferingType'] = offering_type
+            params["OfferingType"] = offering_type
         if multi_az is not None:
-            params['MultiAZ'] = str(
-                multi_az).lower()
+            params["MultiAZ"] = str(multi_az).lower()
         if max_records is not None:
-            params['MaxRecords'] = max_records
+            params["MaxRecords"] = max_records
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         return self._make_request(
-            action='DescribeReservedDBInstancesOfferings',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeReservedDBInstancesOfferings",
+            verb="POST",
+            path="/",
+            params=params,
+        )
 
-    def download_db_log_file_portion(self, db_instance_identifier,
-                                     log_file_name, marker=None,
-                                     number_of_lines=None):
+    def download_db_log_file_portion(
+        self, db_instance_identifier, log_file_name, marker=None, number_of_lines=None
+    ):
         """
         Downloads the last line of the specified log file.
 
@@ -2452,17 +2507,16 @@ class RDSConnection(AWSQueryConnection):
 
         """
         params = {
-            'DBInstanceIdentifier': db_instance_identifier,
-            'LogFileName': log_file_name,
+            "DBInstanceIdentifier": db_instance_identifier,
+            "LogFileName": log_file_name,
         }
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if number_of_lines is not None:
-            params['NumberOfLines'] = number_of_lines
+            params["NumberOfLines"] = number_of_lines
         return self._make_request(
-            action='DownloadDBLogFilePortion',
-            verb='POST',
-            path='/', params=params)
+            action="DownloadDBLogFilePortion", verb="POST", path="/", params=params
+        )
 
     def list_tags_for_resource(self, resource_name):
         """
@@ -2478,26 +2532,34 @@ class RDSConnection(AWSQueryConnection):
             (ARN)`_.
 
         """
-        params = {'ResourceName': resource_name, }
+        params = {
+            "ResourceName": resource_name,
+        }
         return self._make_request(
-            action='ListTagsForResource',
-            verb='POST',
-            path='/', params=params)
+            action="ListTagsForResource", verb="POST", path="/", params=params
+        )
 
-    def modify_db_instance(self, db_instance_identifier,
-                           allocated_storage=None, db_instance_class=None,
-                           db_security_groups=None,
-                           vpc_security_group_ids=None,
-                           apply_immediately=None, master_user_password=None,
-                           db_parameter_group_name=None,
-                           backup_retention_period=None,
-                           preferred_backup_window=None,
-                           preferred_maintenance_window=None, multi_az=None,
-                           engine_version=None,
-                           allow_major_version_upgrade=None,
-                           auto_minor_version_upgrade=None, iops=None,
-                           option_group_name=None,
-                           new_db_instance_identifier=None):
+    def modify_db_instance(
+        self,
+        db_instance_identifier,
+        allocated_storage=None,
+        db_instance_class=None,
+        db_security_groups=None,
+        vpc_security_group_ids=None,
+        apply_immediately=None,
+        master_user_password=None,
+        db_parameter_group_name=None,
+        backup_retention_period=None,
+        preferred_backup_window=None,
+        preferred_maintenance_window=None,
+        multi_az=None,
+        engine_version=None,
+        allow_major_version_upgrade=None,
+        auto_minor_version_upgrade=None,
+        iops=None,
+        option_group_name=None,
+        new_db_instance_identifier=None,
+    ):
         """
         Modify settings for a DB instance. You can change one or more
         database configuration parameters by specifying these
@@ -2804,53 +2866,52 @@ class RDSConnection(AWSQueryConnection):
         + Cannot end with a hyphen or contain two consecutive hyphens
 
         """
-        params = {'DBInstanceIdentifier': db_instance_identifier, }
+        params = {
+            "DBInstanceIdentifier": db_instance_identifier,
+        }
         if allocated_storage is not None:
-            params['AllocatedStorage'] = allocated_storage
+            params["AllocatedStorage"] = allocated_storage
         if db_instance_class is not None:
-            params['DBInstanceClass'] = db_instance_class
+            params["DBInstanceClass"] = db_instance_class
         if db_security_groups is not None:
-            self.build_list_params(params,
-                                   db_security_groups,
-                                   'DBSecurityGroups.member')
+            self.build_list_params(
+                params, db_security_groups, "DBSecurityGroups.member"
+            )
         if vpc_security_group_ids is not None:
-            self.build_list_params(params,
-                                   vpc_security_group_ids,
-                                   'VpcSecurityGroupIds.member')
+            self.build_list_params(
+                params, vpc_security_group_ids, "VpcSecurityGroupIds.member"
+            )
         if apply_immediately is not None:
-            params['ApplyImmediately'] = str(
-                apply_immediately).lower()
+            params["ApplyImmediately"] = str(apply_immediately).lower()
         if master_user_password is not None:
-            params['MasterUserPassword'] = master_user_password
+            params["MasterUserPassword"] = master_user_password
         if db_parameter_group_name is not None:
-            params['DBParameterGroupName'] = db_parameter_group_name
+            params["DBParameterGroupName"] = db_parameter_group_name
         if backup_retention_period is not None:
-            params['BackupRetentionPeriod'] = backup_retention_period
+            params["BackupRetentionPeriod"] = backup_retention_period
         if preferred_backup_window is not None:
-            params['PreferredBackupWindow'] = preferred_backup_window
+            params["PreferredBackupWindow"] = preferred_backup_window
         if preferred_maintenance_window is not None:
-            params['PreferredMaintenanceWindow'] = preferred_maintenance_window
+            params["PreferredMaintenanceWindow"] = preferred_maintenance_window
         if multi_az is not None:
-            params['MultiAZ'] = str(
-                multi_az).lower()
+            params["MultiAZ"] = str(multi_az).lower()
         if engine_version is not None:
-            params['EngineVersion'] = engine_version
+            params["EngineVersion"] = engine_version
         if allow_major_version_upgrade is not None:
-            params['AllowMajorVersionUpgrade'] = str(
-                allow_major_version_upgrade).lower()
+            params["AllowMajorVersionUpgrade"] = str(
+                allow_major_version_upgrade
+            ).lower()
         if auto_minor_version_upgrade is not None:
-            params['AutoMinorVersionUpgrade'] = str(
-                auto_minor_version_upgrade).lower()
+            params["AutoMinorVersionUpgrade"] = str(auto_minor_version_upgrade).lower()
         if iops is not None:
-            params['Iops'] = iops
+            params["Iops"] = iops
         if option_group_name is not None:
-            params['OptionGroupName'] = option_group_name
+            params["OptionGroupName"] = option_group_name
         if new_db_instance_identifier is not None:
-            params['NewDBInstanceIdentifier'] = new_db_instance_identifier
+            params["NewDBInstanceIdentifier"] = new_db_instance_identifier
         return self._make_request(
-            action='ModifyDBInstance',
-            verb='POST',
-            path='/', params=params)
+            action="ModifyDBInstance", verb="POST", path="/", params=params
+        )
 
     def modify_db_parameter_group(self, db_parameter_group_name, parameters):
         """
@@ -2892,18 +2953,33 @@ class RDSConnection(AWSQueryConnection):
             parameters, and changes are applied when DB instance reboots.
 
         """
-        params = {'DBParameterGroupName': db_parameter_group_name, }
+        params = {
+            "DBParameterGroupName": db_parameter_group_name,
+        }
         self.build_complex_list_params(
-            params, parameters,
-            'Parameters.member',
-            ('ParameterName', 'ParameterValue', 'Description', 'Source', 'ApplyType', 'DataType', 'AllowedValues', 'IsModifiable', 'MinimumEngineVersion', 'ApplyMethod'))
+            params,
+            parameters,
+            "Parameters.member",
+            (
+                "ParameterName",
+                "ParameterValue",
+                "Description",
+                "Source",
+                "ApplyType",
+                "DataType",
+                "AllowedValues",
+                "IsModifiable",
+                "MinimumEngineVersion",
+                "ApplyMethod",
+            ),
+        )
         return self._make_request(
-            action='ModifyDBParameterGroup',
-            verb='POST',
-            path='/', params=params)
+            action="ModifyDBParameterGroup", verb="POST", path="/", params=params
+        )
 
-    def modify_db_subnet_group(self, db_subnet_group_name, subnet_ids,
-                               db_subnet_group_description=None):
+    def modify_db_subnet_group(
+        self, db_subnet_group_name, subnet_ids, db_subnet_group_description=None
+    ):
         """
         Modifies an existing DB subnet group. DB subnet groups must
         contain at least one subnet in at least two AZs in the region.
@@ -2924,20 +3000,24 @@ class RDSConnection(AWSQueryConnection):
         :param subnet_ids: The EC2 subnet IDs for the DB subnet group.
 
         """
-        params = {'DBSubnetGroupName': db_subnet_group_name, }
-        self.build_list_params(params,
-                               subnet_ids,
-                               'SubnetIds.member')
+        params = {
+            "DBSubnetGroupName": db_subnet_group_name,
+        }
+        self.build_list_params(params, subnet_ids, "SubnetIds.member")
         if db_subnet_group_description is not None:
-            params['DBSubnetGroupDescription'] = db_subnet_group_description
+            params["DBSubnetGroupDescription"] = db_subnet_group_description
         return self._make_request(
-            action='ModifyDBSubnetGroup',
-            verb='POST',
-            path='/', params=params)
+            action="ModifyDBSubnetGroup", verb="POST", path="/", params=params
+        )
 
-    def modify_event_subscription(self, subscription_name,
-                                  sns_topic_arn=None, source_type=None,
-                                  event_categories=None, enabled=None):
+    def modify_event_subscription(
+        self,
+        subscription_name,
+        sns_topic_arn=None,
+        source_type=None,
+        event_categories=None,
+        enabled=None,
+    ):
         """
         Modifies an existing RDS event notification subscription. Note
         that you cannot modify the source identifiers using this call;
@@ -2977,25 +3057,28 @@ class RDSConnection(AWSQueryConnection):
             subscription.
 
         """
-        params = {'SubscriptionName': subscription_name, }
+        params = {
+            "SubscriptionName": subscription_name,
+        }
         if sns_topic_arn is not None:
-            params['SnsTopicArn'] = sns_topic_arn
+            params["SnsTopicArn"] = sns_topic_arn
         if source_type is not None:
-            params['SourceType'] = source_type
+            params["SourceType"] = source_type
         if event_categories is not None:
-            self.build_list_params(params,
-                                   event_categories,
-                                   'EventCategories.member')
+            self.build_list_params(params, event_categories, "EventCategories.member")
         if enabled is not None:
-            params['Enabled'] = str(
-                enabled).lower()
+            params["Enabled"] = str(enabled).lower()
         return self._make_request(
-            action='ModifyEventSubscription',
-            verb='POST',
-            path='/', params=params)
+            action="ModifyEventSubscription", verb="POST", path="/", params=params
+        )
 
-    def modify_option_group(self, option_group_name, options_to_include=None,
-                            options_to_remove=None, apply_immediately=None):
+    def modify_option_group(
+        self,
+        option_group_name,
+        options_to_include=None,
+        options_to_remove=None,
+        apply_immediately=None,
+    ):
         """
         Modifies an existing option group.
 
@@ -3021,27 +3104,36 @@ class RDSConnection(AWSQueryConnection):
             instance associated with the option group.
 
         """
-        params = {'OptionGroupName': option_group_name, }
+        params = {
+            "OptionGroupName": option_group_name,
+        }
         if options_to_include is not None:
             self.build_complex_list_params(
-                params, options_to_include,
-                'OptionsToInclude.member',
-                ('OptionName', 'Port', 'DBSecurityGroupMemberships', 'VpcSecurityGroupMemberships', 'OptionSettings'))
+                params,
+                options_to_include,
+                "OptionsToInclude.member",
+                (
+                    "OptionName",
+                    "Port",
+                    "DBSecurityGroupMemberships",
+                    "VpcSecurityGroupMemberships",
+                    "OptionSettings",
+                ),
+            )
         if options_to_remove is not None:
-            self.build_list_params(params,
-                                   options_to_remove,
-                                   'OptionsToRemove.member')
+            self.build_list_params(params, options_to_remove, "OptionsToRemove.member")
         if apply_immediately is not None:
-            params['ApplyImmediately'] = str(
-                apply_immediately).lower()
+            params["ApplyImmediately"] = str(apply_immediately).lower()
         return self._make_request(
-            action='ModifyOptionGroup',
-            verb='POST',
-            path='/', params=params)
+            action="ModifyOptionGroup", verb="POST", path="/", params=params
+        )
 
-    def promote_read_replica(self, db_instance_identifier,
-                             backup_retention_period=None,
-                             preferred_backup_window=None):
+    def promote_read_replica(
+        self,
+        db_instance_identifier,
+        backup_retention_period=None,
+        preferred_backup_window=None,
+    ):
         """
         Promotes a read replica DB instance to a standalone DB
         instance.
@@ -3086,21 +3178,24 @@ class RDSConnection(AWSQueryConnection):
             preferred maintenance window. Must be at least 30 minutes.
 
         """
-        params = {'DBInstanceIdentifier': db_instance_identifier, }
+        params = {
+            "DBInstanceIdentifier": db_instance_identifier,
+        }
         if backup_retention_period is not None:
-            params['BackupRetentionPeriod'] = backup_retention_period
+            params["BackupRetentionPeriod"] = backup_retention_period
         if preferred_backup_window is not None:
-            params['PreferredBackupWindow'] = preferred_backup_window
+            params["PreferredBackupWindow"] = preferred_backup_window
         return self._make_request(
-            action='PromoteReadReplica',
-            verb='POST',
-            path='/', params=params)
+            action="PromoteReadReplica", verb="POST", path="/", params=params
+        )
 
-    def purchase_reserved_db_instances_offering(self,
-                                                reserved_db_instances_offering_id,
-                                                reserved_db_instance_id=None,
-                                                db_instance_count=None,
-                                                tags=None):
+    def purchase_reserved_db_instances_offering(
+        self,
+        reserved_db_instances_offering_id,
+        reserved_db_instance_id=None,
+        db_instance_count=None,
+        tags=None,
+    ):
         """
         Purchases a reserved DB instance offering.
 
@@ -3124,21 +3219,22 @@ class RDSConnection(AWSQueryConnection):
 
         """
         params = {
-            'ReservedDBInstancesOfferingId': reserved_db_instances_offering_id,
+            "ReservedDBInstancesOfferingId": reserved_db_instances_offering_id,
         }
         if reserved_db_instance_id is not None:
-            params['ReservedDBInstanceId'] = reserved_db_instance_id
+            params["ReservedDBInstanceId"] = reserved_db_instance_id
         if db_instance_count is not None:
-            params['DBInstanceCount'] = db_instance_count
+            params["DBInstanceCount"] = db_instance_count
         if tags is not None:
             self.build_complex_list_params(
-                params, tags,
-                'Tags.member',
-                ('Key', 'Value'))
+                params, tags, "Tags.member", ("Key", "Value")
+            )
         return self._make_request(
-            action='PurchaseReservedDBInstancesOffering',
-            verb='POST',
-            path='/', params=params)
+            action="PurchaseReservedDBInstancesOffering",
+            verb="POST",
+            path="/",
+            params=params,
+        )
 
     def reboot_db_instance(self, db_instance_identifier, force_failover=None):
         """
@@ -3182,17 +3278,18 @@ class RDSConnection(AWSQueryConnection):
             for MultiAZ.
 
         """
-        params = {'DBInstanceIdentifier': db_instance_identifier, }
+        params = {
+            "DBInstanceIdentifier": db_instance_identifier,
+        }
         if force_failover is not None:
-            params['ForceFailover'] = str(
-                force_failover).lower()
+            params["ForceFailover"] = str(force_failover).lower()
         return self._make_request(
-            action='RebootDBInstance',
-            verb='POST',
-            path='/', params=params)
+            action="RebootDBInstance", verb="POST", path="/", params=params
+        )
 
-    def remove_source_identifier_from_subscription(self, subscription_name,
-                                                   source_identifier):
+    def remove_source_identifier_from_subscription(
+        self, subscription_name, source_identifier
+    ):
         """
         Removes a source identifier from an existing RDS event
         notification subscription.
@@ -3208,13 +3305,15 @@ class RDSConnection(AWSQueryConnection):
 
         """
         params = {
-            'SubscriptionName': subscription_name,
-            'SourceIdentifier': source_identifier,
+            "SubscriptionName": subscription_name,
+            "SourceIdentifier": source_identifier,
         }
         return self._make_request(
-            action='RemoveSourceIdentifierFromSubscription',
-            verb='POST',
-            path='/', params=params)
+            action="RemoveSourceIdentifierFromSubscription",
+            verb="POST",
+            path="/",
+            params=params,
+        )
 
     def remove_tags_from_resource(self, resource_name, tag_keys):
         """
@@ -3233,17 +3332,17 @@ class RDSConnection(AWSQueryConnection):
         :param tag_keys: The tag key (name) of the tag to be removed.
 
         """
-        params = {'ResourceName': resource_name, }
-        self.build_list_params(params,
-                               tag_keys,
-                               'TagKeys.member')
+        params = {
+            "ResourceName": resource_name,
+        }
+        self.build_list_params(params, tag_keys, "TagKeys.member")
         return self._make_request(
-            action='RemoveTagsFromResource',
-            verb='POST',
-            path='/', params=params)
+            action="RemoveTagsFromResource", verb="POST", path="/", params=params
+        )
 
-    def reset_db_parameter_group(self, db_parameter_group_name,
-                                 reset_all_parameters=None, parameters=None):
+    def reset_db_parameter_group(
+        self, db_parameter_group_name, reset_all_parameters=None, parameters=None
+    ):
         """
         Modifies the parameters of a DB parameter group to the
         engine/system default value. To reset specific parameters
@@ -3291,34 +3390,51 @@ class RDSConnection(AWSQueryConnection):
         Valid Values (for Apply method): `pending-reboot`
 
         """
-        params = {'DBParameterGroupName': db_parameter_group_name, }
+        params = {
+            "DBParameterGroupName": db_parameter_group_name,
+        }
         if reset_all_parameters is not None:
-            params['ResetAllParameters'] = str(
-                reset_all_parameters).lower()
+            params["ResetAllParameters"] = str(reset_all_parameters).lower()
         if parameters is not None:
             self.build_complex_list_params(
-                params, parameters,
-                'Parameters.member',
-                ('ParameterName', 'ParameterValue', 'Description', 'Source', 'ApplyType', 'DataType', 'AllowedValues', 'IsModifiable', 'MinimumEngineVersion', 'ApplyMethod'))
+                params,
+                parameters,
+                "Parameters.member",
+                (
+                    "ParameterName",
+                    "ParameterValue",
+                    "Description",
+                    "Source",
+                    "ApplyType",
+                    "DataType",
+                    "AllowedValues",
+                    "IsModifiable",
+                    "MinimumEngineVersion",
+                    "ApplyMethod",
+                ),
+            )
         return self._make_request(
-            action='ResetDBParameterGroup',
-            verb='POST',
-            path='/', params=params)
+            action="ResetDBParameterGroup", verb="POST", path="/", params=params
+        )
 
-    def restore_db_instance_from_db_snapshot(self, db_instance_identifier,
-                                             db_snapshot_identifier,
-                                             db_instance_class=None,
-                                             port=None,
-                                             availability_zone=None,
-                                             db_subnet_group_name=None,
-                                             multi_az=None,
-                                             publicly_accessible=None,
-                                             auto_minor_version_upgrade=None,
-                                             license_model=None,
-                                             db_name=None, engine=None,
-                                             iops=None,
-                                             option_group_name=None,
-                                             tags=None):
+    def restore_db_instance_from_db_snapshot(
+        self,
+        db_instance_identifier,
+        db_snapshot_identifier,
+        db_instance_class=None,
+        port=None,
+        availability_zone=None,
+        db_subnet_group_name=None,
+        multi_az=None,
+        publicly_accessible=None,
+        auto_minor_version_upgrade=None,
+        license_model=None,
+        db_name=None,
+        engine=None,
+        iops=None,
+        option_group_name=None,
+        tags=None,
+    ):
         """
         Creates a new DB instance from a DB snapshot. The target
         database is created from the source database restore point
@@ -3454,63 +3570,64 @@ class RDSConnection(AWSQueryConnection):
 
         """
         params = {
-            'DBInstanceIdentifier': db_instance_identifier,
-            'DBSnapshotIdentifier': db_snapshot_identifier,
+            "DBInstanceIdentifier": db_instance_identifier,
+            "DBSnapshotIdentifier": db_snapshot_identifier,
         }
         if db_instance_class is not None:
-            params['DBInstanceClass'] = db_instance_class
+            params["DBInstanceClass"] = db_instance_class
         if port is not None:
-            params['Port'] = port
+            params["Port"] = port
         if availability_zone is not None:
-            params['AvailabilityZone'] = availability_zone
+            params["AvailabilityZone"] = availability_zone
         if db_subnet_group_name is not None:
-            params['DBSubnetGroupName'] = db_subnet_group_name
+            params["DBSubnetGroupName"] = db_subnet_group_name
         if multi_az is not None:
-            params['MultiAZ'] = str(
-                multi_az).lower()
+            params["MultiAZ"] = str(multi_az).lower()
         if publicly_accessible is not None:
-            params['PubliclyAccessible'] = str(
-                publicly_accessible).lower()
+            params["PubliclyAccessible"] = str(publicly_accessible).lower()
         if auto_minor_version_upgrade is not None:
-            params['AutoMinorVersionUpgrade'] = str(
-                auto_minor_version_upgrade).lower()
+            params["AutoMinorVersionUpgrade"] = str(auto_minor_version_upgrade).lower()
         if license_model is not None:
-            params['LicenseModel'] = license_model
+            params["LicenseModel"] = license_model
         if db_name is not None:
-            params['DBName'] = db_name
+            params["DBName"] = db_name
         if engine is not None:
-            params['Engine'] = engine
+            params["Engine"] = engine
         if iops is not None:
-            params['Iops'] = iops
+            params["Iops"] = iops
         if option_group_name is not None:
-            params['OptionGroupName'] = option_group_name
+            params["OptionGroupName"] = option_group_name
         if tags is not None:
             self.build_complex_list_params(
-                params, tags,
-                'Tags.member',
-                ('Key', 'Value'))
+                params, tags, "Tags.member", ("Key", "Value")
+            )
         return self._make_request(
-            action='RestoreDBInstanceFromDBSnapshot',
-            verb='POST',
-            path='/', params=params)
+            action="RestoreDBInstanceFromDBSnapshot",
+            verb="POST",
+            path="/",
+            params=params,
+        )
 
-    def restore_db_instance_to_point_in_time(self,
-                                             source_db_instance_identifier,
-                                             target_db_instance_identifier,
-                                             restore_time=None,
-                                             use_latest_restorable_time=None,
-                                             db_instance_class=None,
-                                             port=None,
-                                             availability_zone=None,
-                                             db_subnet_group_name=None,
-                                             multi_az=None,
-                                             publicly_accessible=None,
-                                             auto_minor_version_upgrade=None,
-                                             license_model=None,
-                                             db_name=None, engine=None,
-                                             iops=None,
-                                             option_group_name=None,
-                                             tags=None):
+    def restore_db_instance_to_point_in_time(
+        self,
+        source_db_instance_identifier,
+        target_db_instance_identifier,
+        restore_time=None,
+        use_latest_restorable_time=None,
+        db_instance_class=None,
+        port=None,
+        availability_zone=None,
+        db_subnet_group_name=None,
+        multi_az=None,
+        publicly_accessible=None,
+        auto_minor_version_upgrade=None,
+        license_model=None,
+        db_name=None,
+        engine=None,
+        iops=None,
+        option_group_name=None,
+        tags=None,
+    ):
         """
         Restores a DB instance to an arbitrary point-in-time. Users
         can restore to any point in time before the
@@ -3663,56 +3780,56 @@ class RDSConnection(AWSQueryConnection):
 
         """
         params = {
-            'SourceDBInstanceIdentifier': source_db_instance_identifier,
-            'TargetDBInstanceIdentifier': target_db_instance_identifier,
+            "SourceDBInstanceIdentifier": source_db_instance_identifier,
+            "TargetDBInstanceIdentifier": target_db_instance_identifier,
         }
         if restore_time is not None:
-            params['RestoreTime'] = restore_time
+            params["RestoreTime"] = restore_time
         if use_latest_restorable_time is not None:
-            params['UseLatestRestorableTime'] = str(
-                use_latest_restorable_time).lower()
+            params["UseLatestRestorableTime"] = str(use_latest_restorable_time).lower()
         if db_instance_class is not None:
-            params['DBInstanceClass'] = db_instance_class
+            params["DBInstanceClass"] = db_instance_class
         if port is not None:
-            params['Port'] = port
+            params["Port"] = port
         if availability_zone is not None:
-            params['AvailabilityZone'] = availability_zone
+            params["AvailabilityZone"] = availability_zone
         if db_subnet_group_name is not None:
-            params['DBSubnetGroupName'] = db_subnet_group_name
+            params["DBSubnetGroupName"] = db_subnet_group_name
         if multi_az is not None:
-            params['MultiAZ'] = str(
-                multi_az).lower()
+            params["MultiAZ"] = str(multi_az).lower()
         if publicly_accessible is not None:
-            params['PubliclyAccessible'] = str(
-                publicly_accessible).lower()
+            params["PubliclyAccessible"] = str(publicly_accessible).lower()
         if auto_minor_version_upgrade is not None:
-            params['AutoMinorVersionUpgrade'] = str(
-                auto_minor_version_upgrade).lower()
+            params["AutoMinorVersionUpgrade"] = str(auto_minor_version_upgrade).lower()
         if license_model is not None:
-            params['LicenseModel'] = license_model
+            params["LicenseModel"] = license_model
         if db_name is not None:
-            params['DBName'] = db_name
+            params["DBName"] = db_name
         if engine is not None:
-            params['Engine'] = engine
+            params["Engine"] = engine
         if iops is not None:
-            params['Iops'] = iops
+            params["Iops"] = iops
         if option_group_name is not None:
-            params['OptionGroupName'] = option_group_name
+            params["OptionGroupName"] = option_group_name
         if tags is not None:
             self.build_complex_list_params(
-                params, tags,
-                'Tags.member',
-                ('Key', 'Value'))
+                params, tags, "Tags.member", ("Key", "Value")
+            )
         return self._make_request(
-            action='RestoreDBInstanceToPointInTime',
-            verb='POST',
-            path='/', params=params)
+            action="RestoreDBInstanceToPointInTime",
+            verb="POST",
+            path="/",
+            params=params,
+        )
 
-    def revoke_db_security_group_ingress(self, db_security_group_name,
-                                         cidrip=None,
-                                         ec2_security_group_name=None,
-                                         ec2_security_group_id=None,
-                                         ec2_security_group_owner_id=None):
+    def revoke_db_security_group_ingress(
+        self,
+        db_security_group_name,
+        cidrip=None,
+        ec2_security_group_name=None,
+        ec2_security_group_id=None,
+        ec2_security_group_owner_id=None,
+    ):
         """
         Revokes ingress from a DBSecurityGroup for previously
         authorized IP ranges or EC2 or VPC Security Groups. Required
@@ -3753,31 +3870,32 @@ class RDSConnection(AWSQueryConnection):
             `EC2SecurityGroupName` or `EC2SecurityGroupId` must be provided.
 
         """
-        params = {'DBSecurityGroupName': db_security_group_name, }
+        params = {
+            "DBSecurityGroupName": db_security_group_name,
+        }
         if cidrip is not None:
-            params['CIDRIP'] = cidrip
+            params["CIDRIP"] = cidrip
         if ec2_security_group_name is not None:
-            params['EC2SecurityGroupName'] = ec2_security_group_name
+            params["EC2SecurityGroupName"] = ec2_security_group_name
         if ec2_security_group_id is not None:
-            params['EC2SecurityGroupId'] = ec2_security_group_id
+            params["EC2SecurityGroupId"] = ec2_security_group_id
         if ec2_security_group_owner_id is not None:
-            params['EC2SecurityGroupOwnerId'] = ec2_security_group_owner_id
+            params["EC2SecurityGroupOwnerId"] = ec2_security_group_owner_id
         return self._make_request(
-            action='RevokeDBSecurityGroupIngress',
-            verb='POST',
-            path='/', params=params)
+            action="RevokeDBSecurityGroupIngress", verb="POST", path="/", params=params
+        )
 
     def _make_request(self, action, verb, path, params):
-        params['ContentType'] = 'JSON'
-        response = self.make_request(action=action, verb='POST',
-                                     path='/', params=params)
+        params["ContentType"] = "JSON"
+        response = self.make_request(
+            action=action, verb="POST", path="/", params=params
+        )
         body = response.read()
         boto.log.debug(body)
         if response.status == 200:
             return json.loads(body)
         else:
             json_body = json.loads(body)
-            fault_name = json_body.get('Error', {}).get('Code', None)
+            fault_name = json_body.get("Error", {}).get("Code", None)
             exception_class = self._faults.get(fault_name, self.ResponseError)
-            raise exception_class(response.status, response.reason,
-                                  body=json_body)
+            raise exception_class(response.status, response.reason, body=json_body)

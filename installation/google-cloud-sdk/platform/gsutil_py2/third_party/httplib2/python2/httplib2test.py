@@ -847,9 +847,7 @@ class HttpTest(unittest.TestCase):
         self.assertEqual(response.status, 410)
 
     def testVaryHeaderSimple(self):
-        """RFC 2616 13.6 When the cache receives a subsequent request whose Request-URI specifies one or more cache entries including a Vary header field, the cache MUST NOT use such a cache entry to construct a response to the new request unless all of the selecting request-headers present in the new request match the corresponding stored request-headers in the original request.
-
-        """
+        """RFC 2616 13.6 When the cache receives a subsequent request whose Request-URI specifies one or more cache entries including a Vary header field, the cache MUST NOT use such a cache entry to construct a response to the new request unless all of the selecting request-headers present in the new request match the corresponding stored request-headers in the original request."""
         # test that the vary header is sent
         uri = urlparse.urljoin(base, "vary/accept.asis")
         (response, content) = self.http.request(

@@ -2,7 +2,11 @@ from tests.unit import unittest
 from tests.unit import AWSMockServiceTestCase
 
 from boto.cloudfront import CloudFrontConnection
-from boto.cloudfront.distribution import Distribution, DistributionConfig, DistributionSummary
+from boto.cloudfront.distribution import (
+    Distribution,
+    DistributionConfig,
+    DistributionSummary,
+)
 from boto.cloudfront.origin import CustomOrigin
 
 
@@ -49,7 +53,7 @@ class TestCloudFrontConnection(AWSMockServiceTestCase):
         self.assertEqual(response[0].origin.dns_name, "example.com")
         self.assertEqual(response[0].origin.http_port, 80)
         self.assertEqual(response[0].origin.https_port, 443)
-        self.assertEqual(response[0].origin.origin_protocol_policy, 'http-only')
+        self.assertEqual(response[0].origin.origin_protocol_policy, "http-only")
 
     def test_get_distribution_config(self):
         body = b"""
@@ -67,7 +71,7 @@ class TestCloudFrontConnection(AWSMockServiceTestCase):
         """
 
         self.set_http_response(status_code=200, body=body, header={"Etag": "AABBCC"})
-        response = self.service_connection.get_distribution_config('EEEEEEEEEEEEE')
+        response = self.service_connection.get_distribution_config("EEEEEEEEEEEEE")
 
         self.assertTrue(isinstance(response, DistributionConfig))
         self.assertTrue(isinstance(response.origin, CustomOrigin))
@@ -116,11 +120,15 @@ class TestCloudFrontConnection(AWSMockServiceTestCase):
         """
 
         self.set_http_response(status_code=200, body=get_body, header={"Etag": "AA"})
-        conf = self.service_connection.get_distribution_config('EEEEEEE')
+        conf = self.service_connection.get_distribution_config("EEEEEEE")
 
-        self.set_http_response(status_code=200, body=put_body, header={"Etag": "AABBCCD"})
-        conf.comment = 'this is a comment'
-        response = self.service_connection.set_distribution_config('EEEEEEE', conf.etag, conf)
+        self.set_http_response(
+            status_code=200, body=put_body, header={"Etag": "AABBCCD"}
+        )
+        conf.comment = "this is a comment"
+        response = self.service_connection.set_distribution_config(
+            "EEEEEEE", conf.etag, conf
+        )
 
         self.assertEqual(response, "AABBCCD")
 
@@ -147,7 +155,7 @@ class TestCloudFrontConnection(AWSMockServiceTestCase):
         """
 
         self.set_http_response(status_code=200, body=body)
-        response = self.service_connection.get_distribution_info('EEEEEEEEEEEEE')
+        response = self.service_connection.get_distribution_info("EEEEEEEEEEEEE")
 
         self.assertTrue(isinstance(response, Distribution))
         self.assertTrue(isinstance(response.config, DistributionConfig))
@@ -187,7 +195,9 @@ class TestCloudFrontConnection(AWSMockServiceTestCase):
 
         self.set_http_response(status_code=201, body=body)
         origin = CustomOrigin("example.com", origin_protocol_policy="match_viewer")
-        response = self.service_connection.create_distribution(origin, enabled=False, comment="example.com distribution")
+        response = self.service_connection.create_distribution(
+            origin, enabled=False, comment="example.com distribution"
+        )
 
         self.assertTrue(isinstance(response, Distribution))
         self.assertTrue(isinstance(response.config, DistributionConfig))

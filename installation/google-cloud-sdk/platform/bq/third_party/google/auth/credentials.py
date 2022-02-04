@@ -235,8 +235,7 @@ class ReadOnlyScoped(object):
 
     @abc.abstractproperty
     def requires_scopes(self):
-        """True if these credentials require scopes to obtain an access token.
-        """
+        """True if these credentials require scopes to obtain an access token."""
         return False
 
     def has_scopes(self, scopes):

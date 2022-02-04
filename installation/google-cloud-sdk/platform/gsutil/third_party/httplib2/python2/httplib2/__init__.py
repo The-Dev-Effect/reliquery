@@ -76,7 +76,14 @@ if ssl is not None:
 
 
 def _ssl_wrap_socket(
-    sock, key_file, cert_file, disable_validation, ca_certs, ssl_version, hostname, key_password
+    sock,
+    key_file,
+    cert_file,
+    disable_validation,
+    ca_certs,
+    ssl_version,
+    hostname,
+    key_password,
 ):
     if disable_validation:
         cert_reqs = ssl.CERT_NONE
@@ -99,7 +106,9 @@ def _ssl_wrap_socket(
         return context.wrap_socket(sock, server_hostname=hostname)
     else:
         if key_password:
-            raise NotSupportedOnThisPlatform("Certificate with password is not supported.")
+            raise NotSupportedOnThisPlatform(
+                "Certificate with password is not supported."
+            )
         return ssl.wrap_socket(
             sock,
             keyfile=key_file,
@@ -111,7 +120,14 @@ def _ssl_wrap_socket(
 
 
 def _ssl_wrap_socket_unsupported(
-    sock, key_file, cert_file, disable_validation, ca_certs, ssl_version, hostname, key_password
+    sock,
+    key_file,
+    cert_file,
+    disable_validation,
+    ca_certs,
+    ssl_version,
+    hostname,
+    key_password,
 ):
     if not disable_validation:
         raise CertificateValidationUnsupported(
@@ -277,6 +293,7 @@ class NotRunningAppEngineEnvironment(HttpLib2Error):
 DEFAULT_MAX_REDIRECTS = 5
 
 from httplib2 import certs
+
 CA_CERTS = certs.where()
 
 # Which headers are hop-by-hop headers by default
@@ -310,7 +327,7 @@ URI = re.compile(r"^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?")
 def parse_uri(uri):
     """Parses a URI using the regex given in Appendix B of RFC 3986.
 
-        (scheme, authority, path, query, fragment) = parse_uri(uri)
+    (scheme, authority, path, query, fragment) = parse_uri(uri)
     """
     groups = URI.match(uri).groups()
     return (groups[1], groups[3], groups[4], groups[6], groups[8])
@@ -991,6 +1008,7 @@ class Credentials(object):
 class KeyCerts(Credentials):
     """Identical to Credentials except that
     name/password are mapped to key/cert."""
+
     def add(self, key, cert, domain, password):
         self.credentials.append((domain.lower(), key, cert, password))
 
@@ -1021,20 +1039,20 @@ class ProxyInfo(object):
     ):
         """Args:
 
-          proxy_type: The type of proxy server.  This must be set to one of
-          socks.PROXY_TYPE_XXX constants.  For example:  p =
-          ProxyInfo(proxy_type=socks.PROXY_TYPE_HTTP, proxy_host='localhost',
-          proxy_port=8000)
-          proxy_host: The hostname or IP address of the proxy server.
-          proxy_port: The port that the proxy server is running on.
-          proxy_rdns: If True (default), DNS queries will not be performed
-          locally, and instead, handed to the proxy to resolve.  This is useful
-          if the network does not allow resolution of non-local names. In
-          httplib2 0.9 and earlier, this defaulted to False.
-          proxy_user: The username used to authenticate with the proxy server.
-          proxy_pass: The password used to authenticate with the proxy server.
-          proxy_headers: Additional or modified headers for the proxy connect
-          request.
+        proxy_type: The type of proxy server.  This must be set to one of
+        socks.PROXY_TYPE_XXX constants.  For example:  p =
+        ProxyInfo(proxy_type=socks.PROXY_TYPE_HTTP, proxy_host='localhost',
+        proxy_port=8000)
+        proxy_host: The hostname or IP address of the proxy server.
+        proxy_port: The port that the proxy server is running on.
+        proxy_rdns: If True (default), DNS queries will not be performed
+        locally, and instead, handed to the proxy to resolve.  This is useful
+        if the network does not allow resolution of non-local names. In
+        httplib2 0.9 and earlier, this defaulted to False.
+        proxy_user: The username used to authenticate with the proxy server.
+        proxy_pass: The password used to authenticate with the proxy server.
+        proxy_headers: Additional or modified headers for the proxy connect
+        request.
         """
         self.proxy_type = proxy_type
         self.proxy_host = proxy_host
@@ -1085,8 +1103,7 @@ class ProxyInfo(object):
 
 
 def proxy_info_from_environment(method="http"):
-    """Read proxy info from the environment variables.
-    """
+    """Read proxy info from the environment variables."""
     if method not in ["http", "https"]:
         return
 
@@ -1098,8 +1115,7 @@ def proxy_info_from_environment(method="http"):
 
 
 def proxy_info_from_url(url, method="http", noproxy=None):
-    """Construct a ProxyInfo from a URL (such as http_proxy env var)
-    """
+    """Construct a ProxyInfo from a URL (such as http_proxy env var)"""
     url = urlparse.urlparse(url)
     username = None
     password = None
@@ -1170,9 +1186,15 @@ class HTTPConnectionWithTimeout(httplib.HTTPConnection):
             )
         if self.proxy_info and self.proxy_info.isgood():
             use_proxy = True
-            proxy_type, proxy_host, proxy_port, proxy_rdns, proxy_user, proxy_pass, proxy_headers = (
-                self.proxy_info.astuple()
-            )
+            (
+                proxy_type,
+                proxy_host,
+                proxy_port,
+                proxy_rdns,
+                proxy_user,
+                proxy_pass,
+                proxy_headers,
+            ) = self.proxy_info.astuple()
 
             host = proxy_host
             port = proxy_port
@@ -1283,7 +1305,12 @@ class HTTPSConnectionWithTimeout(httplib.HTTPSConnection):
             self.key_password = key_password
         else:
             httplib.HTTPSConnection.__init__(
-                self, host, port=port, key_file=key_file, cert_file=cert_file, strict=strict
+                self,
+                host,
+                port=port,
+                key_file=key_file,
+                cert_file=cert_file,
+                strict=strict,
             )
             self.key_password = None
         self.timeout = timeout
@@ -1348,9 +1375,15 @@ class HTTPSConnectionWithTimeout(httplib.HTTPSConnection):
 
         if self.proxy_info and self.proxy_info.isgood():
             use_proxy = True
-            proxy_type, proxy_host, proxy_port, proxy_rdns, proxy_user, proxy_pass, proxy_headers = (
-                self.proxy_info.astuple()
-            )
+            (
+                proxy_type,
+                proxy_host,
+                proxy_port,
+                proxy_rdns,
+                proxy_user,
+                proxy_pass,
+                proxy_headers,
+            ) = self.proxy_info.astuple()
 
             host = proxy_host
             port = proxy_port
@@ -1478,7 +1511,6 @@ SCHEME_TO_CONNECTION = {
 
 
 def _new_fixed_fetch(validate_certificate):
-
     def fixed_fetch(
         url,
         payload=None,
@@ -1550,7 +1582,9 @@ class AppEngineHttpsConnection(httplib.HTTPSConnection):
         key_password=None,
     ):
         if key_password:
-            raise NotSupportedOnThisPlatform("Certificate with password is not supported.")
+            raise NotSupportedOnThisPlatform(
+                "Certificate with password is not supported."
+            )
         httplib.HTTPSConnection.__init__(
             self,
             host,
@@ -1565,10 +1599,12 @@ class AppEngineHttpsConnection(httplib.HTTPSConnection):
 
 # Use a different connection object for Google App Engine Standard Environment.
 def is_gae_instance():
-    server_software = os.environ.get('SERVER_SOFTWARE', '')
-    if (server_software.startswith('Google App Engine/') or
-        server_software.startswith('Development/') or
-        server_software.startswith('testutil/')):
+    server_software = os.environ.get("SERVER_SOFTWARE", "")
+    if (
+        server_software.startswith("Google App Engine/")
+        or server_software.startswith("Development/")
+        or server_software.startswith("testutil/")
+    ):
         return True
     return False
 
@@ -1578,6 +1614,7 @@ try:
         raise NotRunningAppEngineEnvironment()
 
     from google.appengine.api import apiproxy_stub_map
+
     if apiproxy_stub_map.apiproxy.GetStub("urlfetch") is None:
         raise ImportError
 
@@ -1714,7 +1751,7 @@ class Http(object):
 
     def _auth_from_challenge(self, host, request_uri, headers, response, content):
         """A generator that creates Authorization objects
-           that can be applied to requests.
+        that can be applied to requests.
         """
         challenges = _parse_www_authenticate(response, "www-authenticate")
         for cred in self.credentials.iter(host):
@@ -1891,7 +1928,9 @@ class Http(object):
                             response["location"] = urlparse.urljoin(
                                 absolute_uri, location
                             )
-                    if response.status == 308 or (response.status == 301 and method in self.safe_methods):
+                    if response.status == 308 or (
+                        response.status == 301 and method in self.safe_methods
+                    ):
                         response["-x-permanent-redirect-url"] = response["location"]
                         if "content-location" not in response:
                             response["content-location"] = absolute_uri
@@ -1952,7 +1991,7 @@ class Http(object):
         redirections=DEFAULT_MAX_REDIRECTS,
         connection_type=None,
     ):
-        """ Performs a single HTTP request.
+        """Performs a single HTTP request.
 
         The 'uri' is the URI of the HTTP resource and can begin with either
         'http' or 'https'. The value of 'uri' must be an absolute URI.
@@ -1973,7 +2012,7 @@ class Http(object):
         being and instance of the 'Response' class, the second being
         a string that contains the response entity body.
         """
-        conn_key = ''
+        conn_key = ""
 
         try:
             if headers is None:

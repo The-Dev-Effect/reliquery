@@ -31,25 +31,26 @@ class Icmp(object):
     """
     Defines the ICMP code and type.
     """
+
     def __init__(self, connection=None):
         self.code = None
-        self.type   = None
+        self.type = None
 
     def __repr__(self):
-        return 'Icmp::code:%s, type:%s)' % ( self.code, self.type)
+        return "Icmp::code:%s, type:%s)" % (self.code, self.type)
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
 
-        if name == 'code':
+        if name == "code":
             self.code = value
-        elif name == 'type':
+        elif name == "type":
             self.type = value
 
-class NetworkAcl(TaggedEC2Object):
 
+class NetworkAcl(TaggedEC2Object):
     def __init__(self, connection=None):
         super(NetworkAcl, self).__init__(connection)
         self.id = None
@@ -58,7 +59,7 @@ class NetworkAcl(TaggedEC2Object):
         self.associations = []
 
     def __repr__(self):
-        return 'NetworkAcl:%s' % self.id
+        return "NetworkAcl:%s" % self.id
 
     def startElement(self, name, attrs, connection):
         result = super(NetworkAcl, self).startElement(name, attrs, connection)
@@ -67,22 +68,23 @@ class NetworkAcl(TaggedEC2Object):
             # Parent found an interested element, just return it
             return result
 
-        if name == 'entrySet':
-            self.network_acl_entries = ResultSet([('item', NetworkAclEntry)])
+        if name == "entrySet":
+            self.network_acl_entries = ResultSet([("item", NetworkAclEntry)])
             return self.network_acl_entries
-        elif name == 'associationSet':
-            self.associations = ResultSet([('item', NetworkAclAssociation)])
+        elif name == "associationSet":
+            self.associations = ResultSet([("item", NetworkAclAssociation)])
             return self.associations
         else:
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'networkAclId':
+        if name == "networkAclId":
             self.id = value
-        elif name == 'vpcId':
+        elif name == "vpcId":
             self.vpc_id = value
         else:
             setattr(self, name, value)
+
 
 class NetworkAclEntry(object):
     def __init__(self, connection=None):
@@ -95,27 +97,27 @@ class NetworkAclEntry(object):
         self.icmp = Icmp()
 
     def __repr__(self):
-        return 'Acl:%s' % self.rule_number
+        return "Acl:%s" % self.rule_number
 
     def startElement(self, name, attrs, connection):
 
-        if name == 'portRange':
+        if name == "portRange":
             return self.port_range
-        elif name == 'icmpTypeCode':
+        elif name == "icmpTypeCode":
             return self.icmp
         else:
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'cidrBlock':
+        if name == "cidrBlock":
             self.cidr_block = value
-        elif name == 'egress':
+        elif name == "egress":
             self.egress = value
-        elif name == 'protocol':
+        elif name == "protocol":
             self.protocol = value
-        elif name == 'ruleAction':
+        elif name == "ruleAction":
             self.rule_action = value
-        elif name == 'ruleNumber':
+        elif name == "ruleNumber":
             self.rule_number = value
 
 
@@ -126,18 +128,19 @@ class NetworkAclAssociation(object):
         self.network_acl_id = None
 
     def __repr__(self):
-        return 'NetworkAclAssociation:%s' % self.id
+        return "NetworkAclAssociation:%s" % self.id
 
     def startElement(self, name, attrs, connection):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'networkAclAssociationId':
+        if name == "networkAclAssociationId":
             self.id = value
-        elif name == 'networkAclId':
+        elif name == "networkAclId":
             self.network_acl_id = value
-        elif name == 'subnetId':
+        elif name == "subnetId":
             self.subnet_id = value
+
 
 class PortRange(object):
     """
@@ -146,19 +149,17 @@ class PortRange(object):
 
     def __init__(self, connection=None):
         self.from_port = None
-        self.to_port   = None
+        self.to_port = None
 
     def __repr__(self):
-        return 'PortRange:(%s-%s)' % ( self.from_port, self.to_port)
+        return "PortRange:(%s-%s)" % (self.from_port, self.to_port)
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
 
-        if name == 'from':
+        if name == "from":
             self.from_port = value
-        elif name == 'to':
+        elif name == "to":
             self.to_port = value
-
-

@@ -23,14 +23,13 @@ from pyasn1.error import PyAsn1Error
 
 
 class UntaggedAnyTestCase(BaseTestCase):
-
     def setUp(self):
         BaseTestCase.setUp(self)
 
         class Sequence(univ.Sequence):
             componentType = namedtype.NamedTypes(
-                namedtype.NamedType('id', univ.Integer()),
-                namedtype.NamedType('blob', univ.Any())
+                namedtype.NamedType("id", univ.Integer()),
+                namedtype.NamedType("blob", univ.Any()),
             )
 
         self.s = Sequence()
@@ -39,23 +38,24 @@ class UntaggedAnyTestCase(BaseTestCase):
 
         self.s.clear()
 
-        self.s['blob'] = univ.Any(str2octs('xxx'))
+        self.s["blob"] = univ.Any(str2octs("xxx"))
 
         # this should succeed because Any is untagged and unconstrained
-        self.s['blob'] = univ.Integer(123)
+        self.s["blob"] = univ.Integer(123)
 
 
 class TaggedAnyTestCase(BaseTestCase):
-
     def setUp(self):
         BaseTestCase.setUp(self)
 
-        self.taggedAny = univ.Any().subtype(implicitTag=tag.Tag(tag.tagClassPrivate, tag.tagFormatSimple, 20))
+        self.taggedAny = univ.Any().subtype(
+            implicitTag=tag.Tag(tag.tagClassPrivate, tag.tagFormatSimple, 20)
+        )
 
         class Sequence(univ.Sequence):
             componentType = namedtype.NamedTypes(
-                namedtype.NamedType('id', univ.Integer()),
-                namedtype.NamedType('blob', self.taggedAny)
+                namedtype.NamedType("id", univ.Integer()),
+                namedtype.NamedType("blob", self.taggedAny),
             )
 
         self.s = Sequence()
@@ -64,29 +64,32 @@ class TaggedAnyTestCase(BaseTestCase):
 
         self.s.clear()
 
-        self.s['blob'] = self.taggedAny.clone('xxx')
+        self.s["blob"] = self.taggedAny.clone("xxx")
 
         try:
-            self.s.setComponentByName('blob', univ.Integer(123))
+            self.s.setComponentByName("blob", univ.Integer(123))
 
         except PyAsn1Error:
             pass
 
         else:
-            assert False, 'non-open type assignment tolerated'
+            assert False, "non-open type assignment tolerated"
 
 
 class TaggedAnyOpenTypeTestCase(BaseTestCase):
-
     def setUp(self):
         BaseTestCase.setUp(self)
 
-        self.taggedAny = univ.Any().subtype(implicitTag=tag.Tag(tag.tagClassPrivate, tag.tagFormatSimple, 20))
+        self.taggedAny = univ.Any().subtype(
+            implicitTag=tag.Tag(tag.tagClassPrivate, tag.tagFormatSimple, 20)
+        )
 
         class Sequence(univ.Sequence):
             componentType = namedtype.NamedTypes(
-                namedtype.NamedType('id', univ.Integer()),
-                namedtype.NamedType('blob', self.taggedAny, openType=opentype.OpenType(name='id'))
+                namedtype.NamedType("id", univ.Integer()),
+                namedtype.NamedType(
+                    "blob", self.taggedAny, openType=opentype.OpenType(name="id")
+                ),
             )
 
         self.s = Sequence()
@@ -95,12 +98,12 @@ class TaggedAnyOpenTypeTestCase(BaseTestCase):
 
         self.s.clear()
 
-        self.s['blob'] = univ.Any(str2octs('xxx'))
-        self.s['blob'] = univ.Integer(123)
+        self.s["blob"] = univ.Any(str2octs("xxx"))
+        self.s["blob"] = univ.Integer(123)
 
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.TextTestRunner(verbosity=2).run(suite)

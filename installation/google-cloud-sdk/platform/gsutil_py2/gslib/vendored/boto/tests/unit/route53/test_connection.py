@@ -33,6 +33,7 @@ from boto.route53.zone import Zone
 from nose.plugins.attrib import attr
 from tests.unit import AWSMockServiceTestCase
 from boto.compat import six
+
 urllib = six.moves.urllib
 
 
@@ -43,7 +44,7 @@ class TestRoute53Connection(AWSMockServiceTestCase):
     def setUp(self):
         super(TestRoute53Connection, self).setUp()
         self.calls = {
-            'count': 0,
+            "count": 0,
         }
 
     def default_body(self):
@@ -53,63 +54,74 @@ class TestRoute53Connection(AWSMockServiceTestCase):
 """
 
     def test_typical_400(self):
-        self.set_http_response(status_code=400, header=[
-            ['Code', 'AccessDenied'],
-        ])
+        self.set_http_response(
+            status_code=400,
+            header=[
+                ["Code", "AccessDenied"],
+            ],
+        )
 
         with self.assertRaises(DNSServerError) as err:
             self.service_connection.get_all_hosted_zones()
 
-        self.assertTrue('It failed.' in str(err.exception))
+        self.assertTrue("It failed." in str(err.exception))
 
     def test_retryable_400_prior_request_not_complete(self):
         # Test ability to retry on ``PriorRequestNotComplete``.
-        self.set_http_response(status_code=400, body="""<?xml version="1.0"?>
+        self.set_http_response(
+            status_code=400,
+            body="""<?xml version="1.0"?>
 <ErrorResponse xmlns="https://route53.amazonaws.com/doc/2013-04-01/"><Error><Type>Sender</Type><Code>PriorRequestNotComplete</Code><Message>The request was rejected because Route 53 was still processing a prior request.</Message></Error><RequestId>12d222a0-f3d9-11e4-a611-c321a3a00f9c</RequestId></ErrorResponse>
-""")
+""",
+        )
         self.do_retry_handler()
 
     def test_retryable_400_throttling(self):
         # Test ability to rety on ``Throttling``.
-        self.set_http_response(status_code=400, body="""<?xml version="1.0"?>
+        self.set_http_response(
+            status_code=400,
+            body="""<?xml version="1.0"?>
 <ErrorResponse xmlns="https://route53.amazonaws.com/doc/2013-04-01/"><Error><Type>Sender</Type><Code>Throttling</Code><Message>Rate exceeded</Message></Error><RequestId>19d0a9a0-f3d9-11e4-a611-c321a3a00f9c</RequestId></ErrorResponse>
-""")
+""",
+        )
         self.do_retry_handler()
 
-    @mock.patch('time.sleep')
+    @mock.patch("time.sleep")
     def do_retry_handler(self, sleep_mock):
-
         def incr_retry_handler(func):
             def _wrapper(*args, **kwargs):
-                self.calls['count'] += 1
+                self.calls["count"] += 1
                 return func(*args, **kwargs)
+
             return _wrapper
 
         # Patch.
         orig_retry = self.service_connection._retry_handler
-        self.service_connection._retry_handler = incr_retry_handler(
-            orig_retry
-        )
-        self.assertEqual(self.calls['count'], 0)
+        self.service_connection._retry_handler = incr_retry_handler(orig_retry)
+        self.assertEqual(self.calls["count"], 0)
 
         # Retries get exhausted.
         with self.assertRaises(BotoServerError):
             self.service_connection.get_all_hosted_zones()
 
-        self.assertEqual(self.calls['count'], 7)
+        self.assertEqual(self.calls["count"], 7)
 
         # Unpatch.
         self.service_connection._retry_handler = orig_retry
 
     def test_private_zone_invalid_vpc_400(self):
-        self.set_http_response(status_code=400, header=[
-            ['Code', 'InvalidVPCId'],
-        ])
+        self.set_http_response(
+            status_code=400,
+            header=[
+                ["Code", "InvalidVPCId"],
+            ],
+        )
 
         with self.assertRaises(DNSServerError) as err:
-            self.service_connection.create_hosted_zone("example.com.",
-                                                       private_zone=True)
-        self.assertTrue('It failed.' in str(err.exception))
+            self.service_connection.create_hosted_zone(
+                "example.com.", private_zone=True
+            )
+        self.assertTrue("It failed." in str(err.exception))
 
 
 @attr(route53=True)
@@ -158,20 +170,24 @@ class TestCreateZoneRoute53(AWSMockServiceTestCase):
 
     def test_create_hosted_zone(self):
         self.set_http_response(status_code=201)
-        response = self.service_connection.create_hosted_zone("example.com.",
-                                                              "my_ref",
-                                                              "a comment")
+        response = self.service_connection.create_hosted_zone(
+            "example.com.", "my_ref", "a comment"
+        )
 
-        self.assertEqual(response['CreateHostedZoneResponse']
-                                 ['DelegationSet']['NameServers'],
-                                 ['ns-100.awsdns-01.com',
-                                  'ns-1000.awsdns-01.co.uk',
-                                  'ns-1000.awsdns-01.org',
-                                  'ns-900.awsdns-01.net'])
+        self.assertEqual(
+            response["CreateHostedZoneResponse"]["DelegationSet"]["NameServers"],
+            [
+                "ns-100.awsdns-01.com",
+                "ns-1000.awsdns-01.co.uk",
+                "ns-1000.awsdns-01.org",
+                "ns-900.awsdns-01.net",
+            ],
+        )
 
-        self.assertEqual(response['CreateHostedZoneResponse']
-                                 ['HostedZone']['Config']['PrivateZone'],
-                         u'false')
+        self.assertEqual(
+            response["CreateHostedZoneResponse"]["HostedZone"]["Config"]["PrivateZone"],
+            u"false",
+        )
 
 
 @attr(route53=True)
@@ -216,18 +232,24 @@ class TestCreatePrivateZoneRoute53(AWSMockServiceTestCase):
 
     def test_create_private_zone(self):
         self.set_http_response(status_code=201)
-        r = self.service_connection.create_hosted_zone("example.com.",
-                                                       private_zone=True,
-                                                       vpc_id='vpc-1a2b3c4d',
-                                                       vpc_region='us-east-1'
-                                                       )
+        r = self.service_connection.create_hosted_zone(
+            "example.com.",
+            private_zone=True,
+            vpc_id="vpc-1a2b3c4d",
+            vpc_region="us-east-1",
+        )
 
-        self.assertEqual(r['CreateHostedZoneResponse']['HostedZone']
-                          ['Config']['PrivateZone'], u'true')
-        self.assertEqual(r['CreateHostedZoneResponse']['HostedZone']
-                          ['VPC']['VPCId'], u'vpc-1a2b3c4d')
-        self.assertEqual(r['CreateHostedZoneResponse']['HostedZone']
-                          ['VPC']['VPCRegion'], u'us-east-1')
+        self.assertEqual(
+            r["CreateHostedZoneResponse"]["HostedZone"]["Config"]["PrivateZone"],
+            u"true",
+        )
+        self.assertEqual(
+            r["CreateHostedZoneResponse"]["HostedZone"]["VPC"]["VPCId"], u"vpc-1a2b3c4d"
+        )
+        self.assertEqual(
+            r["CreateHostedZoneResponse"]["HostedZone"]["VPC"]["VPCRegion"],
+            u"us-east-1",
+        )
 
 
 @attr(route53=True)
@@ -272,17 +294,17 @@ class TestGetZoneRoute53(AWSMockServiceTestCase):
         self.set_http_response(status_code=201)
         response = self.service_connection.get_all_hosted_zones()
 
-        domains = ['example2.com.', 'example1.com.', 'example.com.']
-        print(response['ListHostedZonesResponse']['HostedZones'][0])
-        for d in response['ListHostedZonesResponse']['HostedZones']:
-            print("Removing: %s" % d['Name'])
-            domains.remove(d['Name'])
+        domains = ["example2.com.", "example1.com.", "example.com."]
+        print(response["ListHostedZonesResponse"]["HostedZones"][0])
+        for d in response["ListHostedZonesResponse"]["HostedZones"]:
+            print("Removing: %s" % d["Name"])
+            domains.remove(d["Name"])
 
         self.assertEqual(domains, [])
 
     def test_get_zone(self):
         self.set_http_response(status_code=201)
-        response = self.service_connection.get_zone('example.com.')
+        response = self.service_connection.get_zone("example.com.")
 
         self.assertTrue(isinstance(response, Zone))
         self.assertEqual(response.name, "example.com.")
@@ -320,16 +342,21 @@ class TestGetHostedZoneRoute53(AWSMockServiceTestCase):
         self.set_http_response(status_code=201)
         response = self.service_connection.get_hosted_zone("Z1111")
 
-        self.assertEqual(response['GetHostedZoneResponse']
-                                 ['HostedZone']['Id'],
-                         '/hostedzone/Z1111')
-        self.assertEqual(response['GetHostedZoneResponse']
-                                 ['HostedZone']['Name'],
-                         'example.com.')
-        self.assertEqual(response['GetHostedZoneResponse']
-                                 ['DelegationSet']['NameServers'],
-                         ['ns-1000.awsdns-40.org', 'ns-200.awsdns-30.com',
-                          'ns-900.awsdns-50.net', 'ns-1000.awsdns-00.co.uk'])
+        self.assertEqual(
+            response["GetHostedZoneResponse"]["HostedZone"]["Id"], "/hostedzone/Z1111"
+        )
+        self.assertEqual(
+            response["GetHostedZoneResponse"]["HostedZone"]["Name"], "example.com."
+        )
+        self.assertEqual(
+            response["GetHostedZoneResponse"]["DelegationSet"]["NameServers"],
+            [
+                "ns-1000.awsdns-40.org",
+                "ns-200.awsdns-30.com",
+                "ns-900.awsdns-50.net",
+                "ns-1000.awsdns-00.co.uk",
+            ],
+        )
 
 
 @attr(route53=True)
@@ -419,13 +446,15 @@ class TestGetAllRRSetsRoute53(AWSMockServiceTestCase):
 
     def test_get_all_rr_sets(self):
         self.set_http_response(status_code=200)
-        response = self.service_connection.get_all_rrsets("Z1111",
-                                                          "A",
-                                                          "example.com.")
+        response = self.service_connection.get_all_rrsets("Z1111", "A", "example.com.")
 
-        self.assertIn(self.actual_request.path,
-                      ("/2013-04-01/hostedzone/Z1111/rrset?type=A&name=example.com.",
-                       "/2013-04-01/hostedzone/Z1111/rrset?name=example.com.&type=A"))
+        self.assertIn(
+            self.actual_request.path,
+            (
+                "/2013-04-01/hostedzone/Z1111/rrset?type=A&name=example.com.",
+                "/2013-04-01/hostedzone/Z1111/rrset?name=example.com.&type=A",
+            ),
+        )
 
         self.assertTrue(isinstance(response, ResourceRecordSets))
         self.assertEqual(response.hosted_zone_id, "Z1111")
@@ -436,41 +465,73 @@ class TestGetAllRRSetsRoute53(AWSMockServiceTestCase):
         self.assertTrue(response[0].type, "A")
 
         evaluate_record = response[2]
-        self.assertEqual(evaluate_record.name, 'us-west-2-evaluate-health.example.com.')
-        self.assertEqual(evaluate_record.type, 'A')
-        self.assertEqual(evaluate_record.identifier, 'latency-example-us-west-2-evaluate-health')
-        self.assertEqual(evaluate_record.region, 'us-west-2')
-        self.assertEqual(evaluate_record.alias_hosted_zone_id, 'ABCDEFG123456')
+        self.assertEqual(evaluate_record.name, "us-west-2-evaluate-health.example.com.")
+        self.assertEqual(evaluate_record.type, "A")
+        self.assertEqual(
+            evaluate_record.identifier, "latency-example-us-west-2-evaluate-health"
+        )
+        self.assertEqual(evaluate_record.region, "us-west-2")
+        self.assertEqual(evaluate_record.alias_hosted_zone_id, "ABCDEFG123456")
         self.assertTrue(evaluate_record.alias_evaluate_target_health)
-        self.assertEqual(evaluate_record.alias_dns_name, 'example-123456-evaluate-health.us-west-2.elb.amazonaws.com.')
+        self.assertEqual(
+            evaluate_record.alias_dns_name,
+            "example-123456-evaluate-health.us-west-2.elb.amazonaws.com.",
+        )
         evaluate_xml = evaluate_record.to_xml()
-        self.assertTrue(evaluate_record.health_check, 'abcdefgh-abcd-abcd-abcd-abcdefghijkl')
-        self.assertTrue('<EvaluateTargetHealth>true</EvaluateTargetHealth>' in evaluate_xml)
+        self.assertTrue(
+            evaluate_record.health_check, "abcdefgh-abcd-abcd-abcd-abcdefghijkl"
+        )
+        self.assertTrue(
+            "<EvaluateTargetHealth>true</EvaluateTargetHealth>" in evaluate_xml
+        )
 
         no_evaluate_record = response[3]
-        self.assertEqual(no_evaluate_record.name, 'us-west-2-no-evaluate-health.example.com.')
-        self.assertEqual(no_evaluate_record.type, 'A')
-        self.assertEqual(no_evaluate_record.identifier, 'latency-example-us-west-2-no-evaluate-health')
-        self.assertEqual(no_evaluate_record.region, 'us-west-2')
-        self.assertEqual(no_evaluate_record.alias_hosted_zone_id, 'ABCDEFG567890')
+        self.assertEqual(
+            no_evaluate_record.name, "us-west-2-no-evaluate-health.example.com."
+        )
+        self.assertEqual(no_evaluate_record.type, "A")
+        self.assertEqual(
+            no_evaluate_record.identifier,
+            "latency-example-us-west-2-no-evaluate-health",
+        )
+        self.assertEqual(no_evaluate_record.region, "us-west-2")
+        self.assertEqual(no_evaluate_record.alias_hosted_zone_id, "ABCDEFG567890")
         self.assertFalse(no_evaluate_record.alias_evaluate_target_health)
-        self.assertEqual(no_evaluate_record.alias_dns_name, 'example-123456-no-evaluate-health.us-west-2.elb.amazonaws.com.')
+        self.assertEqual(
+            no_evaluate_record.alias_dns_name,
+            "example-123456-no-evaluate-health.us-west-2.elb.amazonaws.com.",
+        )
         no_evaluate_xml = no_evaluate_record.to_xml()
-        self.assertTrue(no_evaluate_record.health_check, 'abcdefgh-abcd-abcd-abcd-abcdefghijkl')
-        self.assertTrue('<EvaluateTargetHealth>false</EvaluateTargetHealth>' in no_evaluate_xml)
+        self.assertTrue(
+            no_evaluate_record.health_check, "abcdefgh-abcd-abcd-abcd-abcdefghijkl"
+        )
+        self.assertTrue(
+            "<EvaluateTargetHealth>false</EvaluateTargetHealth>" in no_evaluate_xml
+        )
 
         failover_record = response[4]
-        self.assertEqual(failover_record.name, 'failover.example.com.')
-        self.assertEqual(failover_record.type, 'A')
-        self.assertEqual(failover_record.identifier, 'failover-primary')
-        self.assertEqual(failover_record.failover, 'PRIMARY')
-        self.assertEqual(failover_record.ttl, '60')
+        self.assertEqual(failover_record.name, "failover.example.com.")
+        self.assertEqual(failover_record.type, "A")
+        self.assertEqual(failover_record.identifier, "failover-primary")
+        self.assertEqual(failover_record.failover, "PRIMARY")
+        self.assertEqual(failover_record.ttl, "60")
 
         healthcheck_record = response[5]
-        self.assertEqual(healthcheck_record.health_check, '076a32f8-86f7-4c9e-9fa2-c163d5be67d9')
-        self.assertEqual(healthcheck_record.name, 'us-west-2-evaluate-health-healthcheck.example.com.')
-        self.assertEqual(healthcheck_record.identifier, 'latency-example-us-west-2-evaluate-health-healthcheck')
-        self.assertEqual(healthcheck_record.alias_dns_name, 'example-123456-evaluate-health-healthcheck.us-west-2.elb.amazonaws.com.')
+        self.assertEqual(
+            healthcheck_record.health_check, "076a32f8-86f7-4c9e-9fa2-c163d5be67d9"
+        )
+        self.assertEqual(
+            healthcheck_record.name,
+            "us-west-2-evaluate-health-healthcheck.example.com.",
+        )
+        self.assertEqual(
+            healthcheck_record.identifier,
+            "latency-example-us-west-2-evaluate-health-healthcheck",
+        )
+        self.assertEqual(
+            healthcheck_record.alias_dns_name,
+            "example-123456-evaluate-health-healthcheck.us-west-2.elb.amazonaws.com.",
+        )
 
 
 @attr(route53=True)
@@ -550,13 +611,14 @@ class TestTruncatedGetAllRRSetsRoute53(AWSMockServiceTestCase):
   <MaxItems>3</MaxItems>
 </ListResourceRecordSetsResponse>"""
 
-
     def test_get_all_rr_sets(self):
         self.set_http_response(status_code=200)
         response = self.service_connection.get_all_rrsets("Z1111", maxitems=3)
 
         # made first request
-        self.assertEqual(self.actual_request.path, '/2013-04-01/hostedzone/Z1111/rrset?maxitems=3')
+        self.assertEqual(
+            self.actual_request.path, "/2013-04-01/hostedzone/Z1111/rrset?maxitems=3"
+        )
 
         # anticipate a second request when we page it
         self.set_http_response(status_code=200, body=self.paged_body())
@@ -565,9 +627,11 @@ class TestTruncatedGetAllRRSetsRoute53(AWSMockServiceTestCase):
         self.assertEqual(len(list(response)), 4)
 
         url_parts = urllib.parse.urlparse(self.actual_request.path)
-        self.assertEqual(url_parts.path, '/2013-04-01/hostedzone/Z1111/rrset')
-        self.assertEqual(urllib.parse.parse_qs(url_parts.query),
-                         dict(type=['A'], name=['wrr.example.com.'], identifier=['secondary']))
+        self.assertEqual(url_parts.path, "/2013-04-01/hostedzone/Z1111/rrset")
+        self.assertEqual(
+            urllib.parse.parse_qs(url_parts.query),
+            dict(type=["A"], name=["wrr.example.com."], identifier=["secondary"]),
+        )
 
 
 @attr(route53=True)
@@ -598,20 +662,31 @@ class TestCreateHealthCheckRoute53IpAddress(AWSMockServiceTestCase):
 
     def test_create_health_check_ip_address(self):
         self.set_http_response(status_code=201)
-        hc = HealthCheck(ip_addr='74.125.228.81', port=443, hc_type='HTTPS_STR_MATCH', resource_path='/health_check', string_match='OK')
+        hc = HealthCheck(
+            ip_addr="74.125.228.81",
+            port=443,
+            hc_type="HTTPS_STR_MATCH",
+            resource_path="/health_check",
+            string_match="OK",
+        )
         hc_xml = hc.to_xml()
-        self.assertFalse('<FullyQualifiedDomainName>' in hc_xml)
-        self.assertTrue('<IPAddress>' in hc_xml)
+        self.assertFalse("<FullyQualifiedDomainName>" in hc_xml)
+        self.assertTrue("<IPAddress>" in hc_xml)
 
         response = self.service_connection.create_health_check(hc)
-        hc_resp = response['CreateHealthCheckResponse']['HealthCheck']['HealthCheckConfig']
-        self.assertEqual(hc_resp['IPAddress'], '74.125.228.81')
-        self.assertEqual(hc_resp['ResourcePath'], '/health_check')
-        self.assertEqual(hc_resp['Type'], 'HTTPS_STR_MATCH')
-        self.assertEqual(hc_resp['Port'], '443')
-        self.assertEqual(hc_resp['ResourcePath'], '/health_check')
-        self.assertEqual(hc_resp['SearchString'], 'OK')
-        self.assertEqual(response['CreateHealthCheckResponse']['HealthCheck']['Id'], '34778cf8-e31e-4974-bad0-b108bd1623d3')
+        hc_resp = response["CreateHealthCheckResponse"]["HealthCheck"][
+            "HealthCheckConfig"
+        ]
+        self.assertEqual(hc_resp["IPAddress"], "74.125.228.81")
+        self.assertEqual(hc_resp["ResourcePath"], "/health_check")
+        self.assertEqual(hc_resp["Type"], "HTTPS_STR_MATCH")
+        self.assertEqual(hc_resp["Port"], "443")
+        self.assertEqual(hc_resp["ResourcePath"], "/health_check")
+        self.assertEqual(hc_resp["SearchString"], "OK")
+        self.assertEqual(
+            response["CreateHealthCheckResponse"]["HealthCheck"]["Id"],
+            "34778cf8-e31e-4974-bad0-b108bd1623d3",
+        )
 
 
 @attr(route53=True)
@@ -634,14 +709,14 @@ class TestGetCheckerIpRanges(AWSMockServiceTestCase):
     def test_get_checker_ip_ranges(self):
         self.set_http_response(status_code=200)
         response = self.service_connection.get_checker_ip_ranges()
-        ip_ranges = response['GetCheckerIpRangesResponse']['CheckerIpRanges']
+        ip_ranges = response["GetCheckerIpRangesResponse"]["CheckerIpRanges"]
 
         self.assertEqual(len(ip_ranges), 5)
-        self.assertIn('54.183.255.128/26', ip_ranges)
-        self.assertIn('54.228.16.0/26', ip_ranges)
-        self.assertIn('54.232.40.64/26', ip_ranges)
-        self.assertIn('177.71.207.128/26', ip_ranges)
-        self.assertIn('176.34.159.192/26', ip_ranges)
+        self.assertIn("54.183.255.128/26", ip_ranges)
+        self.assertIn("54.228.16.0/26", ip_ranges)
+        self.assertIn("54.232.40.64/26", ip_ranges)
+        self.assertIn("177.71.207.128/26", ip_ranges)
+        self.assertIn("176.34.159.192/26", ip_ranges)
 
 
 @attr(route53=True)
@@ -671,19 +746,30 @@ class TestCreateHealthCheckRoute53FQDN(AWSMockServiceTestCase):
 
     def test_create_health_check_fqdn(self):
         self.set_http_response(status_code=201)
-        hc = HealthCheck(ip_addr='', port=443, hc_type='HTTPS', resource_path='/health_check', fqdn='example.com')
+        hc = HealthCheck(
+            ip_addr="",
+            port=443,
+            hc_type="HTTPS",
+            resource_path="/health_check",
+            fqdn="example.com",
+        )
         hc_xml = hc.to_xml()
-        self.assertTrue('<FullyQualifiedDomainName>' in hc_xml)
-        self.assertFalse('<IPAddress>' in hc_xml)
+        self.assertTrue("<FullyQualifiedDomainName>" in hc_xml)
+        self.assertFalse("<IPAddress>" in hc_xml)
 
         response = self.service_connection.create_health_check(hc)
-        hc_resp = response['CreateHealthCheckResponse']['HealthCheck']['HealthCheckConfig']
-        self.assertEqual(hc_resp['FullyQualifiedDomainName'], 'example.com')
-        self.assertEqual(hc_resp['ResourcePath'], '/health_check')
-        self.assertEqual(hc_resp['Type'], 'HTTPS')
-        self.assertEqual(hc_resp['Port'], '443')
-        self.assertEqual(hc_resp['ResourcePath'], '/health_check')
-        self.assertEqual(response['CreateHealthCheckResponse']['HealthCheck']['Id'], 'f9abfe10-8d2a-4bbd-8f35-796f0f8572f2')
+        hc_resp = response["CreateHealthCheckResponse"]["HealthCheck"][
+            "HealthCheckConfig"
+        ]
+        self.assertEqual(hc_resp["FullyQualifiedDomainName"], "example.com")
+        self.assertEqual(hc_resp["ResourcePath"], "/health_check")
+        self.assertEqual(hc_resp["Type"], "HTTPS")
+        self.assertEqual(hc_resp["Port"], "443")
+        self.assertEqual(hc_resp["ResourcePath"], "/health_check")
+        self.assertEqual(
+            response["CreateHealthCheckResponse"]["HealthCheck"]["Id"],
+            "f9abfe10-8d2a-4bbd-8f35-796f0f8572f2",
+        )
 
 
 @attr(route53=True)
@@ -706,18 +792,66 @@ class TestChangeResourceRecordSetsRoute53(AWSMockServiceTestCase):
 
     def test_record_commit(self):
         rrsets = ResourceRecordSets(self.service_connection)
-        rrsets.add_change_record('CREATE', Record('vanilla.example.com', 'A', 60, ['1.2.3.4']))
-        rrsets.add_change_record('CREATE', Record('alias.example.com', 'AAAA', alias_hosted_zone_id='Z123OTHER', alias_dns_name='target.other', alias_evaluate_target_health=True))
-        rrsets.add_change_record('CREATE', Record('wrr.example.com', 'CNAME', 60, ['cname.target'], weight=10, identifier='weight-1'))
-        rrsets.add_change_record('CREATE', Record('lbr.example.com', 'TXT', 60, ['text record'], region='us-west-2', identifier='region-1'))
-        rrsets.add_change_record('CREATE', Record('failover.example.com', 'A', 60, ['2.2.2.2'], health_check='hc-1234', failover='PRIMARY', identifier='primary'))
+        rrsets.add_change_record(
+            "CREATE", Record("vanilla.example.com", "A", 60, ["1.2.3.4"])
+        )
+        rrsets.add_change_record(
+            "CREATE",
+            Record(
+                "alias.example.com",
+                "AAAA",
+                alias_hosted_zone_id="Z123OTHER",
+                alias_dns_name="target.other",
+                alias_evaluate_target_health=True,
+            ),
+        )
+        rrsets.add_change_record(
+            "CREATE",
+            Record(
+                "wrr.example.com",
+                "CNAME",
+                60,
+                ["cname.target"],
+                weight=10,
+                identifier="weight-1",
+            ),
+        )
+        rrsets.add_change_record(
+            "CREATE",
+            Record(
+                "lbr.example.com",
+                "TXT",
+                60,
+                ["text record"],
+                region="us-west-2",
+                identifier="region-1",
+            ),
+        )
+        rrsets.add_change_record(
+            "CREATE",
+            Record(
+                "failover.example.com",
+                "A",
+                60,
+                ["2.2.2.2"],
+                health_check="hc-1234",
+                failover="PRIMARY",
+                identifier="primary",
+            ),
+        )
 
         changes_xml = rrsets.to_xml()
 
         # the whitespacing doesn't match exactly, so we'll pretty print and drop all new lines
         # not the best, but
-        actual_xml = re.sub(r"\s*[\r\n]+", "\n", xml.dom.minidom.parseString(changes_xml).toprettyxml())
-        expected_xml = re.sub(r"\s*[\r\n]+", "\n", xml.dom.minidom.parseString(b"""
+        actual_xml = re.sub(
+            r"\s*[\r\n]+", "\n", xml.dom.minidom.parseString(changes_xml).toprettyxml()
+        )
+        expected_xml = re.sub(
+            r"\s*[\r\n]+",
+            "\n",
+            xml.dom.minidom.parseString(
+                b"""
 <ChangeResourceRecordSetsRequest xmlns="https://route53.amazonaws.com/doc/2013-04-01/">
     <ChangeBatch>
         <Comment>None</Comment>
@@ -796,7 +930,9 @@ class TestChangeResourceRecordSetsRoute53(AWSMockServiceTestCase):
         </Changes>
     </ChangeBatch>
 </ChangeResourceRecordSetsRequest>
-        """).toprettyxml())
+        """
+            ).toprettyxml(),
+        )
 
         # Note: the alias XML should not include the TTL, even if it's specified in the object model
         self.assertEqual(actual_xml, expected_xml)

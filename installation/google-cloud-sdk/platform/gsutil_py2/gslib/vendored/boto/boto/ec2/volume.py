@@ -61,41 +61,41 @@ class Volume(TaggedEC2Object):
         self.encrypted = None
 
     def __repr__(self):
-        return 'Volume:%s' % self.id
+        return "Volume:%s" % self.id
 
     def startElement(self, name, attrs, connection):
         retval = super(Volume, self).startElement(name, attrs, connection)
         if retval is not None:
             return retval
-        if name == 'attachmentSet':
+        if name == "attachmentSet":
             self.attach_data = AttachmentSet()
             return self.attach_data
-        elif name == 'tagSet':
-            self.tags = ResultSet([('item', Tag)])
+        elif name == "tagSet":
+            self.tags = ResultSet([("item", Tag)])
             return self.tags
         else:
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'volumeId':
+        if name == "volumeId":
             self.id = value
-        elif name == 'createTime':
+        elif name == "createTime":
             self.create_time = value
-        elif name == 'status':
-            if value != '':
+        elif name == "status":
+            if value != "":
                 self.status = value
-        elif name == 'size':
+        elif name == "size":
             self.size = int(value)
-        elif name == 'snapshotId':
+        elif name == "snapshotId":
             self.snapshot_id = value
-        elif name == 'availabilityZone':
+        elif name == "availabilityZone":
             self.zone = value
-        elif name == 'volumeType':
+        elif name == "volumeType":
             self.type = value
-        elif name == 'iops':
+        elif name == "iops":
             self.iops = int(value)
-        elif name == 'encrypted':
-            self.encrypted = (value.lower() == 'true')
+        elif name == "encrypted":
+            self.encrypted = value.lower() == "true"
         else:
             setattr(self, name, value)
 
@@ -114,15 +114,12 @@ class Volume(TaggedEC2Object):
                          returned from EC2.
         """
         # Check the resultset since Eucalyptus ignores the volumeId param
-        unfiltered_rs = self.connection.get_all_volumes(
-            [self.id],
-            dry_run=dry_run
-        )
+        unfiltered_rs = self.connection.get_all_volumes([self.id], dry_run=dry_run)
         rs = [x for x in unfiltered_rs if x.id == self.id]
         if len(rs) > 0:
             self._update(rs[0])
         elif validate:
-            raise ValueError('%s is not a valid Volume ID' % self.id)
+            raise ValueError("%s is not a valid Volume ID" % self.id)
         return self.status
 
     def delete(self, dry_run=False):
@@ -150,10 +147,7 @@ class Volume(TaggedEC2Object):
         :return: True if successful
         """
         return self.connection.attach_volume(
-            self.id,
-            instance_id,
-            device,
-            dry_run=dry_run
+            self.id, instance_id, device, dry_run=dry_run
         )
 
     def detach(self, force=False, dry_run=False):
@@ -180,11 +174,7 @@ class Volume(TaggedEC2Object):
         if self.attach_data:
             device = self.attach_data.device
         return self.connection.detach_volume(
-            self.id,
-            instance_id,
-            device,
-            force,
-            dry_run=dry_run
+            self.id, instance_id, device, force, dry_run=dry_run
         )
 
     def create_snapshot(self, description=None, dry_run=False):
@@ -198,11 +188,7 @@ class Volume(TaggedEC2Object):
         :rtype: :class:`boto.ec2.snapshot.Snapshot`
         :return: The created Snapshot object
         """
-        return self.connection.create_snapshot(
-            self.id,
-            description,
-            dry_run=dry_run
-        )
+        return self.connection.create_snapshot(self.id, description, dry_run=dry_run)
 
     def volume_state(self):
         """
@@ -243,9 +229,7 @@ class Volume(TaggedEC2Object):
 
         """
         rs = self.connection.get_all_snapshots(
-            owner=owner,
-            restorable_by=restorable_by,
-            dry_run=dry_run
+            owner=owner, restorable_by=restorable_by, dry_run=dry_run
         )
         mine = []
         for snap in rs:
@@ -264,6 +248,7 @@ class AttachmentSet(object):
     :ivar attach_time: Attached since
     :ivar device: The device the instance has mapped
     """
+
     def __init__(self):
         self.id = None
         self.instance_id = None
@@ -272,21 +257,21 @@ class AttachmentSet(object):
         self.device = None
 
     def __repr__(self):
-        return 'AttachmentSet:%s' % self.id
+        return "AttachmentSet:%s" % self.id
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'volumeId':
+        if name == "volumeId":
             self.id = value
-        elif name == 'instanceId':
+        elif name == "instanceId":
             self.instance_id = value
-        elif name == 'status':
+        elif name == "status":
             self.status = value
-        elif name == 'attachTime':
+        elif name == "attachTime":
             self.attach_time = value
-        elif name == 'device':
+        elif name == "device":
             self.device = value
         else:
             setattr(self, name, value)
@@ -299,17 +284,17 @@ class VolumeAttribute(object):
         self.attrs = {}
 
     def startElement(self, name, attrs, connection):
-        if name == 'autoEnableIO':
+        if name == "autoEnableIO":
             self._key_name = name
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'value':
-            if value.lower() == 'true':
+        if name == "value":
+            if value.lower() == "true":
                 self.attrs[self._key_name] = True
             else:
                 self.attrs[self._key_name] = False
-        elif name == 'volumeId':
+        elif name == "volumeId":
             self.id = value
         else:
             setattr(self, name, value)

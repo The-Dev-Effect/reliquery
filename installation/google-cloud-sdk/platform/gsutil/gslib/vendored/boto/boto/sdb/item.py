@@ -14,12 +14,13 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 # OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
 # ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
 import base64
+
 
 class Item(dict):
     """
@@ -35,7 +36,8 @@ class Item(dict):
         want to use the convenience methods on :py:class:`boto.sdb.domain.Domain`
         for that purpose. For example, :py:meth:`boto.sdb.domain.Domain.get_item`.
     """
-    def __init__(self, domain, name='', active=False):
+
+    def __init__(self, domain, name="", active=False):
         """
         :type domain: :py:class:`boto.sdb.domain.Domain`
         :param domain: The domain that this item belongs to.
@@ -54,27 +56,27 @@ class Item(dict):
         self.converter = self.domain.connection.converter
 
     def startElement(self, name, attrs, connection):
-        if name == 'Attribute':
+        if name == "Attribute":
             self.in_attribute = True
-        self.encoding = attrs.get('encoding', None)
+        self.encoding = attrs.get("encoding", None)
         return None
 
     def decode_value(self, value):
-        if self.encoding == 'base64':
+        if self.encoding == "base64":
             self.encoding = None
             return base64.decodestring(value)
         else:
             return value
 
     def endElement(self, name, value, connection):
-        if name == 'ItemName':
+        if name == "ItemName":
             self.name = self.decode_value(value)
-        elif name == 'Name':
+        elif name == "Name":
             if self.in_attribute:
                 self.last_key = self.decode_value(value)
             else:
                 self.name = self.decode_value(value)
-        elif name == 'Value':
+        elif name == "Value":
             if self.last_key in self:
                 if not isinstance(self[self.last_key], list):
                     self[self.last_key] = [self[self.last_key]]
@@ -87,14 +89,14 @@ class Item(dict):
                 if self.converter:
                     value = self.converter.decode(value)
                 self[self.last_key] = value
-        elif name == 'BoxUsage':
+        elif name == "BoxUsage":
             try:
                 connection.box_usage += float(value)
             except:
                 pass
-        elif name == 'RequestId':
+        elif name == "RequestId":
             self.request_id = value
-        elif name == 'Attribute':
+        elif name == "Attribute":
             self.in_attribute = False
         else:
             setattr(self, name, value)

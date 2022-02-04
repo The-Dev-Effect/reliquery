@@ -24,9 +24,9 @@
 
 
 class HostedZone(object):
-
-    def __init__(self, id=None, name=None, owner=None, version=None,
-                 caller_reference=None):
+    def __init__(
+        self, id=None, name=None, owner=None, version=None, caller_reference=None
+    ):
         self.id = id
         self.name = name
         self.owner = owner
@@ -37,15 +37,15 @@ class HostedZone(object):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'Id':
+        if name == "Id":
             self.id = value
-        elif name == 'Name':
+        elif name == "Name":
             self.name = value
-        elif name == 'Owner':
+        elif name == "Owner":
             self.owner = value
-        elif name == 'Version':
+        elif name == "Version":
             self.version = value
-        elif name == 'CallerReference':
+        elif name == "CallerReference":
             self.caller_reference = value
         else:
             setattr(self, name, value)

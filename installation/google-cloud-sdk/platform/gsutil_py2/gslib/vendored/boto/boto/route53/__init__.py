@@ -29,7 +29,6 @@ from boto.regioninfo import connect
 
 
 class Route53RegionInfo(RegionInfo):
-
     def connect(self, **kw_params):
         """
         Connect to this Region's endpoint. Returns an connection
@@ -53,17 +52,15 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo` instances
     """
     regions = get_regions(
-        'route53',
-        region_cls=Route53RegionInfo,
-        connection_cls=Route53Connection
+        "route53", region_cls=Route53RegionInfo, connection_cls=Route53Connection
     )
 
     # For historical reasons, we had a "universal" endpoint as well.
     regions.append(
         Route53RegionInfo(
-            name='universal',
-            endpoint='route53.amazonaws.com',
-            connection_cls=Route53Connection
+            name="universal",
+            endpoint="route53.amazonaws.com",
+            connection_cls=Route53Connection,
         )
     )
 
@@ -82,13 +79,18 @@ def connect_to_region(region_name, **kw_params):
     :return: A connection to the given region, or None if an invalid region
              name is given
     """
-    if region_name == 'universal':
+    if region_name == "universal":
         region = Route53RegionInfo(
-            name='universal',
-            endpoint='route53.amazonaws.com',
-            connection_cls=Route53Connection
+            name="universal",
+            endpoint="route53.amazonaws.com",
+            connection_cls=Route53Connection,
         )
         return region.connect(**kw_params)
 
-    return connect('route53', region_name, region_cls=Route53RegionInfo,
-                   connection_cls=Route53Connection, **kw_params)
+    return connect(
+        "route53",
+        region_name,
+        region_cls=Route53RegionInfo,
+        connection_cls=Route53Connection,
+        **kw_params
+    )

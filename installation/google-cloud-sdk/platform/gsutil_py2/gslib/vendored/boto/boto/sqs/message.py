@@ -73,6 +73,7 @@ from boto.sqs.attributes import Attributes
 from boto.sqs.messageattributes import MessageAttributes
 from boto.exception import SQSDecodeError
 
+
 class RawMessage(object):
     """
     Base class for SQS messages.  RawMessage does not encode the message
@@ -81,7 +82,7 @@ class RawMessage(object):
     directly into the body of the message.
     """
 
-    def __init__(self, queue=None, body=''):
+    def __init__(self, queue=None, body=""):
         self.queue = queue
         self.set_body(body)
         self.id = None
@@ -95,22 +96,22 @@ class RawMessage(object):
         return len(self.encode(self._body))
 
     def startElement(self, name, attrs, connection):
-        if name == 'Attribute':
+        if name == "Attribute":
             return self.attributes
-        if name == 'MessageAttribute':
+        if name == "MessageAttribute":
             return self.message_attributes
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'Body':
+        if name == "Body":
             self.set_body(value)
-        elif name == 'MessageId':
+        elif name == "MessageId":
             self.id = value
-        elif name == 'ReceiptHandle':
+        elif name == "ReceiptHandle":
             self.receipt_handle = value
-        elif name == 'MD5OfBody':
+        elif name == "MD5OfBody":
             self.md5 = value
-        elif name == 'MD5OfMessageAttributes':
+        elif name == "MD5OfMessageAttributes":
             self.md5_message_attributes = value
         else:
             setattr(self, name, value)
@@ -147,9 +148,10 @@ class RawMessage(object):
 
     def change_visibility(self, visibility_timeout):
         if self.queue:
-            self.queue.connection.change_message_visibility(self.queue,
-                                                            self.receipt_handle,
-                                                            visibility_timeout)
+            self.queue.connection.change_message_visibility(
+                self.queue, self.receipt_handle, visibility_timeout
+            )
+
 
 class Message(RawMessage):
     """
@@ -165,16 +167,17 @@ class Message(RawMessage):
 
     def encode(self, value):
         if not isinstance(value, six.binary_type):
-            value = value.encode('utf-8')
-        return base64.b64encode(value).decode('utf-8')
+            value = value.encode("utf-8")
+        return base64.b64encode(value).decode("utf-8")
 
     def decode(self, value):
         try:
-            value = base64.b64decode(value.encode('utf-8')).decode('utf-8')
+            value = base64.b64decode(value.encode("utf-8")).decode("utf-8")
         except:
-            boto.log.warning('Unable to decode message')
+            boto.log.warning("Unable to decode message")
             return value
         return value
+
 
 class MHMessage(Message):
     """
@@ -189,7 +192,7 @@ class MHMessage(Message):
     """
 
     def __init__(self, queue=None, body=None, xml_attrs=None):
-        if body is None or body == '':
+        if body is None or body == "":
             body = {}
         super(MHMessage, self).__init__(queue, body)
 
@@ -199,19 +202,19 @@ class MHMessage(Message):
             fp = StringIO(value)
             line = fp.readline()
             while line:
-                delim = line.find(':')
+                delim = line.find(":")
                 key = line[0:delim]
-                value = line[delim+1:].strip()
+                value = line[delim + 1 :].strip()
                 msg[key.strip()] = value.strip()
                 line = fp.readline()
         except:
-            raise SQSDecodeError('Unable to decode message', self)
+            raise SQSDecodeError("Unable to decode message", self)
         return msg
 
     def encode(self, value):
-        s = ''
+        s = ""
         for item in value.items():
-            s = s + '%s: %s\n' % (item[0], item[1])
+            s = s + "%s: %s\n" % (item[0], item[1])
         return s
 
     def __contains__(self, key):
@@ -246,6 +249,7 @@ class MHMessage(Message):
     def get(self, key, default=None):
         return self._body.get(key, default)
 
+
 class EncodedMHMessage(MHMessage):
     """
     The EncodedMHMessage class provides a message that provides RFC821-like
@@ -260,12 +264,11 @@ class EncodedMHMessage(MHMessage):
 
     def decode(self, value):
         try:
-            value = base64.b64decode(value.encode('utf-8')).decode('utf-8')
+            value = base64.b64decode(value.encode("utf-8")).decode("utf-8")
         except:
-            raise SQSDecodeError('Unable to decode message', self)
+            raise SQSDecodeError("Unable to decode message", self)
         return super(EncodedMHMessage, self).decode(value)
 
     def encode(self, value):
         value = super(EncodedMHMessage, self).encode(value)
-        return base64.b64encode(value.encode('utf-8')).decode('utf-8')
-
+        return base64.b64encode(value.encode("utf-8")).decode("utf-8")

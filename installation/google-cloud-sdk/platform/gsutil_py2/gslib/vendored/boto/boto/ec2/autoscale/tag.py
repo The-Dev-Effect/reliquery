@@ -34,9 +34,15 @@ class Tag(object):
         is "auto-scaling-group".
     """
 
-    def __init__(self, connection=None, key=None, value=None,
-                 propagate_at_launch=False, resource_id=None,
-                 resource_type='auto-scaling-group'):
+    def __init__(
+        self,
+        connection=None,
+        key=None,
+        value=None,
+        propagate_at_launch=False,
+        resource_id=None,
+        resource_type="auto-scaling-group",
+    ):
         self.connection = connection
         self.key = key
         self.value = value
@@ -45,24 +51,24 @@ class Tag(object):
         self.resource_type = resource_type
 
     def __repr__(self):
-        return 'Tag(%s=%s)' % (self.key, self.value)
+        return "Tag(%s=%s)" % (self.key, self.value)
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'Key':
+        if name == "Key":
             self.key = value
-        elif name == 'Value':
+        elif name == "Value":
             self.value = value
-        elif name == 'PropagateAtLaunch':
-            if value.lower() == 'true':
+        elif name == "PropagateAtLaunch":
+            if value.lower() == "true":
                 self.propagate_at_launch = True
             else:
                 self.propagate_at_launch = False
-        elif name == 'ResourceId':
+        elif name == "ResourceId":
             self.resource_id = value
-        elif name == 'ResourceType':
+        elif name == "ResourceType":
             self.resource_type = value
 
     def build_params(self, params, i):
@@ -70,15 +76,15 @@ class Tag(object):
         Populates a dictionary with the name/value pairs necessary
         to identify this Tag in a request.
         """
-        prefix = 'Tags.member.%d.' % i
-        params[prefix + 'ResourceId'] = self.resource_id
-        params[prefix + 'ResourceType'] = self.resource_type
-        params[prefix + 'Key'] = self.key
-        params[prefix + 'Value'] = self.value
+        prefix = "Tags.member.%d." % i
+        params[prefix + "ResourceId"] = self.resource_id
+        params[prefix + "ResourceType"] = self.resource_type
+        params[prefix + "Key"] = self.key
+        params[prefix + "Value"] = self.value
         if self.propagate_at_launch:
-            params[prefix + 'PropagateAtLaunch'] = 'true'
+            params[prefix + "PropagateAtLaunch"] = "true"
         else:
-            params[prefix + 'PropagateAtLaunch'] = 'false'
+            params[prefix + "PropagateAtLaunch"] = "false"
 
     def delete(self):
         return self.connection.delete_tags([self])

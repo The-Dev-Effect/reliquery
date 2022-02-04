@@ -34,7 +34,7 @@ from oauth2client import _helpers
 from oauth2client import client
 
 
-__all__ = ['argparser', 'run_flow', 'message_if_missing']
+__all__ = ["argparser", "run_flow", "message_if_missing"]
 
 _CLIENT_SECRETS_MESSAGE = """WARNING: Please configure OAuth 2.0
 
@@ -80,16 +80,30 @@ def _CreateArgumentParser():
     except ImportError:  # pragma: NO COVER
         return None
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('--auth_host_name', default='localhost',
-                        help='Hostname when running a local web server.')
-    parser.add_argument('--noauth_local_webserver', action='store_true',
-                        default=False, help='Do not run a local web server.')
-    parser.add_argument('--auth_host_port', default=[8080, 8090], type=int,
-                        nargs='*', help='Port web server should listen on.')
     parser.add_argument(
-        '--logging_level', default='ERROR',
-        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
-        help='Set the logging level of detail.')
+        "--auth_host_name",
+        default="localhost",
+        help="Hostname when running a local web server.",
+    )
+    parser.add_argument(
+        "--noauth_local_webserver",
+        action="store_true",
+        default=False,
+        help="Do not run a local web server.",
+    )
+    parser.add_argument(
+        "--auth_host_port",
+        default=[8080, 8090],
+        type=int,
+        nargs="*",
+        help="Port web server should listen on.",
+    )
+    parser.add_argument(
+        "--logging_level",
+        default="ERROR",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        help="Set the logging level of detail.",
+    )
     return parser
 
 
@@ -105,6 +119,7 @@ class ClientRedirectServer(BaseHTTPServer.HTTPServer):
     Waits for a single request and parses the query parameters
     into query_params and then stops serving.
     """
+
     query_params = {}
 
 
@@ -123,16 +138,14 @@ class ClientRedirectHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         if an error occurred.
         """
         self.send_response(http_client.OK)
-        self.send_header('Content-type', 'text/html')
+        self.send_header("Content-type", "text/html")
         self.end_headers()
         parts = urllib.parse.urlparse(self.path)
         query = _helpers.parse_unique_urlencoded(parts.query)
         self.server.query_params = query
-        self.wfile.write(
-            b'<html><head><title>Authentication Status</title></head>')
-        self.wfile.write(
-            b'<body><p>The authentication flow has completed.</p>')
-        self.wfile.write(b'</body></html>')
+        self.wfile.write(b"<html><head><title>Authentication Status</title></head>")
+        self.wfile.write(b"<body><p>The authentication flow has completed.</p>")
+        self.wfile.write(b"</body></html>")
 
     def log_message(self, format, *args):
         """Do not log messages to stdout while running as cmd. line program."""
@@ -199,8 +212,9 @@ def run_flow(flow, storage, flags=None, http=None):
         for port in flags.auth_host_port:
             port_number = port
             try:
-                httpd = ClientRedirectServer((flags.auth_host_name, port),
-                                             ClientRedirectHandler)
+                httpd = ClientRedirectServer(
+                    (flags.auth_host_name, port), ClientRedirectHandler
+                )
             except socket.error:
                 pass
             else:
@@ -211,8 +225,9 @@ def run_flow(flow, storage, flags=None, http=None):
             print(_FAILED_START_MESSAGE)
 
     if not flags.noauth_local_webserver:
-        oauth_callback = 'http://{host}:{port}/'.format(
-            host=flags.auth_host_name, port=port_number)
+        oauth_callback = "http://{host}:{port}/".format(
+            host=flags.auth_host_name, port=port_number
+        )
     else:
         oauth_callback = client.OOB_CALLBACK_URN
     flow.redirect_uri = oauth_callback
@@ -220,6 +235,7 @@ def run_flow(flow, storage, flags=None, http=None):
 
     if not flags.noauth_local_webserver:
         import webbrowser
+
         webbrowser.open(authorize_url, new=1, autoraise=True)
         print(_BROWSER_OPENED_MESSAGE.format(address=authorize_url))
     else:
@@ -228,25 +244,24 @@ def run_flow(flow, storage, flags=None, http=None):
     code = None
     if not flags.noauth_local_webserver:
         httpd.handle_request()
-        if 'error' in httpd.query_params:
-            sys.exit('Authentication request was rejected.')
-        if 'code' in httpd.query_params:
-            code = httpd.query_params['code']
+        if "error" in httpd.query_params:
+            sys.exit("Authentication request was rejected.")
+        if "code" in httpd.query_params:
+            code = httpd.query_params["code"]
         else:
-            print('Failed to find "code" in the query parameters '
-                  'of the redirect.')
-            sys.exit('Try running with --noauth_local_webserver.')
+            print('Failed to find "code" in the query parameters ' "of the redirect.")
+            sys.exit("Try running with --noauth_local_webserver.")
     else:
-        code = input('Enter verification code: ').strip()
+        code = input("Enter verification code: ").strip()
 
     try:
         credential = flow.step2_exchange(code, http=http)
     except client.FlowExchangeError as e:
-        sys.exit('Authentication has failed: {0}'.format(e))
+        sys.exit("Authentication has failed: {0}".format(e))
 
     storage.put(credential)
     credential.set_store(storage)
-    print('Authentication successful.')
+    print("Authentication successful.")
 
     return credential
 

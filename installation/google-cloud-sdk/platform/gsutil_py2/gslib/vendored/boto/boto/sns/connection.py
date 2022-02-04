@@ -48,62 +48,86 @@ class SNSConnection(AWSQueryConnection):
     requests, and handling error responses. For a list of available
     SDKs, go to `Tools for Amazon Web Services`_.
     """
-    DefaultRegionName = boto.config.get('Boto', 'sns_region_name', 'us-east-1')
-    DefaultRegionEndpoint = boto.config.get('Boto', 'sns_region_endpoint', 
-                                            'sns.us-east-1.amazonaws.com')
-    APIVersion = boto.config.get('Boto', 'sns_version', '2010-03-31')
 
+    DefaultRegionName = boto.config.get("Boto", "sns_region_name", "us-east-1")
+    DefaultRegionEndpoint = boto.config.get(
+        "Boto", "sns_region_endpoint", "sns.us-east-1.amazonaws.com"
+    )
+    APIVersion = boto.config.get("Boto", "sns_version", "2010-03-31")
 
-    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None,
-                 is_secure=True, port=None, proxy=None, proxy_port=None,
-                 proxy_user=None, proxy_pass=None, debug=0,
-                 https_connection_factory=None, region=None, path='/',
-                 security_token=None, validate_certs=True,
-                 profile_name=None):
+    def __init__(
+        self,
+        aws_access_key_id=None,
+        aws_secret_access_key=None,
+        is_secure=True,
+        port=None,
+        proxy=None,
+        proxy_port=None,
+        proxy_user=None,
+        proxy_pass=None,
+        debug=0,
+        https_connection_factory=None,
+        region=None,
+        path="/",
+        security_token=None,
+        validate_certs=True,
+        profile_name=None,
+    ):
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint,
-                                connection_cls=SNSConnection)
+            region = RegionInfo(
+                self,
+                self.DefaultRegionName,
+                self.DefaultRegionEndpoint,
+                connection_cls=SNSConnection,
+            )
         self.region = region
-        super(SNSConnection, self).__init__(aws_access_key_id,
-                                    aws_secret_access_key,
-                                    is_secure, port, proxy, proxy_port,
-                                    proxy_user, proxy_pass,
-                                    self.region.endpoint, debug,
-                                    https_connection_factory, path,
-                                    security_token=security_token,
-                                    validate_certs=validate_certs,
-                                    profile_name=profile_name)
+        super(SNSConnection, self).__init__(
+            aws_access_key_id,
+            aws_secret_access_key,
+            is_secure,
+            port,
+            proxy,
+            proxy_port,
+            proxy_user,
+            proxy_pass,
+            self.region.endpoint,
+            debug,
+            https_connection_factory,
+            path,
+            security_token=security_token,
+            validate_certs=validate_certs,
+            profile_name=profile_name,
+        )
 
     def _build_dict_as_list_params(self, params, dictionary, name):
-      """
-            Serialize a parameter 'name' which value is a 'dictionary' into a list of parameters.
+        """
+              Serialize a parameter 'name' which value is a 'dictionary' into a list of parameters.
 
-            See: http://docs.aws.amazon.com/sns/latest/api/API_SetPlatformApplicationAttributes.html
-            For example::
+              See: http://docs.aws.amazon.com/sns/latest/api/API_SetPlatformApplicationAttributes.html
+              For example::
 
-                dictionary = {'PlatformPrincipal': 'foo', 'PlatformCredential': 'bar'}
-                name = 'Attributes'
+                  dictionary = {'PlatformPrincipal': 'foo', 'PlatformCredential': 'bar'}
+                  name = 'Attributes'
 
-            would result in params dict being populated with:
-                Attributes.entry.1.key    = PlatformPrincipal
-                Attributes.entry.1.value  = foo
-                Attributes.entry.2.key    = PlatformCredential
-                Attributes.entry.2.value  = bar
+              would result in params dict being populated with:
+                  Attributes.entry.1.key    = PlatformPrincipal
+                  Attributes.entry.1.value  = foo
+                  Attributes.entry.2.key    = PlatformCredential
+                  Attributes.entry.2.value  = bar
 
-      :param params: the resulting parameters will be added to this dict
-      :param dictionary: dict - value of the serialized parameter
-      :param name: name of the serialized parameter
-      """
-      items = sorted(dictionary.items(), key=lambda x:x[0])
-      for kv, index in zip(items, list(range(1, len(items)+1))):
-        key, value = kv
-        prefix = '%s.entry.%s' % (name, index)
-        params['%s.key' % prefix] = key
-        params['%s.value' % prefix] = value
+        :param params: the resulting parameters will be added to this dict
+        :param dictionary: dict - value of the serialized parameter
+        :param name: name of the serialized parameter
+        """
+        items = sorted(dictionary.items(), key=lambda x: x[0])
+        for kv, index in zip(items, list(range(1, len(items) + 1))):
+            key, value = kv
+            prefix = "%s.entry.%s" % (name, index)
+            params["%s.key" % prefix] = key
+            params["%s.value" % prefix] = value
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
     def get_all_topics(self, next_token=None):
         """
@@ -114,8 +138,8 @@ class SNSConnection(AWSQueryConnection):
         """
         params = {}
         if next_token:
-            params['NextToken'] = next_token
-        return self._make_request('ListTopics', params)
+            params["NextToken"] = next_token
+        return self._make_request("ListTopics", params)
 
     def get_topic_attributes(self, topic):
         """
@@ -125,8 +149,8 @@ class SNSConnection(AWSQueryConnection):
         :param topic: The ARN of the topic.
 
         """
-        params = {'TopicArn': topic}
-        return self._make_request('GetTopicAttributes', params)
+        params = {"TopicArn": topic}
+        return self._make_request("GetTopicAttributes", params)
 
     def set_topic_attributes(self, topic, attr_name, attr_value):
         """
@@ -144,10 +168,12 @@ class SNSConnection(AWSQueryConnection):
         :param attr_value: The new value for the attribute.
 
         """
-        params = {'TopicArn': topic,
-                  'AttributeName': attr_name,
-                  'AttributeValue': attr_value}
-        return self._make_request('SetTopicAttributes', params)
+        params = {
+            "TopicArn": topic,
+            "AttributeName": attr_name,
+            "AttributeValue": attr_value,
+        }
+        return self._make_request("SetTopicAttributes", params)
 
     def add_permission(self, topic, label, account_ids, actions):
         """
@@ -169,11 +195,10 @@ class SNSConnection(AWSQueryConnection):
                         specified principal(s).
 
         """
-        params = {'TopicArn': topic,
-                  'Label': label}
-        self.build_list_params(params, account_ids, 'AWSAccountId.member')
-        self.build_list_params(params, actions, 'ActionName.member')
-        return self._make_request('AddPermission', params)
+        params = {"TopicArn": topic, "Label": label}
+        self.build_list_params(params, account_ids, "AWSAccountId.member")
+        self.build_list_params(params, actions, "ActionName.member")
+        return self._make_request("AddPermission", params)
 
     def remove_permission(self, topic, label):
         """
@@ -187,9 +212,8 @@ class SNSConnection(AWSQueryConnection):
                       to be removed.
 
         """
-        params = {'TopicArn': topic,
-                  'Label': label}
-        return self._make_request('RemovePermission', params)
+        params = {"TopicArn": topic, "Label": label}
+        return self._make_request("RemovePermission", params)
 
     def create_topic(self, topic):
         """
@@ -199,8 +223,8 @@ class SNSConnection(AWSQueryConnection):
         :param topic: The name of the new topic.
 
         """
-        params = {'Name': topic}
-        return self._make_request('CreateTopic', params)
+        params = {"Name": topic}
+        return self._make_request("CreateTopic", params)
 
     def delete_topic(self, topic):
         """
@@ -210,11 +234,18 @@ class SNSConnection(AWSQueryConnection):
         :param topic: The ARN of the topic
 
         """
-        params = {'TopicArn': topic}
-        return self._make_request('DeleteTopic', params, '/', 'GET')
+        params = {"TopicArn": topic}
+        return self._make_request("DeleteTopic", params, "/", "GET")
 
-    def publish(self, topic=None, message=None, subject=None, target_arn=None,
-                message_structure=None, message_attributes=None):
+    def publish(
+        self,
+        topic=None,
+        message=None,
+        subject=None,
+        target_arn=None,
+        message_structure=None,
+        message_attributes=None,
+    ):
         """
         Sends a message to all of a topic's subscribed endpoints
 
@@ -264,30 +295,33 @@ class SNSConnection(AWSQueryConnection):
             # a default value and topic and message were required
             # args.
             raise TypeError("'message' is a required parameter")
-        params = {'Message': message}
+        params = {"Message": message}
         if subject is not None:
-            params['Subject'] = subject
+            params["Subject"] = subject
         if topic is not None:
-            params['TopicArn'] = topic
+            params["TopicArn"] = topic
         if target_arn is not None:
-            params['TargetArn'] = target_arn
+            params["TargetArn"] = target_arn
         if message_structure is not None:
-            params['MessageStructure'] = message_structure
+            params["MessageStructure"] = message_structure
         if message_attributes is not None:
             keys = sorted(message_attributes.keys())
             for i, name in enumerate(keys, start=1):
                 attribute = message_attributes[name]
-                params['MessageAttributes.entry.{0}.Name'.format(i)] = name
-                if 'data_type' in attribute:
-                    params['MessageAttributes.entry.{0}.Value.DataType'.format(i)] = \
-                        attribute['data_type']
-                if 'string_value' in attribute:
-                    params['MessageAttributes.entry.{0}.Value.StringValue'.format(i)] = \
-                        attribute['string_value']
-                if 'binary_value' in attribute:
-                    params['MessageAttributes.entry.{0}.Value.BinaryValue'.format(i)] = \
-                        attribute['binary_value']
-        return self._make_request('Publish', params, '/', 'POST')
+                params["MessageAttributes.entry.{0}.Name".format(i)] = name
+                if "data_type" in attribute:
+                    params[
+                        "MessageAttributes.entry.{0}.Value.DataType".format(i)
+                    ] = attribute["data_type"]
+                if "string_value" in attribute:
+                    params[
+                        "MessageAttributes.entry.{0}.Value.StringValue".format(i)
+                    ] = attribute["string_value"]
+                if "binary_value" in attribute:
+                    params[
+                        "MessageAttributes.entry.{0}.Value.BinaryValue".format(i)
+                    ] = attribute["binary_value"]
+        return self._make_request("Publish", params, "/", "POST")
 
     def subscribe(self, topic, protocol, endpoint):
         """
@@ -314,10 +348,8 @@ class SNSConnection(AWSQueryConnection):
                          * For application, the endpoint is the EndpointArn
                            of a mobile app and device.
         """
-        params = {'TopicArn': topic,
-                  'Protocol': protocol,
-                  'Endpoint': endpoint}
-        return self._make_request('Subscribe', params)
+        params = {"TopicArn": topic, "Protocol": protocol, "Endpoint": endpoint}
+        return self._make_request("Subscribe", params)
 
     def subscribe_sqs_queue(self, topic, queue):
         """
@@ -342,37 +374,38 @@ class SNSConnection(AWSQueryConnection):
         :type queue: A boto Queue object
         :param queue: The queue you wish to subscribe to the SNS Topic.
         """
-        t = queue.id.split('/')
+        t = queue.id.split("/")
         q_arn = queue.arn
-        sid = hashlib.md5((topic + q_arn).encode('utf-8')).hexdigest()
+        sid = hashlib.md5((topic + q_arn).encode("utf-8")).hexdigest()
         sid_exists = False
-        resp = self.subscribe(topic, 'sqs', q_arn)
-        attr = queue.get_attributes('Policy')
-        if 'Policy' in attr:
-            policy = json.loads(attr['Policy'])
+        resp = self.subscribe(topic, "sqs", q_arn)
+        attr = queue.get_attributes("Policy")
+        if "Policy" in attr:
+            policy = json.loads(attr["Policy"])
         else:
             policy = {}
-        if 'Version' not in policy:
-            policy['Version'] = '2008-10-17'
-        if 'Statement' not in policy:
-            policy['Statement'] = []
+        if "Version" not in policy:
+            policy["Version"] = "2008-10-17"
+        if "Statement" not in policy:
+            policy["Statement"] = []
         # See if a Statement with the Sid exists already.
-        for s in policy['Statement']:
-            if s['Sid'] == sid:
+        for s in policy["Statement"]:
+            if s["Sid"] == sid:
                 sid_exists = True
         if not sid_exists:
-            statement = {'Action': 'SQS:SendMessage',
-                         'Effect': 'Allow',
-                         'Principal': {'AWS': '*'},
-                         'Resource': q_arn,
-                         'Sid': sid,
-                         'Condition': {'StringLike': {'aws:SourceArn': topic}}}
-            policy['Statement'].append(statement)
-        queue.set_attribute('Policy', json.dumps(policy))
+            statement = {
+                "Action": "SQS:SendMessage",
+                "Effect": "Allow",
+                "Principal": {"AWS": "*"},
+                "Resource": q_arn,
+                "Sid": sid,
+                "Condition": {"StringLike": {"aws:SourceArn": topic}},
+            }
+            policy["Statement"].append(statement)
+        queue.set_attribute("Policy", json.dumps(policy))
         return resp
 
-    def confirm_subscription(self, topic, token,
-                             authenticate_on_unsubscribe=False):
+    def confirm_subscription(self, topic, token, authenticate_on_unsubscribe=False):
         """
         Get properties of a Topic
 
@@ -390,10 +423,10 @@ class SNSConnection(AWSQueryConnection):
                                             of the subscription.
 
         """
-        params = {'TopicArn': topic, 'Token': token}
+        params = {"TopicArn": topic, "Token": token}
         if authenticate_on_unsubscribe:
-            params['AuthenticateOnUnsubscribe'] = 'true'
-        return self._make_request('ConfirmSubscription', params)
+            params["AuthenticateOnUnsubscribe"] = "true"
+        return self._make_request("ConfirmSubscription", params)
 
     def unsubscribe(self, subscription):
         """
@@ -404,8 +437,8 @@ class SNSConnection(AWSQueryConnection):
         :param subscription: The ARN of the subscription to be deleted.
 
         """
-        params = {'SubscriptionArn': subscription}
-        return self._make_request('Unsubscribe', params)
+        params = {"SubscriptionArn": subscription}
+        return self._make_request("Unsubscribe", params)
 
     def get_all_subscriptions(self, next_token=None):
         """
@@ -418,8 +451,8 @@ class SNSConnection(AWSQueryConnection):
         """
         params = {}
         if next_token:
-            params['NextToken'] = next_token
-        return self._make_request('ListSubscriptions', params)
+            params["NextToken"] = next_token
+        return self._make_request("ListSubscriptions", params)
 
     def get_all_subscriptions_by_topic(self, topic, next_token=None):
         """
@@ -434,13 +467,12 @@ class SNSConnection(AWSQueryConnection):
                            this method.
 
         """
-        params = {'TopicArn': topic}
+        params = {"TopicArn": topic}
         if next_token:
-            params['NextToken'] = next_token
-        return self._make_request('ListSubscriptionsByTopic', params)
+            params["NextToken"] = next_token
+        return self._make_request("ListSubscriptionsByTopic", params)
 
-    def create_platform_application(self, name=None, platform=None,
-                                    attributes=None):
+    def create_platform_application(self, name=None, platform=None, attributes=None):
         """
         The `CreatePlatformApplication` action creates a platform
         application object for one of the supported push notification
@@ -478,17 +510,16 @@ class SNSConnection(AWSQueryConnection):
         """
         params = {}
         if name is not None:
-            params['Name'] = name
+            params["Name"] = name
         if platform is not None:
-            params['Platform'] = platform
+            params["Platform"] = platform
         if attributes is not None:
-            self._build_dict_as_list_params(params, attributes, 'Attributes')
-        return self._make_request(action='CreatePlatformApplication',
-                                  params=params)
+            self._build_dict_as_list_params(params, attributes, "Attributes")
+        return self._make_request(action="CreatePlatformApplication", params=params)
 
-    def set_platform_application_attributes(self,
-                                            platform_application_arn=None,
-                                            attributes=None):
+    def set_platform_application_attributes(
+        self, platform_application_arn=None, attributes=None
+    ):
         """
         The `SetPlatformApplicationAttributes` action sets the
         attributes of the platform application object for the
@@ -527,14 +558,14 @@ class SNSConnection(AWSQueryConnection):
         """
         params = {}
         if platform_application_arn is not None:
-            params['PlatformApplicationArn'] = platform_application_arn
+            params["PlatformApplicationArn"] = platform_application_arn
         if attributes is not None:
-            self._build_dict_as_list_params(params, attributes, 'Attributes')
-        return self._make_request(action='SetPlatformApplicationAttributes',
-                                  params=params)
+            self._build_dict_as_list_params(params, attributes, "Attributes")
+        return self._make_request(
+            action="SetPlatformApplicationAttributes", params=params
+        )
 
-    def get_platform_application_attributes(self,
-                                            platform_application_arn=None):
+    def get_platform_application_attributes(self, platform_application_arn=None):
         """
         The `GetPlatformApplicationAttributes` action retrieves the
         attributes of the platform application object for the
@@ -549,9 +580,10 @@ class SNSConnection(AWSQueryConnection):
         """
         params = {}
         if platform_application_arn is not None:
-            params['PlatformApplicationArn'] = platform_application_arn
-        return self._make_request(action='GetPlatformApplicationAttributes',
-                                  params=params)
+            params["PlatformApplicationArn"] = platform_application_arn
+        return self._make_request(
+            action="GetPlatformApplicationAttributes", params=params
+        )
 
     def list_platform_applications(self, next_token=None):
         """
@@ -575,13 +607,12 @@ class SNSConnection(AWSQueryConnection):
         """
         params = {}
         if next_token is not None:
-            params['NextToken'] = next_token
-        return self._make_request(action='ListPlatformApplications',
-                                  params=params)
+            params["NextToken"] = next_token
+        return self._make_request(action="ListPlatformApplications", params=params)
 
-    def list_endpoints_by_platform_application(self,
-                                               platform_application_arn=None,
-                                               next_token=None):
+    def list_endpoints_by_platform_application(
+        self, platform_application_arn=None, next_token=None
+    ):
         """
         The `ListEndpointsByPlatformApplication` action lists the
         endpoints and endpoint attributes for devices in a supported
@@ -608,11 +639,12 @@ class SNSConnection(AWSQueryConnection):
         """
         params = {}
         if platform_application_arn is not None:
-            params['PlatformApplicationArn'] = platform_application_arn
+            params["PlatformApplicationArn"] = platform_application_arn
         if next_token is not None:
-            params['NextToken'] = next_token
-        return self._make_request(action='ListEndpointsByPlatformApplication',
-                                  params=params)
+            params["NextToken"] = next_token
+        return self._make_request(
+            action="ListEndpointsByPlatformApplication", params=params
+        )
 
     def delete_platform_application(self, platform_application_arn=None):
         """
@@ -628,13 +660,16 @@ class SNSConnection(AWSQueryConnection):
         """
         params = {}
         if platform_application_arn is not None:
-            params['PlatformApplicationArn'] = platform_application_arn
-        return self._make_request(action='DeletePlatformApplication',
-                                  params=params)
+            params["PlatformApplicationArn"] = platform_application_arn
+        return self._make_request(action="DeletePlatformApplication", params=params)
 
-    def create_platform_endpoint(self, platform_application_arn=None,
-                                 token=None, custom_user_data=None,
-                                 attributes=None):
+    def create_platform_endpoint(
+        self,
+        platform_application_arn=None,
+        token=None,
+        custom_user_data=None,
+        attributes=None,
+    ):
         """
         The `CreatePlatformEndpoint` creates an endpoint for a device
         and mobile app on one of the supported push notification
@@ -671,15 +706,14 @@ class SNSConnection(AWSQueryConnection):
         """
         params = {}
         if platform_application_arn is not None:
-            params['PlatformApplicationArn'] = platform_application_arn
+            params["PlatformApplicationArn"] = platform_application_arn
         if token is not None:
-            params['Token'] = token
+            params["Token"] = token
         if custom_user_data is not None:
-            params['CustomUserData'] = custom_user_data
+            params["CustomUserData"] = custom_user_data
         if attributes is not None:
-            self._build_dict_as_list_params(params, attributes, 'Attributes')
-        return self._make_request(action='CreatePlatformEndpoint',
-                                  params=params)
+            self._build_dict_as_list_params(params, attributes, "Attributes")
+        return self._make_request(action="CreatePlatformEndpoint", params=params)
 
     def delete_endpoint(self, endpoint_arn=None):
         """
@@ -693,8 +727,8 @@ class SNSConnection(AWSQueryConnection):
         """
         params = {}
         if endpoint_arn is not None:
-            params['EndpointArn'] = endpoint_arn
-        return self._make_request(action='DeleteEndpoint', params=params)
+            params["EndpointArn"] = endpoint_arn
+        return self._make_request(action="DeleteEndpoint", params=params)
 
     def set_endpoint_attributes(self, endpoint_arn=None, attributes=None):
         """
@@ -728,11 +762,10 @@ class SNSConnection(AWSQueryConnection):
         """
         params = {}
         if endpoint_arn is not None:
-            params['EndpointArn'] = endpoint_arn
+            params["EndpointArn"] = endpoint_arn
         if attributes is not None:
-            self._build_dict_as_list_params(params, attributes, 'Attributes')
-        return self._make_request(action='SetEndpointAttributes',
-                                  params=params)
+            self._build_dict_as_list_params(params, attributes, "Attributes")
+        return self._make_request(action="SetEndpointAttributes", params=params)
 
     def get_endpoint_attributes(self, endpoint_arn=None):
         """
@@ -747,19 +780,17 @@ class SNSConnection(AWSQueryConnection):
         """
         params = {}
         if endpoint_arn is not None:
-            params['EndpointArn'] = endpoint_arn
-        return self._make_request(action='GetEndpointAttributes',
-                                  params=params)
+            params["EndpointArn"] = endpoint_arn
+        return self._make_request(action="GetEndpointAttributes", params=params)
 
-    def _make_request(self, action, params, path='/', verb='GET'):
-        params['ContentType'] = 'JSON'
-        response = self.make_request(action=action, verb=verb,
-                                     path=path, params=params)
-        body = response.read().decode('utf-8')
+    def _make_request(self, action, params, path="/", verb="GET"):
+        params["ContentType"] = "JSON"
+        response = self.make_request(action=action, verb=verb, path=path, params=params)
+        body = response.read().decode("utf-8")
         boto.log.debug(body)
         if response.status == 200:
             return json.loads(body)
         else:
-            boto.log.error('%s %s' % (response.status, response.reason))
-            boto.log.error('%s' % body)
+            boto.log.error("%s %s" % (response.status, response.reason))
+            boto.log.error("%s" % body)
             raise self.ResponseError(response.status, response.reason, body)

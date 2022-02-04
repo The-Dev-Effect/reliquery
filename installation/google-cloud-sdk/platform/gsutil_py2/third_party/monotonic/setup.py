@@ -30,20 +30,20 @@ except ImportError:
 
 
 setup(
-    name='monotonic',
-    version='1.4',
-    license='Apache',
-    author='Ori Livneh',
-    author_email='ori@wikimedia.org',
-    url='https://github.com/atdt/monotonic',
-    description='An implementation of time.monotonic() for Python 2 & < 3.3',
+    name="monotonic",
+    version="1.4",
+    license="Apache",
+    author="Ori Livneh",
+    author_email="ori@wikimedia.org",
+    url="https://github.com/atdt/monotonic",
+    description="An implementation of time.monotonic() for Python 2 & < 3.3",
     long_description=__doc__,
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
-        'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 3',
-        'Topic :: Software Development :: Libraries :: Python Modules',
+        "Development Status :: 5 - Production/Stable",
+        "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 3",
+        "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    py_modules=('monotonic',),
+    py_modules=("monotonic",),
 )

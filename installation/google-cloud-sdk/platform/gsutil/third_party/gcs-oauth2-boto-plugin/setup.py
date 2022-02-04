@@ -29,55 +29,56 @@ for the machine in a thread- and process-safe fashion.
 """
 
 requires = [
-    'rsa==4.7.2',
-    'boto>=2.29.1',
-    'google-reauth>=0.1.0',
-    'httplib2>=0.18',
-    'oauth2client>=2.2.0',
-    'pyOpenSSL>=0.13',
-    'retry_decorator>=1.0.0',
-    'six>=1.12.0'
+    "rsa==4.7.2",
+    "boto>=2.29.1",
+    "google-reauth>=0.1.0",
+    "httplib2>=0.18",
+    "oauth2client>=2.2.0",
+    "pyOpenSSL>=0.13",
+    "retry_decorator>=1.0.0",
+    "six>=1.12.0",
 ]
 
 extras_require = {
-    'dev': [
-        'freezegun',
+    "dev": [
+        "freezegun",
         'mock;python_version<"3.3"',
     ],
 }
 
 setup(
-    name='gcs-oauth2-boto-plugin',
-    version='3.0',
-    url='https://developers.google.com/storage/docs/gspythonlibrary',
-    download_url=('https://github.com/GoogleCloudPlatform'
-                  '/gcs-oauth2-boto-plugin'),
-    license='Apache 2.0',
-    author='Google Inc.',
-    author_email='gs-team@google.com',
-    description=('Auth plugin allowing use the use of OAuth 2.0 credentials '
-                 'for Google Cloud Storage in the Boto library.'),
+    name="gcs-oauth2-boto-plugin",
+    version="3.0",
+    url="https://developers.google.com/storage/docs/gspythonlibrary",
+    download_url=("https://github.com/GoogleCloudPlatform" "/gcs-oauth2-boto-plugin"),
+    license="Apache 2.0",
+    author="Google Inc.",
+    author_email="gs-team@google.com",
+    description=(
+        "Auth plugin allowing use the use of OAuth 2.0 credentials "
+        "for Google Cloud Storage in the Boto library."
+    ),
     long_description=long_desc,
     zip_safe=True,
-    platforms='any',
-    packages=find_packages(exclude=['third_party']),
+    platforms="any",
+    packages=find_packages(exclude=["third_party"]),
     include_package_data=True,
     install_requires=requires,
     extras_require=extras_require,
-    tests_require=extras_require['dev'],
-    test_suite='gcs_oauth2_boto_plugin.test_oauth2_client',
+    tests_require=extras_require["dev"],
+    test_suite="gcs_oauth2_boto_plugin.test_oauth2_client",
     classifiers=[
-        'Development Status :: 7 - Inactive',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Topic :: Internet :: WWW/HTTP',
-        'Topic :: Software Development :: Libraries :: Python Modules',
+        "Development Status :: 7 - Inactive",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Topic :: Internet :: WWW/HTTP",
+        "Topic :: Software Development :: Libraries :: Python Modules",
     ],
 )

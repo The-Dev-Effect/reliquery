@@ -8,7 +8,7 @@ from boto.rds import DBInstance
 
 class TestDescribeDBSnapshots(AWSMockServiceTestCase):
     connection_class = RDSConnection
-    
+
     def default_body(self):
         return """
         <DescribeDBSnapshotsResponse xmlns="http://rds.amazonaws.com/doc/2013-05-15/">
@@ -75,33 +75,34 @@ class TestDescribeDBSnapshots(AWSMockServiceTestCase):
             </ResponseMetadata>
         </DescribeDBSnapshotsResponse>        
         """
-        
+
     def test_describe_dbinstances_by_instance(self):
-        self.set_http_response(status_code=200)        
-        response = self.service_connection.get_all_dbsnapshots(instance_id='simcoprod01')
-        self.assert_request_parameters({
-            'Action': 'DescribeDBSnapshots',
-            'DBInstanceIdentifier': 'simcoprod01'
-            }, ignore_params_values=['Version'])
+        self.set_http_response(status_code=200)
+        response = self.service_connection.get_all_dbsnapshots(
+            instance_id="simcoprod01"
+        )
+        self.assert_request_parameters(
+            {"Action": "DescribeDBSnapshots", "DBInstanceIdentifier": "simcoprod01"},
+            ignore_params_values=["Version"],
+        )
         self.assertEqual(len(response), 3)
         self.assertIsInstance(response[0], DBSnapshot)
-        self.assertEqual(response[0].id, 'mydbsnapshot')
-        self.assertEqual(response[0].status, 'available')
-        self.assertEqual(response[0].instance_id, 'simcoprod01')
-        self.assertEqual(response[0].engine_version, '5.1.50')
-        self.assertEqual(response[0].license_model, 'general-public-license')
+        self.assertEqual(response[0].id, "mydbsnapshot")
+        self.assertEqual(response[0].status, "available")
+        self.assertEqual(response[0].instance_id, "simcoprod01")
+        self.assertEqual(response[0].engine_version, "5.1.50")
+        self.assertEqual(response[0].license_model, "general-public-license")
         self.assertEqual(response[0].iops, 1000)
-        self.assertEqual(response[0].option_group_name, 'myoptiongroupname')
+        self.assertEqual(response[0].option_group_name, "myoptiongroupname")
         self.assertEqual(response[0].percent_progress, 100)
-        self.assertEqual(response[0].snapshot_type, 'manual')
-        self.assertEqual(response[0].source_region, 'eu-west-1')
-        self.assertEqual(response[0].vpc_id, 'myvpc')
-        
+        self.assertEqual(response[0].snapshot_type, "manual")
+        self.assertEqual(response[0].source_region, "eu-west-1")
+        self.assertEqual(response[0].vpc_id, "myvpc")
 
 
 class TestCreateDBSnapshot(AWSMockServiceTestCase):
     connection_class = RDSConnection
-    
+
     def default_body(self):
         return """
         <CreateDBSnapshotResponse xmlns="http://rds.amazonaws.com/doc/2013-05-15/">
@@ -125,25 +126,30 @@ class TestCreateDBSnapshot(AWSMockServiceTestCase):
                 <RequestId>c4181d1d-8505-11e0-90aa-eb648410240d</RequestId>
             </ResponseMetadata>
         </CreateDBSnapshotResponse>
-        """        
-        
+        """
+
     def test_create_dbinstance(self):
         self.set_http_response(status_code=200)
-        response = self.service_connection.create_dbsnapshot('mydbsnapshot', 'simcoprod01')
-        self.assert_request_parameters({
-            'Action': 'CreateDBSnapshot',
-            'DBSnapshotIdentifier': 'mydbsnapshot',
-            'DBInstanceIdentifier': 'simcoprod01'
-            }, ignore_params_values=['Version'])        
+        response = self.service_connection.create_dbsnapshot(
+            "mydbsnapshot", "simcoprod01"
+        )
+        self.assert_request_parameters(
+            {
+                "Action": "CreateDBSnapshot",
+                "DBSnapshotIdentifier": "mydbsnapshot",
+                "DBInstanceIdentifier": "simcoprod01",
+            },
+            ignore_params_values=["Version"],
+        )
         self.assertIsInstance(response, DBSnapshot)
-        self.assertEqual(response.id, 'mydbsnapshot')
-        self.assertEqual(response.instance_id, 'simcoprod01')
-        self.assertEqual(response.status, 'creating')
+        self.assertEqual(response.id, "mydbsnapshot")
+        self.assertEqual(response.instance_id, "simcoprod01")
+        self.assertEqual(response.status, "creating")
 
 
 class TestCopyDBSnapshot(AWSMockServiceTestCase):
     connection_class = RDSConnection
-    
+
     def default_body(self):
         return """
         <CopyDBSnapshotResponse xmlns="http://rds.amazonaws.com/doc/2013-05-15/">
@@ -168,24 +174,29 @@ class TestCopyDBSnapshot(AWSMockServiceTestCase):
             </ResponseMetadata>
         </CopyDBSnapshotResponse>        
         """
-        
+
     def test_copy_dbinstance(self):
         self.set_http_response(status_code=200)
-        response = self.service_connection.copy_dbsnapshot('myautomaticdbsnapshot', 'mycopieddbsnapshot')
-        self.assert_request_parameters({
-            'Action': 'CopyDBSnapshot',
-            'SourceDBSnapshotIdentifier': 'myautomaticdbsnapshot',
-            'TargetDBSnapshotIdentifier': 'mycopieddbsnapshot'
-            }, ignore_params_values=['Version'])
+        response = self.service_connection.copy_dbsnapshot(
+            "myautomaticdbsnapshot", "mycopieddbsnapshot"
+        )
+        self.assert_request_parameters(
+            {
+                "Action": "CopyDBSnapshot",
+                "SourceDBSnapshotIdentifier": "myautomaticdbsnapshot",
+                "TargetDBSnapshotIdentifier": "mycopieddbsnapshot",
+            },
+            ignore_params_values=["Version"],
+        )
         self.assertIsInstance(response, DBSnapshot)
-        self.assertEqual(response.id, 'mycopieddbsnapshot')
-        self.assertEqual(response.status, 'available')
-        
+        self.assertEqual(response.id, "mycopieddbsnapshot")
+        self.assertEqual(response.status, "available")
+
 
 class TestDeleteDBSnapshot(AWSMockServiceTestCase):
     connection_class = RDSConnection
-    
-    def default_body(self): 
+
+    def default_body(self):
         return """
         <DeleteDBSnapshotResponse xmlns="http://rds.amazonaws.com/doc/2013-05-15/">
             <DeleteDBSnapshotResult>
@@ -210,23 +221,23 @@ class TestDeleteDBSnapshot(AWSMockServiceTestCase):
             </ResponseMetadata>
         </DeleteDBSnapshotResponse>
         """
-        
+
     def test_delete_dbinstance(self):
         self.set_http_response(status_code=200)
-        response = self.service_connection.delete_dbsnapshot('mysnapshot2')
-        self.assert_request_parameters({
-            'Action': 'DeleteDBSnapshot',
-            'DBSnapshotIdentifier': 'mysnapshot2'
-            }, ignore_params_values=['Version'])
+        response = self.service_connection.delete_dbsnapshot("mysnapshot2")
+        self.assert_request_parameters(
+            {"Action": "DeleteDBSnapshot", "DBSnapshotIdentifier": "mysnapshot2"},
+            ignore_params_values=["Version"],
+        )
         self.assertIsInstance(response, DBSnapshot)
-        self.assertEqual(response.id, 'mysnapshot2')
-        self.assertEqual(response.status, 'deleted')        
-        
-        
+        self.assertEqual(response.id, "mysnapshot2")
+        self.assertEqual(response.status, "deleted")
+
+
 class TestRestoreDBInstanceFromDBSnapshot(AWSMockServiceTestCase):
     connection_class = RDSConnection
-    
-    def default_body(self): 
+
+    def default_body(self):
         return """
         <RestoreDBInstanceFromDBSnapshotResponse xmlns="http://rds.amazonaws.com/doc/2013-05-15/">
             <RestoreDBInstanceFromDBSnapshotResult>
@@ -265,32 +276,37 @@ class TestRestoreDBInstanceFromDBSnapshot(AWSMockServiceTestCase):
             </ResponseMetadata>
         </RestoreDBInstanceFromDBSnapshotResponse>
         """
-        
+
     def test_restore_dbinstance_from_dbsnapshot(self):
         self.set_http_response(status_code=200)
-        response = self.service_connection.restore_dbinstance_from_dbsnapshot('mydbsnapshot',
-                                                                              'myrestoreddbinstance',
-                                                                              'db.m1.large',
-                                                                              '3306',
-                                                                              'us-east-1a',
-                                                                              'false', 
-                                                                              'true')        
-        self.assert_request_parameters({
-            'Action': 'RestoreDBInstanceFromDBSnapshot',
-            'DBSnapshotIdentifier': 'mydbsnapshot',
-            'DBInstanceIdentifier': 'myrestoreddbinstance',
-            'DBInstanceClass': 'db.m1.large',
-            'Port': '3306',
-            'AvailabilityZone': 'us-east-1a',
-            'MultiAZ': 'false',
-            'AutoMinorVersionUpgrade': 'true'
-            }, ignore_params_values=['Version'])
+        response = self.service_connection.restore_dbinstance_from_dbsnapshot(
+            "mydbsnapshot",
+            "myrestoreddbinstance",
+            "db.m1.large",
+            "3306",
+            "us-east-1a",
+            "false",
+            "true",
+        )
+        self.assert_request_parameters(
+            {
+                "Action": "RestoreDBInstanceFromDBSnapshot",
+                "DBSnapshotIdentifier": "mydbsnapshot",
+                "DBInstanceIdentifier": "myrestoreddbinstance",
+                "DBInstanceClass": "db.m1.large",
+                "Port": "3306",
+                "AvailabilityZone": "us-east-1a",
+                "MultiAZ": "false",
+                "AutoMinorVersionUpgrade": "true",
+            },
+            ignore_params_values=["Version"],
+        )
         self.assertIsInstance(response, DBInstance)
-        self.assertEqual(response.id, 'myrestoreddbinstance')
-        self.assertEqual(response.status, 'creating')
-        self.assertEqual(response.instance_class, 'db.m1.large')
+        self.assertEqual(response.id, "myrestoreddbinstance")
+        self.assertEqual(response.status, "creating")
+        self.assertEqual(response.instance_class, "db.m1.large")
         self.assertEqual(response.multi_az, False)
-        
-        
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     unittest.main()

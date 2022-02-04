@@ -25,8 +25,8 @@ Represents a Vpn Gateway
 
 from boto.ec2.ec2object import TaggedEC2Object
 
-class Attachment(object):
 
+class Attachment(object):
     def __init__(self, connection=None):
         self.vpc_id = None
         self.state = None
@@ -35,15 +35,15 @@ class Attachment(object):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'vpcId':
+        if name == "vpcId":
             self.vpc_id = value
-        elif name == 'state':
+        elif name == "state":
             self.state = value
         else:
             setattr(self, name, value)
 
-class VpnGateway(TaggedEC2Object):
 
+class VpnGateway(TaggedEC2Object):
     def __init__(self, connection=None):
         super(VpnGateway, self).__init__(connection)
         self.id = None
@@ -53,35 +53,30 @@ class VpnGateway(TaggedEC2Object):
         self.attachments = []
 
     def __repr__(self):
-        return 'VpnGateway:%s' % self.id
+        return "VpnGateway:%s" % self.id
 
     def startElement(self, name, attrs, connection):
         retval = super(VpnGateway, self).startElement(name, attrs, connection)
         if retval is not None:
             return retval
-        if name == 'item':
+        if name == "item":
             att = Attachment()
             self.attachments.append(att)
             return att
 
     def endElement(self, name, value, connection):
-        if name == 'vpnGatewayId':
+        if name == "vpnGatewayId":
             self.id = value
-        elif name == 'type':
+        elif name == "type":
             self.type = value
-        elif name == 'state':
+        elif name == "state":
             self.state = value
-        elif name == 'availabilityZone':
+        elif name == "availabilityZone":
             self.availability_zone = value
-        elif name == 'attachments':
+        elif name == "attachments":
             pass
         else:
             setattr(self, name, value)
 
     def attach(self, vpc_id, dry_run=False):
-        return self.connection.attach_vpn_gateway(
-            self.id,
-            vpc_id,
-            dry_run=dry_run
-        )
-
+        return self.connection.attach_vpn_gateway(self.id, vpc_id, dry_run=dry_run)

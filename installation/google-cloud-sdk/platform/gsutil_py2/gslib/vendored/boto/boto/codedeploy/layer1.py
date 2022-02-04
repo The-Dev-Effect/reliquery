@@ -90,6 +90,7 @@ class CodeDeployConnection(AWSQueryConnection):
       information about application revisions and to inform AWS
       CodeDeploy about an application revision, respectively.
     """
+
     APIVersion = "2014-10-06"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "codedeploy.us-east-1.amazonaws.com"
@@ -144,21 +145,21 @@ class CodeDeployConnection(AWSQueryConnection):
         "InvalidDeploymentStatusException": exceptions.InvalidDeploymentStatusException,
     }
 
-
     def __init__(self, **kwargs):
-        region = kwargs.pop('region', None)
+        region = kwargs.pop("region", None)
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
 
-        if 'host' not in kwargs or kwargs['host'] is None:
-            kwargs['host'] = region.endpoint
+        if "host" not in kwargs or kwargs["host"] is None:
+            kwargs["host"] = region.endpoint
 
         super(CodeDeployConnection, self).__init__(**kwargs)
         self.region = region
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
     def batch_get_applications(self, application_names=None):
         """
@@ -171,9 +172,8 @@ class CodeDeployConnection(AWSQueryConnection):
         """
         params = {}
         if application_names is not None:
-            params['applicationNames'] = application_names
-        return self.make_request(action='BatchGetApplications',
-                                 body=json.dumps(params))
+            params["applicationNames"] = application_names
+        return self.make_request(action="BatchGetApplications", body=json.dumps(params))
 
     def batch_get_deployments(self, deployment_ids=None):
         """
@@ -186,9 +186,8 @@ class CodeDeployConnection(AWSQueryConnection):
         """
         params = {}
         if deployment_ids is not None:
-            params['deploymentIds'] = deployment_ids
-        return self.make_request(action='BatchGetDeployments',
-                                 body=json.dumps(params))
+            params["deploymentIds"] = deployment_ids
+        return self.make_request(action="BatchGetDeployments", body=json.dumps(params))
 
     def create_application(self, application_name):
         """
@@ -199,14 +198,20 @@ class CodeDeployConnection(AWSQueryConnection):
             unique within the AWS user account.
 
         """
-        params = {'applicationName': application_name, }
-        return self.make_request(action='CreateApplication',
-                                 body=json.dumps(params))
+        params = {
+            "applicationName": application_name,
+        }
+        return self.make_request(action="CreateApplication", body=json.dumps(params))
 
-    def create_deployment(self, application_name, deployment_group_name=None,
-                          revision=None, deployment_config_name=None,
-                          description=None,
-                          ignore_application_stop_failures=None):
+    def create_deployment(
+        self,
+        application_name,
+        deployment_group_name=None,
+        revision=None,
+        deployment_config_name=None,
+        description=None,
+        ignore_application_stop_failures=None,
+    ):
         """
         Deploys an application revision to the specified deployment
         group.
@@ -245,22 +250,24 @@ class CodeDeployConnection(AWSQueryConnection):
             deployment to that instance will be considered to have failed.
 
         """
-        params = {'applicationName': application_name, }
+        params = {
+            "applicationName": application_name,
+        }
         if deployment_group_name is not None:
-            params['deploymentGroupName'] = deployment_group_name
+            params["deploymentGroupName"] = deployment_group_name
         if revision is not None:
-            params['revision'] = revision
+            params["revision"] = revision
         if deployment_config_name is not None:
-            params['deploymentConfigName'] = deployment_config_name
+            params["deploymentConfigName"] = deployment_config_name
         if description is not None:
-            params['description'] = description
+            params["description"] = description
         if ignore_application_stop_failures is not None:
-            params['ignoreApplicationStopFailures'] = ignore_application_stop_failures
-        return self.make_request(action='CreateDeployment',
-                                 body=json.dumps(params))
+            params["ignoreApplicationStopFailures"] = ignore_application_stop_failures
+        return self.make_request(action="CreateDeployment", body=json.dumps(params))
 
-    def create_deployment_config(self, deployment_config_name,
-                                 minimum_healthy_hosts=None):
+    def create_deployment_config(
+        self, deployment_config_name, minimum_healthy_hosts=None
+    ):
         """
         Creates a new deployment configuration.
 
@@ -290,18 +297,24 @@ class CodeDeployConnection(AWSQueryConnection):
             of FLEET_PERCENT and a value of 95.
 
         """
-        params = {'deploymentConfigName': deployment_config_name, }
+        params = {
+            "deploymentConfigName": deployment_config_name,
+        }
         if minimum_healthy_hosts is not None:
-            params['minimumHealthyHosts'] = minimum_healthy_hosts
-        return self.make_request(action='CreateDeploymentConfig',
-                                 body=json.dumps(params))
+            params["minimumHealthyHosts"] = minimum_healthy_hosts
+        return self.make_request(
+            action="CreateDeploymentConfig", body=json.dumps(params)
+        )
 
-    def create_deployment_group(self, application_name,
-                                deployment_group_name,
-                                deployment_config_name=None,
-                                ec_2_tag_filters=None,
-                                auto_scaling_groups=None,
-                                service_role_arn=None):
+    def create_deployment_group(
+        self,
+        application_name,
+        deployment_group_name,
+        deployment_config_name=None,
+        ec_2_tag_filters=None,
+        auto_scaling_groups=None,
+        service_role_arn=None,
+    ):
         """
         Creates a new deployment group for application revisions to be
         deployed to.
@@ -366,19 +379,20 @@ class CodeDeployConnection(AWSQueryConnection):
 
         """
         params = {
-            'applicationName': application_name,
-            'deploymentGroupName': deployment_group_name,
+            "applicationName": application_name,
+            "deploymentGroupName": deployment_group_name,
         }
         if deployment_config_name is not None:
-            params['deploymentConfigName'] = deployment_config_name
+            params["deploymentConfigName"] = deployment_config_name
         if ec_2_tag_filters is not None:
-            params['ec2TagFilters'] = ec_2_tag_filters
+            params["ec2TagFilters"] = ec_2_tag_filters
         if auto_scaling_groups is not None:
-            params['autoScalingGroups'] = auto_scaling_groups
+            params["autoScalingGroups"] = auto_scaling_groups
         if service_role_arn is not None:
-            params['serviceRoleArn'] = service_role_arn
-        return self.make_request(action='CreateDeploymentGroup',
-                                 body=json.dumps(params))
+            params["serviceRoleArn"] = service_role_arn
+        return self.make_request(
+            action="CreateDeploymentGroup", body=json.dumps(params)
+        )
 
     def delete_application(self, application_name):
         """
@@ -389,9 +403,10 @@ class CodeDeployConnection(AWSQueryConnection):
             application within the AWS user account.
 
         """
-        params = {'applicationName': application_name, }
-        return self.make_request(action='DeleteApplication',
-                                 body=json.dumps(params))
+        params = {
+            "applicationName": application_name,
+        }
+        return self.make_request(action="DeleteApplication", body=json.dumps(params))
 
     def delete_deployment_config(self, deployment_config_name):
         """
@@ -406,12 +421,14 @@ class CodeDeployConnection(AWSQueryConnection):
             configuration within the AWS user account.
 
         """
-        params = {'deploymentConfigName': deployment_config_name, }
-        return self.make_request(action='DeleteDeploymentConfig',
-                                 body=json.dumps(params))
+        params = {
+            "deploymentConfigName": deployment_config_name,
+        }
+        return self.make_request(
+            action="DeleteDeploymentConfig", body=json.dumps(params)
+        )
 
-    def delete_deployment_group(self, application_name,
-                                deployment_group_name):
+    def delete_deployment_group(self, application_name, deployment_group_name):
         """
         Deletes a deployment group.
 
@@ -425,11 +442,12 @@ class CodeDeployConnection(AWSQueryConnection):
 
         """
         params = {
-            'applicationName': application_name,
-            'deploymentGroupName': deployment_group_name,
+            "applicationName": application_name,
+            "deploymentGroupName": deployment_group_name,
         }
-        return self.make_request(action='DeleteDeploymentGroup',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="DeleteDeploymentGroup", body=json.dumps(params)
+        )
 
     def get_application(self, application_name):
         """
@@ -440,9 +458,10 @@ class CodeDeployConnection(AWSQueryConnection):
             application within the AWS user account.
 
         """
-        params = {'applicationName': application_name, }
-        return self.make_request(action='GetApplication',
-                                 body=json.dumps(params))
+        params = {
+            "applicationName": application_name,
+        }
+        return self.make_request(action="GetApplication", body=json.dumps(params))
 
     def get_application_revision(self, application_name, revision):
         """
@@ -458,11 +477,12 @@ class CodeDeployConnection(AWSQueryConnection):
 
         """
         params = {
-            'applicationName': application_name,
-            'revision': revision,
+            "applicationName": application_name,
+            "revision": revision,
         }
-        return self.make_request(action='GetApplicationRevision',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="GetApplicationRevision", body=json.dumps(params)
+        )
 
     def get_deployment(self, deployment_id):
         """
@@ -473,9 +493,10 @@ class CodeDeployConnection(AWSQueryConnection):
             account.
 
         """
-        params = {'deploymentId': deployment_id, }
-        return self.make_request(action='GetDeployment',
-                                 body=json.dumps(params))
+        params = {
+            "deploymentId": deployment_id,
+        }
+        return self.make_request(action="GetDeployment", body=json.dumps(params))
 
     def get_deployment_config(self, deployment_config_name):
         """
@@ -486,9 +507,10 @@ class CodeDeployConnection(AWSQueryConnection):
             configuration within the AWS user account.
 
         """
-        params = {'deploymentConfigName': deployment_config_name, }
-        return self.make_request(action='GetDeploymentConfig',
-                                 body=json.dumps(params))
+        params = {
+            "deploymentConfigName": deployment_config_name,
+        }
+        return self.make_request(action="GetDeploymentConfig", body=json.dumps(params))
 
     def get_deployment_group(self, application_name, deployment_group_name):
         """
@@ -504,11 +526,10 @@ class CodeDeployConnection(AWSQueryConnection):
 
         """
         params = {
-            'applicationName': application_name,
-            'deploymentGroupName': deployment_group_name,
+            "applicationName": application_name,
+            "deploymentGroupName": deployment_group_name,
         }
-        return self.make_request(action='GetDeploymentGroup',
-                                 body=json.dumps(params))
+        return self.make_request(action="GetDeploymentGroup", body=json.dumps(params))
 
     def get_deployment_instance(self, deployment_id, instance_id):
         """
@@ -524,16 +545,23 @@ class CodeDeployConnection(AWSQueryConnection):
 
         """
         params = {
-            'deploymentId': deployment_id,
-            'instanceId': instance_id,
+            "deploymentId": deployment_id,
+            "instanceId": instance_id,
         }
-        return self.make_request(action='GetDeploymentInstance',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="GetDeploymentInstance", body=json.dumps(params)
+        )
 
-    def list_application_revisions(self, application_name, sort_by=None,
-                                   sort_order=None, s_3_bucket=None,
-                                   s_3_key_prefix=None, deployed=None,
-                                   next_token=None):
+    def list_application_revisions(
+        self,
+        application_name,
+        sort_by=None,
+        sort_order=None,
+        s_3_bucket=None,
+        s_3_key_prefix=None,
+        deployed=None,
+        next_token=None,
+    ):
         """
         Lists information about revisions for an application.
 
@@ -594,21 +622,24 @@ class CodeDeployConnection(AWSQueryConnection):
             next set of applications in the list.
 
         """
-        params = {'applicationName': application_name, }
+        params = {
+            "applicationName": application_name,
+        }
         if sort_by is not None:
-            params['sortBy'] = sort_by
+            params["sortBy"] = sort_by
         if sort_order is not None:
-            params['sortOrder'] = sort_order
+            params["sortOrder"] = sort_order
         if s_3_bucket is not None:
-            params['s3Bucket'] = s_3_bucket
+            params["s3Bucket"] = s_3_bucket
         if s_3_key_prefix is not None:
-            params['s3KeyPrefix'] = s_3_key_prefix
+            params["s3KeyPrefix"] = s_3_key_prefix
         if deployed is not None:
-            params['deployed'] = deployed
+            params["deployed"] = deployed
         if next_token is not None:
-            params['nextToken'] = next_token
-        return self.make_request(action='ListApplicationRevisions',
-                                 body=json.dumps(params))
+            params["nextToken"] = next_token
+        return self.make_request(
+            action="ListApplicationRevisions", body=json.dumps(params)
+        )
 
     def list_applications(self, next_token=None):
         """
@@ -622,9 +653,8 @@ class CodeDeployConnection(AWSQueryConnection):
         """
         params = {}
         if next_token is not None:
-            params['nextToken'] = next_token
-        return self.make_request(action='ListApplications',
-                                 body=json.dumps(params))
+            params["nextToken"] = next_token
+        return self.make_request(action="ListApplications", body=json.dumps(params))
 
     def list_deployment_configs(self, next_token=None):
         """
@@ -639,9 +669,10 @@ class CodeDeployConnection(AWSQueryConnection):
         """
         params = {}
         if next_token is not None:
-            params['nextToken'] = next_token
-        return self.make_request(action='ListDeploymentConfigs',
-                                 body=json.dumps(params))
+            params["nextToken"] = next_token
+        return self.make_request(
+            action="ListDeploymentConfigs", body=json.dumps(params)
+        )
 
     def list_deployment_groups(self, application_name, next_token=None):
         """
@@ -658,14 +689,16 @@ class CodeDeployConnection(AWSQueryConnection):
             set of deployment groups in the list.
 
         """
-        params = {'applicationName': application_name, }
+        params = {
+            "applicationName": application_name,
+        }
         if next_token is not None:
-            params['nextToken'] = next_token
-        return self.make_request(action='ListDeploymentGroups',
-                                 body=json.dumps(params))
+            params["nextToken"] = next_token
+        return self.make_request(action="ListDeploymentGroups", body=json.dumps(params))
 
-    def list_deployment_instances(self, deployment_id, next_token=None,
-                                  instance_status_filter=None):
+    def list_deployment_instances(
+        self, deployment_id, next_token=None, instance_status_filter=None
+    ):
         """
         Lists the Amazon EC2 instances for a deployment within the AWS
         user account.
@@ -697,18 +730,25 @@ class CodeDeployConnection(AWSQueryConnection):
               deployments in an unknown state.
 
         """
-        params = {'deploymentId': deployment_id, }
+        params = {
+            "deploymentId": deployment_id,
+        }
         if next_token is not None:
-            params['nextToken'] = next_token
+            params["nextToken"] = next_token
         if instance_status_filter is not None:
-            params['instanceStatusFilter'] = instance_status_filter
-        return self.make_request(action='ListDeploymentInstances',
-                                 body=json.dumps(params))
+            params["instanceStatusFilter"] = instance_status_filter
+        return self.make_request(
+            action="ListDeploymentInstances", body=json.dumps(params)
+        )
 
-    def list_deployments(self, application_name=None,
-                         deployment_group_name=None,
-                         include_only_statuses=None, create_time_range=None,
-                         next_token=None):
+    def list_deployments(
+        self,
+        application_name=None,
+        deployment_group_name=None,
+        include_only_statuses=None,
+        create_time_range=None,
+        next_token=None,
+    ):
         """
         Lists the deployments under a deployment group for an
         application registered within the AWS user account.
@@ -744,20 +784,20 @@ class CodeDeployConnection(AWSQueryConnection):
         """
         params = {}
         if application_name is not None:
-            params['applicationName'] = application_name
+            params["applicationName"] = application_name
         if deployment_group_name is not None:
-            params['deploymentGroupName'] = deployment_group_name
+            params["deploymentGroupName"] = deployment_group_name
         if include_only_statuses is not None:
-            params['includeOnlyStatuses'] = include_only_statuses
+            params["includeOnlyStatuses"] = include_only_statuses
         if create_time_range is not None:
-            params['createTimeRange'] = create_time_range
+            params["createTimeRange"] = create_time_range
         if next_token is not None:
-            params['nextToken'] = next_token
-        return self.make_request(action='ListDeployments',
-                                 body=json.dumps(params))
+            params["nextToken"] = next_token
+        return self.make_request(action="ListDeployments", body=json.dumps(params))
 
-    def register_application_revision(self, application_name, revision,
-                                      description=None):
+    def register_application_revision(
+        self, application_name, revision, description=None
+    ):
         """
         Registers with AWS CodeDeploy a revision for the specified
         application.
@@ -775,13 +815,14 @@ class CodeDeployConnection(AWSQueryConnection):
 
         """
         params = {
-            'applicationName': application_name,
-            'revision': revision,
+            "applicationName": application_name,
+            "revision": revision,
         }
         if description is not None:
-            params['description'] = description
-        return self.make_request(action='RegisterApplicationRevision',
-                                 body=json.dumps(params))
+            params["description"] = description
+        return self.make_request(
+            action="RegisterApplicationRevision", body=json.dumps(params)
+        )
 
     def stop_deployment(self, deployment_id):
         """
@@ -791,12 +832,12 @@ class CodeDeployConnection(AWSQueryConnection):
         :param deployment_id: The unique ID of a deployment.
 
         """
-        params = {'deploymentId': deployment_id, }
-        return self.make_request(action='StopDeployment',
-                                 body=json.dumps(params))
+        params = {
+            "deploymentId": deployment_id,
+        }
+        return self.make_request(action="StopDeployment", body=json.dumps(params))
 
-    def update_application(self, application_name=None,
-                           new_application_name=None):
+    def update_application(self, application_name=None, new_application_name=None):
         """
         Changes an existing application's name.
 
@@ -811,19 +852,21 @@ class CodeDeployConnection(AWSQueryConnection):
         """
         params = {}
         if application_name is not None:
-            params['applicationName'] = application_name
+            params["applicationName"] = application_name
         if new_application_name is not None:
-            params['newApplicationName'] = new_application_name
-        return self.make_request(action='UpdateApplication',
-                                 body=json.dumps(params))
+            params["newApplicationName"] = new_application_name
+        return self.make_request(action="UpdateApplication", body=json.dumps(params))
 
-    def update_deployment_group(self, application_name,
-                                current_deployment_group_name,
-                                new_deployment_group_name=None,
-                                deployment_config_name=None,
-                                ec_2_tag_filters=None,
-                                auto_scaling_groups=None,
-                                service_role_arn=None):
+    def update_deployment_group(
+        self,
+        application_name,
+        current_deployment_group_name,
+        new_deployment_group_name=None,
+        deployment_config_name=None,
+        ec_2_tag_filters=None,
+        auto_scaling_groups=None,
+        service_role_arn=None,
+    ):
         """
         Changes information about an existing deployment group.
 
@@ -857,43 +900,46 @@ class CodeDeployConnection(AWSQueryConnection):
 
         """
         params = {
-            'applicationName': application_name,
-            'currentDeploymentGroupName': current_deployment_group_name,
+            "applicationName": application_name,
+            "currentDeploymentGroupName": current_deployment_group_name,
         }
         if new_deployment_group_name is not None:
-            params['newDeploymentGroupName'] = new_deployment_group_name
+            params["newDeploymentGroupName"] = new_deployment_group_name
         if deployment_config_name is not None:
-            params['deploymentConfigName'] = deployment_config_name
+            params["deploymentConfigName"] = deployment_config_name
         if ec_2_tag_filters is not None:
-            params['ec2TagFilters'] = ec_2_tag_filters
+            params["ec2TagFilters"] = ec_2_tag_filters
         if auto_scaling_groups is not None:
-            params['autoScalingGroups'] = auto_scaling_groups
+            params["autoScalingGroups"] = auto_scaling_groups
         if service_role_arn is not None:
-            params['serviceRoleArn'] = service_role_arn
-        return self.make_request(action='UpdateDeploymentGroup',
-                                 body=json.dumps(params))
+            params["serviceRoleArn"] = service_role_arn
+        return self.make_request(
+            action="UpdateDeploymentGroup", body=json.dumps(params)
+        )
 
     def make_request(self, action, body):
         headers = {
-            'X-Amz-Target': '%s.%s' % (self.TargetPrefix, action),
-            'Host': self.region.endpoint,
-            'Content-Type': 'application/x-amz-json-1.1',
-            'Content-Length': str(len(body)),
+            "X-Amz-Target": "%s.%s" % (self.TargetPrefix, action),
+            "Host": self.region.endpoint,
+            "Content-Type": "application/x-amz-json-1.1",
+            "Content-Length": str(len(body)),
         }
         http_request = self.build_base_http_request(
-            method='POST', path='/', auth_path='/', params={},
-            headers=headers, data=body)
-        response = self._mexe(http_request, sender=None,
-                              override_num_retries=10)
-        response_body = response.read().decode('utf-8')
+            method="POST",
+            path="/",
+            auth_path="/",
+            params={},
+            headers=headers,
+            data=body,
+        )
+        response = self._mexe(http_request, sender=None, override_num_retries=10)
+        response_body = response.read().decode("utf-8")
         boto.log.debug(response_body)
         if response.status == 200:
             if response_body:
                 return json.loads(response_body)
         else:
             json_body = json.loads(response_body)
-            fault_name = json_body.get('__type', None)
+            fault_name = json_body.get("__type", None)
             exception_class = self._faults.get(fault_name, self.ResponseError)
-            raise exception_class(response.status, response.reason,
-                                  body=json_body)
-
+            raise exception_class(response.status, response.reason, body=json_body)

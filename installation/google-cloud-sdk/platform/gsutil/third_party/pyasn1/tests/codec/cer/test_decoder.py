@@ -37,35 +37,58 @@ class BooleanDecoderTestCase(BaseTestCase):
         except PyAsn1Error:
             pass
 
+
 class BitStringDecoderTestCase(BaseTestCase):
     def testShortMode(self):
-        assert decoder.decode(
-            ints2octs((3, 3, 6, 170, 128))
-        ) == (((1, 0) * 5), null)
+        assert decoder.decode(ints2octs((3, 3, 6, 170, 128))) == (((1, 0) * 5), null)
 
     def testLongMode(self):
-        assert decoder.decode(
-            ints2octs((3, 127, 6) + (170,) * 125 + (128,))
-        ) == (((1, 0) * 501), null)
+        assert decoder.decode(ints2octs((3, 127, 6) + (170,) * 125 + (128,))) == (
+            ((1, 0) * 501),
+            null,
+        )
 
     # TODO: test failures on short chunked and long unchunked substrate samples
 
 
 class OctetStringDecoderTestCase(BaseTestCase):
     def testShortMode(self):
-        assert decoder.decode(
-            ints2octs((4, 15, 81, 117, 105, 99, 107, 32, 98, 114, 111, 119, 110, 32, 102, 111, 120)),
-        ) == (str2octs('Quick brown fox'), null)
+        assert (
+            decoder.decode(
+                ints2octs(
+                    (
+                        4,
+                        15,
+                        81,
+                        117,
+                        105,
+                        99,
+                        107,
+                        32,
+                        98,
+                        114,
+                        111,
+                        119,
+                        110,
+                        32,
+                        102,
+                        111,
+                        120,
+                    )
+                ),
+            )
+            == (str2octs("Quick brown fox"), null)
+        )
 
     def testLongMode(self):
         assert decoder.decode(
             ints2octs((36, 128, 4, 130, 3, 232) + (81,) * 1000 + (4, 1, 81, 0, 0))
-        ) == (str2octs('Q' * 1001), null)
+        ) == (str2octs("Q" * 1001), null)
 
     # TODO: test failures on short chunked and long unchunked substrate samples
 
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.TextTestRunner(verbosity=2).run(suite)

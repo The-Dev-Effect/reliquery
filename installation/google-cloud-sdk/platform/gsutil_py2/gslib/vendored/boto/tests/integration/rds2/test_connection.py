@@ -36,58 +36,58 @@ class TestRDS2Connection(unittest.TestCase):
         # Upon release, this did not function correct. Ensure that
         # args are passed correctly.
         import boto
+
         conn = boto.connect_rds2()
 
     def test_integration(self):
         resp = self.conn.create_db_instance(
             db_instance_identifier=self.db_name,
             allocated_storage=5,
-            db_instance_class='db.t1.micro',
-            engine='postgres',
-            master_username='bototestuser',
-            master_user_password='testtestt3st',
+            db_instance_class="db.t1.micro",
+            engine="postgres",
+            master_username="bototestuser",
+            master_user_password="testtestt3st",
             # Try to limit the impact & test options.
             multi_az=False,
-            backup_retention_period=0
+            backup_retention_period=0,
         )
         self.addCleanup(
-            self.conn.delete_db_instance,
-            self.db_name,
-            skip_final_snapshot=True
+            self.conn.delete_db_instance, self.db_name, skip_final_snapshot=True
         )
 
         # Wait for 6 minutes for it to come up.
         time.sleep(60 * 6)
 
         instances = self.conn.describe_db_instances(self.db_name)
-        inst = instances['DescribeDBInstancesResponse']\
-                        ['DescribeDBInstancesResult']['DBInstances'][0]
-        self.assertEqual(inst['DBInstanceStatus'], 'available')
-        self.assertEqual(inst['Engine'], 'postgres')
-        self.assertEqual(inst['AllocatedStorage'], 5)
+        inst = instances["DescribeDBInstancesResponse"]["DescribeDBInstancesResult"][
+            "DBInstances"
+        ][0]
+        self.assertEqual(inst["DBInstanceStatus"], "available")
+        self.assertEqual(inst["Engine"], "postgres")
+        self.assertEqual(inst["AllocatedStorage"], 5)
 
         # Try renaming it.
         resp = self.conn.modify_db_instance(
-            self.db_name,
-            allocated_storage=10,
-            apply_immediately=True
+            self.db_name, allocated_storage=10, apply_immediately=True
         )
 
         # Give it a chance to start modifying...
         time.sleep(60)
 
         instances = self.conn.describe_db_instances(self.db_name)
-        inst = instances['DescribeDBInstancesResponse']\
-                        ['DescribeDBInstancesResult']['DBInstances'][0]
-        self.assertEqual(inst['DBInstanceStatus'], 'modifying')
-        self.assertEqual(inst['Engine'], 'postgres')
+        inst = instances["DescribeDBInstancesResponse"]["DescribeDBInstancesResult"][
+            "DBInstances"
+        ][0]
+        self.assertEqual(inst["DBInstanceStatus"], "modifying")
+        self.assertEqual(inst["Engine"], "postgres")
 
         # ...then finish the remainder of 10 minutes for the change.
         time.sleep(60 * 9)
 
         instances = self.conn.describe_db_instances(self.db_name)
-        inst = instances['DescribeDBInstancesResponse']\
-                        ['DescribeDBInstancesResult']['DBInstances'][0]
-        self.assertEqual(inst['DBInstanceStatus'], 'available')
-        self.assertEqual(inst['Engine'], 'postgres')
-        self.assertEqual(inst['AllocatedStorage'], 10)
+        inst = instances["DescribeDBInstancesResponse"]["DescribeDBInstancesResult"][
+            "DBInstances"
+        ][0]
+        self.assertEqual(inst["DBInstanceStatus"], "available")
+        self.assertEqual(inst["Engine"], "postgres")
+        self.assertEqual(inst["AllocatedStorage"], 10)

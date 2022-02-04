@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 from gslib.help_provider import HelpProvider
 
-_DETAILED_HELP_TEXT = ("""
+_DETAILED_HELP_TEXT = """
 <B>OVERVIEW</B>
   We're open to incorporating gsutil code changes authored by users. Here
   are some guidelines:
@@ -126,25 +126,26 @@ _DETAILED_HELP_TEXT = ("""
       repository <https://github.com/GoogleCloudPlatform/gsutil>`_. For help on
       making GitHub PRs, please refer to this
       `GitHub help document <https://help.github.com/en/articles/about-pull-requests>`_.
-""")
+"""
 
 
 class CommandOptions(HelpProvider):
-  """Additional help about contributing code to gsutil."""
-  # TODO: gsutil-beta: Add lint .rc file and linting instructions.
+    """Additional help about contributing code to gsutil."""
 
-  # Help specification. See help_provider.py for documentation.
-  help_spec = HelpProvider.HelpSpec(
-      help_name='dev',
-      help_name_aliases=[
-          'development',
-          'developer',
-          'code',
-          'mods',
-          'software',
-      ],
-      help_type='additional_help',
-      help_one_line_summary='Contributing Code to gsutil',
-      help_text=_DETAILED_HELP_TEXT,
-      subcommand_help_text={},
-  )
+    # TODO: gsutil-beta: Add lint .rc file and linting instructions.
+
+    # Help specification. See help_provider.py for documentation.
+    help_spec = HelpProvider.HelpSpec(
+        help_name="dev",
+        help_name_aliases=[
+            "development",
+            "developer",
+            "code",
+            "mods",
+            "software",
+        ],
+        help_type="additional_help",
+        help_one_line_summary="Contributing Code to gsutil",
+        help_text=_DETAILED_HELP_TEXT,
+        subcommand_help_text={},
+    )

@@ -26,14 +26,15 @@ from collections import namedtuple
 # Analytics dashboard. This is not nested within MetricsCollector to allow
 # pickle to dump a list of Metrics.
 Metric = namedtuple(
-    'Metric',
+    "Metric",
     [
         # The URL of the request endpoint.
-        'endpoint',
+        "endpoint",
         # The HTTP method of request.
-        'method',
+        "method",
         # The URL-encoded body to send with the request.
-        'body',
+        "body",
         # The user-agent string to send as a header.
-        'user_agent',
-    ])
+        "user_agent",
+    ],
+)

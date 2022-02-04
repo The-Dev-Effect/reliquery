@@ -58,20 +58,21 @@ class InstanceState(object):
         * "stopping"
         * "stopped"
     """
+
     def __init__(self, code=0, name=None):
         self.code = code
         self.name = name
 
     def __repr__(self):
-        return '%s(%d)' % (self.name, self.code)
+        return "%s(%d)" % (self.name, self.code)
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'code':
+        if name == "code":
             self.code = int(value)
-        elif name == 'name':
+        elif name == "name":
             self.name = value
         else:
             setattr(self, name, value)
@@ -88,6 +89,7 @@ class InstancePlacement(object):
         running within a VPC). An instance with a tenancy of dedicated
         runs on single-tenant hardware.
     """
+
     def __init__(self, zone=None, group_name=None, tenancy=None):
         self.zone = zone
         self.group_name = group_name
@@ -100,11 +102,11 @@ class InstancePlacement(object):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'availabilityZone':
+        if name == "availabilityZone":
             self.zone = value
-        elif name == 'groupName':
+        elif name == "groupName":
             self.group_name = value
-        elif name == 'tenancy':
+        elif name == "tenancy":
             self.tenancy = value
         else:
             setattr(self, name, value)
@@ -121,6 +123,7 @@ class Reservation(EC2Object):
     :ivar instances: A list of Instance objects launched in this
                      Reservation.
     """
+
     def __init__(self, connection=None):
         super(Reservation, self).__init__(connection)
         self.id = None
@@ -129,22 +132,22 @@ class Reservation(EC2Object):
         self.instances = []
 
     def __repr__(self):
-        return 'Reservation:%s' % self.id
+        return "Reservation:%s" % self.id
 
     def startElement(self, name, attrs, connection):
-        if name == 'instancesSet':
-            self.instances = ResultSet([('item', Instance)])
+        if name == "instancesSet":
+            self.instances = ResultSet([("item", Instance)])
             return self.instances
-        elif name == 'groupSet':
-            self.groups = ResultSet([('item', Group)])
+        elif name == "groupSet":
+            self.groups = ResultSet([("item", Group)])
             return self.groups
         else:
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'reservationId':
+        if name == "reservationId":
             self.id = value
-        elif name == 'ownerId':
+        elif name == "ownerId":
             self.owner_id = value
         else:
             setattr(self, name, value)
@@ -252,7 +255,7 @@ class Instance(TaggedEC2Object):
         self._placement = InstancePlacement()
 
     def __repr__(self):
-        return 'Instance:%s' % self.id
+        return "Instance:%s" % self.id
 
     @property
     def state(self):
@@ -290,107 +293,107 @@ class Instance(TaggedEC2Object):
         retval = super(Instance, self).startElement(name, attrs, connection)
         if retval is not None:
             return retval
-        if name == 'monitoring':
+        if name == "monitoring":
             self._in_monitoring_element = True
-        elif name == 'blockDeviceMapping':
+        elif name == "blockDeviceMapping":
             self.block_device_mapping = BlockDeviceMapping()
             return self.block_device_mapping
-        elif name == 'productCodes':
+        elif name == "productCodes":
             return self.product_codes
-        elif name == 'stateReason':
-            self.state_reason = SubParse('stateReason')
+        elif name == "stateReason":
+            self.state_reason = SubParse("stateReason")
             return self.state_reason
-        elif name == 'groupSet':
-            self.groups = ResultSet([('item', Group)])
+        elif name == "groupSet":
+            self.groups = ResultSet([("item", Group)])
             return self.groups
         elif name == "eventsSet":
-            self.eventsSet = SubParse('eventsSet')
+            self.eventsSet = SubParse("eventsSet")
             return self.eventsSet
-        elif name == 'networkInterfaceSet':
-            self.interfaces = ResultSet([('item', NetworkInterface)])
+        elif name == "networkInterfaceSet":
+            self.interfaces = ResultSet([("item", NetworkInterface)])
             return self.interfaces
-        elif name == 'iamInstanceProfile':
-            self.instance_profile = SubParse('iamInstanceProfile')
+        elif name == "iamInstanceProfile":
+            self.instance_profile = SubParse("iamInstanceProfile")
             return self.instance_profile
-        elif name == 'currentState':
+        elif name == "currentState":
             return self._state
-        elif name == 'previousState':
+        elif name == "previousState":
             self._previous_state = InstanceState()
             return self._previous_state
-        elif name == 'instanceState':
+        elif name == "instanceState":
             return self._state
-        elif name == 'placement':
+        elif name == "placement":
             return self._placement
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'instanceId':
+        if name == "instanceId":
             self.id = value
-        elif name == 'imageId':
+        elif name == "imageId":
             self.image_id = value
-        elif name == 'dnsName' or name == 'publicDnsName':
-            self.dns_name = value           # backwards compatibility
+        elif name == "dnsName" or name == "publicDnsName":
+            self.dns_name = value  # backwards compatibility
             self.public_dns_name = value
-        elif name == 'privateDnsName':
+        elif name == "privateDnsName":
             self.private_dns_name = value
-        elif name == 'keyName':
+        elif name == "keyName":
             self.key_name = value
-        elif name == 'amiLaunchIndex':
+        elif name == "amiLaunchIndex":
             self.ami_launch_index = value
-        elif name == 'previousState':
+        elif name == "previousState":
             self.previous_state = value
-        elif name == 'instanceType':
+        elif name == "instanceType":
             self.instance_type = value
-        elif name == 'rootDeviceName':
+        elif name == "rootDeviceName":
             self.root_device_name = value
-        elif name == 'rootDeviceType':
+        elif name == "rootDeviceType":
             self.root_device_type = value
-        elif name == 'launchTime':
+        elif name == "launchTime":
             self.launch_time = value
-        elif name == 'platform':
+        elif name == "platform":
             self.platform = value
-        elif name == 'kernelId':
+        elif name == "kernelId":
             self.kernel = value
-        elif name == 'ramdiskId':
+        elif name == "ramdiskId":
             self.ramdisk = value
-        elif name == 'state':
+        elif name == "state":
             if self._in_monitoring_element:
                 self.monitoring_state = value
-                if value == 'enabled':
+                if value == "enabled":
                     self.monitored = True
                 self._in_monitoring_element = False
-        elif name == 'spotInstanceRequestId':
+        elif name == "spotInstanceRequestId":
             self.spot_instance_request_id = value
-        elif name == 'subnetId':
+        elif name == "subnetId":
             self.subnet_id = value
-        elif name == 'vpcId':
+        elif name == "vpcId":
             self.vpc_id = value
-        elif name == 'privateIpAddress':
+        elif name == "privateIpAddress":
             self.private_ip_address = value
-        elif name == 'ipAddress':
+        elif name == "ipAddress":
             self.ip_address = value
-        elif name == 'requesterId':
+        elif name == "requesterId":
             self.requester_id = value
-        elif name == 'persistent':
-            if value == 'true':
+        elif name == "persistent":
+            if value == "true":
                 self.persistent = True
             else:
                 self.persistent = False
-        elif name == 'groupName':
+        elif name == "groupName":
             if self._in_monitoring_element:
                 self.group_name = value
-        elif name == 'clientToken':
+        elif name == "clientToken":
             self.client_token = value
         elif name == "eventsSet":
             self.events = value
-        elif name == 'hypervisor':
+        elif name == "hypervisor":
             self.hypervisor = value
-        elif name == 'virtualizationType':
+        elif name == "virtualizationType":
             self.virtualization_type = value
-        elif name == 'architecture':
+        elif name == "architecture":
             self.architecture = value
-        elif name == 'ebsOptimized':
-            self.ebs_optimized = (value == 'true')
+        elif name == "ebsOptimized":
+            self.ebs_optimized = value == "true"
         else:
             setattr(self, name, value)
 
@@ -416,7 +419,7 @@ class Instance(TaggedEC2Object):
                 if i.id == self.id:
                     self._update(i)
         elif validate:
-            raise ValueError('%s is not a valid Instance ID' % self.id)
+            raise ValueError("%s is not a valid Instance ID" % self.id)
         return self.state
 
     def terminate(self, dry_run=False):
@@ -463,9 +466,7 @@ class Instance(TaggedEC2Object):
 
     def confirm_product(self, product_code, dry_run=False):
         return self.connection.confirm_product_instance(
-            self.id,
-            product_code,
-            dry_run=dry_run
+            self.id, product_code, dry_run=dry_run
         )
 
     def use_ip(self, ip_address, dry_run=False):
@@ -483,11 +484,7 @@ class Instance(TaggedEC2Object):
 
         if isinstance(ip_address, Address):
             ip_address = ip_address.public_ip
-        return self.connection.associate_address(
-            self.id,
-            ip_address,
-            dry_run=dry_run
-        )
+        return self.connection.associate_address(self.id, ip_address, dry_run=dry_run)
 
     def monitor(self, dry_run=False):
         return self.connection.monitor_instance(self.id, dry_run=dry_run)
@@ -521,9 +518,7 @@ class Instance(TaggedEC2Object):
                  attribute requested
         """
         return self.connection.get_instance_attribute(
-            self.id,
-            attribute,
-            dry_run=dry_run
+            self.id, attribute, dry_run=dry_run
         )
 
     def modify_attribute(self, attribute, value, dry_run=False):
@@ -550,10 +545,7 @@ class Instance(TaggedEC2Object):
         :return: Whether the operation succeeded or not
         """
         return self.connection.modify_instance_attribute(
-            self.id,
-            attribute,
-            value,
-            dry_run=dry_run
+            self.id, attribute, value, dry_run=dry_run
         )
 
     def reset_attribute(self, attribute, dry_run=False):
@@ -568,13 +560,10 @@ class Instance(TaggedEC2Object):
         :return: Whether the operation succeeded or not
         """
         return self.connection.reset_instance_attribute(
-            self.id,
-            attribute,
-            dry_run=dry_run
+            self.id, attribute, dry_run=dry_run
         )
 
-    def create_image(self, name, description=None, no_reboot=False,
-                     dry_run=False):
+    def create_image(self, name, description=None, no_reboot=False, dry_run=False):
         """
         Will create an AMI from the instance in the running or stopped
         state.
@@ -597,11 +586,7 @@ class Instance(TaggedEC2Object):
         :return: The new image id
         """
         return self.connection.create_image(
-            self.id,
-            name,
-            description,
-            no_reboot,
-            dry_run=dry_run
+            self.id, name, description, no_reboot, dry_run=dry_run
         )
 
 
@@ -616,22 +601,29 @@ class ConsoleOutput(object):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'instanceId':
+        if name == "instanceId":
             self.instance_id = value
-        elif name == 'timestamp':
+        elif name == "timestamp":
             self.timestamp = value
-        elif name == 'output':
+        elif name == "output":
             self.output = base64.b64decode(value)
         else:
             setattr(self, name, value)
 
 
 class InstanceAttribute(dict):
-    ValidValues = ['instanceType', 'kernel', 'ramdisk', 'userData',
-                   'disableApiTermination',
-                   'instanceInitiatedShutdownBehavior',
-                   'rootDeviceName', 'blockDeviceMapping', 'sourceDestCheck',
-                   'groupSet']
+    ValidValues = [
+        "instanceType",
+        "kernel",
+        "ramdisk",
+        "userData",
+        "disableApiTermination",
+        "instanceInitiatedShutdownBehavior",
+        "rootDeviceName",
+        "blockDeviceMapping",
+        "sourceDestCheck",
+        "groupSet",
+    ]
 
     def __init__(self, parent=None):
         dict.__init__(self)
@@ -640,24 +632,24 @@ class InstanceAttribute(dict):
         self._current_value = None
 
     def startElement(self, name, attrs, connection):
-        if name == 'blockDeviceMapping':
+        if name == "blockDeviceMapping":
             self[name] = BlockDeviceMapping()
             return self[name]
-        elif name == 'groupSet':
-            self[name] = ResultSet([('item', Group)])
+        elif name == "groupSet":
+            self[name] = ResultSet([("item", Group)])
             return self[name]
         else:
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'instanceId':
+        if name == "instanceId":
             self.instance_id = value
-        elif name == 'requestId':
+        elif name == "requestId":
             self.request_id = value
-        elif name == 'value':
-            if value == 'true':
+        elif name == "value":
+            if value == "true":
                 value = True
-            elif value == 'false':
+            elif value == "false":
                 value = False
             self._current_value = value
         elif name in self.ValidValues:

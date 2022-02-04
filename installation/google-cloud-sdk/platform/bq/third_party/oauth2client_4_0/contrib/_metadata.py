@@ -30,9 +30,10 @@ from oauth2client_4_0 import client
 from oauth2client_4_0 import transport
 
 
-METADATA_ROOT = 'http://{}/computeMetadata/v1/'.format(
-    os.getenv('GCE_METADATA_ROOT', 'metadata.google.internal'))
-METADATA_HEADERS = {'Metadata-Flavor': 'Google'}
+METADATA_ROOT = "http://{}/computeMetadata/v1/".format(
+    os.getenv("GCE_METADATA_ROOT", "metadata.google.internal")
+)
+METADATA_HEADERS = {"Metadata-Flavor": "Google"}
 
 
 def get(http, path, root=METADATA_ROOT, recursive=None):
@@ -55,24 +56,24 @@ def get(http, path, root=METADATA_ROOT, recursive=None):
         retrieving metadata.
     """
     url = urlparse.urljoin(root, path)
-    url = _helpers._add_query_parameter(url, 'recursive', recursive)
+    url = _helpers._add_query_parameter(url, "recursive", recursive)
 
-    response, content = transport.request(
-        http, url, headers=METADATA_HEADERS)
+    response, content = transport.request(http, url, headers=METADATA_HEADERS)
 
     if response.status == http_client.OK:
         decoded = _helpers._from_bytes(content)
-        if response['content-type'] == 'application/json':
+        if response["content-type"] == "application/json":
             return json.loads(decoded)
         else:
             return decoded
     else:
         raise http_client.HTTPException(
-            'Failed to retrieve {0} from the Google Compute Engine'
-            'metadata service. Response:\n{1}'.format(url, response))
+            "Failed to retrieve {0} from the Google Compute Engine"
+            "metadata service. Response:\n{1}".format(url, response)
+        )
 
 
-def get_service_account_info(http, service_account='default'):
+def get_service_account_info(http, service_account="default"):
     """Get information about a service account from the metadata server.
 
     Args:
@@ -92,12 +93,11 @@ def get_service_account_info(http, service_account='default'):
             }
     """
     return get(
-        http,
-        'instance/service-accounts/{0}/'.format(service_account),
-        recursive=True)
+        http, "instance/service-accounts/{0}/".format(service_account), recursive=True
+    )
 
 
-def get_token(http, service_account='default'):
+def get_token(http, service_account="default"):
     """Fetch an oauth token for the
 
     Args:
@@ -112,8 +112,9 @@ def get_token(http, service_account='default'):
          that indicates when the access token will expire.
     """
     token_json = get(
-        http,
-        'instance/service-accounts/{0}/token'.format(service_account))
+        http, "instance/service-accounts/{0}/token".format(service_account)
+    )
     token_expiry = client._UTCNOW() + datetime.timedelta(
-        seconds=token_json['expires_in'])
-    return token_json['access_token'], token_expiry
+        seconds=token_json["expires_in"]
+    )
+    return token_json["access_token"], token_expiry

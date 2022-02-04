@@ -17,11 +17,14 @@ from pyasn1.codec.der import encoder
 from pyasn1_modules import pem
 from pyasn1_modules import rfc4210
 
-if len(sys.argv) == 2 and sys.argv[1] == '-d':
-    debug.setLogger(debug.Debug('all'))
+if len(sys.argv) == 2 and sys.argv[1] == "-d":
+    debug.setLogger(debug.Debug("all"))
 elif len(sys.argv) != 1:
-    print("""Usage:
-$ cat cmp.pem | %s [-d]""" % sys.argv[0])
+    print(
+        """Usage:
+$ cat cmp.pem | %s [-d]"""
+        % sys.argv[0]
+    )
     sys.exit(-1)
 
 pkiMessage = rfc4210.PKIMessage()
@@ -34,4 +37,4 @@ pkiMsg, rest = decoder.decode(substrate, asn1Spec=pkiMessage)
 
 print(pkiMsg.prettyPrint())
 
-assert encoder.encode(pkiMsg) == substrate, 'CMP message recode fails'
+assert encoder.encode(pkiMsg) == substrate, "CMP message recode fails"

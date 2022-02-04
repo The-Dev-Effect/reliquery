@@ -92,400 +92,416 @@ UNCOUNTABLES = {
 
 
 def _irregular(singular, plural):
-  """Adds appropriate rules for irregular words.
+    """Adds appropriate rules for irregular words.
 
-  A convenience function to add appropriate rules to plurals and singular
-  for irregular words.
+    A convenience function to add appropriate rules to plurals and singular
+    for irregular words.
 
-  Args:
-    singular: (str) An irregular word in singular form
-    plural: (str) An irregular word in plural form
+    Args:
+      singular: (str) An irregular word in singular form
+      plural: (str) An irregular word in plural form
 
-  Returns:
-    A string of a corrected rule for an irregular word.
-  """
-  def caseinsensitive(string):
-    return "".join("[" + char + char.upper() + "]" for char in string)
+    Returns:
+      A string of a corrected rule for an irregular word.
+    """
 
-  if singular[0].upper() == plural[0].upper():
-    PLURALS.insert(0, (
-        r"(?i)(%s)%s$" % (singular[0], singular[1:]),
-        r"\1" + plural[1:]
-        ))
-    PLURALS.insert(0, (
-        r"(?i)(%s)%s$" % (plural[0], plural[1:]),
-        r"\1" + plural[1:]
-        ))
-    SINGULARS.insert(0, (
-        r"(?i)(%s)%s$" % (plural[0], plural[1:]),
-        r"\1" + singular[1:]
-        ))
-  else:
-    PLURALS.insert(0, (
-        r"%s%s$" % (singular[0].upper(), caseinsensitive(singular[1:])),
-        plural[0].upper() + plural[1:]
-        ))
-    PLURALS.insert(0, (
-        r"%s%s$" % (singular[0].lower(), caseinsensitive(singular[1:])),
-        plural[0].lower() + plural[1:]
-        ))
-    PLURALS.insert(0, (
-        r"%s%s$" % (plural[0].upper(), caseinsensitive(plural[1:])),
-        plural[0].upper() + plural[1:]
-        ))
-    PLURALS.insert(0, (
-        r"%s%s$" % (plural[0].lower(), caseinsensitive(plural[1:])),
-        plural[0].lower() + plural[1:]
-        ))
-    SINGULARS.insert(0, (
-        r"%s%s$" % (plural[0].upper(), caseinsensitive(plural[1:])),
-        singular[0].upper() + singular[1:]
-        ))
-    SINGULARS.insert(0, (
-        r"%s%s$" % (plural[0].lower(), caseinsensitive(plural[1:])),
-        singular[0].lower() + singular[1:]
-        ))
+    def caseinsensitive(string):
+        return "".join("[" + char + char.upper() + "]" for char in string)
+
+    if singular[0].upper() == plural[0].upper():
+        PLURALS.insert(
+            0, (r"(?i)(%s)%s$" % (singular[0], singular[1:]), r"\1" + plural[1:])
+        )
+        PLURALS.insert(
+            0, (r"(?i)(%s)%s$" % (plural[0], plural[1:]), r"\1" + plural[1:])
+        )
+        SINGULARS.insert(
+            0, (r"(?i)(%s)%s$" % (plural[0], plural[1:]), r"\1" + singular[1:])
+        )
+    else:
+        PLURALS.insert(
+            0,
+            (
+                r"%s%s$" % (singular[0].upper(), caseinsensitive(singular[1:])),
+                plural[0].upper() + plural[1:],
+            ),
+        )
+        PLURALS.insert(
+            0,
+            (
+                r"%s%s$" % (singular[0].lower(), caseinsensitive(singular[1:])),
+                plural[0].lower() + plural[1:],
+            ),
+        )
+        PLURALS.insert(
+            0,
+            (
+                r"%s%s$" % (plural[0].upper(), caseinsensitive(plural[1:])),
+                plural[0].upper() + plural[1:],
+            ),
+        )
+        PLURALS.insert(
+            0,
+            (
+                r"%s%s$" % (plural[0].lower(), caseinsensitive(plural[1:])),
+                plural[0].lower() + plural[1:],
+            ),
+        )
+        SINGULARS.insert(
+            0,
+            (
+                r"%s%s$" % (plural[0].upper(), caseinsensitive(plural[1:])),
+                singular[0].upper() + singular[1:],
+            ),
+        )
+        SINGULARS.insert(
+            0,
+            (
+                r"%s%s$" % (plural[0].lower(), caseinsensitive(plural[1:])),
+                singular[0].lower() + singular[1:],
+            ),
+        )
 
 
 def camelize(string, uppercase_first_letter=True):
-  """Convert strings to CamelCase.
+    """Convert strings to CamelCase.
 
-  Examples::
+    Examples::
 
-      >>> camelize("device_type")
-      "DeviceType"
-      >>> camelize("device_type", False)
-      "deviceType"
+        >>> camelize("device_type")
+        "DeviceType"
+        >>> camelize("device_type", False)
+        "deviceType"
 
-  :func:`camelize` can be though as a inverse of :func:`underscore`, although
-  there are some cases where that does not hold::
+    :func:`camelize` can be though as a inverse of :func:`underscore`, although
+    there are some cases where that does not hold::
 
-      >>> camelize(underscore("IOError"))
-      "IoError"
+        >>> camelize(underscore("IOError"))
+        "IoError"
 
-  :param uppercase_first_letter: if set to `True` :func:`camelize` converts
-      strings to UpperCamelCase. If set to `False` :func:`camelize` produces
-      lowerCamelCase. Defaults to `True`.
-  Args:
-    string: (str) A word to camelize.
-    uppercase_first_letter: (bool) Indicator to capitalize the first letter.
+    :param uppercase_first_letter: if set to `True` :func:`camelize` converts
+        strings to UpperCamelCase. If set to `False` :func:`camelize` produces
+        lowerCamelCase. Defaults to `True`.
+    Args:
+      string: (str) A word to camelize.
+      uppercase_first_letter: (bool) Indicator to capitalize the first letter.
 
-  Returns:
-    A string that has been been converted to camelcase.
-  """
-  if uppercase_first_letter:
-    return re.sub(r"(?:^|_)(.)", lambda m: m.group(1).upper(), string)
-  else:
-    return string[0].lower() + camelize(string)[1:]
+    Returns:
+      A string that has been been converted to camelcase.
+    """
+    if uppercase_first_letter:
+        return re.sub(r"(?:^|_)(.)", lambda m: m.group(1).upper(), string)
+    else:
+        return string[0].lower() + camelize(string)[1:]
 
 
 def dasherize(word):
-  """Replace underscores with dashes in the string.
+    """Replace underscores with dashes in the string.
 
-  Example::
+    Example::
 
-      >>> dasherize("puni_puni")
-      "puni-puni"
+        >>> dasherize("puni_puni")
+        "puni-puni"
 
-  Args:
-    word: (str) A word that contains underscores.
+    Args:
+      word: (str) A word that contains underscores.
 
-  Returns:
-    A string with underscores replaced with dashes.
-  """
-  return word.replace("_", "-")
+    Returns:
+      A string with underscores replaced with dashes.
+    """
+    return word.replace("_", "-")
 
 
 def humanize(word):
-  """Changes text into conversational english.
+    """Changes text into conversational english.
 
-  Capitalize the first word and turn underscores into spaces and strip a
-  trailing ``"_id"``, if any. Like :func:`titleize`, this is meant for
-  creating pretty output.
+    Capitalize the first word and turn underscores into spaces and strip a
+    trailing ``"_id"``, if any. Like :func:`titleize`, this is meant for
+    creating pretty output.
 
-  Examples::
+    Examples::
 
-      >>> humanize("employee_salary")
-      "Employee salary"
-      >>> humanize("author_id")
-      "Author"
+        >>> humanize("employee_salary")
+        "Employee salary"
+        >>> humanize("author_id")
+        "Author"
 
-  Args:
-    word: (str) A word to convert to conversational English.
+    Args:
+      word: (str) A word to convert to conversational English.
 
-  Returns:
-    A string that has been converted to conversational english.
-  """
-  word = re.sub(r"_id$", "", word)
-  word = word.replace("_", " ")
-  word = re.sub(r"(?i)([a-z\d]*)", lambda m: m.group(1).lower(), word)
-  word = re.sub(r"^\w", lambda m: m.group(0).upper(), word)
-  return word
+    Returns:
+      A string that has been converted to conversational english.
+    """
+    word = re.sub(r"_id$", "", word)
+    word = word.replace("_", " ")
+    word = re.sub(r"(?i)([a-z\d]*)", lambda m: m.group(1).lower(), word)
+    word = re.sub(r"^\w", lambda m: m.group(0).upper(), word)
+    return word
 
 
 def ordinal(number):
-  """Finds a suffix based on ordinal sequence.
+    """Finds a suffix based on ordinal sequence.
 
-  Return the suffix that should be added to a number to denote the position
-  in an ordered sequence such as 1st, 2nd, 3rd, 4th.
+    Return the suffix that should be added to a number to denote the position
+    in an ordered sequence such as 1st, 2nd, 3rd, 4th.
 
-  Examples::
+    Examples::
 
-      >>> ordinal(1)
-      "st"
-      >>> ordinal(2)
-      "nd"
-      >>> ordinal(1002)
-      "nd"
-      >>> ordinal(1003)
-      "rd"
-      >>> ordinal(-11)
-      "th"
-      >>> ordinal(-1021)
-      "st"
+        >>> ordinal(1)
+        "st"
+        >>> ordinal(2)
+        "nd"
+        >>> ordinal(1002)
+        "nd"
+        >>> ordinal(1003)
+        "rd"
+        >>> ordinal(-11)
+        "th"
+        >>> ordinal(-1021)
+        "st"
 
-  Args:
-    number: (int) A number to denote position in an ordered sequence.
+    Args:
+      number: (int) A number to denote position in an ordered sequence.
 
-  Returns:
-    A string of a numbers corresponding ordinal notation.
-  """
-  number = abs(int(number))
-  if number % 100 in (11, 12, 13):
-    return "th"
-  else:
-    return {
-        1: "st",
-        2: "nd",
-        3: "rd",
-    }.get(number % 10, "th")
+    Returns:
+      A string of a numbers corresponding ordinal notation.
+    """
+    number = abs(int(number))
+    if number % 100 in (11, 12, 13):
+        return "th"
+    else:
+        return {
+            1: "st",
+            2: "nd",
+            3: "rd",
+        }.get(number % 10, "th")
 
 
 def ordinalize(number):
-  """Adds the ordinal notation to the end of a number.
+    """Adds the ordinal notation to the end of a number.
 
-  Turn a number into an ordinal string used to denote the position in an
-  ordered sequence such as 1st, 2nd, 3rd, 4th.
+    Turn a number into an ordinal string used to denote the position in an
+    ordered sequence such as 1st, 2nd, 3rd, 4th.
 
-  Examples::
+    Examples::
 
-      >>> ordinalize(1)
-      "1st"
-      >>> ordinalize(2)
-      "2nd"
-      >>> ordinalize(1002)
-      "1002nd"
-      >>> ordinalize(1003)
-      "1003rd"
-      >>> ordinalize(-11)
-      "-11th"
-      >>> ordinalize(-1021)
-      "-1021st"
+        >>> ordinalize(1)
+        "1st"
+        >>> ordinalize(2)
+        "2nd"
+        >>> ordinalize(1002)
+        "1002nd"
+        >>> ordinalize(1003)
+        "1003rd"
+        >>> ordinalize(-11)
+        "-11th"
+        >>> ordinalize(-1021)
+        "-1021st"
 
-  Args:
-    number: (int) A number to add ordinal notation.
+    Args:
+      number: (int) A number to add ordinal notation.
 
-  Returns:
-    A string of a number with its ordinal notation.
-  """
-  return "%s%s" % (number, ordinal(number))
+    Returns:
+      A string of a number with its ordinal notation.
+    """
+    return "%s%s" % (number, ordinal(number))
 
 
 def parameterize(string, separator="-"):
-  """Substitutes special characters with provided separator.
+    """Substitutes special characters with provided separator.
 
-  Replace special characters in a string so that it may be used as part of a
-  "pretty" URL.
+    Replace special characters in a string so that it may be used as part of a
+    "pretty" URL.
 
-  Example::
+    Example::
 
-      >>> parameterize(u"Donald E. Knuth")
-      "donald-e-knuth"
+        >>> parameterize(u"Donald E. Knuth")
+        "donald-e-knuth"
 
-  Args:
-    string: (str) A string to substitute into a url.
-    separator: (str) A delimiter to separate each word by.
+    Args:
+      string: (str) A string to substitute into a url.
+      separator: (str) A delimiter to separate each word by.
 
-  Returns:
-    A string with speical characters swapped with the provided separator.
-  """
-  string = transliterate(string)
-  # Turn unwanted chars into the separator
-  string = re.sub(r"(?i)[^a-z0-9\-_]+", separator, string)
-  if separator:
-    re_sep = re.escape(separator)
-    # No more than one of the separator in a row.
-    string = re.sub(r"%s{2,}" % re_sep, separator, string)
-    # Remove leading/trailing separator.
-    string = re.sub(r"(?i)^%(sep)s|%(sep)s$" % {"sep": re_sep}, "", string)
+    Returns:
+      A string with speical characters swapped with the provided separator.
+    """
+    string = transliterate(string)
+    # Turn unwanted chars into the separator
+    string = re.sub(r"(?i)[^a-z0-9\-_]+", separator, string)
+    if separator:
+        re_sep = re.escape(separator)
+        # No more than one of the separator in a row.
+        string = re.sub(r"%s{2,}" % re_sep, separator, string)
+        # Remove leading/trailing separator.
+        string = re.sub(r"(?i)^%(sep)s|%(sep)s$" % {"sep": re_sep}, "", string)
 
-  return string.lower()
+    return string.lower()
 
 
 def pluralize(word):
-  """Return the plural form of a word.
+    """Return the plural form of a word.
 
-  Examples::
+    Examples::
 
-      >>> pluralize("post")
-      "posts"
-      >>> pluralize("octopus")
-      "octopi"
-      >>> pluralize("sheep")
-      "sheep"
-      >>> pluralize("CamelOctopus")
-      "CamelOctopi"
+        >>> pluralize("post")
+        "posts"
+        >>> pluralize("octopus")
+        "octopi"
+        >>> pluralize("sheep")
+        "sheep"
+        >>> pluralize("CamelOctopus")
+        "CamelOctopi"
 
-  Args:
-    word: (str) A word to make plural.
+    Args:
+      word: (str) A word to make plural.
 
-  Returns:
-    A string of a word in its plural form.
-  """
-  if not word or word.lower() in UNCOUNTABLES:
-    return word
-  else:
-    for rule, replacement in PLURALS:
-      if re.search(rule, word):
-        return re.sub(rule, replacement, word)
-    return word
+    Returns:
+      A string of a word in its plural form.
+    """
+    if not word or word.lower() in UNCOUNTABLES:
+        return word
+    else:
+        for rule, replacement in PLURALS:
+            if re.search(rule, word):
+                return re.sub(rule, replacement, word)
+        return word
 
 
 def singularize(word):
-  """Return the singular form of a word, the reverse of :func:`pluralize`.
+    """Return the singular form of a word, the reverse of :func:`pluralize`.
 
-  Examples::
+    Examples::
 
-      >>> singularize("posts")
-      "post"
-      >>> singularize("octopi")
-      "octopus"
-      >>> singularize("sheep")
-      "sheep"
-      >>> singularize("word")
-      "word"
-      >>> singularize("CamelOctopi")
-      "CamelOctopus"
+        >>> singularize("posts")
+        "post"
+        >>> singularize("octopi")
+        "octopus"
+        >>> singularize("sheep")
+        "sheep"
+        >>> singularize("word")
+        "word"
+        >>> singularize("CamelOctopi")
+        "CamelOctopus"
 
-  Args:
-    word: (str) A word to make singular.
+    Args:
+      word: (str) A word to make singular.
 
-  Returns:
-    A string of a word in its singular form.
-  """
-  for inflection in UNCOUNTABLES:
-    if re.search(r"(?i)\b(%s)\Z" % inflection, word):
-      return word
+    Returns:
+      A string of a word in its singular form.
+    """
+    for inflection in UNCOUNTABLES:
+        if re.search(r"(?i)\b(%s)\Z" % inflection, word):
+            return word
 
-  for rule, replacement in SINGULARS:
-    if re.search(rule, word):
-      return re.sub(rule, replacement, word)
-  return word
+    for rule, replacement in SINGULARS:
+        if re.search(rule, word):
+            return re.sub(rule, replacement, word)
+    return word
 
 
 def tableize(word):
-  """Splits a word up by underscores and makes lowercase (tableized).
+    """Splits a word up by underscores and makes lowercase (tableized).
 
-  Create the name of a table like Rails does for models to table names. This
-  method uses the :func:`pluralize` method on the last word in the string.
+    Create the name of a table like Rails does for models to table names. This
+    method uses the :func:`pluralize` method on the last word in the string.
 
-  Examples::
+    Examples::
 
-      >>> tableize("RawScaledScorer")
-      "raw_scaled_scorers"
-      >>> tableize("egg_and_ham")
-      "egg_and_hams"
-      >>> tableize("fancyCategory")
-      "fancy_categories"
+        >>> tableize("RawScaledScorer")
+        "raw_scaled_scorers"
+        >>> tableize("egg_and_ham")
+        "egg_and_hams"
+        >>> tableize("fancyCategory")
+        "fancy_categories"
 
-  Args:
-    word: (str) A word to put into table format.
+    Args:
+      word: (str) A word to put into table format.
 
-  Returns:
-    A String of a word in table format.
-  """
-  return pluralize(underscore(word))
+    Returns:
+      A String of a word in table format.
+    """
+    return pluralize(underscore(word))
 
 
 def titleize(string):
-  """Capitalizes each word in a sentence.
+    """Capitalizes each word in a sentence.
 
-  Capitalize all the words and replace some characters in the string to
-  create a nicer looking title. :func:`titleize` is meant for creating pretty
-  output.
+    Capitalize all the words and replace some characters in the string to
+    create a nicer looking title. :func:`titleize` is meant for creating pretty
+    output.
 
-  Examples::
+    Examples::
 
-    >>> titleize("man from the boondocks")
-    "Man From The Boondocks"
-    >>> titleize("x-men: the last stand")
-    "X Men: The Last Stand"
-    >>> titleize("TheManWithoutAPast")
-    "The Man Without A Past"
-    >>> titleize("raiders_of_the_lost_ark")
-    "Raiders Of The Lost Ark"
+      >>> titleize("man from the boondocks")
+      "Man From The Boondocks"
+      >>> titleize("x-men: the last stand")
+      "X Men: The Last Stand"
+      >>> titleize("TheManWithoutAPast")
+      "The Man Without A Past"
+      >>> titleize("raiders_of_the_lost_ark")
+      "Raiders Of The Lost Ark"
 
-  Args:
-    string: (str) A title to captialize.
+    Args:
+      string: (str) A title to captialize.
 
-  Returns:
-    A string with Captials on each word.
-  """
-  return re.sub(
-      r"\b('?[a-z])",
-      lambda match: match.group(1).capitalize(),
-      humanize(underscore(string))
-      )
+    Returns:
+      A string with Captials on each word.
+    """
+    return re.sub(
+        r"\b('?[a-z])",
+        lambda match: match.group(1).capitalize(),
+        humanize(underscore(string)),
+    )
 
 
 def transliterate(string):
-  """Turn a string into ASCII notation.
+    """Turn a string into ASCII notation.
 
-  Replace non-ASCII characters with an ASCII approximation. If no
-  approximation exists, the non-ASCII character is ignored. The string must
-  be ``unicode``.
+    Replace non-ASCII characters with an ASCII approximation. If no
+    approximation exists, the non-ASCII character is ignored. The string must
+    be ``unicode``.
 
-  Examples::
+    Examples::
 
-      >>> transliterate(u"älämölö")
-      u"alamolo"
-      >>> transliterate(u"Ærøskøbing")
-      u"rskbing"
+        >>> transliterate(u"älämölö")
+        u"alamolo"
+        >>> transliterate(u"Ærøskøbing")
+        u"rskbing"
 
-  Args:
-    string: (str) A string to convert to ASCII
+    Args:
+      string: (str) A string to convert to ASCII
 
-  Returns:
-    A string in ASCII format.
-  """
-  normalized = unicodedata.normalize("NFKD", string)
-  return normalized.encode("ascii", "ignore").decode("ascii")
+    Returns:
+      A string in ASCII format.
+    """
+    normalized = unicodedata.normalize("NFKD", string)
+    return normalized.encode("ascii", "ignore").decode("ascii")
 
 
 def underscore(word):
-  """Make an underscored, lowercase form from the expression in the string.
+    """Make an underscored, lowercase form from the expression in the string.
 
-  Example::
+    Example::
 
-      >>> underscore("DeviceType")
-      "device_type"
+        >>> underscore("DeviceType")
+        "device_type"
 
-  As a rule of thumb you can think of :func:`underscore` as the inverse of
-  :func:`camelize`, though there are cases where that does not hold::
+    As a rule of thumb you can think of :func:`underscore` as the inverse of
+    :func:`camelize`, though there are cases where that does not hold::
 
-      >>> camelize(underscore("IOError"))
-      "IoError"
+        >>> camelize(underscore("IOError"))
+        "IoError"
 
-  Args:
-    word: (str) A word to make underscored.
+    Args:
+      word: (str) A word to make underscored.
 
-  Returns:
-    A string with underscores.
-  """
-  word = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1_\2", word)
-  word = re.sub(r"([a-z\d])([A-Z])", r"\1_\2", word)
-  word = word.replace("-", "_")
-  return word.lower()
+    Returns:
+      A string with underscores.
+    """
+    word = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1_\2", word)
+    word = re.sub(r"([a-z\d])([A-Z])", r"\1_\2", word)
+    word = word.replace("-", "_")
+    return word.lower()
 
 
 _irregular("person", "people")

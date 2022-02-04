@@ -32,10 +32,13 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.opsworks.layer1 import OpsWorksConnection
-    return get_regions('opsworks', connection_cls=OpsWorksConnection)
+
+    return get_regions("opsworks", connection_cls=OpsWorksConnection)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.opsworks.layer1 import OpsWorksConnection
-    return connect('opsworks', region_name,
-                   connection_cls=OpsWorksConnection, **kw_params)
+
+    return connect(
+        "opsworks", region_name, connection_cls=OpsWorksConnection, **kw_params
+    )

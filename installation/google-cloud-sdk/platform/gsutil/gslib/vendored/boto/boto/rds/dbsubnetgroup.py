@@ -23,6 +23,7 @@
 Represents an DBSubnetGroup
 """
 
+
 class DBSubnetGroup(object):
     """
     Represents an RDS database subnet group
@@ -36,6 +37,7 @@ class DBSubnetGroup(object):
     :ivar name: Name of the subnet group
     :ivar vpc_id: The ID of the VPC the subnets are inside
     """
+
     def __init__(self, connection=None, name=None, description=None, subnet_ids=None):
         self.connection = connection
         self.name = name
@@ -48,22 +50,21 @@ class DBSubnetGroup(object):
         self.status = None
 
     def __repr__(self):
-        return 'DBSubnetGroup:%s' % self.name
+        return "DBSubnetGroup:%s" % self.name
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'SubnetIdentifier':
+        if name == "SubnetIdentifier":
             self.subnet_ids.append(value)
-        elif name == 'DBSubnetGroupName':
+        elif name == "DBSubnetGroupName":
             self.name = value
-        elif name == 'DBSubnetGroupDescription':
+        elif name == "DBSubnetGroupDescription":
             self.description = value
-        elif name == 'VpcId':
+        elif name == "VpcId":
             self.vpc_id = value
-        elif name == 'SubnetGroupStatus':
+        elif name == "SubnetGroupStatus":
             self.status = value
         else:
             setattr(self, name, value)
-

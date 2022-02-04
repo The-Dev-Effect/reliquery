@@ -26,7 +26,6 @@ from boto.exception import BotoClientError
 
 
 class PlacementGroup(EC2Object):
-
     def __init__(self, connection=None, name=None, strategy=None, state=None):
         super(PlacementGroup, self).__init__(connection)
         self.name = name
@@ -34,20 +33,17 @@ class PlacementGroup(EC2Object):
         self.state = state
 
     def __repr__(self):
-        return 'PlacementGroup:%s' % self.name
+        return "PlacementGroup:%s" % self.name
 
     def endElement(self, name, value, connection):
-        if name == 'groupName':
+        if name == "groupName":
             self.name = value
-        elif name == 'strategy':
+        elif name == "strategy":
             self.strategy = value
-        elif name == 'state':
+        elif name == "state":
             self.state = value
         else:
             setattr(self, name, value)
 
     def delete(self, dry_run=False):
-        return self.connection.delete_placement_group(
-            self.name,
-            dry_run=dry_run
-        )
+        return self.connection.delete_placement_group(self.name, dry_run=dry_run)

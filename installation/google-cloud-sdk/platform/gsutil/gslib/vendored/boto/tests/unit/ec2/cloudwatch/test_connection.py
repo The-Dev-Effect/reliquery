@@ -38,26 +38,26 @@ class TestCloudWatchConnection(AWSMockServiceTestCase):
         params = {}
         # Again, these are rubbish parameters. Pay them no mind, we care more
         # about the functionality of the method
-        name = ['whatever', 'goeshere']
+        name = ["whatever", "goeshere"]
         value = None
         timestamp = [
             datetime.datetime(2013, 5, 13, 9, 2, 35),
             datetime.datetime(2013, 5, 12, 9, 2, 35),
         ]
-        unit = ['lbs', 'ft']
+        unit = ["lbs", "ft"]
         dimensions = None
         statistics = [
             {
-                'maximum': 5,
-                'minimum': 1,
-                'samplecount': 3,
-                'sum': 7,
+                "maximum": 5,
+                "minimum": 1,
+                "samplecount": 3,
+                "sum": 7,
             },
             {
-                'maximum': 6,
-                'minimum': 2,
-                'samplecount': 4,
-                'sum': 5,
+                "maximum": 6,
+                "minimum": 2,
+                "samplecount": 4,
+                "sum": 5,
             },
         ]
 
@@ -71,28 +71,31 @@ class TestCloudWatchConnection(AWSMockServiceTestCase):
             timestamp=timestamp,
             unit=unit,
             dimensions=dimensions,
-            statistics=statistics
+            statistics=statistics,
         )
 
-        self.assertEqual(params, {
-            'MetricData.member.1.MetricName': 'whatever',
-            'MetricData.member.1.StatisticValues.Maximum': 5,
-            'MetricData.member.1.StatisticValues.Minimum': 1,
-            'MetricData.member.1.StatisticValues.SampleCount': 3,
-            'MetricData.member.1.StatisticValues.Sum': 7,
-            'MetricData.member.1.Timestamp': '2013-05-13T09:02:35',
-            'MetricData.member.1.Unit': 'lbs',
-            'MetricData.member.2.MetricName': 'goeshere',
-            'MetricData.member.2.StatisticValues.Maximum': 6,
-            'MetricData.member.2.StatisticValues.Minimum': 2,
-            'MetricData.member.2.StatisticValues.SampleCount': 4,
-            'MetricData.member.2.StatisticValues.Sum': 5,
-            'MetricData.member.2.Timestamp': '2013-05-12T09:02:35',
-            # If needed, comment this next line to cause a test failure & see
-            # the logging warning.
-            'MetricData.member.2.Unit': 'ft',
-        })
+        self.assertEqual(
+            params,
+            {
+                "MetricData.member.1.MetricName": "whatever",
+                "MetricData.member.1.StatisticValues.Maximum": 5,
+                "MetricData.member.1.StatisticValues.Minimum": 1,
+                "MetricData.member.1.StatisticValues.SampleCount": 3,
+                "MetricData.member.1.StatisticValues.Sum": 7,
+                "MetricData.member.1.Timestamp": "2013-05-13T09:02:35",
+                "MetricData.member.1.Unit": "lbs",
+                "MetricData.member.2.MetricName": "goeshere",
+                "MetricData.member.2.StatisticValues.Maximum": 6,
+                "MetricData.member.2.StatisticValues.Minimum": 2,
+                "MetricData.member.2.StatisticValues.SampleCount": 4,
+                "MetricData.member.2.StatisticValues.Sum": 5,
+                "MetricData.member.2.Timestamp": "2013-05-12T09:02:35",
+                # If needed, comment this next line to cause a test failure & see
+                # the logging warning.
+                "MetricData.member.2.Unit": "ft",
+            },
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

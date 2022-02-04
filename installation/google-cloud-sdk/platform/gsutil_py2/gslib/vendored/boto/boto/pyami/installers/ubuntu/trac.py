@@ -14,7 +14,7 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 # OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
 # ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
@@ -22,6 +22,7 @@
 from boto.pyami.installers.ubuntu.installer import Installer
 import boto
 import os
+
 
 class Trac(Installer):
     """
@@ -46,8 +47,8 @@ class Trac(Installer):
     """
 
     def install(self):
-        self.run('apt-get -y install trac', notify=True, exit_on_error=True)
-        self.run('apt-get -y install libapache2-svn', notify=True, exit_on_error=True)
+        self.run("apt-get -y install trac", notify=True, exit_on_error=True)
+        self.run("apt-get -y install libapache2-svn", notify=True, exit_on_error=True)
         self.run("a2enmod ssl")
         self.run("a2enmod mod_python")
         self.run("a2enmod dav_svn")
@@ -60,13 +61,16 @@ class Trac(Installer):
     def setup_vhost(self):
         domain = boto.config.get("Trac", "hostname").strip()
         if domain:
-            domain_info = domain.split('.')
+            domain_info = domain.split(".")
             cnf = open("/etc/apache2/sites-available/%s" % domain_info[0], "w")
             cnf.write("NameVirtualHost *:80\n")
             if boto.config.get("Trac", "SSLCertificateFile"):
                 cnf.write("NameVirtualHost *:443\n\n")
                 cnf.write("<VirtualHost *:80>\n")
-                cnf.write("\tServerAdmin %s\n" % boto.config.get("Trac", "server_admin").strip())
+                cnf.write(
+                    "\tServerAdmin %s\n"
+                    % boto.config.get("Trac", "server_admin").strip()
+                )
                 cnf.write("\tServerName %s\n" % domain)
                 cnf.write("\tRewriteEngine On\n")
                 cnf.write("\tRewriteRule ^(.*)$ https://%s$1\n" % domain)
@@ -76,7 +80,9 @@ class Trac(Installer):
             else:
                 cnf.write("<VirtualHost *:80>\n")
 
-            cnf.write("\tServerAdmin %s\n" % boto.config.get("Trac", "server_admin").strip())
+            cnf.write(
+                "\tServerAdmin %s\n" % boto.config.get("Trac", "server_admin").strip()
+            )
             cnf.write("\tServerName %s\n" % domain)
             cnf.write("\tDocumentRoot %s\n" % boto.config.get("Trac", "home").strip())
 
@@ -89,14 +95,14 @@ class Trac(Installer):
 
             cnf.write("\t<Location />\n")
             cnf.write("\t\tAuthType Basic\n")
-            cnf.write("\t\tAuthName \"%s\"\n" % boto.config.get("Trac", "name"))
+            cnf.write('\t\tAuthName "%s"\n' % boto.config.get("Trac", "name"))
             cnf.write("\t\tRequire valid-user\n")
             cnf.write("\t\tAuthUserFile /mnt/apache/passwd/passwords\n")
             cnf.write("\t</Location>\n")
 
             data_dir = boto.config.get("Trac", "data_dir")
             for env in os.listdir(data_dir):
-                if(env[0] != "."):
+                if env[0] != ".":
                     cnf.write("\t<Location /trac/%s>\n" % env)
                     cnf.write("\t\tSetHandler mod_python\n")
                     cnf.write("\t\tPythonInterpreter main_interpreter\n")
@@ -107,7 +113,7 @@ class Trac(Installer):
 
             svn_dir = boto.config.get("Trac", "svn_dir")
             for env in os.listdir(svn_dir):
-                if(env[0] != "."):
+                if env[0] != ".":
                     cnf.write("\t<Location /svn/%s>\n" % env)
                     cnf.write("\t\tDAV svn\n")
                     cnf.write("\t\tSVNPath %s/%s\n" % (svn_dir, env))

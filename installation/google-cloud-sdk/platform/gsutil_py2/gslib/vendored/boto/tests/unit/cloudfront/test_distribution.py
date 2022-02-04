@@ -15,7 +15,7 @@ class CloudfrontDistributionTest(unittest.TestCase):
         self.assertEqual(self.dist.logging, None)
 
         # Override.
-        lo = LoggingInfo(bucket='whatever', prefix='override_')
+        lo = LoggingInfo(bucket="whatever", prefix="override_")
         dist = DistributionConfig(logging=lo)
-        self.assertEqual(dist.logging.bucket, 'whatever')
-        self.assertEqual(dist.logging.prefix, 'override_')
+        self.assertEqual(dist.logging.bucket, "whatever")
+        self.assertEqual(dist.logging.prefix, "override_")

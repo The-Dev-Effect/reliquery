@@ -41,8 +41,9 @@ class CloudSearchDomainConnection(AWSAuthConnection):
     For more information, see the `Amazon CloudSearch Developer
     Guide`_.
     """
+
     APIVersion = "2013-01-01"
-    AuthServiceName = 'cloudsearch'
+    AuthServiceName = "cloudsearch"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "cloudsearch.us-east-1.amazonaws.com"
     ResponseError = JSONResponseError
@@ -53,29 +54,42 @@ class CloudSearchDomainConnection(AWSAuthConnection):
     }
 
     def __init__(self, **kwargs):
-        region = kwargs.get('region')
+        region = kwargs.get("region")
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
         else:
-            del kwargs['region']
-        if kwargs.get('host', None) is None:
+            del kwargs["region"]
+        if kwargs.get("host", None) is None:
             raise ValueError(
-                'The argument, host, must be provided when creating a '
-                'CloudSearchDomainConnection because its methods require the '
-                'specific domain\'s endpoint in order to successfully make '
-                'requests to that CloudSearch Domain.'
+                "The argument, host, must be provided when creating a "
+                "CloudSearchDomainConnection because its methods require the "
+                "specific domain's endpoint in order to successfully make "
+                "requests to that CloudSearch Domain."
             )
         super(CloudSearchDomainConnection, self).__init__(**kwargs)
         self.region = region
-    
-    def _required_auth_capability(self):
-        return ['hmac-v4']
 
-    def search(self, query, cursor=None, expr=None, facet=None,
-               filter_query=None, highlight=None, partial=None,
-               query_options=None, query_parser=None, ret=None, size=None,
-               sort=None, start=None):
+    def _required_auth_capability(self):
+        return ["hmac-v4"]
+
+    def search(
+        self,
+        query,
+        cursor=None,
+        expr=None,
+        facet=None,
+        filter_query=None,
+        highlight=None,
+        partial=None,
+        query_options=None,
+        query_parser=None,
+        ret=None,
+        size=None,
+        sort=None,
+        start=None,
+    ):
         """
         Retrieves a list of documents that match the specified search
         criteria. How you specify the search criteria depends on which
@@ -393,39 +407,44 @@ class CloudSearchDomainConnection(AWSAuthConnection):
             CloudSearch Developer Guide .
 
         """
-        uri = '/2013-01-01/search'
+        uri = "/2013-01-01/search"
         params = {}
         headers = {}
         query_params = {}
         if cursor is not None:
-            query_params['cursor'] = cursor
+            query_params["cursor"] = cursor
         if expr is not None:
-            query_params['expr'] = expr
+            query_params["expr"] = expr
         if facet is not None:
-            query_params['facet'] = facet
+            query_params["facet"] = facet
         if filter_query is not None:
-            query_params['fq'] = filter_query
+            query_params["fq"] = filter_query
         if highlight is not None:
-            query_params['highlight'] = highlight
+            query_params["highlight"] = highlight
         if partial is not None:
-            query_params['partial'] = partial
+            query_params["partial"] = partial
         if query is not None:
-            query_params['q'] = query
+            query_params["q"] = query
         if query_options is not None:
-            query_params['q.options'] = query_options
+            query_params["q.options"] = query_options
         if query_parser is not None:
-            query_params['q.parser'] = query_parser
+            query_params["q.parser"] = query_parser
         if ret is not None:
-            query_params['return'] = ret
+            query_params["return"] = ret
         if size is not None:
-            query_params['size'] = size
+            query_params["size"] = size
         if sort is not None:
-            query_params['sort'] = sort
+            query_params["sort"] = sort
         if start is not None:
-            query_params['start'] = start
-        return self.make_request('POST', uri, expected_status=200,
-                                 data=json.dumps(params), headers=headers,
-                                 params=query_params)
+            query_params["start"] = start
+        return self.make_request(
+            "POST",
+            uri,
+            expected_status=200,
+            data=json.dumps(params),
+            headers=headers,
+            params=query_params,
+        )
 
     def suggest(self, query, suggester, size=None):
         """
@@ -461,19 +480,24 @@ class CloudSearchDomainConnection(AWSAuthConnection):
         :param size: Specifies the maximum number of suggestions to return.
 
         """
-        uri = '/2013-01-01/suggest'
+        uri = "/2013-01-01/suggest"
         params = {}
         headers = {}
         query_params = {}
         if query is not None:
-            query_params['q'] = query
+            query_params["q"] = query
         if suggester is not None:
-            query_params['suggester'] = suggester
+            query_params["suggester"] = suggester
         if size is not None:
-            query_params['size'] = size
-        return self.make_request('GET', uri, expected_status=200,
-                                 data=json.dumps(params), headers=headers,
-                                 params=query_params)
+            query_params["size"] = size
+        return self.make_request(
+            "GET",
+            uri,
+            expected_status=200,
+            data=json.dumps(params),
+            headers=headers,
+            params=query_params,
+        )
 
     def upload_documents(self, documents, content_type):
         """
@@ -518,22 +542,29 @@ class CloudSearchDomainConnection(AWSAuthConnection):
         + application/xml
 
         """
-        uri = '/2013-01-01/documents/batch'
+        uri = "/2013-01-01/documents/batch"
         headers = {}
         query_params = {}
         if content_type is not None:
-            headers['Content-Type'] = content_type
-        return self.make_request('POST', uri, expected_status=200,
-                                 data=documents, headers=headers,
-                                 params=query_params)
+            headers["Content-Type"] = content_type
+        return self.make_request(
+            "POST",
+            uri,
+            expected_status=200,
+            data=documents,
+            headers=headers,
+            params=query_params,
+        )
 
-    def make_request(self, verb, resource, headers=None, data='',
-                     expected_status=None, params=None):
+    def make_request(
+        self, verb, resource, headers=None, data="", expected_status=None, params=None
+    ):
         if headers is None:
             headers = {}
         response = AWSAuthConnection.make_request(
-            self, verb, resource, headers=headers, data=data, params=params)
-        body = json.loads(response.read().decode('utf-8'))
+            self, verb, resource, headers=headers, data=data, params=params
+        )
+        body = json.loads(response.read().decode("utf-8"))
         if response.status == expected_status:
             return body
         else:

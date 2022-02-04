@@ -43,43 +43,63 @@ def get_manager(cls):
     a specific Model class that gives the db info for that class.
     In the example above, TestBasic is a Model subclass.
     """
-    db_user = boto.config.get('DB', 'db_user', None)
-    db_passwd = boto.config.get('DB', 'db_passwd', None)
-    db_type = boto.config.get('DB', 'db_type', 'SimpleDB')
-    db_name = boto.config.get('DB', 'db_name', None)
-    db_table = boto.config.get('DB', 'db_table', None)
-    db_host = boto.config.get('DB', 'db_host', "sdb.amazonaws.com")
-    db_port = boto.config.getint('DB', 'db_port', 443)
-    enable_ssl = boto.config.getbool('DB', 'enable_ssl', True)
-    sql_dir = boto.config.get('DB', 'sql_dir', None)
-    debug = boto.config.getint('DB', 'debug', 0)
+    db_user = boto.config.get("DB", "db_user", None)
+    db_passwd = boto.config.get("DB", "db_passwd", None)
+    db_type = boto.config.get("DB", "db_type", "SimpleDB")
+    db_name = boto.config.get("DB", "db_name", None)
+    db_table = boto.config.get("DB", "db_table", None)
+    db_host = boto.config.get("DB", "db_host", "sdb.amazonaws.com")
+    db_port = boto.config.getint("DB", "db_port", 443)
+    enable_ssl = boto.config.getbool("DB", "enable_ssl", True)
+    sql_dir = boto.config.get("DB", "sql_dir", None)
+    debug = boto.config.getint("DB", "debug", 0)
     # first see if there is a fully qualified section name in the Boto config
-    module_name = cls.__module__.replace('.', '_')
-    db_section = 'DB_' + module_name + '_' + cls.__name__
+    module_name = cls.__module__.replace(".", "_")
+    db_section = "DB_" + module_name + "_" + cls.__name__
     if not boto.config.has_section(db_section):
-        db_section = 'DB_' + cls.__name__
+        db_section = "DB_" + cls.__name__
     if boto.config.has_section(db_section):
-        db_user = boto.config.get(db_section, 'db_user', db_user)
-        db_passwd = boto.config.get(db_section, 'db_passwd', db_passwd)
-        db_type = boto.config.get(db_section, 'db_type', db_type)
-        db_name = boto.config.get(db_section, 'db_name', db_name)
-        db_table = boto.config.get(db_section, 'db_table', db_table)
-        db_host = boto.config.get(db_section, 'db_host', db_host)
-        db_port = boto.config.getint(db_section, 'db_port', db_port)
-        enable_ssl = boto.config.getint(db_section, 'enable_ssl', enable_ssl)
-        debug = boto.config.getint(db_section, 'debug', debug)
+        db_user = boto.config.get(db_section, "db_user", db_user)
+        db_passwd = boto.config.get(db_section, "db_passwd", db_passwd)
+        db_type = boto.config.get(db_section, "db_type", db_type)
+        db_name = boto.config.get(db_section, "db_name", db_name)
+        db_table = boto.config.get(db_section, "db_table", db_table)
+        db_host = boto.config.get(db_section, "db_host", db_host)
+        db_port = boto.config.getint(db_section, "db_port", db_port)
+        enable_ssl = boto.config.getint(db_section, "enable_ssl", enable_ssl)
+        debug = boto.config.getint(db_section, "debug", debug)
     elif hasattr(cls, "_db_name") and cls._db_name is not None:
         # More specific then the generic DB config is any _db_name class property
         db_name = cls._db_name
     elif hasattr(cls.__bases__[0], "_manager"):
         return cls.__bases__[0]._manager
-    if db_type == 'SimpleDB':
+    if db_type == "SimpleDB":
         from boto.sdb.db.manager.sdbmanager import SDBManager
-        return SDBManager(cls, db_name, db_user, db_passwd,
-                          db_host, db_port, db_table, sql_dir, enable_ssl)
-    elif db_type == 'XML':
+
+        return SDBManager(
+            cls,
+            db_name,
+            db_user,
+            db_passwd,
+            db_host,
+            db_port,
+            db_table,
+            sql_dir,
+            enable_ssl,
+        )
+    elif db_type == "XML":
         from boto.sdb.db.manager.xmlmanager import XMLManager
-        return XMLManager(cls, db_name, db_user, db_passwd,
-                          db_host, db_port, db_table, sql_dir, enable_ssl)
+
+        return XMLManager(
+            cls,
+            db_name,
+            db_user,
+            db_passwd,
+            db_host,
+            db_port,
+            db_table,
+            sql_dir,
+            enable_ssl,
+        )
     else:
-        raise ValueError('Unknown db_type: %s' % db_type)
+        raise ValueError("Unknown db_type: %s" % db_type)

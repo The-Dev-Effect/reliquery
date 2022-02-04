@@ -29,7 +29,7 @@ class ProductCodes(list):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'productCode':
+        if name == "productCode":
             self.append(value)
 
 
@@ -38,7 +38,7 @@ class BillingProducts(list):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'billingProduct':
+        if name == "billingProduct":
             self.append(value)
 
 
@@ -74,71 +74,68 @@ class Image(TaggedEC2Object):
         self.sriov_net_support = None
 
     def __repr__(self):
-        return 'Image:%s' % self.id
+        return "Image:%s" % self.id
 
     def startElement(self, name, attrs, connection):
         retval = super(Image, self).startElement(name, attrs, connection)
         if retval is not None:
             return retval
-        if name == 'blockDeviceMapping':
+        if name == "blockDeviceMapping":
             self.block_device_mapping = BlockDeviceMapping()
             return self.block_device_mapping
-        elif name == 'productCodes':
+        elif name == "productCodes":
             return self.product_codes
-        elif name == 'billingProducts':
+        elif name == "billingProducts":
             return self.billing_products
         else:
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'imageId':
+        if name == "imageId":
             self.id = value
-        elif name == 'imageLocation':
+        elif name == "imageLocation":
             self.location = value
-        elif name == 'imageState':
+        elif name == "imageState":
             self.state = value
-        elif name == 'imageOwnerId':
-            self.ownerId = value # for backwards compatibility
+        elif name == "imageOwnerId":
+            self.ownerId = value  # for backwards compatibility
             self.owner_id = value
-        elif name == 'isPublic':
-            if value == 'false':
+        elif name == "isPublic":
+            if value == "false":
                 self.is_public = False
-            elif value == 'true':
+            elif value == "true":
                 self.is_public = True
             else:
                 raise Exception(
-                    'Unexpected value of isPublic %s for image %s' % (
-                        value,
-                        self.id
-                    )
+                    "Unexpected value of isPublic %s for image %s" % (value, self.id)
                 )
-        elif name == 'architecture':
+        elif name == "architecture":
             self.architecture = value
-        elif name == 'imageType':
+        elif name == "imageType":
             self.type = value
-        elif name == 'kernelId':
+        elif name == "kernelId":
             self.kernel_id = value
-        elif name == 'ramdiskId':
+        elif name == "ramdiskId":
             self.ramdisk_id = value
-        elif name == 'imageOwnerAlias':
+        elif name == "imageOwnerAlias":
             self.owner_alias = value
-        elif name == 'platform':
+        elif name == "platform":
             self.platform = value
-        elif name == 'name':
+        elif name == "name":
             self.name = value
-        elif name == 'description':
+        elif name == "description":
             self.description = value
-        elif name == 'rootDeviceType':
+        elif name == "rootDeviceType":
             self.root_device_type = value
-        elif name == 'rootDeviceName':
+        elif name == "rootDeviceName":
             self.root_device_name = value
-        elif name == 'virtualizationType':
+        elif name == "virtualizationType":
             self.virtualization_type = value
-        elif name == 'hypervisor':
+        elif name == "hypervisor":
             self.hypervisor = value
-        elif name == 'instanceLifecycle':
+        elif name == "instanceLifecycle":
             self.instance_lifecycle = value
-        elif name == 'sriovNetSupport':
+        elif name == "sriovNetSupport":
             self.sriov_net_support = value
         else:
             setattr(self, name, value)
@@ -164,21 +161,35 @@ class Image(TaggedEC2Object):
             if img.id == self.id:
                 self._update(img)
         elif validate:
-            raise ValueError('%s is not a valid Image ID' % self.id)
+            raise ValueError("%s is not a valid Image ID" % self.id)
         return self.state
 
-    def run(self, min_count=1, max_count=1, key_name=None,
-            security_groups=None, user_data=None,
-            addressing_type=None, instance_type='m1.small', placement=None,
-            kernel_id=None, ramdisk_id=None,
-            monitoring_enabled=False, subnet_id=None,
-            block_device_map=None,
-            disable_api_termination=False,
-            instance_initiated_shutdown_behavior=None,
-            private_ip_address=None,
-            placement_group=None, security_group_ids=None,
-            additional_info=None, instance_profile_name=None,
-            instance_profile_arn=None, tenancy=None, dry_run=False):
+    def run(
+        self,
+        min_count=1,
+        max_count=1,
+        key_name=None,
+        security_groups=None,
+        user_data=None,
+        addressing_type=None,
+        instance_type="m1.small",
+        placement=None,
+        kernel_id=None,
+        ramdisk_id=None,
+        monitoring_enabled=False,
+        subnet_id=None,
+        block_device_map=None,
+        disable_api_termination=False,
+        instance_initiated_shutdown_behavior=None,
+        private_ip_address=None,
+        placement_group=None,
+        security_group_ids=None,
+        additional_info=None,
+        instance_profile_name=None,
+        instance_profile_arn=None,
+        tenancy=None,
+        dry_run=False,
+    ):
 
         """
         Runs this instance.
@@ -318,74 +329,73 @@ class Image(TaggedEC2Object):
 
         """
 
-        return self.connection.run_instances(self.id, min_count, max_count,
-                                             key_name, security_groups,
-                                             user_data, addressing_type,
-                                             instance_type, placement,
-                                             kernel_id, ramdisk_id,
-                                             monitoring_enabled, subnet_id,
-                                             block_device_map, disable_api_termination,
-                                             instance_initiated_shutdown_behavior,
-                                             private_ip_address, placement_group,
-                                             security_group_ids=security_group_ids,
-                                             additional_info=additional_info,
-                                             instance_profile_name=instance_profile_name,
-                                             instance_profile_arn=instance_profile_arn,
-                                             tenancy=tenancy, dry_run=dry_run)
+        return self.connection.run_instances(
+            self.id,
+            min_count,
+            max_count,
+            key_name,
+            security_groups,
+            user_data,
+            addressing_type,
+            instance_type,
+            placement,
+            kernel_id,
+            ramdisk_id,
+            monitoring_enabled,
+            subnet_id,
+            block_device_map,
+            disable_api_termination,
+            instance_initiated_shutdown_behavior,
+            private_ip_address,
+            placement_group,
+            security_group_ids=security_group_ids,
+            additional_info=additional_info,
+            instance_profile_name=instance_profile_name,
+            instance_profile_arn=instance_profile_arn,
+            tenancy=tenancy,
+            dry_run=dry_run,
+        )
 
     def deregister(self, delete_snapshot=False, dry_run=False):
         return self.connection.deregister_image(
-            self.id,
-            delete_snapshot,
-            dry_run=dry_run
+            self.id, delete_snapshot, dry_run=dry_run
         )
 
     def get_launch_permissions(self, dry_run=False):
         img_attrs = self.connection.get_image_attribute(
-            self.id,
-            'launchPermission',
-            dry_run=dry_run
+            self.id, "launchPermission", dry_run=dry_run
         )
         return img_attrs.attrs
 
-    def set_launch_permissions(self, user_ids=None, group_names=None,
-                               dry_run=False):
-        return self.connection.modify_image_attribute(self.id,
-                                                      'launchPermission',
-                                                      'add',
-                                                      user_ids,
-                                                      group_names,
-                                                      dry_run=dry_run)
+    def set_launch_permissions(self, user_ids=None, group_names=None, dry_run=False):
+        return self.connection.modify_image_attribute(
+            self.id, "launchPermission", "add", user_ids, group_names, dry_run=dry_run
+        )
 
-    def remove_launch_permissions(self, user_ids=None, group_names=None,
-                                  dry_run=False):
-        return self.connection.modify_image_attribute(self.id,
-                                                      'launchPermission',
-                                                      'remove',
-                                                      user_ids,
-                                                      group_names,
-                                                      dry_run=dry_run)
+    def remove_launch_permissions(self, user_ids=None, group_names=None, dry_run=False):
+        return self.connection.modify_image_attribute(
+            self.id,
+            "launchPermission",
+            "remove",
+            user_ids,
+            group_names,
+            dry_run=dry_run,
+        )
 
     def reset_launch_attributes(self, dry_run=False):
         return self.connection.reset_image_attribute(
-            self.id,
-            'launchPermission',
-            dry_run=dry_run
+            self.id, "launchPermission", dry_run=dry_run
         )
 
     def get_kernel(self, dry_run=False):
         img_attrs = self.connection.get_image_attribute(
-            self.id,
-            'kernel',
-            dry_run=dry_run
+            self.id, "kernel", dry_run=dry_run
         )
         return img_attrs.kernel
 
     def get_ramdisk(self, dry_run=False):
         img_attrs = self.connection.get_image_attribute(
-            self.id,
-            'ramdisk',
-            dry_run=dry_run
+            self.id, "ramdisk", dry_run=dry_run
         )
         return img_attrs.ramdisk
 
@@ -398,35 +408,35 @@ class ImageAttribute(object):
         self.attrs = {}
 
     def startElement(self, name, attrs, connection):
-        if name == 'blockDeviceMapping':
-            self.attrs['block_device_mapping'] = BlockDeviceMapping()
-            return self.attrs['block_device_mapping']
+        if name == "blockDeviceMapping":
+            self.attrs["block_device_mapping"] = BlockDeviceMapping()
+            return self.attrs["block_device_mapping"]
         else:
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'launchPermission':
-            self.name = 'launch_permission'
-        elif name == 'group':
-            if 'groups' in self.attrs:
-                self.attrs['groups'].append(value)
+        if name == "launchPermission":
+            self.name = "launch_permission"
+        elif name == "group":
+            if "groups" in self.attrs:
+                self.attrs["groups"].append(value)
             else:
-                self.attrs['groups'] = [value]
-        elif name == 'userId':
-            if 'user_ids' in self.attrs:
-                self.attrs['user_ids'].append(value)
+                self.attrs["groups"] = [value]
+        elif name == "userId":
+            if "user_ids" in self.attrs:
+                self.attrs["user_ids"].append(value)
             else:
-                self.attrs['user_ids'] = [value]
-        elif name == 'productCode':
-            if 'product_codes' in self.attrs:
-                self.attrs['product_codes'].append(value)
+                self.attrs["user_ids"] = [value]
+        elif name == "productCode":
+            if "product_codes" in self.attrs:
+                self.attrs["product_codes"].append(value)
             else:
-                self.attrs['product_codes'] = [value]
-        elif name == 'imageId':
+                self.attrs["product_codes"] = [value]
+        elif name == "imageId":
             self.image_id = value
-        elif name == 'kernel':
+        elif name == "kernel":
             self.kernel = value
-        elif name == 'ramdisk':
+        elif name == "ramdisk":
             self.ramdisk = value
         else:
             setattr(self, name, value)
@@ -441,5 +451,5 @@ class CopyImage(object):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'imageId':
+        if name == "imageId":
             self.image_id = value

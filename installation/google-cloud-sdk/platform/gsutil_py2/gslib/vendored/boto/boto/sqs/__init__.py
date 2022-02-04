@@ -33,14 +33,17 @@ def regions():
     :return: A list of :class:`boto.sqs.regioninfo.RegionInfo`
     """
     from boto.sqs.connection import SQSConnection
-    return get_regions(
-        'sqs',
-        region_cls=SQSRegionInfo,
-        connection_cls=SQSConnection
-    )
+
+    return get_regions("sqs", region_cls=SQSRegionInfo, connection_cls=SQSConnection)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.sqs.connection import SQSConnection
-    return connect('sqs', region_name, region_cls=SQSRegionInfo,
-                   connection_cls=SQSConnection, **kw_params)
+
+    return connect(
+        "sqs",
+        region_name,
+        region_cls=SQSRegionInfo,
+        connection_cls=SQSConnection,
+        **kw_params
+    )

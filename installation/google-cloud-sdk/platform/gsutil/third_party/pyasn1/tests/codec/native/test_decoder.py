@@ -23,11 +23,11 @@ from pyasn1.error import PyAsn1Error
 class BadAsn1SpecTestCase(BaseTestCase):
     def testBadSpec(self):
         try:
-            decoder.decode('', asn1Spec='not an Asn1Item')
+            decoder.decode("", asn1Spec="not an Asn1Item")
         except PyAsn1Error:
             pass
         else:
-            assert 0, 'Invalid asn1Spec accepted'
+            assert 0, "Invalid asn1Spec accepted"
 
 
 class IntegerDecoderTestCase(BaseTestCase):
@@ -48,22 +48,28 @@ class BooleanDecoderTestCase(BaseTestCase):
 
 class BitStringDecoderTestCase(BaseTestCase):
     def testSimple(self):
-        assert decoder.decode('11111111', asn1Spec=univ.BitString()) == univ.BitString(hexValue='ff')
+        assert decoder.decode("11111111", asn1Spec=univ.BitString()) == univ.BitString(
+            hexValue="ff"
+        )
 
 
 class OctetStringDecoderTestCase(BaseTestCase):
     def testSimple(self):
-        assert decoder.decode('Quick brown fox', asn1Spec=univ.OctetString()) == univ.OctetString('Quick brown fox')
+        assert decoder.decode(
+            "Quick brown fox", asn1Spec=univ.OctetString()
+        ) == univ.OctetString("Quick brown fox")
 
 
 class NullDecoderTestCase(BaseTestCase):
     def testNull(self):
-        assert decoder.decode(None, asn1Spec=univ.Null()) == univ.Null('')
+        assert decoder.decode(None, asn1Spec=univ.Null()) == univ.Null("")
 
 
 class ObjectIdentifierDecoderTestCase(BaseTestCase):
     def testOne(self):
-        assert decoder.decode('1.3.6.11', asn1Spec=univ.ObjectIdentifier()) == univ.ObjectIdentifier('1.3.6.11')
+        assert decoder.decode(
+            "1.3.6.11", asn1Spec=univ.ObjectIdentifier()
+        ) == univ.ObjectIdentifier("1.3.6.11")
 
 
 class RealDecoderTestCase(BaseTestCase):
@@ -77,18 +83,23 @@ class SequenceDecoderTestCase(BaseTestCase):
 
         self.s = univ.Sequence(
             componentType=namedtype.NamedTypes(
-                namedtype.NamedType('place-holder', univ.Null()),
-                namedtype.NamedType('first-name', univ.OctetString()),
-                namedtype.NamedType('age', univ.Integer(33))
+                namedtype.NamedType("place-holder", univ.Null()),
+                namedtype.NamedType("first-name", univ.OctetString()),
+                namedtype.NamedType("age", univ.Integer(33)),
             )
         )
 
     def testSimple(self):
         s = self.s.clone()
-        s[0] = univ.Null('')
-        s[1] = univ.OctetString('xx')
+        s[0] = univ.Null("")
+        s[1] = univ.OctetString("xx")
         s[2] = univ.Integer(33)
-        assert decoder.decode({'place-holder': None, 'first-name': 'xx', 'age': 33}, asn1Spec=self.s) == s
+        assert (
+            decoder.decode(
+                {"place-holder": None, "first-name": "xx", "age": 33}, asn1Spec=self.s
+            )
+            == s
+        )
 
 
 class ChoiceDecoderTestCase(BaseTestCase):
@@ -97,16 +108,16 @@ class ChoiceDecoderTestCase(BaseTestCase):
 
         self.s = univ.Choice(
             componentType=namedtype.NamedTypes(
-                namedtype.NamedType('place-holder', univ.Null()),
-                namedtype.NamedType('first-name', univ.OctetString()),
-                namedtype.NamedType('age', univ.Integer(33))
+                namedtype.NamedType("place-holder", univ.Null()),
+                namedtype.NamedType("first-name", univ.OctetString()),
+                namedtype.NamedType("age", univ.Integer(33)),
             )
         )
 
     def testSimple(self):
         s = self.s.clone()
-        s[1] = univ.OctetString('xx')
-        assert decoder.decode({'first-name': 'xx'}, asn1Spec=self.s) == s
+        s[1] = univ.OctetString("xx")
+        assert decoder.decode({"first-name": "xx"}, asn1Spec=self.s) == s
 
 
 class AnyDecoderTestCase(BaseTestCase):
@@ -116,10 +127,10 @@ class AnyDecoderTestCase(BaseTestCase):
         self.s = univ.Any()
 
     def testSimple(self):
-        assert decoder.decode('fox', asn1Spec=univ.Any()) == univ.Any('fox')
+        assert decoder.decode("fox", asn1Spec=univ.Any()) == univ.Any("fox")
 
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.TextTestRunner(verbosity=2).run(suite)

@@ -45,25 +45,25 @@ class Layer1(AWSAuthConnection):
         responses this connection has received from Amazon DynamoDB.
     """
 
-    DefaultRegionName = 'us-east-1'
+    DefaultRegionName = "us-east-1"
     """The default region name for DynamoDB API."""
 
-    ServiceName = 'DynamoDB'
+    ServiceName = "DynamoDB"
     """The name of the Service"""
 
-    Version = '20111205'
+    Version = "20111205"
     """DynamoDB API version."""
 
     ThruputError = "ProvisionedThroughputExceededException"
     """The error response returned when provisioned throughput is exceeded"""
 
-    SessionExpiredError = 'com.amazon.coral.service#ExpiredTokenException'
+    SessionExpiredError = "com.amazon.coral.service#ExpiredTokenException"
     """The error response returned when session token has expired"""
 
-    ConditionalCheckFailedError = 'ConditionalCheckFailedException'
+    ConditionalCheckFailedError = "ConditionalCheckFailedException"
     """The error response returned when a conditional check fails"""
 
-    ValidationError = 'ValidationException'
+    ValidationError = "ValidationException"
     """The error response returned when an item is invalid in some way"""
 
     ResponseError = DynamoDBResponseError
@@ -71,68 +71,91 @@ class Layer1(AWSAuthConnection):
     NumberRetries = 10
     """The number of times an error is retried."""
 
-    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None,
-                 is_secure=True, port=None, proxy=None, proxy_port=None,
-                 debug=0, security_token=None, region=None,
-                 validate_certs=True, validate_checksums=True, profile_name=None):
+    def __init__(
+        self,
+        aws_access_key_id=None,
+        aws_secret_access_key=None,
+        is_secure=True,
+        port=None,
+        proxy=None,
+        proxy_port=None,
+        debug=0,
+        security_token=None,
+        region=None,
+        validate_certs=True,
+        validate_checksums=True,
+        profile_name=None,
+    ):
         if not region:
-            region_name = boto.config.get('DynamoDB', 'region',
-                                          self.DefaultRegionName)
+            region_name = boto.config.get("DynamoDB", "region", self.DefaultRegionName)
             for reg in boto.dynamodb.regions():
                 if reg.name == region_name:
                     region = reg
                     break
 
         self.region = region
-        super(Layer1, self).__init__(self.region.endpoint,
-                                   aws_access_key_id,
-                                   aws_secret_access_key,
-                                   is_secure, port, proxy, proxy_port,
-                                   debug=debug, security_token=security_token,
-                                   validate_certs=validate_certs,
-                                   profile_name=profile_name)
+        super(Layer1, self).__init__(
+            self.region.endpoint,
+            aws_access_key_id,
+            aws_secret_access_key,
+            is_secure,
+            port,
+            proxy,
+            proxy_port,
+            debug=debug,
+            security_token=security_token,
+            validate_certs=validate_certs,
+            profile_name=profile_name,
+        )
         self.throughput_exceeded_events = 0
         self._validate_checksums = boto.config.getbool(
-            'DynamoDB', 'validate_checksums', validate_checksums)
+            "DynamoDB", "validate_checksums", validate_checksums
+        )
 
     def _get_session_token(self):
         self.provider = Provider(self._provider_type)
         self._auth_handler.update_provider(self.provider)
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
-    def make_request(self, action, body='', object_hook=None):
+    def make_request(self, action, body="", object_hook=None):
         """
         :raises: ``DynamoDBExpiredTokenError`` if the security token expires.
         """
-        headers = {'X-Amz-Target': '%s_%s.%s' % (self.ServiceName,
-                                                 self.Version, action),
-                   'Host': self.region.endpoint,
-                   'Content-Type': 'application/x-amz-json-1.0',
-                   'Content-Length': str(len(body))}
-        http_request = self.build_base_http_request('POST', '/', '/',
-                                                    {}, headers, body, None)
+        headers = {
+            "X-Amz-Target": "%s_%s.%s" % (self.ServiceName, self.Version, action),
+            "Host": self.region.endpoint,
+            "Content-Type": "application/x-amz-json-1.0",
+            "Content-Length": str(len(body)),
+        }
+        http_request = self.build_base_http_request(
+            "POST", "/", "/", {}, headers, body, None
+        )
         start = time.time()
-        response = self._mexe(http_request, sender=None,
-                              override_num_retries=self.NumberRetries,
-                              retry_handler=self._retry_handler)
+        response = self._mexe(
+            http_request,
+            sender=None,
+            override_num_retries=self.NumberRetries,
+            retry_handler=self._retry_handler,
+        )
         elapsed = (time.time() - start) * 1000
-        request_id = response.getheader('x-amzn-RequestId')
-        boto.log.debug('RequestId: %s' % request_id)
-        boto.perflog.debug('%s: id=%s time=%sms',
-                           headers['X-Amz-Target'], request_id, int(elapsed))
-        response_body = response.read().decode('utf-8')
+        request_id = response.getheader("x-amzn-RequestId")
+        boto.log.debug("RequestId: %s" % request_id)
+        boto.perflog.debug(
+            "%s: id=%s time=%sms", headers["X-Amz-Target"], request_id, int(elapsed)
+        )
+        response_body = response.read().decode("utf-8")
         boto.log.debug(response_body)
         return json.loads(response_body, object_hook=object_hook)
 
     def _retry_handler(self, response, i, next_sleep):
         status = None
         if response.status == 400:
-            response_body = response.read().decode('utf-8')
+            response_body = response.read().decode("utf-8")
             boto.log.debug(response_body)
             data = json.loads(response_body)
-            if self.ThruputError in data.get('__type'):
+            if self.ThruputError in data.get("__type"):
                 self.throughput_exceeded_events += 1
                 msg = "%s, retry attempt %s" % (self.ThruputError, i)
                 next_sleep = self._exponential_time(i)
@@ -143,29 +166,35 @@ class Layer1(AWSAuthConnection):
                     # a specific error saying that the throughput
                     # was exceeded.
                     raise dynamodb_exceptions.DynamoDBThroughputExceededError(
-                        response.status, response.reason, data)
-            elif self.SessionExpiredError in data.get('__type'):
-                msg = 'Renewing Session Token'
+                        response.status, response.reason, data
+                    )
+            elif self.SessionExpiredError in data.get("__type"):
+                msg = "Renewing Session Token"
                 self._get_session_token()
                 status = (msg, i + self.num_retries - 1, 0)
-            elif self.ConditionalCheckFailedError in data.get('__type'):
+            elif self.ConditionalCheckFailedError in data.get("__type"):
                 raise dynamodb_exceptions.DynamoDBConditionalCheckFailedError(
-                    response.status, response.reason, data)
-            elif self.ValidationError in data.get('__type'):
+                    response.status, response.reason, data
+                )
+            elif self.ValidationError in data.get("__type"):
                 raise dynamodb_exceptions.DynamoDBValidationError(
-                    response.status, response.reason, data)
+                    response.status, response.reason, data
+                )
             else:
-                raise self.ResponseError(response.status, response.reason,
-                                         data)
-        expected_crc32 = response.getheader('x-amz-crc32')
+                raise self.ResponseError(response.status, response.reason, data)
+        expected_crc32 = response.getheader("x-amz-crc32")
         if self._validate_checksums and expected_crc32 is not None:
-            boto.log.debug('Validating crc32 checksum for body: %s',
-                           response.read().decode('utf-8'))
-            actual_crc32 = crc32(response.read()) & 0xffffffff
+            boto.log.debug(
+                "Validating crc32 checksum for body: %s",
+                response.read().decode("utf-8"),
+            )
+            actual_crc32 = crc32(response.read()) & 0xFFFFFFFF
             expected_crc32 = int(expected_crc32)
             if actual_crc32 != expected_crc32:
-                msg = ("The calculated checksum %s did not match the expected "
-                       "checksum %s" % (actual_crc32, expected_crc32))
+                msg = (
+                    "The calculated checksum %s did not match the expected "
+                    "checksum %s" % (actual_crc32, expected_crc32)
+                )
                 status = (msg, i + 1, self._exponential_time(i))
         return status
 
@@ -173,8 +202,9 @@ class Layer1(AWSAuthConnection):
         if i == 0:
             next_sleep = 0
         else:
-            next_sleep = min(0.05 * (2 ** i),
-                             boto.config.get('Boto', 'max_retry_delay', 60))
+            next_sleep = min(
+                0.05 * (2 ** i), boto.config.get("Boto", "max_retry_delay", 60)
+            )
         return next_sleep
 
     def list_tables(self, limit=None, start_table=None):
@@ -199,11 +229,11 @@ class Layer1(AWSAuthConnection):
         """
         data = {}
         if limit:
-            data['Limit'] = limit
+            data["Limit"] = limit
         if start_table:
-            data['ExclusiveStartTableName'] = start_table
+            data["ExclusiveStartTableName"] = start_table
         json_input = json.dumps(data)
-        return self.make_request('ListTables', json_input)
+        return self.make_request("ListTables", json_input)
 
     def describe_table(self, table_name):
         """
@@ -214,9 +244,9 @@ class Layer1(AWSAuthConnection):
         :type table_name: str
         :param table_name: The name of the table to describe.
         """
-        data = {'TableName': table_name}
+        data = {"TableName": table_name}
         json_input = json.dumps(data)
-        return self.make_request('DescribeTable', json_input)
+        return self.make_request("DescribeTable", json_input)
 
     def create_table(self, table_name, schema, provisioned_throughput):
         """
@@ -238,11 +268,13 @@ class Layer1(AWSAuthConnection):
             ProvisionedThroughput data structure defined by
             DynamoDB.
         """
-        data = {'TableName': table_name,
-                'KeySchema': schema,
-                'ProvisionedThroughput': provisioned_throughput}
+        data = {
+            "TableName": table_name,
+            "KeySchema": schema,
+            "ProvisionedThroughput": provisioned_throughput,
+        }
         json_input = json.dumps(data)
-        response_dict = self.make_request('CreateTable', json_input)
+        response_dict = self.make_request("CreateTable", json_input)
         return response_dict
 
     def update_table(self, table_name, provisioned_throughput):
@@ -257,10 +289,12 @@ class Layer1(AWSAuthConnection):
             ProvisionedThroughput data structure defined by
             DynamoDB.
         """
-        data = {'TableName': table_name,
-                'ProvisionedThroughput': provisioned_throughput}
+        data = {
+            "TableName": table_name,
+            "ProvisionedThroughput": provisioned_throughput,
+        }
         json_input = json.dumps(data)
-        return self.make_request('UpdateTable', json_input)
+        return self.make_request("UpdateTable", json_input)
 
     def delete_table(self, table_name):
         """
@@ -271,12 +305,18 @@ class Layer1(AWSAuthConnection):
         :type table_name: str
         :param table_name: The name of the table to delete.
         """
-        data = {'TableName': table_name}
+        data = {"TableName": table_name}
         json_input = json.dumps(data)
-        return self.make_request('DeleteTable', json_input)
+        return self.make_request("DeleteTable", json_input)
 
-    def get_item(self, table_name, key, attributes_to_get=None,
-                 consistent_read=False, object_hook=None):
+    def get_item(
+        self,
+        table_name,
+        key,
+        attributes_to_get=None,
+        consistent_read=False,
+        object_hook=None,
+    ):
         """
         Return a set of attributes for an item that matches
         the supplied key.
@@ -298,19 +338,15 @@ class Layer1(AWSAuthConnection):
             request is issued.  Otherwise, an eventually consistent
             request is issued.
         """
-        data = {'TableName': table_name,
-                'Key': key}
+        data = {"TableName": table_name, "Key": key}
         if attributes_to_get:
-            data['AttributesToGet'] = attributes_to_get
+            data["AttributesToGet"] = attributes_to_get
         if consistent_read:
-            data['ConsistentRead'] = True
+            data["ConsistentRead"] = True
         json_input = json.dumps(data)
-        response = self.make_request('GetItem', json_input,
-                                     object_hook=object_hook)
-        if 'Item' not in response:
-            raise dynamodb_exceptions.DynamoDBKeyNotFoundError(
-                "Key does not exist."
-            )
+        response = self.make_request("GetItem", json_input, object_hook=object_hook)
+        if "Item" not in response:
+            raise dynamodb_exceptions.DynamoDBKeyNotFoundError("Key does not exist.")
         return response
 
     def batch_get_item(self, request_items, object_hook=None):
@@ -325,10 +361,9 @@ class Layer1(AWSAuthConnection):
         # If the list is empty, return empty response
         if not request_items:
             return {}
-        data = {'RequestItems': request_items}
+        data = {"RequestItems": request_items}
         json_input = json.dumps(data)
-        return self.make_request('BatchGetItem', json_input,
-                                 object_hook=object_hook)
+        return self.make_request("BatchGetItem", json_input, object_hook=object_hook)
 
     def batch_write_item(self, request_items, object_hook=None):
         """
@@ -339,14 +374,13 @@ class Layer1(AWSAuthConnection):
         :param request_items: A Python version of the RequestItems
             data structure defined by DynamoDB.
         """
-        data = {'RequestItems': request_items}
+        data = {"RequestItems": request_items}
         json_input = json.dumps(data)
-        return self.make_request('BatchWriteItem', json_input,
-                                 object_hook=object_hook)
+        return self.make_request("BatchWriteItem", json_input, object_hook=object_hook)
 
-    def put_item(self, table_name, item,
-                 expected=None, return_values=None,
-                 object_hook=None):
+    def put_item(
+        self, table_name, item, expected=None, return_values=None, object_hook=None
+    ):
         """
         Create a new item or replace an old item with a new
         item (including all attributes).  If an item already
@@ -373,19 +407,23 @@ class Layer1(AWSAuthConnection):
             specified and the item is overwritten, the content
             of the old item is returned.
         """
-        data = {'TableName': table_name,
-                'Item': item}
+        data = {"TableName": table_name, "Item": item}
         if expected:
-            data['Expected'] = expected
+            data["Expected"] = expected
         if return_values:
-            data['ReturnValues'] = return_values
+            data["ReturnValues"] = return_values
         json_input = json.dumps(data)
-        return self.make_request('PutItem', json_input,
-                                 object_hook=object_hook)
+        return self.make_request("PutItem", json_input, object_hook=object_hook)
 
-    def update_item(self, table_name, key, attribute_updates,
-                    expected=None, return_values=None,
-                    object_hook=None):
+    def update_item(
+        self,
+        table_name,
+        key,
+        attribute_updates,
+        expected=None,
+        return_values=None,
+        object_hook=None,
+    ):
         """
         Edits an existing item's attributes. You can perform a conditional
         update (insert a new attribute name-value pair if it doesn't exist,
@@ -414,20 +452,21 @@ class Layer1(AWSAuthConnection):
             specified and the item is overwritten, the content
             of the old item is returned.
         """
-        data = {'TableName': table_name,
-                'Key': key,
-                'AttributeUpdates': attribute_updates}
+        data = {
+            "TableName": table_name,
+            "Key": key,
+            "AttributeUpdates": attribute_updates,
+        }
         if expected:
-            data['Expected'] = expected
+            data["Expected"] = expected
         if return_values:
-            data['ReturnValues'] = return_values
+            data["ReturnValues"] = return_values
         json_input = json.dumps(data)
-        return self.make_request('UpdateItem', json_input,
-                                 object_hook=object_hook)
+        return self.make_request("UpdateItem", json_input, object_hook=object_hook)
 
-    def delete_item(self, table_name, key,
-                    expected=None, return_values=None,
-                    object_hook=None):
+    def delete_item(
+        self, table_name, key, expected=None, return_values=None, object_hook=None
+    ):
         """
         Delete an item and all of it's attributes by primary key.
         You can perform a conditional delete by specifying an
@@ -451,20 +490,27 @@ class Layer1(AWSAuthConnection):
             specified and the item is overwritten, the content
             of the old item is returned.
         """
-        data = {'TableName': table_name,
-                'Key': key}
+        data = {"TableName": table_name, "Key": key}
         if expected:
-            data['Expected'] = expected
+            data["Expected"] = expected
         if return_values:
-            data['ReturnValues'] = return_values
+            data["ReturnValues"] = return_values
         json_input = json.dumps(data)
-        return self.make_request('DeleteItem', json_input,
-                                 object_hook=object_hook)
+        return self.make_request("DeleteItem", json_input, object_hook=object_hook)
 
-    def query(self, table_name, hash_key_value, range_key_conditions=None,
-              attributes_to_get=None, limit=None, consistent_read=False,
-              scan_index_forward=True, exclusive_start_key=None,
-              object_hook=None, count=False):
+    def query(
+        self,
+        table_name,
+        hash_key_value,
+        range_key_conditions=None,
+        attributes_to_get=None,
+        limit=None,
+        consistent_read=False,
+        scan_index_forward=True,
+        exclusive_start_key=None,
+        object_hook=None,
+        count=False,
+    ):
         """
         Perform a query of DynamoDB.  This version is currently punting
         and expecting you to provide a full and correct JSON body
@@ -507,31 +553,36 @@ class Layer1(AWSAuthConnection):
             which to continue an earlier query.  This would be
             provided as the LastEvaluatedKey in that query.
         """
-        data = {'TableName': table_name,
-                'HashKeyValue': hash_key_value}
+        data = {"TableName": table_name, "HashKeyValue": hash_key_value}
         if range_key_conditions:
-            data['RangeKeyCondition'] = range_key_conditions
+            data["RangeKeyCondition"] = range_key_conditions
         if attributes_to_get:
-            data['AttributesToGet'] = attributes_to_get
+            data["AttributesToGet"] = attributes_to_get
         if limit:
-            data['Limit'] = limit
+            data["Limit"] = limit
         if count:
-            data['Count'] = True
+            data["Count"] = True
         if consistent_read:
-            data['ConsistentRead'] = True
+            data["ConsistentRead"] = True
         if scan_index_forward:
-            data['ScanIndexForward'] = True
+            data["ScanIndexForward"] = True
         else:
-            data['ScanIndexForward'] = False
+            data["ScanIndexForward"] = False
         if exclusive_start_key:
-            data['ExclusiveStartKey'] = exclusive_start_key
+            data["ExclusiveStartKey"] = exclusive_start_key
         json_input = json.dumps(data)
-        return self.make_request('Query', json_input,
-                                 object_hook=object_hook)
+        return self.make_request("Query", json_input, object_hook=object_hook)
 
-    def scan(self, table_name, scan_filter=None,
-             attributes_to_get=None, limit=None,
-             exclusive_start_key=None, object_hook=None, count=False):
+    def scan(
+        self,
+        table_name,
+        scan_filter=None,
+        attributes_to_get=None,
+        limit=None,
+        exclusive_start_key=None,
+        object_hook=None,
+        count=False,
+    ):
         """
         Perform a scan of DynamoDB.  This version is currently punting
         and expecting you to provide a full and correct JSON body
@@ -562,16 +613,16 @@ class Layer1(AWSAuthConnection):
             which to continue an earlier query.  This would be
             provided as the LastEvaluatedKey in that query.
         """
-        data = {'TableName': table_name}
+        data = {"TableName": table_name}
         if scan_filter:
-            data['ScanFilter'] = scan_filter
+            data["ScanFilter"] = scan_filter
         if attributes_to_get:
-            data['AttributesToGet'] = attributes_to_get
+            data["AttributesToGet"] = attributes_to_get
         if limit:
-            data['Limit'] = limit
+            data["Limit"] = limit
         if count:
-            data['Count'] = True
+            data["Count"] = True
         if exclusive_start_key:
-            data['ExclusiveStartKey'] = exclusive_start_key
+            data["ExclusiveStartKey"] = exclusive_start_key
         json_input = json.dumps(data)
-        return self.make_request('Scan', json_input, object_hook=object_hook)
+        return self.make_request("Scan", json_input, object_hook=object_hook)

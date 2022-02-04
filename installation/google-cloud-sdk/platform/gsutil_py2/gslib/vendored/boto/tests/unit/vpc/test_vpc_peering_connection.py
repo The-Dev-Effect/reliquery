@@ -26,7 +26,7 @@ from boto.vpc import VpcPeeringConnection, VPCConnection, Subnet
 
 
 class TestDescribeVpcPeeringConnections(AWSMockServiceTestCase):
-    DESCRIBE_VPC_PEERING_CONNECTIONS= b"""<?xml version="1.0" encoding="UTF-8"?>
+    DESCRIBE_VPC_PEERING_CONNECTIONS = b"""<?xml version="1.0" encoding="UTF-8"?>
 <DescribeVpcPeeringConnectionsResponse xmlns="http://ec2.amazonaws.com/doc/2014-05-01/">
    <requestId>7a62c49f-347e-4fc4-9331-6e8eEXAMPLE</requestId>
     <vpcPeeringConnectionSet>
@@ -66,7 +66,7 @@ class TestDescribeVpcPeeringConnections(AWSMockServiceTestCase):
         </item>
     </vpcPeeringConnectionSet>
 </DescribeVpcPeeringConnectionsResponse>"""
-    
+
     connection_class = VPCConnection
 
     def default_body(self):
@@ -75,35 +75,73 @@ class TestDescribeVpcPeeringConnections(AWSMockServiceTestCase):
     def test_get_vpc_peering_connections(self):
         self.set_http_response(status_code=200)
         api_response = self.service_connection.get_all_vpc_peering_connections(
-            ['pcx-111aaa22', 'pcx-444bbb88'], filters=[('status-code', ['pending-acceptance'])])
+            ["pcx-111aaa22", "pcx-444bbb88"],
+            filters=[("status-code", ["pending-acceptance"])],
+        )
 
         self.assertEqual(len(api_response), 2)
 
         for vpc_peering_connection in api_response:
-            if vpc_peering_connection.id == 'pcx-111aaa22':
-                self.assertEqual(vpc_peering_connection.id, 'pcx-111aaa22')
-                self.assertEqual(vpc_peering_connection.status_code, 'pending-acceptance')
-                self.assertEqual(vpc_peering_connection.status_message, 'Pending Acceptance by 111122223333')
-                self.assertEqual(vpc_peering_connection.requester_vpc_info.owner_id, '777788889999')
-                self.assertEqual(vpc_peering_connection.requester_vpc_info.vpc_id, 'vpc-1a2b3c4d')
-                self.assertEqual(vpc_peering_connection.requester_vpc_info.cidr_block, '172.31.0.0/16')
-                self.assertEqual(vpc_peering_connection.accepter_vpc_info.owner_id, '111122223333')
-                self.assertEqual(vpc_peering_connection.accepter_vpc_info.vpc_id, 'vpc-aa22cc33')
-                self.assertEqual(vpc_peering_connection.expiration_time, '2014-02-17T16:00:50.000Z')
+            if vpc_peering_connection.id == "pcx-111aaa22":
+                self.assertEqual(vpc_peering_connection.id, "pcx-111aaa22")
+                self.assertEqual(
+                    vpc_peering_connection.status_code, "pending-acceptance"
+                )
+                self.assertEqual(
+                    vpc_peering_connection.status_message,
+                    "Pending Acceptance by 111122223333",
+                )
+                self.assertEqual(
+                    vpc_peering_connection.requester_vpc_info.owner_id, "777788889999"
+                )
+                self.assertEqual(
+                    vpc_peering_connection.requester_vpc_info.vpc_id, "vpc-1a2b3c4d"
+                )
+                self.assertEqual(
+                    vpc_peering_connection.requester_vpc_info.cidr_block,
+                    "172.31.0.0/16",
+                )
+                self.assertEqual(
+                    vpc_peering_connection.accepter_vpc_info.owner_id, "111122223333"
+                )
+                self.assertEqual(
+                    vpc_peering_connection.accepter_vpc_info.vpc_id, "vpc-aa22cc33"
+                )
+                self.assertEqual(
+                    vpc_peering_connection.expiration_time, "2014-02-17T16:00:50.000Z"
+                )
             else:
-                self.assertEqual(vpc_peering_connection.id, 'pcx-444bbb88')
-                self.assertEqual(vpc_peering_connection.status_code, 'pending-acceptance')
-                self.assertEqual(vpc_peering_connection.status_message, 'Pending Acceptance by 98654313')
-                self.assertEqual(vpc_peering_connection.requester_vpc_info.owner_id, '1237897234')
-                self.assertEqual(vpc_peering_connection.requester_vpc_info.vpc_id, 'vpc-2398abcd')
-                self.assertEqual(vpc_peering_connection.requester_vpc_info.cidr_block, '172.30.0.0/16')
-                self.assertEqual(vpc_peering_connection.accepter_vpc_info.owner_id, '98654313')
-                self.assertEqual(vpc_peering_connection.accepter_vpc_info.vpc_id, 'vpc-0983bcda')
-                self.assertEqual(vpc_peering_connection.expiration_time, '2015-02-17T16:00:50.000Z')
+                self.assertEqual(vpc_peering_connection.id, "pcx-444bbb88")
+                self.assertEqual(
+                    vpc_peering_connection.status_code, "pending-acceptance"
+                )
+                self.assertEqual(
+                    vpc_peering_connection.status_message,
+                    "Pending Acceptance by 98654313",
+                )
+                self.assertEqual(
+                    vpc_peering_connection.requester_vpc_info.owner_id, "1237897234"
+                )
+                self.assertEqual(
+                    vpc_peering_connection.requester_vpc_info.vpc_id, "vpc-2398abcd"
+                )
+                self.assertEqual(
+                    vpc_peering_connection.requester_vpc_info.cidr_block,
+                    "172.30.0.0/16",
+                )
+                self.assertEqual(
+                    vpc_peering_connection.accepter_vpc_info.owner_id, "98654313"
+                )
+                self.assertEqual(
+                    vpc_peering_connection.accepter_vpc_info.vpc_id, "vpc-0983bcda"
+                )
+                self.assertEqual(
+                    vpc_peering_connection.expiration_time, "2015-02-17T16:00:50.000Z"
+                )
 
 
 class TestCreateVpcPeeringConnection(AWSMockServiceTestCase):
-    CREATE_VPC_PEERING_CONNECTION= b"""<CreateVpcPeeringConnectionResponse xmlns="http://ec2.amazonaws.com/doc/2014-05-01/">
+    CREATE_VPC_PEERING_CONNECTION = b"""<CreateVpcPeeringConnectionResponse xmlns="http://ec2.amazonaws.com/doc/2014-05-01/">
   <requestId>7a62c49f-347e-4fc4-9331-6e8eEXAMPLE</requestId>
   <vpcPeeringConnection>
         <vpcPeeringConnectionId>pcx-73a5401a</vpcPeeringConnectionId>
@@ -124,7 +162,7 @@ class TestCreateVpcPeeringConnection(AWSMockServiceTestCase):
         <tagSet/>
     </vpcPeeringConnection>
 </CreateVpcPeeringConnectionResponse>"""
-    
+
     connection_class = VPCConnection
 
     def default_body(self):
@@ -132,24 +170,41 @@ class TestCreateVpcPeeringConnection(AWSMockServiceTestCase):
 
     def test_create_vpc_peering_connection(self):
         self.set_http_response(status_code=200)
-        vpc_peering_connection = self.service_connection.create_vpc_peering_connection('vpc-1a2b3c4d', 'vpc-a1b2c3d4', '123456789012')
+        vpc_peering_connection = self.service_connection.create_vpc_peering_connection(
+            "vpc-1a2b3c4d", "vpc-a1b2c3d4", "123456789012"
+        )
 
-        self.assertEqual(vpc_peering_connection.id, 'pcx-73a5401a')
-        self.assertEqual(vpc_peering_connection.status_code, 'initiating-request')
-        self.assertEqual(vpc_peering_connection.status_message, 'Initiating Request to 123456789012')
-        self.assertEqual(vpc_peering_connection.requester_vpc_info.owner_id, '777788889999')
-        self.assertEqual(vpc_peering_connection.requester_vpc_info.vpc_id, 'vpc-1a2b3c4d')
-        self.assertEqual(vpc_peering_connection.requester_vpc_info.cidr_block, '10.0.0.0/28')
-        self.assertEqual(vpc_peering_connection.accepter_vpc_info.owner_id, '123456789012')
-        self.assertEqual(vpc_peering_connection.accepter_vpc_info.vpc_id, 'vpc-a1b2c3d4')
-        self.assertEqual(vpc_peering_connection.expiration_time, '2014-02-18T14:37:25.000Z')
+        self.assertEqual(vpc_peering_connection.id, "pcx-73a5401a")
+        self.assertEqual(vpc_peering_connection.status_code, "initiating-request")
+        self.assertEqual(
+            vpc_peering_connection.status_message, "Initiating Request to 123456789012"
+        )
+        self.assertEqual(
+            vpc_peering_connection.requester_vpc_info.owner_id, "777788889999"
+        )
+        self.assertEqual(
+            vpc_peering_connection.requester_vpc_info.vpc_id, "vpc-1a2b3c4d"
+        )
+        self.assertEqual(
+            vpc_peering_connection.requester_vpc_info.cidr_block, "10.0.0.0/28"
+        )
+        self.assertEqual(
+            vpc_peering_connection.accepter_vpc_info.owner_id, "123456789012"
+        )
+        self.assertEqual(
+            vpc_peering_connection.accepter_vpc_info.vpc_id, "vpc-a1b2c3d4"
+        )
+        self.assertEqual(
+            vpc_peering_connection.expiration_time, "2014-02-18T14:37:25.000Z"
+        )
+
 
 class TestDeleteVpcPeeringConnection(AWSMockServiceTestCase):
-    DELETE_VPC_PEERING_CONNECTION= b"""<DeleteVpcPeeringConnectionResponse xmlns="http://ec2.amazonaws.com/doc/2014-05-01/">
+    DELETE_VPC_PEERING_CONNECTION = b"""<DeleteVpcPeeringConnectionResponse xmlns="http://ec2.amazonaws.com/doc/2014-05-01/">
   <requestId>7a62c49f-347e-4fc4-9331-6e8eEXAMPLE</requestId>
   <return>true</return>
 </DeleteVpcPeeringConnectionResponse>"""
-    
+
     connection_class = VPCConnection
 
     def default_body(self):
@@ -157,10 +212,13 @@ class TestDeleteVpcPeeringConnection(AWSMockServiceTestCase):
 
     def test_delete_vpc_peering_connection(self):
         self.set_http_response(status_code=200)
-        self.assertEquals(self.service_connection.delete_vpc_peering_connection('pcx-12345678'), True)
+        self.assertEquals(
+            self.service_connection.delete_vpc_peering_connection("pcx-12345678"), True
+        )
+
 
 class TestDeleteVpcPeeringConnectionShortForm(unittest.TestCase):
-    DESCRIBE_VPC_PEERING_CONNECTIONS= b"""<?xml version="1.0" encoding="UTF-8"?>
+    DESCRIBE_VPC_PEERING_CONNECTIONS = b"""<?xml version="1.0" encoding="UTF-8"?>
 <DescribeVpcPeeringConnectionsResponse xmlns="http://ec2.amazonaws.com/doc/2014-05-01/">
    <requestId>7a62c49f-347e-4fc4-9331-6e8eEXAMPLE</requestId>
    <vpcPeeringConnectionSet>
@@ -184,14 +242,16 @@ class TestDeleteVpcPeeringConnectionShortForm(unittest.TestCase):
    </vpcPeeringConnectionSet>
 </DescribeVpcPeeringConnectionsResponse>"""
 
-    DELETE_VPC_PEERING_CONNECTION= b"""<DeleteVpcPeeringConnectionResponse xmlns="http://ec2.amazonaws.com/doc/2014-05-01/">
+    DELETE_VPC_PEERING_CONNECTION = b"""<DeleteVpcPeeringConnectionResponse xmlns="http://ec2.amazonaws.com/doc/2014-05-01/">
   <requestId>7a62c49f-347e-4fc4-9331-6e8eEXAMPLE</requestId>
   <return>true</return>
 </DeleteVpcPeeringConnectionResponse>"""
 
     def test_delete_vpc_peering_connection(self):
-        vpc_conn = VPCConnection(aws_access_key_id='aws_access_key_id',
-                                 aws_secret_access_key='aws_secret_access_key')
+        vpc_conn = VPCConnection(
+            aws_access_key_id="aws_access_key_id",
+            aws_secret_access_key="aws_secret_access_key",
+        )
 
         mock_response = mock.Mock()
         mock_response.read.return_value = self.DESCRIBE_VPC_PEERING_CONNECTIONS
@@ -208,15 +268,18 @@ class TestDeleteVpcPeeringConnectionShortForm(unittest.TestCase):
         vpc_conn.make_request = mock.Mock(return_value=mock_response)
         self.assertEquals(True, vpc_peering_connection.delete())
 
-        self.assertIn('DeleteVpcPeeringConnection', vpc_conn.make_request.call_args_list[0][0])
-        self.assertNotIn('DeleteVpc', vpc_conn.make_request.call_args_list[0][0])
+        self.assertIn(
+            "DeleteVpcPeeringConnection", vpc_conn.make_request.call_args_list[0][0]
+        )
+        self.assertNotIn("DeleteVpc", vpc_conn.make_request.call_args_list[0][0])
+
 
 class TestRejectVpcPeeringConnection(AWSMockServiceTestCase):
-    REJECT_VPC_PEERING_CONNECTION= b"""<RejectVpcPeeringConnectionResponse xmlns="http://ec2.amazonaws.com/doc/2014-05-01/">
+    REJECT_VPC_PEERING_CONNECTION = b"""<RejectVpcPeeringConnectionResponse xmlns="http://ec2.amazonaws.com/doc/2014-05-01/">
   <requestId>7a62c49f-347e-4fc4-9331-6e8eEXAMPLE</requestId>
   <return>true</return>
 </RejectVpcPeeringConnectionResponse>"""
-    
+
     connection_class = VPCConnection
 
     def default_body(self):
@@ -224,11 +287,13 @@ class TestRejectVpcPeeringConnection(AWSMockServiceTestCase):
 
     def test_reject_vpc_peering_connection(self):
         self.set_http_response(status_code=200)
-        self.assertEquals(self.service_connection.reject_vpc_peering_connection('pcx-12345678'), True)
+        self.assertEquals(
+            self.service_connection.reject_vpc_peering_connection("pcx-12345678"), True
+        )
 
 
 class TestAcceptVpcPeeringConnection(AWSMockServiceTestCase):
-    ACCEPT_VPC_PEERING_CONNECTION= b"""<AcceptVpcPeeringConnectionResponse xmlns="http://ec2.amazonaws.com/doc/2014-05-01/">
+    ACCEPT_VPC_PEERING_CONNECTION = b"""<AcceptVpcPeeringConnectionResponse xmlns="http://ec2.amazonaws.com/doc/2014-05-01/">
   <requestId>7a62c49f-347e-4fc4-9331-6e8eEXAMPLE</requestId>
   <vpcPeeringConnection>
         <vpcPeeringConnectionId>pcx-1a2b3c4d</vpcPeeringConnectionId>
@@ -249,7 +314,7 @@ class TestAcceptVpcPeeringConnection(AWSMockServiceTestCase):
         <tagSet/>
     </vpcPeeringConnection>
 </AcceptVpcPeeringConnectionResponse>"""
-    
+
     connection_class = VPCConnection
 
     def default_body(self):
@@ -257,19 +322,32 @@ class TestAcceptVpcPeeringConnection(AWSMockServiceTestCase):
 
     def test_accept_vpc_peering_connection(self):
         self.set_http_response(status_code=200)
-        vpc_peering_connection = self.service_connection.accept_vpc_peering_connection('pcx-1a2b3c4d')
+        vpc_peering_connection = self.service_connection.accept_vpc_peering_connection(
+            "pcx-1a2b3c4d"
+        )
 
-        self.assertEqual(vpc_peering_connection.id, 'pcx-1a2b3c4d')
-        self.assertEqual(vpc_peering_connection.status_code, 'active')
-        self.assertEqual(vpc_peering_connection.status_message, 'Active')
-        self.assertEqual(vpc_peering_connection.requester_vpc_info.owner_id, '123456789012')
-        self.assertEqual(vpc_peering_connection.requester_vpc_info.vpc_id, 'vpc-1a2b3c4d')
-        self.assertEqual(vpc_peering_connection.requester_vpc_info.cidr_block, '10.0.0.0/28')
-        self.assertEqual(vpc_peering_connection.accepter_vpc_info.owner_id, '777788889999')
-        self.assertEqual(vpc_peering_connection.accepter_vpc_info.vpc_id, 'vpc-111aaa22')
-        self.assertEqual(vpc_peering_connection.accepter_vpc_info.cidr_block, '10.0.1.0/28')
+        self.assertEqual(vpc_peering_connection.id, "pcx-1a2b3c4d")
+        self.assertEqual(vpc_peering_connection.status_code, "active")
+        self.assertEqual(vpc_peering_connection.status_message, "Active")
+        self.assertEqual(
+            vpc_peering_connection.requester_vpc_info.owner_id, "123456789012"
+        )
+        self.assertEqual(
+            vpc_peering_connection.requester_vpc_info.vpc_id, "vpc-1a2b3c4d"
+        )
+        self.assertEqual(
+            vpc_peering_connection.requester_vpc_info.cidr_block, "10.0.0.0/28"
+        )
+        self.assertEqual(
+            vpc_peering_connection.accepter_vpc_info.owner_id, "777788889999"
+        )
+        self.assertEqual(
+            vpc_peering_connection.accepter_vpc_info.vpc_id, "vpc-111aaa22"
+        )
+        self.assertEqual(
+            vpc_peering_connection.accepter_vpc_info.cidr_block, "10.0.1.0/28"
+        )
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

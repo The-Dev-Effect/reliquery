@@ -52,20 +52,19 @@ class CompleteMultiPartUpload(object):
         self.encrypted = None
 
     def __repr__(self):
-        return '<CompleteMultiPartUpload: %s.%s>' % (self.bucket_name,
-                                                     self.key_name)
+        return "<CompleteMultiPartUpload: %s.%s>" % (self.bucket_name, self.key_name)
 
     def startElement(self, name, attrs, connection):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'Location':
+        if name == "Location":
             self.location = value
-        elif name == 'Bucket':
+        elif name == "Bucket":
             self.bucket_name = value
-        elif name == 'Key':
+        elif name == "Key":
             self.key_name = value
-        elif name == 'ETag':
+        elif name == "ETag":
             self.etag = value
         else:
             setattr(self, name, value)
@@ -91,21 +90,21 @@ class Part(object):
 
     def __repr__(self):
         if isinstance(self.part_number, int):
-            return '<Part %d>' % self.part_number
+            return "<Part %d>" % self.part_number
         else:
-            return '<Part %s>' % None
+            return "<Part %s>" % None
 
     def startElement(self, name, attrs, connection):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'PartNumber':
+        if name == "PartNumber":
             self.part_number = int(value)
-        elif name == 'LastModified':
+        elif name == "LastModified":
             self.last_modified = value
-        elif name == 'ETag':
+        elif name == "ETag":
             self.etag = value
-        elif name == 'Size':
+        elif name == "Size":
             self.size = int(value)
         else:
             setattr(self, name, value)
@@ -146,61 +145,62 @@ class MultiPartUpload(object):
         self._parts = None
 
     def __repr__(self):
-        return '<MultiPartUpload %s>' % self.key_name
+        return "<MultiPartUpload %s>" % self.key_name
 
     def __iter__(self):
         return part_lister(self)
 
     def to_xml(self):
-        s = '<CompleteMultipartUpload>\n'
+        s = "<CompleteMultipartUpload>\n"
         for part in self:
-            s += '  <Part>\n'
-            s += '    <PartNumber>%d</PartNumber>\n' % part.part_number
-            s += '    <ETag>%s</ETag>\n' % part.etag
-            s += '  </Part>\n'
-        s += '</CompleteMultipartUpload>'
+            s += "  <Part>\n"
+            s += "    <PartNumber>%d</PartNumber>\n" % part.part_number
+            s += "    <ETag>%s</ETag>\n" % part.etag
+            s += "  </Part>\n"
+        s += "</CompleteMultipartUpload>"
         return s
 
     def startElement(self, name, attrs, connection):
-        if name == 'Initiator':
+        if name == "Initiator":
             self.initiator = user.User(self)
             return self.initiator
-        elif name == 'Owner':
+        elif name == "Owner":
             self.owner = user.User(self)
             return self.owner
-        elif name == 'Part':
+        elif name == "Part":
             part = Part(self.bucket)
             self._parts.append(part)
             return part
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'Bucket':
+        if name == "Bucket":
             self.bucket_name = value
-        elif name == 'Key':
+        elif name == "Key":
             self.key_name = value
-        elif name == 'UploadId':
+        elif name == "UploadId":
             self.id = value
-        elif name == 'StorageClass':
+        elif name == "StorageClass":
             self.storage_class = value
-        elif name == 'PartNumberMarker':
+        elif name == "PartNumberMarker":
             self.part_number_marker = value
-        elif name == 'NextPartNumberMarker':
+        elif name == "NextPartNumberMarker":
             self.next_part_number_marker = value
-        elif name == 'MaxParts':
+        elif name == "MaxParts":
             self.max_parts = int(value)
-        elif name == 'IsTruncated':
-            if value == 'true':
+        elif name == "IsTruncated":
+            if value == "true":
                 self.is_truncated = True
             else:
                 self.is_truncated = False
-        elif name == 'Initiated':
+        elif name == "Initiated":
             self.initiated = value
         else:
             setattr(self, name, value)
 
-    def get_all_parts(self, max_parts=None, part_number_marker=None,
-                      encoding_type=None):
+    def get_all_parts(
+        self, max_parts=None, part_number_marker=None, encoding_type=None
+    ):
         """
         Return the uploaded parts of this MultiPart Upload.  This is
         a lower-level method that requires you to manually page through
@@ -209,24 +209,33 @@ class MultiPartUpload(object):
         all of the paging with S3.
         """
         self._parts = []
-        query_args = 'uploadId=%s' % self.id
+        query_args = "uploadId=%s" % self.id
         if max_parts:
-            query_args += '&max-parts=%d' % max_parts
+            query_args += "&max-parts=%d" % max_parts
         if part_number_marker:
-            query_args += '&part-number-marker=%s' % part_number_marker
+            query_args += "&part-number-marker=%s" % part_number_marker
         if encoding_type:
-            query_args += '&encoding-type=%s' % encoding_type
-        response = self.bucket.connection.make_request('GET', self.bucket.name,
-                                                       self.key_name,
-                                                       query_args=query_args)
+            query_args += "&encoding-type=%s" % encoding_type
+        response = self.bucket.connection.make_request(
+            "GET", self.bucket.name, self.key_name, query_args=query_args
+        )
         body = response.read()
         if response.status == 200:
             h = handler.XmlHandler(self, self)
             xml.sax.parseString(body, h)
             return self._parts
 
-    def upload_part_from_file(self, fp, part_num, headers=None, replace=True,
-                              cb=None, num_cb=10, md5=None, size=None):
+    def upload_part_from_file(
+        self,
+        fp,
+        part_num,
+        headers=None,
+        replace=True,
+        cb=None,
+        num_cb=10,
+        md5=None,
+        size=None,
+    ):
         """
         Upload another part of this MultiPart Upload.
 
@@ -251,18 +260,32 @@ class MultiPartUpload(object):
         :returns: The uploaded part containing the etag.
         """
         if part_num < 1:
-            raise ValueError('Part numbers must be greater than zero')
-        query_args = 'uploadId=%s&partNumber=%d' % (self.id, part_num)
+            raise ValueError("Part numbers must be greater than zero")
+        query_args = "uploadId=%s&partNumber=%d" % (self.id, part_num)
         key = self.bucket.new_key(self.key_name)
-        key.set_contents_from_file(fp, headers=headers, replace=replace,
-                                   cb=cb, num_cb=num_cb, md5=md5,
-                                   reduced_redundancy=False,
-                                   query_args=query_args, size=size)
+        key.set_contents_from_file(
+            fp,
+            headers=headers,
+            replace=replace,
+            cb=cb,
+            num_cb=num_cb,
+            md5=md5,
+            reduced_redundancy=False,
+            query_args=query_args,
+            size=size,
+        )
         return key
 
-    def copy_part_from_key(self, src_bucket_name, src_key_name, part_num,
-                           start=None, end=None, src_version_id=None,
-                           headers=None):
+    def copy_part_from_key(
+        self,
+        src_bucket_name,
+        src_key_name,
+        part_num,
+        start=None,
+        end=None,
+        src_version_id=None,
+        headers=None,
+    ):
         """
         Copy another part of this MultiPart Upload.
 
@@ -288,22 +311,25 @@ class MultiPartUpload(object):
         :param headers: Any headers to pass along in the request
         """
         if part_num < 1:
-            raise ValueError('Part numbers must be greater than zero')
-        query_args = 'uploadId=%s&partNumber=%d' % (self.id, part_num)
+            raise ValueError("Part numbers must be greater than zero")
+        query_args = "uploadId=%s&partNumber=%d" % (self.id, part_num)
         if start is not None and end is not None:
-            rng = 'bytes=%s-%s' % (start, end)
+            rng = "bytes=%s-%s" % (start, end)
             provider = self.bucket.connection.provider
             if headers is None:
                 headers = {}
             else:
                 headers = headers.copy()
             headers[provider.copy_source_range_header] = rng
-        return self.bucket.copy_key(self.key_name, src_bucket_name,
-                                    src_key_name,
-                                    src_version_id=src_version_id,
-                                    storage_class=None,
-                                    headers=headers,
-                                    query_args=query_args)
+        return self.bucket.copy_key(
+            self.key_name,
+            src_bucket_name,
+            src_key_name,
+            src_version_id=src_version_id,
+            storage_class=None,
+            headers=headers,
+            query_args=query_args,
+        )
 
     def complete_upload(self):
         """
@@ -315,8 +341,7 @@ class MultiPartUpload(object):
         :returns: An object representing the completed upload.
         """
         xml = self.to_xml()
-        return self.bucket.complete_multipart_upload(self.key_name,
-                                                     self.id, xml)
+        return self.bucket.complete_multipart_upload(self.key_name, self.id, xml)
 
     def cancel_upload(self):
         """

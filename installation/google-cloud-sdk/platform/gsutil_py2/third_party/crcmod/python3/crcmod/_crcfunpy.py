@@ -1,4 +1,4 @@
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Low level CRC functions for use by crcmod.  This version is implemented in
 # Python for a couple of reasons.  1) Provide a reference implememtation.
 # 2) Provide a version that can be used on systems where a C compiler is not
@@ -13,10 +13,10 @@
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,14 +24,15 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 def _get_buffer_view(in_obj):
     if isinstance(in_obj, str):
-        raise TypeError('Unicode-objects must be encoded before calculating a CRC')
+        raise TypeError("Unicode-objects must be encoded before calculating a CRC")
     mv = memoryview(in_obj)
     if mv.ndim > 1:
-        raise BufferError('Buffer must be single dimension')
+        raise BufferError("Buffer must be single dimension")
     return mv
 
 
@@ -42,6 +43,7 @@ def _crc8(data, crc, table):
         crc = table[x ^ crc]
     return crc
 
+
 def _crc8r(data, crc, table):
     mv = _get_buffer_view(data)
     crc = crc & 0xFF
@@ -49,12 +51,14 @@ def _crc8r(data, crc, table):
         crc = table[x ^ crc]
     return crc
 
+
 def _crc16(data, crc, table):
     mv = _get_buffer_view(data)
     crc = crc & 0xFFFF
     for x in mv.tobytes():
-        crc = table[x ^ ((crc>>8) & 0xFF)] ^ ((crc << 8) & 0xFF00)
+        crc = table[x ^ ((crc >> 8) & 0xFF)] ^ ((crc << 8) & 0xFF00)
     return crc
+
 
 def _crc16r(data, crc, table):
     mv = _get_buffer_view(data)
@@ -63,12 +67,14 @@ def _crc16r(data, crc, table):
         crc = table[x ^ (crc & 0xFF)] ^ (crc >> 8)
     return crc
 
+
 def _crc24(data, crc, table):
     mv = _get_buffer_view(data)
     crc = crc & 0xFFFFFF
     for x in mv.tobytes():
-        crc = table[x ^ (crc>>16 & 0xFF)] ^ ((crc << 8) & 0xFFFF00)
+        crc = table[x ^ (crc >> 16 & 0xFF)] ^ ((crc << 8) & 0xFFFF00)
     return crc
+
 
 def _crc24r(data, crc, table):
     mv = _get_buffer_view(data)
@@ -77,12 +83,14 @@ def _crc24r(data, crc, table):
         crc = table[x ^ (crc & 0xFF)] ^ (crc >> 8)
     return crc
 
+
 def _crc32(data, crc, table):
     mv = _get_buffer_view(data)
     crc = crc & 0xFFFFFFFF
     for x in mv.tobytes():
-        crc = table[x ^ ((crc>>24) & 0xFF)] ^ ((crc << 8) & 0xFFFFFF00)
+        crc = table[x ^ ((crc >> 24) & 0xFF)] ^ ((crc << 8) & 0xFFFFFF00)
     return crc
+
 
 def _crc32r(data, crc, table):
     mv = _get_buffer_view(data)
@@ -91,12 +99,14 @@ def _crc32r(data, crc, table):
         crc = table[x ^ (crc & 0xFF)] ^ (crc >> 8)
     return crc
 
+
 def _crc64(data, crc, table):
     mv = _get_buffer_view(data)
     crc = crc & 0xFFFFFFFFFFFFFFFF
     for x in mv.tobytes():
-        crc = table[x ^ ((crc>>56) & 0xFF)] ^ ((crc << 8) & 0xFFFFFFFFFFFFFF00)
+        crc = table[x ^ ((crc >> 56) & 0xFF)] ^ ((crc << 8) & 0xFFFFFFFFFFFFFF00)
     return crc
+
 
 def _crc64r(data, crc, table):
     mv = _get_buffer_view(data)
@@ -104,4 +114,3 @@ def _crc64r(data, crc, table):
     for x in mv.tobytes():
         crc = table[x ^ (crc & 0xFF)] ^ (crc >> 8)
     return crc
-

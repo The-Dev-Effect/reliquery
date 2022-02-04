@@ -22,6 +22,7 @@
 
 from boto.compat import six
 
+
 class BootstrapAction(object):
     def __init__(self, name, path, bootstrap_action_args):
         self.name = name
@@ -41,6 +42,10 @@ class BootstrapAction(object):
         return args
 
     def __repr__(self):
-        return '%s.%s(name=%r, path=%r, bootstrap_action_args=%r)' % (
-            self.__class__.__module__, self.__class__.__name__,
-            self.name, self.path, self.bootstrap_action_args)
+        return "%s.%s(name=%r, path=%r, bootstrap_action_args=%r)" % (
+            self.__class__.__module__,
+            self.__class__.__name__,
+            self.name,
+            self.path,
+            self.bootstrap_action_args,
+        )

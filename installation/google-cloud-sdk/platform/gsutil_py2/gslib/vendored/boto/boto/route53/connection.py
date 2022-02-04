@@ -64,43 +64,58 @@ HZPXML = """<?xml version="1.0" encoding="UTF-8"?>
 
 
 class Route53Connection(AWSAuthConnection):
-    DefaultHost = 'route53.amazonaws.com'
+    DefaultHost = "route53.amazonaws.com"
     """The default Route53 API endpoint to connect to."""
 
-    Version = '2013-04-01'
+    Version = "2013-04-01"
     """Route53 API version."""
 
-    XMLNameSpace = 'https://route53.amazonaws.com/doc/2013-04-01/'
+    XMLNameSpace = "https://route53.amazonaws.com/doc/2013-04-01/"
     """XML schema for this Route53 API version."""
 
-    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None,
-                 port=None, proxy=None, proxy_port=None,
-                 host=DefaultHost, debug=0, security_token=None,
-                 validate_certs=True, https_connection_factory=None,
-                 profile_name=None):
+    def __init__(
+        self,
+        aws_access_key_id=None,
+        aws_secret_access_key=None,
+        port=None,
+        proxy=None,
+        proxy_port=None,
+        host=DefaultHost,
+        debug=0,
+        security_token=None,
+        validate_certs=True,
+        https_connection_factory=None,
+        profile_name=None,
+    ):
         super(Route53Connection, self).__init__(
             host,
-            aws_access_key_id, aws_secret_access_key,
-            True, port, proxy, proxy_port, debug=debug,
+            aws_access_key_id,
+            aws_secret_access_key,
+            True,
+            port,
+            proxy,
+            proxy_port,
+            debug=debug,
             security_token=security_token,
             validate_certs=validate_certs,
             https_connection_factory=https_connection_factory,
-            profile_name=profile_name)
+            profile_name=profile_name,
+        )
 
     def _required_auth_capability(self):
-        return ['route53']
+        return ["route53"]
 
-    def make_request(self, action, path, headers=None, data='', params=None):
+    def make_request(self, action, path, headers=None, data="", params=None):
         if params:
             pairs = []
             for key, val in six.iteritems(params):
                 if val is None:
                     continue
-                pairs.append(key + '=' + urllib.parse.quote(str(val)))
-            path += '?' + '&'.join(pairs)
+                pairs.append(key + "=" + urllib.parse.quote(str(val)))
+            path += "?" + "&".join(pairs)
         return super(Route53Connection, self).make_request(
-            action, path, headers, data,
-            retry_handler=self._retry_handler)
+            action, path, headers, data, retry_handler=self._retry_handler
+        )
 
     # Hosted Zones
 
@@ -115,24 +130,24 @@ class Route53Connection(AWSAuthConnection):
         """
         params = {}
         if start_marker:
-            params = {'marker': start_marker}
-        response = self.make_request('GET', '/%s/hostedzone' % self.Version,
-                                     params=params)
+            params = {"marker": start_marker}
+        response = self.make_request(
+            "GET", "/%s/hostedzone" % self.Version, params=params
+        )
         body = response.read()
         boto.log.debug(body)
         if response.status >= 300:
-            raise exception.DNSServerError(response.status,
-                                           response.reason,
-                                           body)
-        e = boto.jsonresponse.Element(list_marker='HostedZones',
-                                      item_marker=('HostedZone',))
+            raise exception.DNSServerError(response.status, response.reason, body)
+        e = boto.jsonresponse.Element(
+            list_marker="HostedZones", item_marker=("HostedZone",)
+        )
         h = boto.jsonresponse.XmlHandler(e, None)
         h.parse(body)
         if zone_list:
-            e['ListHostedZonesResponse']['HostedZones'].extend(zone_list)
-        while 'NextMarker' in e['ListHostedZonesResponse']:
-            next_marker = e['ListHostedZonesResponse']['NextMarker']
-            zone_list = e['ListHostedZonesResponse']['HostedZones']
+            e["ListHostedZonesResponse"]["HostedZones"].extend(zone_list)
+        while "NextMarker" in e["ListHostedZonesResponse"]:
+            next_marker = e["ListHostedZonesResponse"]["NextMarker"]
+            zone_list = e["ListHostedZonesResponse"]["HostedZones"]
             e = self.get_all_hosted_zones(next_marker, zone_list)
         return e
 
@@ -144,16 +159,15 @@ class Route53Connection(AWSAuthConnection):
         :param hosted_zone_id: The unique identifier for the Hosted Zone
 
         """
-        uri = '/%s/hostedzone/%s' % (self.Version, hosted_zone_id)
-        response = self.make_request('GET', uri)
+        uri = "/%s/hostedzone/%s" % (self.Version, hosted_zone_id)
+        response = self.make_request("GET", uri)
         body = response.read()
         boto.log.debug(body)
         if response.status >= 300:
-            raise exception.DNSServerError(response.status,
-                                           response.reason,
-                                           body)
-        e = boto.jsonresponse.Element(list_marker='NameServers',
-                                      item_marker=('NameServer',))
+            raise exception.DNSServerError(response.status, response.reason, body)
+        e = boto.jsonresponse.Element(
+            list_marker="NameServers", item_marker=("NameServer",)
+        )
         h = boto.jsonresponse.XmlHandler(e, None)
         h.parse(body)
         return e
@@ -167,16 +181,23 @@ class Route53Connection(AWSAuthConnection):
             Zone
 
         """
-        if hosted_zone_name[-1] != '.':
-            hosted_zone_name += '.'
+        if hosted_zone_name[-1] != ".":
+            hosted_zone_name += "."
         all_hosted_zones = self.get_all_hosted_zones()
-        for zone in all_hosted_zones['ListHostedZonesResponse']['HostedZones']:
+        for zone in all_hosted_zones["ListHostedZonesResponse"]["HostedZones"]:
             # check that they gave us the FQDN for their zone
-            if zone['Name'] == hosted_zone_name:
-                return self.get_hosted_zone(zone['Id'].split('/')[-1])
+            if zone["Name"] == hosted_zone_name:
+                return self.get_hosted_zone(zone["Id"].split("/")[-1])
 
-    def create_hosted_zone(self, domain_name, caller_ref=None, comment='',
-                           private_zone=False, vpc_id=None, vpc_region=None):
+    def create_hosted_zone(
+        self,
+        domain_name,
+        caller_ref=None,
+        comment="",
+        private_zone=False,
+        vpc_id=None,
+        vpc_region=None,
+    ):
         """
         Create a new Hosted Zone.  Returns a Python data structure with
         information about the newly created Hosted Zone.
@@ -218,34 +239,38 @@ class Route53Connection(AWSAuthConnection):
         if caller_ref is None:
             caller_ref = str(uuid.uuid4())
         if private_zone:
-            params = {'name': domain_name,
-                      'caller_ref': caller_ref,
-                      'comment': comment,
-                      'vpc_id': vpc_id,
-                      'vpc_region': vpc_region,
-                      'xmlns': self.XMLNameSpace}
+            params = {
+                "name": domain_name,
+                "caller_ref": caller_ref,
+                "comment": comment,
+                "vpc_id": vpc_id,
+                "vpc_region": vpc_region,
+                "xmlns": self.XMLNameSpace,
+            }
             xml_body = HZPXML % params
         else:
-            params = {'name': domain_name,
-                      'caller_ref': caller_ref,
-                      'comment': comment,
-                      'xmlns': self.XMLNameSpace}
+            params = {
+                "name": domain_name,
+                "caller_ref": caller_ref,
+                "comment": comment,
+                "xmlns": self.XMLNameSpace,
+            }
             xml_body = HZXML % params
-        uri = '/%s/hostedzone' % self.Version
-        response = self.make_request('POST', uri,
-                                     {'Content-Type': 'text/xml'}, xml_body)
+        uri = "/%s/hostedzone" % self.Version
+        response = self.make_request(
+            "POST", uri, {"Content-Type": "text/xml"}, xml_body
+        )
         body = response.read()
         boto.log.debug(body)
         if response.status == 201:
-            e = boto.jsonresponse.Element(list_marker='NameServers',
-                                          item_marker=('NameServer',))
+            e = boto.jsonresponse.Element(
+                list_marker="NameServers", item_marker=("NameServer",)
+            )
             h = boto.jsonresponse.XmlHandler(e, None)
             h.parse(body)
             return e
         else:
-            raise exception.DNSServerError(response.status,
-                                           response.reason,
-                                           body)
+            raise exception.DNSServerError(response.status, response.reason, body)
 
     def delete_hosted_zone(self, hosted_zone_id):
         """
@@ -255,14 +280,12 @@ class Route53Connection(AWSAuthConnection):
         :param hosted_zone_id: The hosted zone's id
 
         """
-        uri = '/%s/hostedzone/%s' % (self.Version, hosted_zone_id)
-        response = self.make_request('DELETE', uri)
+        uri = "/%s/hostedzone/%s" % (self.Version, hosted_zone_id)
+        response = self.make_request("DELETE", uri)
         body = response.read()
         boto.log.debug(body)
         if response.status not in (200, 204):
-            raise exception.DNSServerError(response.status,
-                                           response.reason,
-                                           body)
+            raise exception.DNSServerError(response.status, response.reason, body)
         e = boto.jsonresponse.Element()
         h = boto.jsonresponse.XmlHandler(e, None)
         h.parse(body)
@@ -292,13 +315,16 @@ class Route53Connection(AWSAuthConnection):
         """
         if caller_ref is None:
             caller_ref = str(uuid.uuid4())
-        uri = '/%s/healthcheck' % self.Version
-        params = {'xmlns': self.XMLNameSpace,
-                  'caller_ref': caller_ref,
-                  'health_check': health_check.to_xml()
-                  }
+        uri = "/%s/healthcheck" % self.Version
+        params = {
+            "xmlns": self.XMLNameSpace,
+            "caller_ref": caller_ref,
+            "health_check": health_check.to_xml(),
+        }
         xml_body = self.POSTHCXMLBody % params
-        response = self.make_request('POST', uri, {'Content-Type': 'text/xml'}, xml_body)
+        response = self.make_request(
+            "POST", uri, {"Content-Type": "text/xml"}, xml_body
+        )
         body = response.read()
         boto.log.debug(body)
         if response.status == 201:
@@ -323,20 +349,19 @@ class Route53Connection(AWSAuthConnection):
 
         params = {}
         if maxitems is not None:
-            params['maxitems'] = maxitems
+            params["maxitems"] = maxitems
         if marker is not None:
-            params['marker'] = marker
+            params["marker"] = marker
 
-        uri = '/%s/healthcheck' % (self.Version, )
-        response = self.make_request('GET', uri, params=params)
+        uri = "/%s/healthcheck" % (self.Version,)
+        response = self.make_request("GET", uri, params=params)
         body = response.read()
         boto.log.debug(body)
         if response.status >= 300:
-            raise exception.DNSServerError(response.status,
-                                           response.reason,
-                                           body)
-        e = boto.jsonresponse.Element(list_marker='HealthChecks',
-                                      item_marker=('HealthCheck',))
+            raise exception.DNSServerError(response.status, response.reason, body)
+        e = boto.jsonresponse.Element(
+            list_marker="HealthChecks", item_marker=("HealthCheck",)
+        )
         h = boto.jsonresponse.XmlHandler(e, None)
         h.parse(body)
         return e
@@ -345,15 +370,15 @@ class Route53Connection(AWSAuthConnection):
         """
         Return a list of Route53 healthcheck IP ranges
         """
-        uri = '/%s/checkeripranges' % self.Version
-        response = self.make_request('GET', uri)
+        uri = "/%s/checkeripranges" % self.Version
+        response = self.make_request("GET", uri)
         body = response.read()
         boto.log.debug(body)
         if response.status >= 300:
-            raise exception.DNSServerError(response.status,
-                                           response.reason,
-                                           body)
-        e = boto.jsonresponse.Element(list_marker='CheckerIpRanges', item_marker=('member',))
+            raise exception.DNSServerError(response.status, response.reason, body)
+        e = boto.jsonresponse.Element(
+            list_marker="CheckerIpRanges", item_marker=("member",)
+        )
         h = boto.jsonresponse.XmlHandler(e, None)
         h.parse(body)
         return e
@@ -366,14 +391,12 @@ class Route53Connection(AWSAuthConnection):
         :param health_check_id: ID of the health check to delete
 
         """
-        uri = '/%s/healthcheck/%s' % (self.Version, health_check_id)
-        response = self.make_request('DELETE', uri)
+        uri = "/%s/healthcheck/%s" % (self.Version, health_check_id)
+        response = self.make_request("DELETE", uri)
         body = response.read()
         boto.log.debug(body)
         if response.status not in (200, 204):
-            raise exception.DNSServerError(response.status,
-                                           response.reason,
-                                           body)
+            raise exception.DNSServerError(response.status, response.reason, body)
         e = boto.jsonresponse.Element()
         h = boto.jsonresponse.XmlHandler(e, None)
         h.parse(body)
@@ -381,8 +404,9 @@ class Route53Connection(AWSAuthConnection):
 
     # Resource Record Sets
 
-    def get_all_rrsets(self, hosted_zone_id, type=None,
-                       name=None, identifier=None, maxitems=None):
+    def get_all_rrsets(
+        self, hosted_zone_id, type=None, name=None, identifier=None, maxitems=None
+    ):
         """
         Retrieve the Resource Record Sets defined for this Hosted Zone.
         Returns the raw XML data returned by the Route53 call.
@@ -433,16 +457,18 @@ class Route53Connection(AWSAuthConnection):
         :param maxitems: The maximum number of records
 
         """
-        params = {'type': type, 'name': name,
-                  'identifier': identifier, 'maxitems': maxitems}
-        uri = '/%s/hostedzone/%s/rrset' % (self.Version, hosted_zone_id)
-        response = self.make_request('GET', uri, params=params)
+        params = {
+            "type": type,
+            "name": name,
+            "identifier": identifier,
+            "maxitems": maxitems,
+        }
+        uri = "/%s/hostedzone/%s/rrset" % (self.Version, hosted_zone_id)
+        response = self.make_request("GET", uri, params=params)
         body = response.read()
         boto.log.debug(body)
         if response.status >= 300:
-            raise exception.DNSServerError(response.status,
-                                           response.reason,
-                                           body)
+            raise exception.DNSServerError(response.status, response.reason, body)
         rs = ResourceRecordSets(connection=self, hosted_zone_id=hosted_zone_id)
         h = handler.XmlHandler(rs, self)
         xml.sax.parseString(body, h)
@@ -463,16 +489,14 @@ class Route53Connection(AWSAuthConnection):
             XML schema defined by the Route53 service.
 
         """
-        uri = '/%s/hostedzone/%s/rrset' % (self.Version, hosted_zone_id)
-        response = self.make_request('POST', uri,
-                                     {'Content-Type': 'text/xml'},
-                                     xml_body)
+        uri = "/%s/hostedzone/%s/rrset" % (self.Version, hosted_zone_id)
+        response = self.make_request(
+            "POST", uri, {"Content-Type": "text/xml"}, xml_body
+        )
         body = response.read()
         boto.log.debug(body)
         if response.status >= 300:
-            raise exception.DNSServerError(response.status,
-                                           response.reason,
-                                           body)
+            raise exception.DNSServerError(response.status, response.reason, body)
         e = boto.jsonresponse.Element()
         h = boto.jsonresponse.XmlHandler(e, None)
         h.parse(body)
@@ -490,21 +514,18 @@ class Route53Connection(AWSAuthConnection):
             This ID is returned in the response to the change_rrsets method.
 
         """
-        uri = '/%s/change/%s' % (self.Version, change_id)
-        response = self.make_request('GET', uri)
+        uri = "/%s/change/%s" % (self.Version, change_id)
+        response = self.make_request("GET", uri)
         body = response.read()
         boto.log.debug(body)
         if response.status >= 300:
-            raise exception.DNSServerError(response.status,
-                                           response.reason,
-                                           body)
+            raise exception.DNSServerError(response.status, response.reason, body)
         e = boto.jsonresponse.Element()
         h = boto.jsonresponse.XmlHandler(e, None)
         h.parse(body)
         return e
 
-    def create_zone(self, name, private_zone=False,
-                    vpc_id=None, vpc_region=None):
+    def create_zone(self, name, private_zone=False, vpc_id=None, vpc_region=None):
         """
         Create a new Hosted Zone.  Returns a Zone object for the newly
         created Hosted Zone.
@@ -530,9 +551,10 @@ class Route53Connection(AWSAuthConnection):
         :param vpc_region: When creating a private hosted zone, the region
             of the associated VPC is required.
         """
-        zone = self.create_hosted_zone(name, private_zone=private_zone,
-                                       vpc_id=vpc_id, vpc_region=vpc_region)
-        return Zone(self, zone['CreateHostedZoneResponse']['HostedZone'])
+        zone = self.create_hosted_zone(
+            name, private_zone=private_zone, vpc_id=vpc_id, vpc_region=vpc_region
+        )
+        return Zone(self, zone["CreateHostedZoneResponse"]["HostedZone"])
 
     def get_zone(self, name):
         """
@@ -557,8 +579,9 @@ class Route53Connection(AWSAuthConnection):
 
         """
         zones = self.get_all_hosted_zones()
-        return [Zone(self, zone) for zone in
-                zones['ListHostedZonesResponse']['HostedZones']]
+        return [
+            Zone(self, zone) for zone in zones["ListHostedZonesResponse"]["HostedZones"]
+        ]
 
     def _make_qualified(self, value):
         """
@@ -568,14 +591,14 @@ class Route53Connection(AWSAuthConnection):
         if type(value) in [list, tuple, set]:
             new_list = []
             for record in value:
-                if record and not record[-1] == '.':
+                if record and not record[-1] == ".":
                     new_list.append("%s." % record)
                 else:
                     new_list.append(record)
             return new_list
         else:
             value = value.strip()
-            if value and not value[-1] == '.':
+            if value and not value[-1] == ".":
                 value = "%s." % value
             return value
 
@@ -587,26 +610,23 @@ class Route53Connection(AWSAuthConnection):
             body = response.read()
 
             # We need to parse the error first
-            err = exception.DNSServerError(
-                response.status,
-                response.reason,
-                body)
+            err = exception.DNSServerError(response.status, response.reason, body)
             if err.error_code:
                 # This is a case where we need to ignore a 400 error, as
                 # Route53 returns this. See
                 # http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html
                 if not err.error_code in (
-                        'PriorRequestNotComplete',
-                        'Throttling',
-                        'ServiceUnavailable',
-                        'RequestExpired'):
+                    "PriorRequestNotComplete",
+                    "Throttling",
+                    "ServiceUnavailable",
+                    "RequestExpired",
+                ):
                     return status
-                msg = "%s, retry attempt %s" % (
-                    err.error_code,
-                    i
+                msg = "%s, retry attempt %s" % (err.error_code, i)
+                next_sleep = min(
+                    random.random() * (2 ** i),
+                    boto.config.get("Boto", "max_retry_delay", 60),
                 )
-                next_sleep = min(random.random() * (2 ** i),
-                                 boto.config.get('Boto', 'max_retry_delay', 60))
                 i += 1
                 status = (msg, i, next_sleep)
 

@@ -29,8 +29,11 @@ class StreamSlice(object):
         self.__max_bytes = max_bytes
 
     def __str__(self):
-        return 'Slice of stream %s with %s/%s bytes not yet read' % (
-            self.__stream, self.__remaining_bytes, self.__max_bytes)
+        return "Slice of stream %s with %s/%s bytes not yet read" % (
+            self.__stream,
+            self.__remaining_bytes,
+            self.__max_bytes,
+        )
 
     def __len__(self):
         return self.__max_bytes
@@ -71,9 +74,9 @@ class StreamSlice(object):
         data = self.__stream.read(read_size)
         if read_size > 0 and not data:
             raise exceptions.StreamExhausted(
-                'Not enough bytes in stream; expected %d, exhausted '
-                'after %d' % (
-                    self.__max_bytes,
-                    self.__max_bytes - self.__remaining_bytes))
+                "Not enough bytes in stream; expected %d, exhausted "
+                "after %d"
+                % (self.__max_bytes, self.__max_bytes - self.__remaining_bytes)
+            )
         self.__remaining_bytes -= len(data)
         return data

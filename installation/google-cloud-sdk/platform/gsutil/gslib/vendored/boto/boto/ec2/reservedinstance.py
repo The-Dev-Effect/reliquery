@@ -24,12 +24,22 @@ from boto.utils import parse_ts
 
 
 class ReservedInstancesOffering(EC2Object):
-
-    def __init__(self, connection=None, id=None, instance_type=None,
-                 availability_zone=None, duration=None, fixed_price=None,
-                 usage_price=None, description=None, instance_tenancy=None,
-                 currency_code=None, offering_type=None,
-                 recurring_charges=None, pricing_details=None):
+    def __init__(
+        self,
+        connection=None,
+        id=None,
+        instance_type=None,
+        availability_zone=None,
+        duration=None,
+        fixed_price=None,
+        usage_price=None,
+        description=None,
+        instance_tenancy=None,
+        currency_code=None,
+        offering_type=None,
+        recurring_charges=None,
+        pricing_details=None,
+    ):
         super(ReservedInstancesOffering, self).__init__(connection)
         self.id = id
         self.instance_type = instance_type
@@ -45,55 +55,53 @@ class ReservedInstancesOffering(EC2Object):
         self.pricing_details = pricing_details
 
     def __repr__(self):
-        return 'ReservedInstanceOffering:%s' % self.id
+        return "ReservedInstanceOffering:%s" % self.id
 
     def startElement(self, name, attrs, connection):
-        if name == 'recurringCharges':
-            self.recurring_charges = ResultSet([('item', RecurringCharge)])
+        if name == "recurringCharges":
+            self.recurring_charges = ResultSet([("item", RecurringCharge)])
             return self.recurring_charges
-        elif name == 'pricingDetailsSet':
-            self.pricing_details = ResultSet([('item', PricingDetail)])
+        elif name == "pricingDetailsSet":
+            self.pricing_details = ResultSet([("item", PricingDetail)])
             return self.pricing_details
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'reservedInstancesOfferingId':
+        if name == "reservedInstancesOfferingId":
             self.id = value
-        elif name == 'instanceType':
+        elif name == "instanceType":
             self.instance_type = value
-        elif name == 'availabilityZone':
+        elif name == "availabilityZone":
             self.availability_zone = value
-        elif name == 'duration':
+        elif name == "duration":
             self.duration = int(value)
-        elif name == 'fixedPrice':
+        elif name == "fixedPrice":
             self.fixed_price = value
-        elif name == 'usagePrice':
+        elif name == "usagePrice":
             self.usage_price = value
-        elif name == 'productDescription':
+        elif name == "productDescription":
             self.description = value
-        elif name == 'instanceTenancy':
+        elif name == "instanceTenancy":
             self.instance_tenancy = value
-        elif name == 'currencyCode':
+        elif name == "currencyCode":
             self.currency_code = value
-        elif name == 'offeringType':
+        elif name == "offeringType":
             self.offering_type = value
-        elif name == 'marketplace':
-            self.marketplace = True if value == 'true' else False
+        elif name == "marketplace":
+            self.marketplace = True if value == "true" else False
 
     def describe(self):
-        print('ID=%s' % self.id)
-        print('\tInstance Type=%s' % self.instance_type)
-        print('\tZone=%s' % self.availability_zone)
-        print('\tDuration=%s' % self.duration)
-        print('\tFixed Price=%s' % self.fixed_price)
-        print('\tUsage Price=%s' % self.usage_price)
-        print('\tDescription=%s' % self.description)
+        print("ID=%s" % self.id)
+        print("\tInstance Type=%s" % self.instance_type)
+        print("\tZone=%s" % self.availability_zone)
+        print("\tDuration=%s" % self.duration)
+        print("\tFixed Price=%s" % self.fixed_price)
+        print("\tUsage Price=%s" % self.usage_price)
+        print("\tDescription=%s" % self.description)
 
     def purchase(self, instance_count=1, dry_run=False):
         return self.connection.purchase_reserved_instance_offering(
-            self.id,
-            instance_count,
-            dry_run=dry_run
+            self.id, instance_count, dry_run=dry_run
         )
 
 
@@ -122,42 +130,64 @@ class PricingDetail(object):
 
 
 class ReservedInstance(ReservedInstancesOffering):
-
-    def __init__(self, connection=None, id=None, instance_type=None,
-                 availability_zone=None, duration=None, fixed_price=None,
-                 usage_price=None, description=None,
-                 instance_count=None, state=None):
-        super(ReservedInstance, self).__init__(connection, id, instance_type,
-                                               availability_zone, duration,
-                                               fixed_price, usage_price,
-                                               description)
+    def __init__(
+        self,
+        connection=None,
+        id=None,
+        instance_type=None,
+        availability_zone=None,
+        duration=None,
+        fixed_price=None,
+        usage_price=None,
+        description=None,
+        instance_count=None,
+        state=None,
+    ):
+        super(ReservedInstance, self).__init__(
+            connection,
+            id,
+            instance_type,
+            availability_zone,
+            duration,
+            fixed_price,
+            usage_price,
+            description,
+        )
         self.instance_count = instance_count
         self.state = state
         self.start = None
         self.end = None
 
     def __repr__(self):
-        return 'ReservedInstance:%s' % self.id
+        return "ReservedInstance:%s" % self.id
 
     def endElement(self, name, value, connection):
-        if name == 'reservedInstancesId':
+        if name == "reservedInstancesId":
             self.id = value
-        if name == 'instanceCount':
+        if name == "instanceCount":
             self.instance_count = int(value)
-        elif name == 'state':
+        elif name == "state":
             self.state = value
-        elif name == 'start':
+        elif name == "start":
             self.start = value
-        elif name == 'end':
+        elif name == "end":
             self.end = value
         else:
             super(ReservedInstance, self).endElement(name, value, connection)
 
 
 class ReservedInstanceListing(EC2Object):
-    def __init__(self, connection=None, listing_id=None, id=None,
-                 create_date=None, update_date=None,
-                 status=None, status_message=None, client_token=None):
+    def __init__(
+        self,
+        connection=None,
+        listing_id=None,
+        id=None,
+        create_date=None,
+        update_date=None,
+        status=None,
+        status_message=None,
+        client_token=None,
+    ):
         self.connection = connection
         self.listing_id = listing_id
         self.id = id
@@ -168,26 +198,26 @@ class ReservedInstanceListing(EC2Object):
         self.client_token = client_token
 
     def startElement(self, name, attrs, connection):
-        if name == 'instanceCounts':
-            self.instance_counts = ResultSet([('item', InstanceCount)])
+        if name == "instanceCounts":
+            self.instance_counts = ResultSet([("item", InstanceCount)])
             return self.instance_counts
-        elif name == 'priceSchedules':
-            self.price_schedules = ResultSet([('item', PriceSchedule)])
+        elif name == "priceSchedules":
+            self.price_schedules = ResultSet([("item", PriceSchedule)])
             return self.price_schedules
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'reservedInstancesListingId':
+        if name == "reservedInstancesListingId":
             self.listing_id = value
-        elif name == 'reservedInstancesId':
+        elif name == "reservedInstancesId":
             self.id = value
-        elif name == 'createDate':
+        elif name == "createDate":
             self.create_date = value
-        elif name == 'updateDate':
+        elif name == "updateDate":
             self.update_date = value
-        elif name == 'status':
+        elif name == "status":
             self.status = value
-        elif name == 'statusMessage':
+        elif name == "statusMessage":
             self.status_message = value
         else:
             setattr(self, name, value)
@@ -202,17 +232,18 @@ class InstanceCount(object):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'state':
+        if name == "state":
             self.state = value
-        elif name == 'instanceCount':
+        elif name == "instanceCount":
             self.instance_count = int(value)
         else:
             setattr(self, name, value)
 
 
 class PriceSchedule(object):
-    def __init__(self, connection=None, term=None, price=None,
-                 currency_code=None, active=None):
+    def __init__(
+        self, connection=None, term=None, price=None, currency_code=None, active=None
+    ):
         self.connection = connection
         self.term = term
         self.price = price
@@ -223,21 +254,27 @@ class PriceSchedule(object):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'term':
+        if name == "term":
             self.term = int(value)
-        elif name == 'price':
+        elif name == "price":
             self.price = value
-        elif name == 'currencyCode':
+        elif name == "currencyCode":
             self.currency_code = value
-        elif name == 'active':
-            self.active = True if value == 'true' else False
+        elif name == "active":
+            self.active = True if value == "true" else False
         else:
             setattr(self, name, value)
 
 
 class ReservedInstancesConfiguration(object):
-    def __init__(self, connection=None, availability_zone=None, platform=None,
-                 instance_count=None, instance_type=None):
+    def __init__(
+        self,
+        connection=None,
+        availability_zone=None,
+        platform=None,
+        instance_count=None,
+        instance_type=None,
+    ):
         self.connection = connection
         self.availability_zone = availability_zone
         self.platform = platform
@@ -248,13 +285,13 @@ class ReservedInstancesConfiguration(object):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'availabilityZone':
+        if name == "availabilityZone":
             self.availability_zone = value
-        elif name == 'platform':
+        elif name == "platform":
             self.platform = value
-        elif name == 'instanceCount':
+        elif name == "instanceCount":
             self.instance_count = int(value)
-        elif name == 'instanceType':
+        elif name == "instanceType":
             self.instance_type = value
         else:
             setattr(self, name, value)
@@ -269,16 +306,22 @@ class ModifyReservedInstancesResult(object):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'reservedInstancesModificationId':
+        if name == "reservedInstancesModificationId":
             self.modification_id = value
         else:
             setattr(self, name, value)
 
 
 class ModificationResult(object):
-    def __init__(self, connection=None, modification_id=None,
-                 availability_zone=None, platform=None, instance_count=None,
-                 instance_type=None):
+    def __init__(
+        self,
+        connection=None,
+        modification_id=None,
+        availability_zone=None,
+        platform=None,
+        instance_count=None,
+        instance_type=None,
+    ):
         self.connection = connection
         self.modification_id = modification_id
         self.availability_zone = availability_zone
@@ -290,25 +333,34 @@ class ModificationResult(object):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'reservedInstancesModificationId':
+        if name == "reservedInstancesModificationId":
             self.modification_id = value
-        elif name == 'availabilityZone':
+        elif name == "availabilityZone":
             self.availability_zone = value
-        elif name == 'platform':
+        elif name == "platform":
             self.platform = value
-        elif name == 'instanceCount':
+        elif name == "instanceCount":
             self.instance_count = int(value)
-        elif name == 'instanceType':
+        elif name == "instanceType":
             self.instance_type = value
         else:
             setattr(self, name, value)
 
 
 class ReservedInstancesModification(object):
-    def __init__(self, connection=None, modification_id=None,
-                 reserved_instances=None, modification_results=None,
-                 create_date=None, update_date=None, effective_date=None,
-                 status=None, status_message=None, client_token=None):
+    def __init__(
+        self,
+        connection=None,
+        modification_id=None,
+        reserved_instances=None,
+        modification_results=None,
+        create_date=None,
+        update_date=None,
+        effective_date=None,
+        status=None,
+        status_message=None,
+        client_token=None,
+    ):
         self.connection = connection
         self.modification_id = modification_id
         self.reserved_instances = reserved_instances
@@ -321,32 +373,28 @@ class ReservedInstancesModification(object):
         self.client_token = client_token
 
     def startElement(self, name, attrs, connection):
-        if name == 'reservedInstancesSet':
-            self.reserved_instances = ResultSet([
-                ('item', ReservedInstance)
-            ])
+        if name == "reservedInstancesSet":
+            self.reserved_instances = ResultSet([("item", ReservedInstance)])
             return self.reserved_instances
-        elif name == 'modificationResultSet':
-            self.modification_results = ResultSet([
-                ('item', ModificationResult)
-            ])
+        elif name == "modificationResultSet":
+            self.modification_results = ResultSet([("item", ModificationResult)])
             return self.modification_results
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'reservedInstancesModificationId':
+        if name == "reservedInstancesModificationId":
             self.modification_id = value
-        elif name == 'createDate':
+        elif name == "createDate":
             self.create_date = parse_ts(value)
-        elif name == 'updateDate':
+        elif name == "updateDate":
             self.update_date = parse_ts(value)
-        elif name == 'effectiveDate':
+        elif name == "effectiveDate":
             self.effective_date = parse_ts(value)
-        elif name == 'status':
+        elif name == "status":
             self.status = value
-        elif name == 'statusMessage':
+        elif name == "statusMessage":
             self.status_message = value
-        elif name == 'clientToken':
+        elif name == "clientToken":
             self.client_token = value
         else:
             setattr(self, name, value)

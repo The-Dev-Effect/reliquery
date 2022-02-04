@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-bashcode = r'''
+bashcode = r"""
 # Run something, muting output or redirecting it to the debug stream
 # depending on the value of _ARC_DEBUG.
 __python_argcomplete_run() {
@@ -32,14 +32,15 @@ _python_argcomplete() {
     fi
 }
 complete %(complete_opts)s -F _python_argcomplete "%(executable)s"
-'''
+"""
 
-tcshcode = '''\
+tcshcode = """\
 complete "%(executable)s" 'p@*@`python-argcomplete-tcsh "%(executable)s"`@'
-'''
+"""
 
-def shellcode(executable, use_defaults=True, shell='bash', complete_arguments=None):
-    '''
+
+def shellcode(executable, use_defaults=True, shell="bash", complete_arguments=None):
+    """
     Provide the shell code required to register a python executable for use with the argcomplete module.
 
     :param str executable: Executable to be completed (when invoked exactly with this name
@@ -47,14 +48,14 @@ def shellcode(executable, use_defaults=True, shell='bash', complete_arguments=No
     :param str shell: Name of the shell to output code for (bash or tcsh)
     :param complete_arguments: Arguments to call complete with
     :type complete_arguments: list(str) or None
-    '''
+    """
 
     if complete_arguments is None:
-        complete_options = '-o nospace -o default' if use_defaults else '-o nospace'
+        complete_options = "-o nospace -o default" if use_defaults else "-o nospace"
     else:
         complete_options = " ".join(complete_arguments)
 
-    if shell == 'bash':
+    if shell == "bash":
         code = bashcode
     else:
         code = tcshcode

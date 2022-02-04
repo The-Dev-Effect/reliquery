@@ -35,7 +35,7 @@ class MessageSet(list):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'message':
+        if name == "message":
             self.append(value)
         else:
             setattr(self, name, value)
@@ -59,20 +59,20 @@ class Zone(EC2Object):
         self.messages = None
 
     def __repr__(self):
-        return 'Zone:%s' % self.name
+        return "Zone:%s" % self.name
 
     def startElement(self, name, attrs, connection):
-        if name == 'messageSet':
+        if name == "messageSet":
             self.messages = MessageSet()
             return self.messages
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'zoneName':
+        if name == "zoneName":
             self.name = value
-        elif name == 'zoneState':
+        elif name == "zoneState":
             self.state = value
-        elif name == 'regionName':
+        elif name == "regionName":
             self.region_name = value
         else:
             setattr(self, name, value)

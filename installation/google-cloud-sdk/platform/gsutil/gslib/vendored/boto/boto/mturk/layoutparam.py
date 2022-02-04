@@ -19,8 +19,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-class LayoutParameters(object):
 
+class LayoutParameters(object):
     def __init__(self, layoutParameters=None):
         if layoutParameters is None:
             layoutParameters = []
@@ -31,12 +31,13 @@ class LayoutParameters(object):
 
     def get_as_params(self):
         params = {}
-        assert(len(self.layoutParameters) <= 25)
+        assert len(self.layoutParameters) <= 25
         for n, layoutParameter in enumerate(self.layoutParameters):
             kv = layoutParameter.get_as_params()
             for key in kv:
-                params['HITLayoutParameter.%s.%s' % ((n+1), key) ] = kv[key]
+                params["HITLayoutParameter.%s.%s" % ((n + 1), key)] = kv[key]
         return params
+
 
 class LayoutParameter(object):
     """
@@ -48,7 +49,7 @@ class LayoutParameter(object):
         self.value = value
 
     def get_as_params(self):
-        params =  {
+        params = {
             "Name": self.name,
             "Value": self.value,
         }

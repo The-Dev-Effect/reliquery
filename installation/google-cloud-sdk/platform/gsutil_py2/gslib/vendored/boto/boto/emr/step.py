@@ -27,6 +27,7 @@ class Step(object):
     """
     Jobflow Step base class
     """
+
     def jar(self):
         """
         :rtype: str
@@ -53,8 +54,15 @@ class JarStep(Step):
     """
     Custom jar step
     """
-    def __init__(self, name, jar, main_class=None,
-                 action_on_failure='TERMINATE_JOB_FLOW', step_args=None):
+
+    def __init__(
+        self,
+        name,
+        jar,
+        main_class=None,
+        action_on_failure="TERMINATE_JOB_FLOW",
+        step_args=None,
+    ):
         """
         A elastic mapreduce step that executes a jar
 
@@ -99,11 +107,21 @@ class StreamingStep(Step):
     """
     Hadoop streaming step
     """
-    def __init__(self, name, mapper, reducer=None, combiner=None,
-                 action_on_failure='TERMINATE_JOB_FLOW',
-                 cache_files=None, cache_archives=None,
-                 step_args=None, input=None, output=None,
-                 jar='/home/hadoop/contrib/streaming/hadoop-streaming.jar'):
+
+    def __init__(
+        self,
+        name,
+        mapper,
+        reducer=None,
+        combiner=None,
+        action_on_failure="TERMINATE_JOB_FLOW",
+        cache_files=None,
+        cache_archives=None,
+        step_args=None,
+        input=None,
+        output=None,
+        jar="/home/hadoop/contrib/streaming/hadoop-streaming.jar",
+    ):
         """
         A hadoop streaming elastic mapreduce step
 
@@ -164,46 +182,60 @@ class StreamingStep(Step):
         if self.step_args:
             args.extend(self.step_args)
 
-        args.extend(['-mapper', self.mapper])
+        args.extend(["-mapper", self.mapper])
 
         if self.combiner:
-            args.extend(['-combiner', self.combiner])
+            args.extend(["-combiner", self.combiner])
 
         if self.reducer:
-            args.extend(['-reducer', self.reducer])
+            args.extend(["-reducer", self.reducer])
         else:
-            args.extend(['-jobconf', 'mapred.reduce.tasks=0'])
+            args.extend(["-jobconf", "mapred.reduce.tasks=0"])
 
         if self.input:
             if isinstance(self.input, list):
                 for input in self.input:
-                    args.extend(('-input', input))
+                    args.extend(("-input", input))
             else:
-                args.extend(('-input', self.input))
+                args.extend(("-input", self.input))
         if self.output:
-            args.extend(('-output', self.output))
+            args.extend(("-output", self.output))
 
         if self.cache_files:
             for cache_file in self.cache_files:
-                args.extend(('-cacheFile', cache_file))
+                args.extend(("-cacheFile", cache_file))
 
         if self.cache_archives:
             for cache_archive in self.cache_archives:
-                args.extend(('-cacheArchive', cache_archive))
+                args.extend(("-cacheArchive", cache_archive))
 
         return args
 
     def __repr__(self):
-        return '%s.%s(name=%r, mapper=%r, reducer=%r, action_on_failure=%r, cache_files=%r, cache_archives=%r, step_args=%r, input=%r, output=%r, jar=%r)' % (
-            self.__class__.__module__, self.__class__.__name__,
-            self.name, self.mapper, self.reducer, self.action_on_failure,
-            self.cache_files, self.cache_archives, self.step_args,
-            self.input, self.output, self._jar)
+        return (
+            "%s.%s(name=%r, mapper=%r, reducer=%r, action_on_failure=%r, cache_files=%r, cache_archives=%r, step_args=%r, input=%r, output=%r, jar=%r)"
+            % (
+                self.__class__.__module__,
+                self.__class__.__name__,
+                self.name,
+                self.mapper,
+                self.reducer,
+                self.action_on_failure,
+                self.cache_files,
+                self.cache_archives,
+                self.step_args,
+                self.input,
+                self.output,
+                self._jar,
+            )
+        )
 
 
 class ScriptRunnerStep(JarStep):
 
-    ScriptRunnerJar = 's3n://us-east-1.elasticmapreduce/libs/script-runner/script-runner.jar'
+    ScriptRunnerJar = (
+        "s3n://us-east-1.elasticmapreduce/libs/script-runner/script-runner.jar"
+    )
 
     def __init__(self, name, **kw):
         super(ScriptRunnerStep, self).__init__(name, self.ScriptRunnerJar, **kw)
@@ -211,8 +243,11 @@ class ScriptRunnerStep(JarStep):
 
 class PigBase(ScriptRunnerStep):
 
-    BaseArgs = ['s3n://us-east-1.elasticmapreduce/libs/pig/pig-script',
-                '--base-path', 's3n://us-east-1.elasticmapreduce/libs/pig/']
+    BaseArgs = [
+        "s3n://us-east-1.elasticmapreduce/libs/pig/pig-script",
+        "--base-path",
+        "s3n://us-east-1.elasticmapreduce/libs/pig/",
+    ]
 
 
 class InstallPigStep(PigBase):
@@ -220,13 +255,13 @@ class InstallPigStep(PigBase):
     Install pig on emr step
     """
 
-    InstallPigName = 'Install Pig'
+    InstallPigName = "Install Pig"
 
-    def __init__(self, pig_versions='latest'):
+    def __init__(self, pig_versions="latest"):
         step_args = []
         step_args.extend(self.BaseArgs)
-        step_args.extend(['--install-pig'])
-        step_args.extend(['--pig-versions', pig_versions])
+        step_args.extend(["--install-pig"])
+        step_args.extend(["--pig-versions", pig_versions])
         super(InstallPigStep, self).__init__(self.InstallPigName, step_args=step_args)
 
 
@@ -235,36 +270,39 @@ class PigStep(PigBase):
     Pig script step
     """
 
-    def __init__(self, name, pig_file, pig_versions='latest', pig_args=[]):
+    def __init__(self, name, pig_file, pig_versions="latest", pig_args=[]):
         step_args = []
         step_args.extend(self.BaseArgs)
-        step_args.extend(['--pig-versions', pig_versions])
-        step_args.extend(['--run-pig-script', '--args', '-f', pig_file])
+        step_args.extend(["--pig-versions", pig_versions])
+        step_args.extend(["--run-pig-script", "--args", "-f", pig_file])
         step_args.extend(pig_args)
         super(PigStep, self).__init__(name, step_args=step_args)
 
 
 class HiveBase(ScriptRunnerStep):
 
-    BaseArgs = ['s3n://us-east-1.elasticmapreduce/libs/hive/hive-script',
-                '--base-path', 's3n://us-east-1.elasticmapreduce/libs/hive/']
+    BaseArgs = [
+        "s3n://us-east-1.elasticmapreduce/libs/hive/hive-script",
+        "--base-path",
+        "s3n://us-east-1.elasticmapreduce/libs/hive/",
+    ]
 
 
 class InstallHiveStep(HiveBase):
     """
     Install Hive on EMR step
     """
-    InstallHiveName = 'Install Hive'
 
-    def __init__(self, hive_versions='latest', hive_site=None):
+    InstallHiveName = "Install Hive"
+
+    def __init__(self, hive_versions="latest", hive_site=None):
         step_args = []
         step_args.extend(self.BaseArgs)
-        step_args.extend(['--install-hive'])
-        step_args.extend(['--hive-versions', hive_versions])
+        step_args.extend(["--install-hive"])
+        step_args.extend(["--hive-versions", hive_versions])
         if hive_site is not None:
-            step_args.extend(['--hive-site=%s' % hive_site])
-        super(InstallHiveStep, self).__init__(self.InstallHiveName,
-                                  step_args=step_args)
+            step_args.extend(["--hive-site=%s" % hive_site])
+        super(InstallHiveStep, self).__init__(self.InstallHiveName, step_args=step_args)
 
 
 class HiveStep(HiveBase):
@@ -272,12 +310,11 @@ class HiveStep(HiveBase):
     Hive script step
     """
 
-    def __init__(self, name, hive_file, hive_versions='latest',
-                 hive_args=None):
+    def __init__(self, name, hive_file, hive_versions="latest", hive_args=None):
         step_args = []
         step_args.extend(self.BaseArgs)
-        step_args.extend(['--hive-versions', hive_versions])
-        step_args.extend(['--run-hive-script', '--args', '-f', hive_file])
+        step_args.extend(["--hive-versions", hive_versions])
+        step_args.extend(["--run-hive-script", "--args", "-f", hive_file])
         if hive_args is not None:
             step_args.extend(hive_args)
         super(HiveStep, self).__init__(name, step_args=step_args)

@@ -58,8 +58,7 @@ def _MessagesEqual(msg1, msg2):
             return False
         return all(_MessagesEqual(x, y) for x, y in zip(msg1, msg2))
 
-    if (not isinstance(msg1, messages.Message) or
-            not isinstance(msg2, messages.Message)):
+    if not isinstance(msg1, messages.Message) or not isinstance(msg2, messages.Message):
         return msg1 == msg2
     for field in msg1.all_fields():
         field1 = getattr(msg1, field.name)
@@ -70,56 +69,58 @@ def _MessagesEqual(msg1, msg2):
 
 
 class UnexpectedRequestException(Error):
-
     def __init__(self, received_call, expected_call):
         expected_key, expected_request = expected_call
         received_key, received_request = received_call
 
-        expected_repr = encoding.MessageToRepr(
-            expected_request, multiline=True)
-        received_repr = encoding.MessageToRepr(
-            received_request, multiline=True)
+        expected_repr = encoding.MessageToRepr(expected_request, multiline=True)
+        received_repr = encoding.MessageToRepr(received_request, multiline=True)
 
         expected_lines = expected_repr.splitlines()
         received_lines = received_repr.splitlines()
 
         diff_lines = difflib.unified_diff(expected_lines, received_lines)
-        diff = '\n'.join(diff_lines)
+        diff = "\n".join(diff_lines)
 
         if expected_key != received_key:
-            msg = '\n'.join((
-                'expected: {expected_key}({expected_request})',
-                'received: {received_key}({received_request})',
-                '',
-            )).format(
+            msg = "\n".join(
+                (
+                    "expected: {expected_key}({expected_request})",
+                    "received: {received_key}({received_request})",
+                    "",
+                )
+            ).format(
                 expected_key=expected_key,
                 expected_request=expected_repr,
                 received_key=received_key,
-                received_request=received_repr)
+                received_request=received_repr,
+            )
             super(UnexpectedRequestException, self).__init__(msg)
         else:
-            msg = '\n'.join((
-                'for request to {key},',
-                'expected: {expected_request}',
-                'received: {received_request}',
-                'diff: {diff}',
-                '',
-            )).format(
+            msg = "\n".join(
+                (
+                    "for request to {key},",
+                    "expected: {expected_request}",
+                    "received: {received_request}",
+                    "diff: {diff}",
+                    "",
+                )
+            ).format(
                 key=expected_key,
                 expected_request=expected_repr,
                 received_request=received_repr,
-                diff=diff)
+                diff=diff,
+            )
             super(UnexpectedRequestException, self).__init__(msg)
 
 
 class ExpectedRequestsException(Error):
-
     def __init__(self, expected_calls):
-        msg = 'expected:\n'
+        msg = "expected:\n"
         for (key, request) in expected_calls:
-            msg += '{key}({request})\n'.format(
-                key=key,
-                request=encoding.MessageToRepr(request, multiline=True))
+            msg += "{key}({request})\n".format(
+                key=key, request=encoding.MessageToRepr(request, multiline=True)
+            )
         super(ExpectedRequestsException, self).__init__(msg)
 
 
@@ -133,13 +134,16 @@ class _ExpectedRequestResponse(object):
 
         if response and exception:
             raise exceptions.ConfigurationValueError(
-                'Should specify at most one of response and exception')
+                "Should specify at most one of response and exception"
+            )
         if response and isinstance(response, exceptions.Error):
             raise exceptions.ConfigurationValueError(
-                'Responses should not be an instance of Error')
+                "Responses should not be an instance of Error"
+            )
         if exception and not isinstance(exception, exceptions.Error):
             raise exceptions.ConfigurationValueError(
-                'Exceptions must be instances of Error')
+                "Exceptions must be instances of Error"
+            )
 
         self.__response = response
         self.__exception = exception
@@ -170,10 +174,12 @@ class _ExpectedRequestResponse(object):
           The response that was specified to be returned.
 
         """
-        if key != self.__key or not (self.__request == request or
-                                     _MessagesEqual(request, self.__request)):
-            raise UnexpectedRequestException((key, request),
-                                             (self.__key, self.__request))
+        if key != self.__key or not (
+            self.__request == request or _MessagesEqual(request, self.__request)
+        ):
+            raise UnexpectedRequestException(
+                (key, request), (self.__key, self.__request)
+            )
 
         if self.__exception:
             # Can only throw apitools_base.Error.
@@ -193,10 +199,12 @@ class _MockedMethod(object):
         self.__real_method = real_method
         self.method_config = real_method.method_config
         config = self.method_config()
-        self.__request_type = getattr(self.__mocked_client.MESSAGES_MODULE,
-                                      config.request_type_name)
-        self.__response_type = getattr(self.__mocked_client.MESSAGES_MODULE,
-                                       config.response_type_name)
+        self.__request_type = getattr(
+            self.__mocked_client.MESSAGES_MODULE, config.request_type_name
+        )
+        self.__response_type = getattr(
+            self.__mocked_client.MESSAGES_MODULE, config.response_type_name
+        )
 
     def _TypeCheck(self, msg, is_request):
         """Ensure the given message is of the expected type of this method.
@@ -211,21 +219,27 @@ class _MockedMethod(object):
              not correct.
         """
         if is_request:
-            mode = 'request'
+            mode = "request"
             real_type = self.__request_type
         else:
-            mode = 'response'
+            mode = "response"
             real_type = self.__response_type
 
         if not isinstance(msg, real_type):
             raise exceptions.ConfigurationValueError(
-                'Expected {} is not of the correct type for method [{}].\n'
-                '   Required: [{}]\n'
-                '   Given:    [{}]'.format(
-                    mode, self.__key, real_type, type(msg)))
+                "Expected {} is not of the correct type for method [{}].\n"
+                "   Required: [{}]\n"
+                "   Given:    [{}]".format(mode, self.__key, real_type, type(msg))
+            )
 
-    def Expect(self, request, response=None, exception=None,
-               enable_type_checking=True, **unused_kwargs):
+    def Expect(
+        self,
+        request,
+        response=None,
+        exception=None,
+        enable_type_checking=True,
+        **unused_kwargs
+    ):
         """Add an expectation on the mocked method.
 
         Exactly one of response and exception should be specified.
@@ -253,10 +267,10 @@ class _MockedMethod(object):
         # pylint: disable=protected-access
         # Class in same module.
         self.__mocked_client._request_responses.append(
-            _ExpectedRequestResponse(self.__key,
-                                     request,
-                                     response=response,
-                                     exception=exception))
+            _ExpectedRequestResponse(
+                self.__key, request, response=response, exception=exception
+            )
+        )
         # pylint: enable=protected-access
 
     def __call__(self, request, **unused_kwargs):
@@ -270,23 +284,20 @@ class _MockedMethod(object):
         if self.__mocked_client._request_responses:
             request_response = self.__mocked_client._request_responses.pop(0)
         else:
-            raise UnexpectedRequestException(
-                (self.__key, request), (None, None))
+            raise UnexpectedRequestException((self.__key, request), (None, None))
         # pylint: enable=protected-access
 
         response = request_response.ValidateAndRespond(self.__key, request)
 
         if response is None and self.__real_method:
             response = self.__real_method(request)
-            print(encoding.MessageToRepr(
-                response, multiline=True, shortstrings=True))
+            print(encoding.MessageToRepr(response, multiline=True, shortstrings=True))
             return response
 
         return response
 
 
-def _MakeMockedService(api_name, collection_name,
-                       mock_client, service, real_service):
+def _MakeMockedService(api_name, collection_name, mock_client, service, real_service):
     class MockedService(base_api.BaseApiService):
         pass
 
@@ -294,11 +305,15 @@ def _MakeMockedService(api_name, collection_name,
         real_method = None
         if real_service:
             real_method = getattr(real_service, method)
-        setattr(MockedService,
-                method,
-                _MockedMethod(api_name + '.' + collection_name + '.' + method,
-                              mock_client,
-                              real_method))
+        setattr(
+            MockedService,
+            method,
+            _MockedMethod(
+                api_name + "." + collection_name + "." + method,
+                mock_client,
+                real_method,
+            ),
+        )
     return MockedService
 
 
@@ -336,11 +351,11 @@ class Client(object):
 
     def Mock(self):
         """Stub out the client class with mocked services."""
-        client = self.__real_client or self.__client_class(
-            get_credentials=False)
+        client = self.__real_client or self.__client_class(get_credentials=False)
 
         class Patched(self.__class__, self.__client_class):
             pass
+
         self.__class__ = Patched
 
         for name in dir(self.__client_class):
@@ -353,12 +368,17 @@ class Client(object):
             # pylint: disable=protected-access
             collection_name = service_class._NAME
             # pylint: enable=protected-access
-            api_name = '%s_%s' % (self.__client_class._PACKAGE,
-                                  self.__client_class._URL_VERSION)
+            api_name = "%s_%s" % (
+                self.__client_class._PACKAGE,
+                self.__client_class._URL_VERSION,
+            )
             mocked_service_class = _MakeMockedService(
-                api_name, collection_name, self,
+                api_name,
+                collection_name,
+                self,
                 service_class,
-                service_class(client) if self.__real_client else None)
+                service_class(client) if self.__real_client else None,
+            )
 
             setattr(self.__client_class, name, mocked_service_class)
 
@@ -392,8 +412,7 @@ class Client(object):
         self.__client_class.IncludeFields = self.__real_include_fields
         self.__real_include_fields = None
 
-        requests = [(rq_rs.key, rq_rs.request)
-                    for rq_rs in self._request_responses]
+        requests = [(rq_rs.key, rq_rs.request) for rq_rs in self._request_responses]
         self._request_responses = []
 
         if requests and not suppress and sys.exc_info()[1] is None:
@@ -401,5 +420,4 @@ class Client(object):
 
     def IncludeFields(self, include_fields):
         if self.__real_client:
-            return self.__real_include_fields(self.__real_client,
-                                              include_fields)
+            return self.__real_include_fields(self.__real_client, include_fields)

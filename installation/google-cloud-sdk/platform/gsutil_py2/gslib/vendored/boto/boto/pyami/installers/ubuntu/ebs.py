@@ -77,7 +77,7 @@ if __name__ == "__main__":
     b.main()
 """
 
-BackupCleanupScript= """#!/usr/bin/env python
+BackupCleanupScript = """#!/usr/bin/env python
 import boto
 from boto.manage.volume import Volume
 
@@ -87,7 +87,7 @@ for v in Volume.all():
     v.trim_snapshots(True)
 """
 
-TagBasedBackupCleanupScript= """#!/usr/bin/env python
+TagBasedBackupCleanupScript = """#!/usr/bin/env python
 import boto
 
 # Cleans Backups of EBS volumes
@@ -96,6 +96,7 @@ ec2 = boto.connect_ec2()
 ec2.trim_snapshots()
 """
 
+
 class EBSInstaller(Installer):
     """
     Set up the EBS stuff
@@ -103,11 +104,11 @@ class EBSInstaller(Installer):
 
     def __init__(self, config_file=None):
         super(EBSInstaller, self).__init__(config_file)
-        self.instance_id = boto.config.get('Instance', 'instance-id')
-        self.device = boto.config.get('EBS', 'device', '/dev/sdp')
-        self.volume_id = boto.config.get('EBS', 'volume_id')
-        self.logical_volume_name = boto.config.get('EBS', 'logical_volume_name')
-        self.mount_point = boto.config.get('EBS', 'mount_point', '/ebs')
+        self.instance_id = boto.config.get("Instance", "instance-id")
+        self.device = boto.config.get("EBS", "device", "/dev/sdp")
+        self.volume_id = boto.config.get("EBS", "volume_id")
+        self.logical_volume_name = boto.config.get("EBS", "logical_volume_name")
+        self.mount_point = boto.config.get("EBS", "mount_point", "/ebs")
 
     def attach(self):
         ec2 = boto.connect_ec2()
@@ -119,8 +120,11 @@ class EBSInstaller(Installer):
         volume = ec2.get_all_volumes([self.volume_id])[0]
         # wait for the volume to be available. The volume may still be being created
         # from a snapshot.
-        while volume.update() != 'available':
-            boto.log.info('Volume %s not yet available. Current status = %s.' % (volume.id, volume.status))
+        while volume.update() != "available":
+            boto.log.info(
+                "Volume %s not yet available. Current status = %s."
+                % (volume.id, volume.status)
+            )
             time.sleep(5)
         instance = ec2.get_only_instances([self.instance_id])[0]
         attempt_attach = True
@@ -129,70 +133,79 @@ class EBSInstaller(Installer):
                 ec2.attach_volume(self.volume_id, self.instance_id, self.device)
                 attempt_attach = False
             except EC2ResponseError as e:
-                if e.error_code != 'IncorrectState':
+                if e.error_code != "IncorrectState":
                     # if there's an EC2ResonseError with the code set to IncorrectState, delay a bit for ec2
                     # to realize the instance is running, then try again. Otherwise, raise the error:
-                    boto.log.info('Attempt to attach the EBS volume %s to this instance (%s) returned %s. Trying again in a bit.' % (self.volume_id, self.instance_id, e.errors))
+                    boto.log.info(
+                        "Attempt to attach the EBS volume %s to this instance (%s) returned %s. Trying again in a bit."
+                        % (self.volume_id, self.instance_id, e.errors)
+                    )
                     time.sleep(2)
                 else:
                     raise e
-        boto.log.info('Attached volume %s to instance %s as device %s' % (self.volume_id, self.instance_id, self.device))
+        boto.log.info(
+            "Attached volume %s to instance %s as device %s"
+            % (self.volume_id, self.instance_id, self.device)
+        )
         # now wait for the volume device to appear
         while not os.path.exists(self.device):
-            boto.log.info('%s still does not exist, waiting 2 seconds' % self.device)
+            boto.log.info("%s still does not exist, waiting 2 seconds" % self.device)
             time.sleep(2)
 
     def make_fs(self):
-        boto.log.info('make_fs...')
-        has_fs = self.run('fsck %s' % self.device)
+        boto.log.info("make_fs...")
+        has_fs = self.run("fsck %s" % self.device)
         if has_fs != 0:
-            self.run('mkfs -t xfs %s' % self.device)
+            self.run("mkfs -t xfs %s" % self.device)
 
     def create_backup_script(self):
         t = Template(BackupScriptTemplate)
-        s = t.substitute(volume_id=self.volume_id, instance_id=self.instance_id,
-                         mount_point=self.mount_point)
-        fp = open('/usr/local/bin/ebs_backup', 'w')
+        s = t.substitute(
+            volume_id=self.volume_id,
+            instance_id=self.instance_id,
+            mount_point=self.mount_point,
+        )
+        fp = open("/usr/local/bin/ebs_backup", "w")
         fp.write(s)
         fp.close()
-        self.run('chmod +x /usr/local/bin/ebs_backup')
+        self.run("chmod +x /usr/local/bin/ebs_backup")
 
     def create_backup_cleanup_script(self, use_tag_based_cleanup=False):
-        fp = open('/usr/local/bin/ebs_backup_cleanup', 'w')
+        fp = open("/usr/local/bin/ebs_backup_cleanup", "w")
         if use_tag_based_cleanup:
             fp.write(TagBasedBackupCleanupScript)
         else:
             fp.write(BackupCleanupScript)
         fp.close()
-        self.run('chmod +x /usr/local/bin/ebs_backup_cleanup')
+        self.run("chmod +x /usr/local/bin/ebs_backup_cleanup")
 
     def handle_mount_point(self):
-        boto.log.info('handle_mount_point')
+        boto.log.info("handle_mount_point")
         if not os.path.isdir(self.mount_point):
-            boto.log.info('making directory')
+            boto.log.info("making directory")
             # mount directory doesn't exist so create it
             self.run("mkdir %s" % self.mount_point)
         else:
-            boto.log.info('directory exists already')
-            self.run('mount -l')
-            lines = self.last_command.output.split('\n')
+            boto.log.info("directory exists already")
+            self.run("mount -l")
+            lines = self.last_command.output.split("\n")
             for line in lines:
                 t = line.split()
                 if t and t[2] == self.mount_point:
                     # something is already mounted at the mount point
                     # unmount that and mount it as /tmp
                     if t[0] != self.device:
-                        self.run('umount %s' % self.mount_point)
-                        self.run('mount %s /tmp' % t[0])
+                        self.run("umount %s" % self.mount_point)
+                        self.run("mount %s /tmp" % t[0])
                         break
-        self.run('chmod 777 /tmp')
+        self.run("chmod 777 /tmp")
         # Mount up our new EBS volume onto mount_point
         self.run("mount %s %s" % (self.device, self.mount_point))
-        self.run('xfs_growfs %s' % self.mount_point)
+        self.run("xfs_growfs %s" % self.mount_point)
 
     def update_fstab(self):
         f = open("/etc/fstab", "a")
-        f.write('%s\t%s\txfs\tdefaults 0 0\n' % (self.device, self.mount_point))
+        f.write("%s\t%s\txfs\tdefaults 0 0\n" % (self.device, self.mount_point))
         f.close()
 
     def install(self):
@@ -200,7 +213,7 @@ class EBSInstaller(Installer):
         self.attach()
 
         # Install the xfs tools
-        self.run('apt-get -y install xfsprogs xfsdump')
+        self.run("apt-get -y install xfsprogs xfsdump")
 
         # Check to see if the filesystem was created or not
         self.make_fs()
@@ -212,21 +225,30 @@ class EBSInstaller(Installer):
         self.create_backup_script()
 
         # Set up the backup script
-        minute = boto.config.get('EBS', 'backup_cron_minute', '0')
-        hour = boto.config.get('EBS', 'backup_cron_hour', '4,16')
-        self.add_cron("ebs_backup", "/usr/local/bin/ebs_backup", minute=minute, hour=hour)
+        minute = boto.config.get("EBS", "backup_cron_minute", "0")
+        hour = boto.config.get("EBS", "backup_cron_hour", "4,16")
+        self.add_cron(
+            "ebs_backup", "/usr/local/bin/ebs_backup", minute=minute, hour=hour
+        )
 
         # Set up the backup cleanup script
-        minute = boto.config.get('EBS', 'backup_cleanup_cron_minute')
-        hour = boto.config.get('EBS', 'backup_cleanup_cron_hour')
+        minute = boto.config.get("EBS", "backup_cleanup_cron_minute")
+        hour = boto.config.get("EBS", "backup_cleanup_cron_hour")
         if (minute is not None) and (hour is not None):
             # Snapshot clean up can either be done via the manage module, or via the new tag based
             # snapshot code, if the snapshots have been tagged with the name of the associated
             # volume. Check for the presence of the new configuration flag, and use the appropriate
             # cleanup method / script:
-            use_tag_based_cleanup = boto.config.has_option('EBS', 'use_tag_based_snapshot_cleanup')
+            use_tag_based_cleanup = boto.config.has_option(
+                "EBS", "use_tag_based_snapshot_cleanup"
+            )
             self.create_backup_cleanup_script(use_tag_based_cleanup)
-            self.add_cron("ebs_backup_cleanup", "/usr/local/bin/ebs_backup_cleanup", minute=minute, hour=hour)
+            self.add_cron(
+                "ebs_backup_cleanup",
+                "/usr/local/bin/ebs_backup_cleanup",
+                minute=minute,
+                hour=hour,
+            )
 
         # Set up the fstab
         self.update_fstab()
@@ -235,4 +257,6 @@ class EBSInstaller(Installer):
         if not os.path.exists(self.device):
             self.install()
         else:
-            boto.log.info("Device %s is already attached, skipping EBS Installer" % self.device)
+            boto.log.info(
+                "Device %s is already attached, skipping EBS Installer" % self.device
+            )

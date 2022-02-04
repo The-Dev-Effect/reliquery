@@ -43,6 +43,7 @@ class ResultSet(list):
         result sets. In most cases, passing this value to certain methods
         will give you another 'page' of results.
     """
+
     def __init__(self, marker_elem=None):
         list.__init__(self)
         if isinstance(marker_elem, list):
@@ -67,7 +68,7 @@ class ResultSet(list):
                 obj = t[1](connection)
                 self.append(obj)
                 return obj
-        if name == 'Owner':
+        if name == "Owner":
             # Makes owner available for get_service and
             # perhaps other lists where not handled by
             # another element.
@@ -75,67 +76,66 @@ class ResultSet(list):
             return self.owner
         return None
 
-    def to_boolean(self, value, true_value='true'):
+    def to_boolean(self, value, true_value="true"):
         if value == true_value:
             return True
         else:
             return False
 
     def endElement(self, name, value, connection):
-        if name == 'IsTruncated':
+        if name == "IsTruncated":
             self.is_truncated = self.to_boolean(value)
-        elif name == 'Marker':
+        elif name == "Marker":
             self.marker = value
-        elif name == 'KeyMarker':
+        elif name == "KeyMarker":
             self.key_marker = value
-        elif name == 'NextMarker':
+        elif name == "NextMarker":
             self.next_marker = value
-        elif name == 'NextKeyMarker':
+        elif name == "NextKeyMarker":
             self.next_key_marker = value
-        elif name == 'VersionIdMarker':
+        elif name == "VersionIdMarker":
             self.version_id_marker = value
-        elif name == 'NextVersionIdMarker':
+        elif name == "NextVersionIdMarker":
             self.next_version_id_marker = value
-        elif name == 'NextGenerationMarker':
+        elif name == "NextGenerationMarker":
             self.next_generation_marker = value
-        elif name == 'UploadIdMarker':
+        elif name == "UploadIdMarker":
             self.upload_id_marker = value
-        elif name == 'NextUploadIdMarker':
+        elif name == "NextUploadIdMarker":
             self.next_upload_id_marker = value
-        elif name == 'Bucket':
+        elif name == "Bucket":
             self.bucket = value
-        elif name == 'MaxUploads':
+        elif name == "MaxUploads":
             self.max_uploads = int(value)
-        elif name == 'MaxItems':
+        elif name == "MaxItems":
             self.max_items = int(value)
-        elif name == 'Prefix':
+        elif name == "Prefix":
             self.prefix = value
-        elif name == 'return':
+        elif name == "return":
             self.status = self.to_boolean(value)
-        elif name == 'StatusCode':
-            self.status = self.to_boolean(value, 'Success')
-        elif name == 'ItemName':
+        elif name == "StatusCode":
+            self.status = self.to_boolean(value, "Success")
+        elif name == "ItemName":
             self.append(value)
-        elif name == 'NextToken':
+        elif name == "NextToken":
             self.next_token = value
-        elif name == 'nextToken':
+        elif name == "nextToken":
             self.next_token = value
             # Code exists which expects nextToken to be available, so we
             # set it here to remain backwards-compatibile.
             self.nextToken = value
-        elif name == 'BoxUsage':
+        elif name == "BoxUsage":
             try:
                 connection.box_usage += float(value)
             except:
                 pass
-        elif name == 'IsValid':
-            self.status = self.to_boolean(value, 'True')
+        elif name == "IsValid":
+            self.status = self.to_boolean(value, "True")
         else:
             setattr(self, name, value)
 
 
 class BooleanResult(object):
-
     def __init__(self, marker_elem=None):
         self.status = True
         self.request_id = None
@@ -143,9 +143,9 @@ class BooleanResult(object):
 
     def __repr__(self):
         if self.status:
-            return 'True'
+            return "True"
         else:
-            return 'False'
+            return "False"
 
     def __nonzero__(self):
         return self.status
@@ -153,24 +153,24 @@ class BooleanResult(object):
     def startElement(self, name, attrs, connection):
         return None
 
-    def to_boolean(self, value, true_value='true'):
+    def to_boolean(self, value, true_value="true"):
         if value == true_value:
             return True
         else:
             return False
 
     def endElement(self, name, value, connection):
-        if name == 'return':
+        if name == "return":
             self.status = self.to_boolean(value)
-        elif name == 'StatusCode':
-            self.status = self.to_boolean(value, 'Success')
-        elif name == 'IsValid':
-            self.status = self.to_boolean(value, 'True')
-        elif name == 'RequestId':
+        elif name == "StatusCode":
+            self.status = self.to_boolean(value, "Success")
+        elif name == "IsValid":
+            self.status = self.to_boolean(value, "True")
+        elif name == "RequestId":
             self.request_id = value
-        elif name == 'requestId':
+        elif name == "requestId":
             self.request_id = value
-        elif name == 'BoxUsage':
+        elif name == "BoxUsage":
             self.request_id = value
         else:
             setattr(self, name, value)

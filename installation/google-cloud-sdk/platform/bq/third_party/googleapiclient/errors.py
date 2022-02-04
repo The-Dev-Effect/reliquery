@@ -21,7 +21,6 @@ should be defined in this file.
 from __future__ import absolute_import
 
 
-
 import json
 import six
 
@@ -56,7 +55,7 @@ class HttpError(Error):
 
     def _get_reason(self):
         """Calculate the reason for the error from the response content."""
-        reason = self.resp.reason if hasattr(self.resp, 'reason') else None
+        reason = self.resp.reason if hasattr(self.resp, "reason") else None
         try:
             try:
                 data = json.loads(self.content.decode("utf-8"))
@@ -65,7 +64,14 @@ class HttpError(Error):
                 data = self.content.decode("utf-8")
             if isinstance(data, dict):
                 reason = data["error"]["message"]
-                error_detail_keyword = next((kw for kw in ["detail", "details", "errors", "message"] if kw in data["error"]), "")
+                error_detail_keyword = next(
+                    (
+                        kw
+                        for kw in ["detail", "details", "errors", "message"]
+                        if kw in data["error"]
+                    ),
+                    "",
+                )
                 if error_detail_keyword:
                     self.error_details = data["error"][error_detail_keyword]
             elif isinstance(data, list) and len(data) > 0:

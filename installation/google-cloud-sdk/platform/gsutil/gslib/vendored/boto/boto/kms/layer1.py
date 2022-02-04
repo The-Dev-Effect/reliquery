@@ -87,6 +87,7 @@ class KMSConnection(AWSQueryConnection):
       through the process of signing a request using an access key ID
       and a secret access key.
     """
+
     APIVersion = "2014-11-01"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "kms.us-east-1.amazonaws.com"
@@ -112,21 +113,21 @@ class KMSConnection(AWSQueryConnection):
         "NotFoundException": exceptions.NotFoundException,
     }
 
-
     def __init__(self, **kwargs):
-        region = kwargs.pop('region', None)
+        region = kwargs.pop("region", None)
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
 
-        if 'host' not in kwargs or kwargs['host'] is None:
-            kwargs['host'] = region.endpoint
+        if "host" not in kwargs or kwargs["host"] is None:
+            kwargs["host"] = region.endpoint
 
         super(KMSConnection, self).__init__(**kwargs)
         self.region = region
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
     def create_alias(self, alias_name, target_key_id):
         """
@@ -149,15 +150,20 @@ class KMSConnection(AWSQueryConnection):
 
         """
         params = {
-            'AliasName': alias_name,
-            'TargetKeyId': target_key_id,
+            "AliasName": alias_name,
+            "TargetKeyId": target_key_id,
         }
-        return self.make_request(action='CreateAlias',
-                                 body=json.dumps(params))
+        return self.make_request(action="CreateAlias", body=json.dumps(params))
 
-    def create_grant(self, key_id, grantee_principal,
-                     retiring_principal=None, operations=None,
-                     constraints=None, grant_tokens=None):
+    def create_grant(
+        self,
+        key_id,
+        grantee_principal,
+        retiring_principal=None,
+        operations=None,
+        constraints=None,
+        grant_tokens=None,
+    ):
         """
         Adds a grant to a key to specify who can access the key and
         under what conditions. Grants are alternate permission
@@ -206,19 +212,18 @@ class KMSConnection(AWSQueryConnection):
 
         """
         params = {
-            'KeyId': key_id,
-            'GranteePrincipal': grantee_principal,
+            "KeyId": key_id,
+            "GranteePrincipal": grantee_principal,
         }
         if retiring_principal is not None:
-            params['RetiringPrincipal'] = retiring_principal
+            params["RetiringPrincipal"] = retiring_principal
         if operations is not None:
-            params['Operations'] = operations
+            params["Operations"] = operations
         if constraints is not None:
-            params['Constraints'] = constraints
+            params["Constraints"] = constraints
         if grant_tokens is not None:
-            params['GrantTokens'] = grant_tokens
-        return self.make_request(action='CreateGrant',
-                                 body=json.dumps(params))
+            params["GrantTokens"] = grant_tokens
+        return self.make_request(action="CreateGrant", body=json.dumps(params))
 
     def create_key(self, policy=None, description=None, key_usage=None):
         """
@@ -246,16 +251,14 @@ class KMSConnection(AWSQueryConnection):
         """
         params = {}
         if policy is not None:
-            params['Policy'] = policy
+            params["Policy"] = policy
         if description is not None:
-            params['Description'] = description
+            params["Description"] = description
         if key_usage is not None:
-            params['KeyUsage'] = key_usage
-        return self.make_request(action='CreateKey',
-                                 body=json.dumps(params))
+            params["KeyUsage"] = key_usage
+        return self.make_request(action="CreateKey", body=json.dumps(params))
 
-    def decrypt(self, ciphertext_blob, encryption_context=None,
-                grant_tokens=None):
+    def decrypt(self, ciphertext_blob, encryption_context=None, grant_tokens=None):
         """
         Decrypts ciphertext. Ciphertext is plaintext that has been
         previously encrypted by using the Encrypt function.
@@ -277,18 +280,21 @@ class KMSConnection(AWSQueryConnection):
         if not isinstance(ciphertext_blob, six.binary_type):
             raise TypeError(
                 "Value of argument ``ciphertext_blob`` "
-                "must be of type %s." % six.binary_type)
+                "must be of type %s." % six.binary_type
+            )
         ciphertext_blob = base64.b64encode(ciphertext_blob)
-        params = {'CiphertextBlob': ciphertext_blob.decode('utf-8'), }
+        params = {
+            "CiphertextBlob": ciphertext_blob.decode("utf-8"),
+        }
         if encryption_context is not None:
-            params['EncryptionContext'] = encryption_context
+            params["EncryptionContext"] = encryption_context
         if grant_tokens is not None:
-            params['GrantTokens'] = grant_tokens
-        response = self.make_request(action='Decrypt',
-                                     body=json.dumps(params))
-        if response.get('Plaintext') is not None:
-            response['Plaintext'] = base64.b64decode(
-                response['Plaintext'].encode('utf-8'))
+            params["GrantTokens"] = grant_tokens
+        response = self.make_request(action="Decrypt", body=json.dumps(params))
+        if response.get("Plaintext") is not None:
+            response["Plaintext"] = base64.b64decode(
+                response["Plaintext"].encode("utf-8")
+            )
         return response
 
     def delete_alias(self, alias_name):
@@ -299,9 +305,10 @@ class KMSConnection(AWSQueryConnection):
         :param alias_name: The alias to be deleted.
 
         """
-        params = {'AliasName': alias_name, }
-        return self.make_request(action='DeleteAlias',
-                                 body=json.dumps(params))
+        params = {
+            "AliasName": alias_name,
+        }
+        return self.make_request(action="DeleteAlias", body=json.dumps(params))
 
     def describe_key(self, key_id):
         """
@@ -314,9 +321,10 @@ class KMSConnection(AWSQueryConnection):
             identifier.
 
         """
-        params = {'KeyId': key_id, }
-        return self.make_request(action='DescribeKey',
-                                 body=json.dumps(params))
+        params = {
+            "KeyId": key_id,
+        }
+        return self.make_request(action="DescribeKey", body=json.dumps(params))
 
     def disable_key(self, key_id):
         """
@@ -328,9 +336,10 @@ class KMSConnection(AWSQueryConnection):
             identifier.
 
         """
-        params = {'KeyId': key_id, }
-        return self.make_request(action='DisableKey',
-                                 body=json.dumps(params))
+        params = {
+            "KeyId": key_id,
+        }
+        return self.make_request(action="DisableKey", body=json.dumps(params))
 
     def disable_key_rotation(self, key_id):
         """
@@ -342,9 +351,10 @@ class KMSConnection(AWSQueryConnection):
             globally unique identifier.
 
         """
-        params = {'KeyId': key_id, }
-        return self.make_request(action='DisableKeyRotation',
-                                 body=json.dumps(params))
+        params = {
+            "KeyId": key_id,
+        }
+        return self.make_request(action="DisableKeyRotation", body=json.dumps(params))
 
     def enable_key(self, key_id):
         """
@@ -357,9 +367,10 @@ class KMSConnection(AWSQueryConnection):
             identifier.
 
         """
-        params = {'KeyId': key_id, }
-        return self.make_request(action='EnableKey',
-                                 body=json.dumps(params))
+        params = {
+            "KeyId": key_id,
+        }
+        return self.make_request(action="EnableKey", body=json.dumps(params))
 
     def enable_key_rotation(self, key_id):
         """
@@ -371,12 +382,12 @@ class KMSConnection(AWSQueryConnection):
             globally unique identifier.
 
         """
-        params = {'KeyId': key_id, }
-        return self.make_request(action='EnableKeyRotation',
-                                 body=json.dumps(params))
+        params = {
+            "KeyId": key_id,
+        }
+        return self.make_request(action="EnableKeyRotation", body=json.dumps(params))
 
-    def encrypt(self, key_id, plaintext, encryption_context=None,
-                grant_tokens=None):
+    def encrypt(self, key_id, plaintext, encryption_context=None, grant_tokens=None):
         """
         Encrypts plaintext into ciphertext by using a customer master
         key.
@@ -401,23 +412,32 @@ class KMSConnection(AWSQueryConnection):
         if not isinstance(plaintext, six.binary_type):
             raise TypeError(
                 "Value of argument ``plaintext`` "
-                "must be of type %s." % six.binary_type)
+                "must be of type %s." % six.binary_type
+            )
         plaintext = base64.b64encode(plaintext)
-        params = {'KeyId': key_id, 'Plaintext': plaintext.decode('utf-8'), }
+        params = {
+            "KeyId": key_id,
+            "Plaintext": plaintext.decode("utf-8"),
+        }
         if encryption_context is not None:
-            params['EncryptionContext'] = encryption_context
+            params["EncryptionContext"] = encryption_context
         if grant_tokens is not None:
-            params['GrantTokens'] = grant_tokens
-        response = self.make_request(action='Encrypt',
-                                     body=json.dumps(params))
-        if response.get('CiphertextBlob') is not None:
-            response['CiphertextBlob'] = base64.b64decode(
-                response['CiphertextBlob'].encode('utf-8'))
+            params["GrantTokens"] = grant_tokens
+        response = self.make_request(action="Encrypt", body=json.dumps(params))
+        if response.get("CiphertextBlob") is not None:
+            response["CiphertextBlob"] = base64.b64decode(
+                response["CiphertextBlob"].encode("utf-8")
+            )
         return response
 
-    def generate_data_key(self, key_id, encryption_context=None,
-                          number_of_bytes=None, key_spec=None,
-                          grant_tokens=None):
+    def generate_data_key(
+        self,
+        key_id,
+        encryption_context=None,
+        number_of_bytes=None,
+        key_spec=None,
+        grant_tokens=None,
+    ):
         """
         Generates a secure data key. Data keys are used to encrypt and
         decrypt data. They are wrapped by customer master keys.
@@ -447,30 +467,36 @@ class KMSConnection(AWSQueryConnection):
             can be used to provide long term permissions to generate a key.
 
         """
-        params = {'KeyId': key_id, }
+        params = {
+            "KeyId": key_id,
+        }
         if encryption_context is not None:
-            params['EncryptionContext'] = encryption_context
+            params["EncryptionContext"] = encryption_context
         if number_of_bytes is not None:
-            params['NumberOfBytes'] = number_of_bytes
+            params["NumberOfBytes"] = number_of_bytes
         if key_spec is not None:
-            params['KeySpec'] = key_spec
+            params["KeySpec"] = key_spec
         if grant_tokens is not None:
-            params['GrantTokens'] = grant_tokens
-        response = self.make_request(action='GenerateDataKey',
-                                     body=json.dumps(params))
-        if response.get('CiphertextBlob') is not None:
-            response['CiphertextBlob'] = base64.b64decode(
-                response['CiphertextBlob'].encode('utf-8'))
-        if response.get('Plaintext') is not None:
-            response['Plaintext'] = base64.b64decode(
-                response['Plaintext'].encode('utf-8'))
+            params["GrantTokens"] = grant_tokens
+        response = self.make_request(action="GenerateDataKey", body=json.dumps(params))
+        if response.get("CiphertextBlob") is not None:
+            response["CiphertextBlob"] = base64.b64decode(
+                response["CiphertextBlob"].encode("utf-8")
+            )
+        if response.get("Plaintext") is not None:
+            response["Plaintext"] = base64.b64decode(
+                response["Plaintext"].encode("utf-8")
+            )
         return response
 
-    def generate_data_key_without_plaintext(self, key_id,
-                                            encryption_context=None,
-                                            key_spec=None,
-                                            number_of_bytes=None,
-                                            grant_tokens=None):
+    def generate_data_key_without_plaintext(
+        self,
+        key_id,
+        encryption_context=None,
+        key_spec=None,
+        number_of_bytes=None,
+        grant_tokens=None,
+    ):
         """
         Returns a key wrapped by a customer master key without the
         plaintext copy of that key. To retrieve the plaintext, see
@@ -498,20 +524,24 @@ class KMSConnection(AWSQueryConnection):
             can be used to provide long term permissions to generate a key.
 
         """
-        params = {'KeyId': key_id, }
+        params = {
+            "KeyId": key_id,
+        }
         if encryption_context is not None:
-            params['EncryptionContext'] = encryption_context
+            params["EncryptionContext"] = encryption_context
         if key_spec is not None:
-            params['KeySpec'] = key_spec
+            params["KeySpec"] = key_spec
         if number_of_bytes is not None:
-            params['NumberOfBytes'] = number_of_bytes
+            params["NumberOfBytes"] = number_of_bytes
         if grant_tokens is not None:
-            params['GrantTokens'] = grant_tokens
-        response = self.make_request(action='GenerateDataKeyWithoutPlaintext',
-                                     body=json.dumps(params))
-        if response.get('CiphertextBlob') is not None:
-            response['CiphertextBlob'] = base64.b64decode(
-                response['CiphertextBlob'].encode('utf-8'))
+            params["GrantTokens"] = grant_tokens
+        response = self.make_request(
+            action="GenerateDataKeyWithoutPlaintext", body=json.dumps(params)
+        )
+        if response.get("CiphertextBlob") is not None:
+            response["CiphertextBlob"] = base64.b64decode(
+                response["CiphertextBlob"].encode("utf-8")
+            )
         return response
 
     def generate_random(self, number_of_bytes=None):
@@ -526,12 +556,12 @@ class KMSConnection(AWSQueryConnection):
         """
         params = {}
         if number_of_bytes is not None:
-            params['NumberOfBytes'] = number_of_bytes
-        response = self.make_request(action='GenerateRandom',
-                                     body=json.dumps(params))
-        if response.get('Plaintext') is not None:
-            response['Plaintext'] = base64.b64decode(
-                response['Plaintext'].encode('utf-8'))
+            params["NumberOfBytes"] = number_of_bytes
+        response = self.make_request(action="GenerateRandom", body=json.dumps(params))
+        if response.get("Plaintext") is not None:
+            response["Plaintext"] = base64.b64decode(
+                response["Plaintext"].encode("utf-8")
+            )
         return response
 
     def get_key_policy(self, key_id, policy_name):
@@ -548,9 +578,11 @@ class KMSConnection(AWSQueryConnection):
             by calling ListKeyPolicies.
 
         """
-        params = {'KeyId': key_id, 'PolicyName': policy_name, }
-        return self.make_request(action='GetKeyPolicy',
-                                 body=json.dumps(params))
+        params = {
+            "KeyId": key_id,
+            "PolicyName": policy_name,
+        }
+        return self.make_request(action="GetKeyPolicy", body=json.dumps(params))
 
     def get_key_rotation_status(self, key_id):
         """
@@ -562,9 +594,10 @@ class KMSConnection(AWSQueryConnection):
             alias, or a globally unique identifier.
 
         """
-        params = {'KeyId': key_id, }
-        return self.make_request(action='GetKeyRotationStatus',
-                                 body=json.dumps(params))
+        params = {
+            "KeyId": key_id,
+        }
+        return self.make_request(action="GetKeyRotationStatus", body=json.dumps(params))
 
     def list_aliases(self, limit=None, marker=None):
         """
@@ -585,11 +618,10 @@ class KMSConnection(AWSQueryConnection):
         """
         params = {}
         if limit is not None:
-            params['Limit'] = limit
+            params["Limit"] = limit
         if marker is not None:
-            params['Marker'] = marker
-        return self.make_request(action='ListAliases',
-                                 body=json.dumps(params))
+            params["Marker"] = marker
+        return self.make_request(action="ListAliases", body=json.dumps(params))
 
     def list_grants(self, key_id, limit=None, marker=None):
         """
@@ -612,13 +644,14 @@ class KMSConnection(AWSQueryConnection):
             in the response you just received.
 
         """
-        params = {'KeyId': key_id, }
+        params = {
+            "KeyId": key_id,
+        }
         if limit is not None:
-            params['Limit'] = limit
+            params["Limit"] = limit
         if marker is not None:
-            params['Marker'] = marker
-        return self.make_request(action='ListGrants',
-                                 body=json.dumps(params))
+            params["Marker"] = marker
+        return self.make_request(action="ListGrants", body=json.dumps(params))
 
     def list_key_policies(self, key_id, limit=None, marker=None):
         """
@@ -641,13 +674,14 @@ class KMSConnection(AWSQueryConnection):
             in the response you just received.
 
         """
-        params = {'KeyId': key_id, }
+        params = {
+            "KeyId": key_id,
+        }
         if limit is not None:
-            params['Limit'] = limit
+            params["Limit"] = limit
         if marker is not None:
-            params['Marker'] = marker
-        return self.make_request(action='ListKeyPolicies',
-                                 body=json.dumps(params))
+            params["Marker"] = marker
+        return self.make_request(action="ListKeyPolicies", body=json.dumps(params))
 
     def list_keys(self, limit=None, marker=None):
         """
@@ -668,11 +702,10 @@ class KMSConnection(AWSQueryConnection):
         """
         params = {}
         if limit is not None:
-            params['Limit'] = limit
+            params["Limit"] = limit
         if marker is not None:
-            params['Marker'] = marker
-        return self.make_request(action='ListKeys',
-                                 body=json.dumps(params))
+            params["Marker"] = marker
+        return self.make_request(action="ListKeys", body=json.dumps(params))
 
     def put_key_policy(self, key_id, policy_name, policy):
         """
@@ -691,16 +724,20 @@ class KMSConnection(AWSQueryConnection):
 
         """
         params = {
-            'KeyId': key_id,
-            'PolicyName': policy_name,
-            'Policy': policy,
+            "KeyId": key_id,
+            "PolicyName": policy_name,
+            "Policy": policy,
         }
-        return self.make_request(action='PutKeyPolicy',
-                                 body=json.dumps(params))
+        return self.make_request(action="PutKeyPolicy", body=json.dumps(params))
 
-    def re_encrypt(self, ciphertext_blob, destination_key_id,
-                   source_encryption_context=None,
-                   destination_encryption_context=None, grant_tokens=None):
+    def re_encrypt(
+        self,
+        ciphertext_blob,
+        destination_key_id,
+        source_encryption_context=None,
+        destination_encryption_context=None,
+        grant_tokens=None,
+    ):
         """
         Encrypts data on the server side with a new customer master
         key without exposing the plaintext of the data on the client
@@ -731,23 +768,24 @@ class KMSConnection(AWSQueryConnection):
         if not isinstance(ciphertext_blob, six.binary_type):
             raise TypeError(
                 "Value of argument ``ciphertext_blob`` "
-                "must be of type %s." % six.binary_type)
+                "must be of type %s." % six.binary_type
+            )
         ciphertext_blob = base64.b64encode(ciphertext_blob)
         params = {
-            'CiphertextBlob': ciphertext_blob,
-            'DestinationKeyId': destination_key_id,
+            "CiphertextBlob": ciphertext_blob,
+            "DestinationKeyId": destination_key_id,
         }
         if source_encryption_context is not None:
-            params['SourceEncryptionContext'] = source_encryption_context
+            params["SourceEncryptionContext"] = source_encryption_context
         if destination_encryption_context is not None:
-            params['DestinationEncryptionContext'] = destination_encryption_context
+            params["DestinationEncryptionContext"] = destination_encryption_context
         if grant_tokens is not None:
-            params['GrantTokens'] = grant_tokens
-        response = self.make_request(action='ReEncrypt',
-                                     body=json.dumps(params))
-        if response.get('CiphertextBlob') is not None:
-            response['CiphertextBlob'] = base64.b64decode(
-                response['CiphertextBlob'].encode('utf-8'))
+            params["GrantTokens"] = grant_tokens
+        response = self.make_request(action="ReEncrypt", body=json.dumps(params))
+        if response.get("CiphertextBlob") is not None:
+            response["CiphertextBlob"] = base64.b64decode(
+                response["CiphertextBlob"].encode("utf-8")
+            )
         return response
 
     def retire_grant(self, grant_token):
@@ -760,9 +798,10 @@ class KMSConnection(AWSQueryConnection):
         :param grant_token: Token that identifies the grant to be retired.
 
         """
-        params = {'GrantToken': grant_token, }
-        return self.make_request(action='RetireGrant',
-                                 body=json.dumps(params))
+        params = {
+            "GrantToken": grant_token,
+        }
+        return self.make_request(action="RetireGrant", body=json.dumps(params))
 
     def revoke_grant(self, key_id, grant_id):
         """
@@ -776,13 +815,15 @@ class KMSConnection(AWSQueryConnection):
         :param grant_id: Identifier of the grant to be revoked.
 
         """
-        params = {'KeyId': key_id, 'GrantId': grant_id, }
-        return self.make_request(action='RevokeGrant',
-                                 body=json.dumps(params))
+        params = {
+            "KeyId": key_id,
+            "GrantId": grant_id,
+        }
+        return self.make_request(action="RevokeGrant", body=json.dumps(params))
 
     def update_key_description(self, key_id, description):
         """
-        
+
 
         :type key_id: string
         :param key_id:
@@ -791,31 +832,35 @@ class KMSConnection(AWSQueryConnection):
         :param description:
 
         """
-        params = {'KeyId': key_id, 'Description': description, }
-        return self.make_request(action='UpdateKeyDescription',
-                                 body=json.dumps(params))
+        params = {
+            "KeyId": key_id,
+            "Description": description,
+        }
+        return self.make_request(action="UpdateKeyDescription", body=json.dumps(params))
 
     def make_request(self, action, body):
         headers = {
-            'X-Amz-Target': '%s.%s' % (self.TargetPrefix, action),
-            'Host': self.region.endpoint,
-            'Content-Type': 'application/x-amz-json-1.1',
-            'Content-Length': str(len(body)),
+            "X-Amz-Target": "%s.%s" % (self.TargetPrefix, action),
+            "Host": self.region.endpoint,
+            "Content-Type": "application/x-amz-json-1.1",
+            "Content-Length": str(len(body)),
         }
         http_request = self.build_base_http_request(
-            method='POST', path='/', auth_path='/', params={},
-            headers=headers, data=body)
-        response = self._mexe(http_request, sender=None,
-                              override_num_retries=10)
-        response_body = response.read().decode('utf-8')
+            method="POST",
+            path="/",
+            auth_path="/",
+            params={},
+            headers=headers,
+            data=body,
+        )
+        response = self._mexe(http_request, sender=None, override_num_retries=10)
+        response_body = response.read().decode("utf-8")
         boto.log.debug(response_body)
         if response.status == 200:
             if response_body:
                 return json.loads(response_body)
         else:
             json_body = json.loads(response_body)
-            fault_name = json_body.get('__type', None)
+            fault_name = json_body.get("__type", None)
             exception_class = self._faults.get(fault_name, self.ResponseError)
-            raise exception_class(response.status, response.reason,
-                                  body=json_body)
-
+            raise exception_class(response.status, response.reason, body=json_body)

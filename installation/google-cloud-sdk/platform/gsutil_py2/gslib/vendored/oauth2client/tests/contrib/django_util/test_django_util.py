@@ -30,13 +30,10 @@ from oauth2client.contrib.django_util import site
 from tests.contrib import django_util as tests_django_util
 
 
-urlpatterns = [
-    url(r'^oauth2/', include(site.urls))
-]
+urlpatterns = [url(r"^oauth2/", include(site.urls))]
 
 
 class OAuth2SetupTest(unittest.TestCase):
-
     def setUp(self):
         self.save_settings = copy.deepcopy(django.conf.settings)
         # OAuth2 Settings gets configured based on Django settings
@@ -49,36 +46,30 @@ class OAuth2SetupTest(unittest.TestCase):
 
     @mock.patch("oauth2client.contrib.django_util.clientsecrets")
     def test_settings_initialize(self, clientsecrets):
-        django.conf.settings.GOOGLE_OAUTH2_CLIENT_SECRETS_JSON = 'file.json'
+        django.conf.settings.GOOGLE_OAUTH2_CLIENT_SECRETS_JSON = "file.json"
         clientsecrets.loadfile.return_value = (
             clientsecrets.TYPE_WEB,
-            {
-                'client_id': 'myid',
-                'client_secret': 'hunter2'
-            }
+            {"client_id": "myid", "client_secret": "hunter2"},
         )
 
         oauth2_settings = django_util.OAuth2Settings(django.conf.settings)
         self.assertTrue(clientsecrets.loadfile.called)
-        self.assertEqual(oauth2_settings.client_id, 'myid')
-        self.assertEqual(oauth2_settings.client_secret, 'hunter2')
+        self.assertEqual(oauth2_settings.client_id, "myid")
+        self.assertEqual(oauth2_settings.client_secret, "hunter2")
         django.conf.settings.GOOGLE_OAUTH2_CLIENT_SECRETS_JSON = None
 
     @mock.patch("oauth2client.contrib.django_util.clientsecrets")
     def test_settings_initialize_invalid_type(self, clientsecrets):
-        django.conf.settings.GOOGLE_OAUTH2_CLIENT_SECRETS_JSON = 'file.json'
+        django.conf.settings.GOOGLE_OAUTH2_CLIENT_SECRETS_JSON = "file.json"
         clientsecrets.loadfile.return_value = (
             "wrong_type",
-            {
-                'client_id': 'myid',
-                'client_secret': 'hunter2'
-            }
+            {"client_id": "myid", "client_secret": "hunter2"},
         )
 
         with self.assertRaises(ValueError):
             django_util.OAuth2Settings.__init__(
-                object.__new__(django_util.OAuth2Settings),
-                django.conf.settings)
+                object.__new__(django_util.OAuth2Settings), django.conf.settings
+            )
 
     @mock.patch("oauth2client.contrib.django_util.clientsecrets")
     def test_no_settings(self, clientsecrets):
@@ -88,8 +79,8 @@ class OAuth2SetupTest(unittest.TestCase):
 
         with self.assertRaises(exceptions.ImproperlyConfigured):
             django_util.OAuth2Settings.__init__(
-                object.__new__(django_util.OAuth2Settings),
-                django.conf.settings)
+                object.__new__(django_util.OAuth2Settings), django.conf.settings
+            )
 
     @mock.patch("oauth2client.contrib.django_util.clientsecrets")
     def test_no_session_middleware(self, clientsecrets):
@@ -97,36 +88,38 @@ class OAuth2SetupTest(unittest.TestCase):
 
         with self.assertRaises(exceptions.ImproperlyConfigured):
             django_util.OAuth2Settings.__init__(
-                object.__new__(django_util.OAuth2Settings),
-                django.conf.settings)
+                object.__new__(django_util.OAuth2Settings), django.conf.settings
+            )
 
     def test_no_middleware(self):
         django.conf.settings.MIDDLEWARE_CLASSES = None
         with self.assertRaises(exceptions.ImproperlyConfigured):
             django_util.OAuth2Settings.__init__(
-                object.__new__(django_util.OAuth2Settings),
-                django.conf.settings)
+                object.__new__(django_util.OAuth2Settings), django.conf.settings
+            )
 
     def test_middleware_no_classes(self):
-        django.conf.settings.MIDDLEWARE = (
-            django.conf.settings.MIDDLEWARE_CLASSES)
+        django.conf.settings.MIDDLEWARE = django.conf.settings.MIDDLEWARE_CLASSES
         django.conf.settings.MIDDLEWARE_CLASSES = None
         # primarily testing this doesn't raise an exception
         django_util.OAuth2Settings(django.conf.settings)
 
     def test_storage_model(self):
         STORAGE_MODEL = {
-            'model': 'tests.contrib.django_util.models.CredentialsModel',
-            'user_property': 'user_id',
-            'credentials_property': 'credentials'
+            "model": "tests.contrib.django_util.models.CredentialsModel",
+            "user_property": "user_id",
+            "credentials_property": "credentials",
         }
         django.conf.settings.GOOGLE_OAUTH2_STORAGE_MODEL = STORAGE_MODEL
         oauth2_settings = django_util.OAuth2Settings(django.conf.settings)
-        self.assertEqual(oauth2_settings.storage_model, STORAGE_MODEL['model'])
-        self.assertEqual(oauth2_settings.storage_model_user_property,
-                         STORAGE_MODEL['user_property'])
-        self.assertEqual(oauth2_settings.storage_model_credentials_property,
-                         STORAGE_MODEL['credentials_property'])
+        self.assertEqual(oauth2_settings.storage_model, STORAGE_MODEL["model"])
+        self.assertEqual(
+            oauth2_settings.storage_model_user_property, STORAGE_MODEL["user_property"]
+        )
+        self.assertEqual(
+            oauth2_settings.storage_model_credentials_property,
+            STORAGE_MODEL["credentials_property"],
+        )
 
 
 class MockObjectWithSession(object):
@@ -135,7 +128,6 @@ class MockObjectWithSession(object):
 
 
 class SessionStorageTest(tests_django_util.TestWithDjangoEnvironment):
-
     def setUp(self):
         super(SessionStorageTest, self).setUp()
         self.save_settings = copy.deepcopy(django.conf.settings)
@@ -159,14 +151,13 @@ class SessionStorageTest(tests_django_util.TestWithDjangoEnvironment):
 
 
 class TestUserOAuth2Object(tests_django_util.TestWithDjangoEnvironment):
-
     def setUp(self):
         super(TestUserOAuth2Object, self).setUp()
         self.save_settings = copy.deepcopy(django.conf.settings)
         STORAGE_MODEL = {
-            'model': 'tests.contrib.django_util.models.CredentialsModel',
-            'user_property': 'user_id',
-            'credentials_property': 'credentials'
+            "model": "tests.contrib.django_util.models.CredentialsModel",
+            "user_property": "user_id",
+            "credentials_property": "credentials",
         }
         django.conf.settings.GOOGLE_OAUTH2_STORAGE_MODEL = STORAGE_MODEL
         reload_module(oauth2client.contrib.django_util)
@@ -174,11 +165,13 @@ class TestUserOAuth2Object(tests_django_util.TestWithDjangoEnvironment):
     def tearDown(self):
         super(TestUserOAuth2Object, self).tearDown()
         import django.conf
+
         django.conf.settings = copy.deepcopy(self.save_settings)
 
     def test_get_credentials_anon_user(self):
-        request = self.factory.get('oauth2/oauth2authorize',
-                                   data={'return_url': '/return_endpoint'})
+        request = self.factory.get(
+            "oauth2/oauth2authorize", data={"return_url": "/return_endpoint"}
+        )
         request.session = self.session
         request.user = django_models.AnonymousUser()
         oauth2 = django_util.UserOAuth2(request)

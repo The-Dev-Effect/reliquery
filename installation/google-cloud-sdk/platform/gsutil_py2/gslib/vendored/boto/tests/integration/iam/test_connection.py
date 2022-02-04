@@ -34,8 +34,8 @@ class TestIAM(unittest.TestCase):
         # to the group and then delete everything
         iam = boto.connect_iam()
 
-        name = 'boto-test-%d' % time.time()
-        username = 'boto-test-user-%d' % time.time()
+        name = "boto-test-%d" % time.time()
+        username = "boto-test-user-%d" % time.time()
 
         iam.create_group(name)
         iam.create_user(username)

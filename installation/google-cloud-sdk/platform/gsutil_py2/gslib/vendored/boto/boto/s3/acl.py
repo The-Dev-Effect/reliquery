@@ -22,14 +22,18 @@
 from boto.s3.user import User
 
 
-CannedACLStrings = ['private', 'public-read',
-                    'public-read-write', 'authenticated-read',
-                    'bucket-owner-read', 'bucket-owner-full-control',
-                    'log-delivery-write']
+CannedACLStrings = [
+    "private",
+    "public-read",
+    "public-read-write",
+    "authenticated-read",
+    "bucket-owner-read",
+    "bucket-owner-full-control",
+    "log-delivery-write",
+]
 
 
 class Policy(object):
-
     def __init__(self, parent=None):
         self.parent = parent
         self.namespace = None
@@ -41,9 +45,9 @@ class Policy(object):
             if g.id == self.owner.id:
                 grants.append("%s (owner) = %s" % (g.display_name, g.permission))
             else:
-                if g.type == 'CanonicalUser':
+                if g.type == "CanonicalUser":
                     u = g.display_name
-                elif g.type == 'Group':
+                elif g.type == "Group":
                     u = g.uri
                 else:
                     u = g.email_address
@@ -51,22 +55,22 @@ class Policy(object):
         return "<Policy: %s>" % ", ".join(grants)
 
     def startElement(self, name, attrs, connection):
-        if name == 'AccessControlPolicy':
-            self.namespace = attrs.get('xmlns', None)
+        if name == "AccessControlPolicy":
+            self.namespace = attrs.get("xmlns", None)
             return None
-        if name == 'Owner':
+        if name == "Owner":
             self.owner = User(self)
             return self.owner
-        elif name == 'AccessControlList':
+        elif name == "AccessControlList":
             self.acl = ACL(self)
             return self.acl
         else:
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'Owner':
+        if name == "Owner":
             pass
-        elif name == 'AccessControlList':
+        elif name == "AccessControlList":
             pass
         else:
             setattr(self, name, value)
@@ -75,15 +79,14 @@ class Policy(object):
         if self.namespace is not None:
             s = '<AccessControlPolicy xmlns="{0}">'.format(self.namespace)
         else:
-            s = '<AccessControlPolicy>'
+            s = "<AccessControlPolicy>"
         s += self.owner.to_xml()
         s += self.acl.to_xml()
-        s += '</AccessControlPolicy>'
+        s += "</AccessControlPolicy>"
         return s
 
 
 class ACL(object):
-
     def __init__(self, policy=None):
         self.policy = policy
         self.grants = []
@@ -92,32 +95,40 @@ class ACL(object):
         self.grants.append(grant)
 
     def add_email_grant(self, permission, email_address):
-        grant = Grant(permission=permission, type='AmazonCustomerByEmail',
-                      email_address=email_address)
+        grant = Grant(
+            permission=permission,
+            type="AmazonCustomerByEmail",
+            email_address=email_address,
+        )
         self.grants.append(grant)
 
     def add_user_grant(self, permission, user_id, display_name=None):
-        grant = Grant(permission=permission, type='CanonicalUser', id=user_id, display_name=display_name)
+        grant = Grant(
+            permission=permission,
+            type="CanonicalUser",
+            id=user_id,
+            display_name=display_name,
+        )
         self.grants.append(grant)
 
     def startElement(self, name, attrs, connection):
-        if name == 'Grant':
+        if name == "Grant":
             self.grants.append(Grant(self))
             return self.grants[-1]
         else:
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'Grant':
+        if name == "Grant":
             pass
         else:
             setattr(self, name, value)
 
     def to_xml(self):
-        s = '<AccessControlList>'
+        s = "<AccessControlList>"
         for grant in self.grants:
             s += grant.to_xml()
-        s += '</AccessControlList>'
+        s += "</AccessControlList>"
         return s
 
 
@@ -125,8 +136,15 @@ class Grant(object):
 
     NameSpace = 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'
 
-    def __init__(self, permission=None, type=None, id=None,
-                 display_name=None, uri=None, email_address=None):
+    def __init__(
+        self,
+        permission=None,
+        type=None,
+        id=None,
+        display_name=None,
+        uri=None,
+        email_address=None,
+    ):
         self.permission = permission
         self.id = id
         self.display_name = display_name
@@ -135,37 +153,37 @@ class Grant(object):
         self.type = type
 
     def startElement(self, name, attrs, connection):
-        if name == 'Grantee':
-            self.type = attrs['xsi:type']
+        if name == "Grantee":
+            self.type = attrs["xsi:type"]
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'ID':
+        if name == "ID":
             self.id = value
-        elif name == 'DisplayName':
+        elif name == "DisplayName":
             self.display_name = value
-        elif name == 'URI':
+        elif name == "URI":
             self.uri = value
-        elif name == 'EmailAddress':
+        elif name == "EmailAddress":
             self.email_address = value
-        elif name == 'Grantee':
+        elif name == "Grantee":
             pass
-        elif name == 'Permission':
+        elif name == "Permission":
             self.permission = value
         else:
             setattr(self, name, value)
 
     def to_xml(self):
-        s = '<Grant>'
+        s = "<Grant>"
         s += '<Grantee %s xsi:type="%s">' % (self.NameSpace, self.type)
-        if self.type == 'CanonicalUser':
-            s += '<ID>%s</ID>' % self.id
-            s += '<DisplayName>%s</DisplayName>' % self.display_name
-        elif self.type == 'Group':
-            s += '<URI>%s</URI>' % self.uri
+        if self.type == "CanonicalUser":
+            s += "<ID>%s</ID>" % self.id
+            s += "<DisplayName>%s</DisplayName>" % self.display_name
+        elif self.type == "Group":
+            s += "<URI>%s</URI>" % self.uri
         else:
-            s += '<EmailAddress>%s</EmailAddress>' % self.email_address
-        s += '</Grantee>'
-        s += '<Permission>%s</Permission>' % self.permission
-        s += '</Grant>'
+            s += "<EmailAddress>%s</EmailAddress>" % self.email_address
+        s += "</Grantee>"
+        s += "<Permission>%s</Permission>" % self.permission
+        s += "</Grant>"
         return s

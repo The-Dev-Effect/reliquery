@@ -14,7 +14,7 @@ doclines = """A collection of ASN.1-based protocols modules.
    data structures (X.509, PKCS etc.).
 """
 
-doclines = [x.strip() for x in doclines.split('\n') if x]
+doclines = [x.strip() for x in doclines.split("\n") if x]
 
 
 classifiers = """\
@@ -47,7 +47,8 @@ Topic :: Software Development :: Libraries :: Python Modules
 
 
 def howto_install_setuptools():
-    print("""
+    print(
+        """
    Error: You need setuptools Python package!
 
    It's very easy to install it, just type (as root on Linux):
@@ -56,7 +57,8 @@ def howto_install_setuptools():
    python ez_setup.py
 
    Then you could make eggs from this package.
-""")
+"""
+    )
 
 
 if sys.version_info[:2] < (2, 4):
@@ -66,41 +68,36 @@ if sys.version_info[:2] < (2, 4):
 try:
     from setuptools import setup, Command
 
-    params = {
-        'zip_safe': True,
-        'install_requires': ['pyasn1>=0.4.1,<0.5.0']
-    }
+    params = {"zip_safe": True, "install_requires": ["pyasn1>=0.4.1,<0.5.0"]}
 
 except ImportError:
     for arg in sys.argv:
-        if 'egg' in arg:
+        if "egg" in arg:
             howto_install_setuptools()
             sys.exit(1)
 
     from distutils.core import setup, Command
 
     if sys.version_info[:2] > (2, 4):
-        params = {
-            'requires': ['pyasn1(>=0.4.1,<0.5.0)']
-        }
+        params = {"requires": ["pyasn1(>=0.4.1,<0.5.0)"]}
     else:
-        params = {
-            'requires': ['pyasn1']
-        }
+        params = {"requires": ["pyasn1"]}
 
 params.update(
-    {'name': 'pyasn1-modules',
-     'version': open('pyasn1_modules/__init__.py').read().split('\'')[1],
-     'description': doclines[0],
-     'long_description': ' '.join(doclines[1:]),
-     'maintainer': 'Ilya Etingof <etingof@gmail.com>',
-     'author': 'Ilya Etingof',
-     'author_email': 'etingof@gmail.com',
-     'url': 'https://github.com/etingof/pyasn1-modules',
-     'platforms': ['any'],
-     'classifiers': [x for x in classifiers.split('\n') if x],
-     'license': 'BSD',
-     'packages': ['pyasn1_modules']}
+    {
+        "name": "pyasn1-modules",
+        "version": open("pyasn1_modules/__init__.py").read().split("'")[1],
+        "description": doclines[0],
+        "long_description": " ".join(doclines[1:]),
+        "maintainer": "Ilya Etingof <etingof@gmail.com>",
+        "author": "Ilya Etingof",
+        "author_email": "etingof@gmail.com",
+        "url": "https://github.com/etingof/pyasn1-modules",
+        "platforms": ["any"],
+        "classifiers": [x for x in classifiers.split("\n") if x],
+        "license": "BSD",
+        "packages": ["pyasn1_modules"],
+    }
 )
 
 
@@ -121,15 +118,11 @@ class PyTest(Command):
         pass
 
     def run(self):
-        suite = unittest.TestLoader().loadTestsFromNames(
-            ['tests.__main__.suite']
-        )
+        suite = unittest.TestLoader().loadTestsFromNames(["tests.__main__.suite"])
 
         unittest.TextTestRunner(verbosity=2).run(suite)
 
-params['cmdclass'] = {
-    'test': PyTest,
-    'tests': PyTest
-}
+
+params["cmdclass"] = {"test": PyTest, "tests": PyTest}
 
 setup(**params)

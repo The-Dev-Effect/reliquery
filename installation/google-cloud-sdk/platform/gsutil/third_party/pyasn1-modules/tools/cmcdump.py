@@ -13,8 +13,11 @@ from pyasn1_modules import rfc5652
 from pyasn1_modules import rfc6402
 
 if len(sys.argv) != 1:
-    print("""Usage:
-$ cat cmc_request.pem | %s""" % (sys.argv[0],))
+    print(
+        """Usage:
+$ cat cmc_request.pem | %s"""
+        % (sys.argv[0],)
+    )
     sys.exit(-1)
 
 reqCnt = 0
@@ -29,29 +32,29 @@ data = substrate
 while next_layer:
     if next_layer == rfc5652.id_ct_contentInfo:
         layer, rest = decoder.decode(data, asn1Spec=rfc5652.ContentInfo())
-        assert encoder.encode(layer) == data, 'wrapper recode fails'
+        assert encoder.encode(layer) == data, "wrapper recode fails"
         assert not rest
 
         print(" * New layer (wrapper):")
         print(layer.prettyPrint())
 
-        next_layer = layer['contentType']
-        data = layer['content']
+        next_layer = layer["contentType"]
+        data = layer["content"]
 
     elif next_layer == rfc5652.id_signedData:
         layer, rest = decoder.decode(data, asn1Spec=rfc5652.SignedData())
-        assert encoder.encode(layer) == data, 'wrapper recode fails'
+        assert encoder.encode(layer) == data, "wrapper recode fails"
         assert not rest
 
         print(" * New layer (wrapper):")
         print(layer.prettyPrint())
 
-        next_layer = layer['encapContentInfo']['eContentType']
-        data = layer['encapContentInfo']['eContent']
+        next_layer = layer["encapContentInfo"]["eContentType"]
+        data = layer["encapContentInfo"]["eContent"]
 
     elif next_layer == rfc6402.id_cct_PKIData:
         layer, rest = decoder.decode(data, asn1Spec=rfc6402.PKIData())
-        assert encoder.encode(layer) == data, 'pkidata recode fails'
+        assert encoder.encode(layer) == data, "pkidata recode fails"
         assert not rest
 
         print(" * New layer (pkidata):")

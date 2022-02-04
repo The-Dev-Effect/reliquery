@@ -30,7 +30,7 @@ from datetime import datetime, date, time
 from boto.exception import SDBPersistenceError, S3ResponseError
 from boto.compat import map, six, long_type
 
-ISO8601 = '%Y-%m-%dT%H:%M:%SZ'
+ISO8601 = "%Y-%m-%dT%H:%M:%SZ"
 
 
 class TimeDecodeError(Exception):
@@ -52,24 +52,25 @@ class SDBConverter(object):
     type-specific method by searching for a method
     called"encode_<type name>" or "decode_<type name>".
     """
+
     def __init__(self, manager):
         # Do a delayed import to prevent possible circular import errors.
         from boto.sdb.db.model import Model
+
         self.model_class = Model
         self.manager = manager
-        self.type_map = {bool: (self.encode_bool, self.decode_bool),
-                         int: (self.encode_int, self.decode_int),
-                         float: (self.encode_float, self.decode_float),
-                         self.model_class: (
-                            self.encode_reference, self.decode_reference
-                         ),
-                         Key: (self.encode_reference, self.decode_reference),
-                         datetime: (self.encode_datetime, self.decode_datetime),
-                         date: (self.encode_date, self.decode_date),
-                         time: (self.encode_time, self.decode_time),
-                         Blob: (self.encode_blob, self.decode_blob),
-                         str: (self.encode_string, self.decode_string),
-                      }
+        self.type_map = {
+            bool: (self.encode_bool, self.decode_bool),
+            int: (self.encode_int, self.decode_int),
+            float: (self.encode_float, self.decode_float),
+            self.model_class: (self.encode_reference, self.decode_reference),
+            Key: (self.encode_reference, self.decode_reference),
+            datetime: (self.encode_datetime, self.decode_datetime),
+            date: (self.encode_date, self.decode_date),
+            time: (self.encode_time, self.decode_time),
+            Blob: (self.encode_blob, self.decode_blob),
+            str: (self.encode_string, self.decode_string),
+        }
         if six.PY2:
             self.type_map[long] = (self.encode_long, self.decode_long)
 
@@ -109,10 +110,11 @@ class SDBConverter(object):
 
     def encode_map(self, prop, value):
         import urllib
+
         if value is None:
             return None
         if not isinstance(value, dict):
-            raise ValueError('Expected a dict value, got %s' % type(value))
+            raise ValueError("Expected a dict value, got %s" % type(value))
         new_value = []
         for key in value:
             item_type = getattr(prop, "item_type")
@@ -120,7 +122,7 @@ class SDBConverter(object):
                 item_type = self.model_class
             encoded_value = self.encode(item_type, value[key])
             if encoded_value is not None:
-                new_value.append('%s:%s' % (urllib.quote(key), encoded_value))
+                new_value.append("%s:%s" % (urllib.quote(key), encoded_value))
         return new_value
 
     def encode_prop(self, prop, value):
@@ -134,7 +136,7 @@ class SDBConverter(object):
     def decode_list(self, prop, value):
         if not isinstance(value, list):
             value = [value]
-        if hasattr(prop, 'item_type'):
+        if hasattr(prop, "item_type"):
             item_type = getattr(prop, "item_type")
             dec_val = {}
             for val in value:
@@ -161,9 +163,10 @@ class SDBConverter(object):
     def decode_map_element(self, item_type, value):
         """Decode a single element for a map"""
         import urllib
+
         key = value
         if ":" in value:
-            key, value = value.split(':', 1)
+            key, value = value.split(":", 1)
             key = urllib.unquote(key)
         if self.model_class in item_type.mro():
             value = item_type(id=value)
@@ -182,7 +185,7 @@ class SDBConverter(object):
     def encode_int(self, value):
         value = int(value)
         value += 2147483648
-        return '%010d' % value
+        return "%010d" % value
 
     def decode_int(self, value):
         try:
@@ -197,7 +200,7 @@ class SDBConverter(object):
     def encode_long(self, value):
         value = long_type(value)
         value += 9223372036854775808
-        return '%020d' % value
+        return "%020d" % value
 
     def decode_long(self, value):
         value = long_type(value)
@@ -206,12 +209,12 @@ class SDBConverter(object):
 
     def encode_bool(self, value):
         if value == True or str(value).lower() in ("true", "yes"):
-            return 'true'
+            return "true"
         else:
-            return 'false'
+            return "false"
 
     def decode_bool(self, value):
-        if value.lower() == 'true':
+        if value.lower() == "true":
             return True
         else:
             return False
@@ -220,50 +223,50 @@ class SDBConverter(object):
         """
         See http://tools.ietf.org/html/draft-wood-ldapext-float-00.
         """
-        s = '%e' % value
-        l = s.split('e')
-        mantissa = l[0].ljust(18, '0')
+        s = "%e" % value
+        l = s.split("e")
+        mantissa = l[0].ljust(18, "0")
         exponent = l[1]
         if value == 0.0:
-            case = '3'
-            exponent = '000'
-        elif mantissa[0] != '-' and exponent[0] == '+':
-            case = '5'
-            exponent = exponent[1:].rjust(3, '0')
-        elif mantissa[0] != '-' and exponent[0] == '-':
-            case = '4'
+            case = "3"
+            exponent = "000"
+        elif mantissa[0] != "-" and exponent[0] == "+":
+            case = "5"
+            exponent = exponent[1:].rjust(3, "0")
+        elif mantissa[0] != "-" and exponent[0] == "-":
+            case = "4"
             exponent = 999 + int(exponent)
-            exponent = '%03d' % exponent
-        elif mantissa[0] == '-' and exponent[0] == '-':
-            case = '2'
-            mantissa = '%f' % (10 + float(mantissa))
-            mantissa = mantissa.ljust(18, '0')
-            exponent = exponent[1:].rjust(3, '0')
+            exponent = "%03d" % exponent
+        elif mantissa[0] == "-" and exponent[0] == "-":
+            case = "2"
+            mantissa = "%f" % (10 + float(mantissa))
+            mantissa = mantissa.ljust(18, "0")
+            exponent = exponent[1:].rjust(3, "0")
         else:
-            case = '1'
-            mantissa = '%f' % (10 + float(mantissa))
-            mantissa = mantissa.ljust(18, '0')
+            case = "1"
+            mantissa = "%f" % (10 + float(mantissa))
+            mantissa = mantissa.ljust(18, "0")
             exponent = 999 - int(exponent)
-            exponent = '%03d' % exponent
-        return '%s %s %s' % (case, exponent, mantissa)
+            exponent = "%03d" % exponent
+        return "%s %s %s" % (case, exponent, mantissa)
 
     def decode_float(self, value):
         case = value[0]
         exponent = value[2:5]
         mantissa = value[6:]
-        if case == '3':
+        if case == "3":
             return 0.0
-        elif case == '5':
+        elif case == "5":
             pass
-        elif case == '4':
-            exponent = '%03d' % (int(exponent) - 999)
-        elif case == '2':
-            mantissa = '%f' % (float(mantissa) - 10)
-            exponent = '-' + exponent
+        elif case == "4":
+            exponent = "%03d" % (int(exponent) - 999)
+        elif case == "2":
+            mantissa = "%f" % (float(mantissa) - 10)
+            exponent = "-" + exponent
         else:
-            mantissa = '%f' % (float(mantissa) - 10)
-            exponent = '%03d' % abs((int(exponent) - 999))
-        return float(mantissa + 'e' + exponent)
+            mantissa = "%f" % (float(mantissa) - 10)
+            exponent = "%03d" % abs((int(exponent) - 999))
+        return float(mantissa + "e" + exponent)
 
     def encode_datetime(self, value):
         if isinstance(value, six.string_types):
@@ -305,24 +308,24 @@ class SDBConverter(object):
     encode_time = encode_date
 
     def decode_time(self, value):
-        """ converts strings in the form of HH:MM:SS.mmmmmm
-            (created by datetime.time.isoformat()) to
-            datetime.time objects.
+        """converts strings in the form of HH:MM:SS.mmmmmm
+        (created by datetime.time.isoformat()) to
+        datetime.time objects.
 
-            Timzone-aware strings ("HH:MM:SS.mmmmmm+HH:MM") won't
-            be handled right now and will raise TimeDecodeError.
+        Timzone-aware strings ("HH:MM:SS.mmmmmm+HH:MM") won't
+        be handled right now and will raise TimeDecodeError.
         """
-        if '-' in value or '+' in value:
+        if "-" in value or "+" in value:
             # TODO: Handle tzinfo
             raise TimeDecodeError("Can't handle timezone aware objects: %r" % value)
-        tmp = value.split('.')
-        arg = map(int, tmp[0].split(':'))
+        tmp = value.split(".")
+        arg = map(int, tmp[0].split(":"))
         if len(tmp) == 2:
             arg.append(int(tmp[1]))
         return time(*arg)
 
     def encode_reference(self, value):
-        if value in (None, 'None', '', ' '):
+        if value in (None, "None", "", " "):
             return None
         if isinstance(value, six.string_types):
             return value
@@ -382,7 +385,7 @@ class SDBConverter(object):
         if not isinstance(value, str):
             return value
         try:
-            return six.text_type(value, 'utf-8')
+            return six.text_type(value, "utf-8")
         except:
             # really, this should throw an exception.
             # in the interest of not breaking current
@@ -399,10 +402,19 @@ class SDBConverter(object):
 
 
 class SDBManager(object):
-
-    def __init__(self, cls, db_name, db_user, db_passwd,
-                 db_host, db_port, db_table, ddl_dir, enable_ssl,
-                 consistent=None):
+    def __init__(
+        self,
+        cls,
+        db_name,
+        db_user,
+        db_passwd,
+        db_host,
+        db_port,
+        db_table,
+        ddl_dir,
+        enable_ssl,
+        consistent=None,
+    ):
         self.cls = cls
         self.db_name = db_name
         self.db_user = db_user
@@ -434,12 +446,14 @@ class SDBManager(object):
         return self._domain
 
     def _connect(self):
-        args = dict(aws_access_key_id=self.db_user,
-                    aws_secret_access_key=self.db_passwd,
-                    is_secure=self.enable_ssl)
+        args = dict(
+            aws_access_key_id=self.db_user,
+            aws_secret_access_key=self.db_passwd,
+            is_secure=self.enable_ssl,
+        )
         try:
             region = [x for x in boto.sdb.regions() if x.endpoint == self.db_host][0]
-            args['region'] = region
+            args["region"] = region
         except IndexError:
             pass
         self._sdb = boto.connect_sdb(**args)
@@ -485,7 +499,7 @@ class SDBManager(object):
     def load_object(self, obj):
         if not obj._loaded:
             a = self.domain.get_attributes(obj.id, consistent_read=self.consistent)
-            if '__type__' in a:
+            if "__type__" in a:
                 for prop in obj.properties(hidden=False):
                     if prop.name in a:
                         value = self.decode_value(prop, a[prop.name])
@@ -500,9 +514,9 @@ class SDBManager(object):
         obj = None
         if not a:
             a = self.domain.get_attributes(id, consistent_read=self.consistent)
-        if '__type__' in a:
-            if not cls or a['__type__'] != cls.__name__:
-                cls = find_class(a['__module__'], a['__type__'])
+        if "__type__" in a:
+            if not cls or a["__type__"] != cls.__name__:
+                cls = find_class(a["__module__"], a["__type__"])
             if cls:
                 params = {}
                 for prop in cls.properties(hidden=False):
@@ -513,18 +527,25 @@ class SDBManager(object):
                 obj = cls(id, **params)
                 obj._loaded = True
             else:
-                s = '(%s) class %s.%s not found' % (id, a['__module__'], a['__type__'])
-                boto.log.info('sdbmanager: %s' % s)
+                s = "(%s) class %s.%s not found" % (id, a["__module__"], a["__type__"])
+                boto.log.info("sdbmanager: %s" % s)
         return obj
 
     def get_object_from_id(self, id):
         return self.get_object(None, id)
 
     def query(self, query):
-        query_str = "select * from `%s` %s" % (self.domain.name, self._build_filter_part(query.model_class, query.filters, query.sort_by, query.select))
+        query_str = "select * from `%s` %s" % (
+            self.domain.name,
+            self._build_filter_part(
+                query.model_class, query.filters, query.sort_by, query.select
+            ),
+        )
         if query.limit:
             query_str += " limit %s" % query.limit
-        rs = self.domain.select(query_str, max_items=query.limit, next_token=query.next_token)
+        rs = self.domain.select(
+            query_str, max_items=query.limit, next_token=query.next_token
+        )
         query.rs = rs
         return self._object_lister(query.model_class, rs)
 
@@ -533,23 +554,26 @@ class SDBManager(object):
         Get the number of results that would
         be returned in this query
         """
-        query = "select count(*) from `%s` %s" % (self.domain.name, self._build_filter_part(cls, filters, sort_by, select))
+        query = "select count(*) from `%s` %s" % (
+            self.domain.name,
+            self._build_filter_part(cls, filters, sort_by, select),
+        )
         count = 0
         for row in self.domain.select(query):
-            count += int(row['Count'])
+            count += int(row["Count"])
             if quick:
                 return count
         return count
 
     def _build_filter(self, property, name, op, val):
         if name == "__id__":
-            name = 'itemName()'
+            name = "itemName()"
         if name != "itemName()":
-            name = '`%s`' % name
+            name = "`%s`" % name
         if val is None:
-            if op in ('is', '='):
+            if op in ("is", "="):
                 return "%(name)s is null" % {"name": name}
-            elif op in ('is not', '!='):
+            elif op in ("is not", "!="):
                 return "%s is not null" % name
             else:
                 val = ""
@@ -558,7 +582,7 @@ class SDBManager(object):
                 op = "like"
             elif op in ("!=", "not"):
                 op = "not like"
-            if not(op in ["like", "not like"] and val.startswith("%")):
+            if not (op in ["like", "not like"] and val.startswith("%")):
                 val = "%%:%s" % val
         return "%s %s '%s'" % (name, op, val.replace("'", "''"))
 
@@ -567,6 +591,7 @@ class SDBManager(object):
         Build the filter part
         """
         import types
+
         query_parts = []
 
         order_by_filtered = False
@@ -608,19 +633,24 @@ class SDBManager(object):
                         val = self.encode_value(property, val)
                         if isinstance(val, list):
                             for v in val:
-                                filter_parts_sub.append(self._build_filter(property, name, op, v))
+                                filter_parts_sub.append(
+                                    self._build_filter(property, name, op, v)
+                                )
                         else:
-                            filter_parts_sub.append(self._build_filter(property, name, op, val))
+                            filter_parts_sub.append(
+                                self._build_filter(property, name, op, val)
+                            )
                     filter_parts.append("(%s)" % (" OR ".join(filter_parts_sub)))
                 else:
                     val = self.encode_value(property, value)
                     if isinstance(val, list):
                         for v in val:
-                            filter_parts.append(self._build_filter(property, name, op, v))
+                            filter_parts.append(
+                                self._build_filter(property, name, op, v)
+                            )
                     else:
                         filter_parts.append(self._build_filter(property, name, op, val))
             query_parts.append("(%s)" % (" or ".join(filter_parts)))
-
 
         type_query = "(`__type__` = '%s'" % cls.__name__
         for subclass in self._get_all_decendents(cls).keys():
@@ -643,7 +673,6 @@ class SDBManager(object):
         else:
             return ""
 
-
     def _get_all_decendents(self, cls):
         """Get all decendents for a given class"""
         decendents = {}
@@ -659,9 +688,11 @@ class SDBManager(object):
         if not obj.id:
             obj.id = str(uuid.uuid4())
 
-        attrs = {'__type__': obj.__class__.__name__,
-                 '__module__': obj.__class__.__module__,
-                 '__lineage__': obj.get_lineage()}
+        attrs = {
+            "__type__": obj.__class__.__name__,
+            "__module__": obj.__class__.__module__,
+            "__lineage__": obj.get_lineage(),
+        }
         del_attrs = []
         for property in obj.properties(hidden=False):
             value = property.get_value_for_datastore(obj)
@@ -678,8 +709,10 @@ class SDBManager(object):
                     args = {property.name: value}
                     obj2 = next(obj.find(**args))
                     if obj2.id != obj.id:
-                        raise SDBPersistenceError("Error: %s must be unique!" % property.name)
-                except(StopIteration):
+                        raise SDBPersistenceError(
+                            "Error: %s must be unique!" % property.name
+                        )
+                except (StopIteration):
                     pass
         # Convert the Expected value to SDB format
         if expected_value:
@@ -688,7 +721,9 @@ class SDBManager(object):
             if v is not None and not isinstance(v, bool):
                 v = self.encode_value(prop, v)
             expected_value[1] = v
-        self.domain.put_attributes(obj.id, attrs, replace=True, expected_value=expected_value)
+        self.domain.put_attributes(
+            obj.id, attrs, replace=True, expected_value=expected_value
+        )
         if len(del_attrs) > 0:
             self.domain.delete_attributes(obj.id, del_attrs)
         return obj
@@ -706,7 +741,7 @@ class SDBManager(object):
                 obj2 = next(obj.find(**args))
                 if obj2.id != obj.id:
                     raise SDBPersistenceError("Error: %s must be unique!" % prop.name)
-            except(StopIteration):
+            except (StopIteration):
                 pass
         self.domain.put_attributes(obj.id, {name: value}, replace=True)
 
@@ -719,7 +754,7 @@ class SDBManager(object):
             value = prop.make_value_from_datastore(value)
             setattr(obj, prop.name, value)
             return value
-        raise AttributeError('%s not found' % name)
+        raise AttributeError("%s not found" % name)
 
     def set_key_value(self, obj, name, value):
         self.domain.put_attributes(obj.id, {name: value}, replace=True)

@@ -31,9 +31,8 @@ _HAS_GOOGLE_CREDENTIALS = None
 def has_google_credentials():
     global _HAS_GOOGLE_CREDENTIALS
     if _HAS_GOOGLE_CREDENTIALS is None:
-        provider = Provider('google')
-        if (provider.get_access_key() is None or
-            provider.get_secret_key() is None):
+        provider = Provider("google")
+        if provider.get_access_key() is None or provider.get_secret_key() is None:
             _HAS_GOOGLE_CREDENTIALS = False
         else:
             _HAS_GOOGLE_CREDENTIALS = True
@@ -61,6 +60,7 @@ def retry(ExceptionToCheck, tries=4, delay=3, backoff=2, logger=None):
     :param logger: logger to use. If None, print
     :type logger: logging.Logger instance
     """
+
     def deco_retry(f):
         def f_retry(*args, **kwargs):
             mtries, mdelay = tries, delay
@@ -82,5 +82,7 @@ def retry(ExceptionToCheck, tries=4, delay=3, backoff=2, logger=None):
             if try_one_last_time:
                 return f(*args, **kwargs)
             return
+
         return f_retry  # true decorator
+
     return deco_retry

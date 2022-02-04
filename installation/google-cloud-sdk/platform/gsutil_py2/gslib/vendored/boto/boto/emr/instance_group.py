@@ -26,18 +26,33 @@ class InstanceGroup(object):
         self.type = type
         self.market = market
         self.name = name
-        if market == 'SPOT':
+        if market == "SPOT":
             if not bidprice:
-                raise ValueError('bidprice must be specified if market == SPOT')
+                raise ValueError("bidprice must be specified if market == SPOT")
             self.bidprice = str(bidprice)
 
     def __repr__(self):
-        if self.market == 'SPOT':
-            return '%s.%s(name=%r, num_instances=%r, role=%r, type=%r, market = %r, bidprice = %r)' % (
-                self.__class__.__module__, self.__class__.__name__,
-                self.name, self.num_instances, self.role, self.type, self.market,
-                self.bidprice)
+        if self.market == "SPOT":
+            return (
+                "%s.%s(name=%r, num_instances=%r, role=%r, type=%r, market = %r, bidprice = %r)"
+                % (
+                    self.__class__.__module__,
+                    self.__class__.__name__,
+                    self.name,
+                    self.num_instances,
+                    self.role,
+                    self.type,
+                    self.market,
+                    self.bidprice,
+                )
+            )
         else:
-            return '%s.%s(name=%r, num_instances=%r, role=%r, type=%r, market = %r)' % (
-                self.__class__.__module__, self.__class__.__name__,
-                self.name, self.num_instances, self.role, self.type, self.market)
+            return "%s.%s(name=%r, num_instances=%r, role=%r, type=%r, market = %r)" % (
+                self.__class__.__module__,
+                self.__class__.__name__,
+                self.name,
+                self.num_instances,
+                self.role,
+                self.type,
+                self.market,
+            )

@@ -20,7 +20,7 @@ are used to a different naming scheme, and this module makes the transition
 easier.
 """
 
-__author__ = 'dborowitz@google.com (Dave Borowitz)'
+__author__ = "dborowitz@google.com (Dave Borowitz)"
 
 import atexit
 
@@ -28,40 +28,40 @@ import pkg_resources
 
 
 def _Call(func, name):
-  """Call a pkg_resources function.
+    """Call a pkg_resources function.
 
-  Args:
-    func: A function from pkg_resources that takes the arguments
-          (package_or_requirement, resource_name); for more info,
-          see http://peak.telecommunity.com/DevCenter/PkgResources
-    name: A name of the form 'module.name:path/to/resource'; this should
-          generally be built from __name__ in the calling module.
+    Args:
+      func: A function from pkg_resources that takes the arguments
+            (package_or_requirement, resource_name); for more info,
+            see http://peak.telecommunity.com/DevCenter/PkgResources
+      name: A name of the form 'module.name:path/to/resource'; this should
+            generally be built from __name__ in the calling module.
 
-  Returns:
-    The result of calling the function on the split resource name.
-  """
-  pkg_name, resource_name = name.split(':', 1)
-  return func(pkg_name, resource_name)
+    Returns:
+      The result of calling the function on the split resource name.
+    """
+    pkg_name, resource_name = name.split(":", 1)
+    return func(pkg_name, resource_name)
 
 
 def GetResource(name):
-  """Get a resource as a string; see _Call."""
-  return _Call(pkg_resources.resource_string, name)
+    """Get a resource as a string; see _Call."""
+    return _Call(pkg_resources.resource_string, name)
 
 
 def GetResourceAsFile(name):
-  """Get a resource as a file-like object; see _Call."""
-  return _Call(pkg_resources.resource_stream, name)
+    """Get a resource as a file-like object; see _Call."""
+    return _Call(pkg_resources.resource_stream, name)
 
 
 _extracted_files = False
 
 
 def GetResourceFilename(name):
-  """Get a filename for a resource; see _Call."""
-  global _extracted_files  # pylint: disable-msg=W0603
-  if not _extracted_files:
-    atexit.register(pkg_resources.cleanup_resources)
-    _extracted_files = True
+    """Get a filename for a resource; see _Call."""
+    global _extracted_files  # pylint: disable-msg=W0603
+    if not _extracted_files:
+        atexit.register(pkg_resources.cleanup_resources)
+        _extracted_files = True
 
-  return _Call(pkg_resources.resource_filename, name)
+    return _Call(pkg_resources.resource_filename, name)

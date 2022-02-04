@@ -185,25 +185,29 @@ RUN_INSTANCE_RESPONSE = br"""
 
 class TestRunInstanceResponseParsing(unittest.TestCase):
     def testIAMInstanceProfileParsedCorrectly(self):
-        ec2 = EC2Connection(aws_access_key_id='aws_access_key_id',
-                            aws_secret_access_key='aws_secret_access_key')
+        ec2 = EC2Connection(
+            aws_access_key_id="aws_access_key_id",
+            aws_secret_access_key="aws_secret_access_key",
+        )
         mock_response = mock.Mock()
         mock_response.read.return_value = RUN_INSTANCE_RESPONSE
         mock_response.status = 200
         ec2.make_request = mock.Mock(return_value=mock_response)
-        reservation = ec2.run_instances(image_id='ami-12345')
+        reservation = ec2.run_instances(image_id="ami-12345")
         self.assertEqual(len(reservation.instances), 1)
         instance = reservation.instances[0]
-        self.assertEqual(instance.image_id, 'ami-ed65ba84')
+        self.assertEqual(instance.image_id, "ami-ed65ba84")
         # iamInstanceProfile has an ID element, so we want to make sure
         # that this does not map to instance.id (which should be the
         # id of the ec2 instance).
-        self.assertEqual(instance.id, 'i-ff0f1299')
+        self.assertEqual(instance.id, "i-ff0f1299")
         self.assertDictEqual(
             instance.instance_profile,
-            {'arn': ('arn:aws:iam::ownerid:'
-                     'instance-profile/myinstanceprofile'),
-             'id': 'iamid'})
+            {
+                "arn": ("arn:aws:iam::ownerid:" "instance-profile/myinstanceprofile"),
+                "id": "iamid",
+            },
+        )
 
 
 class TestRunInstances(AWSMockServiceTestCase):
@@ -220,25 +224,31 @@ class TestRunInstances(AWSMockServiceTestCase):
         self.set_http_response(status_code=200)
 
         response = self.service_connection.run_instances(
-            image_id='123456',
-            instance_type='m1.large',
-            security_groups=['group1', 'group2'],
-            user_data='#!/bin/bash'
+            image_id="123456",
+            instance_type="m1.large",
+            security_groups=["group1", "group2"],
+            user_data="#!/bin/bash",
         )
 
-        self.assert_request_parameters({
-            'Action': 'RunInstances',
-            'ImageId': '123456',
-            'InstanceType': 'm1.large',
-            'UserData': base64.b64encode(b'#!/bin/bash').decode('utf-8'),
-            'MaxCount': 1,
-            'MinCount': 1,
-            'SecurityGroup.1': 'group1',
-            'SecurityGroup.2': 'group2',
-        }, ignore_params_values=[
-            'Version', 'AWSAccessKeyId', 'SignatureMethod', 'SignatureVersion',
-            'Timestamp'
-        ])
+        self.assert_request_parameters(
+            {
+                "Action": "RunInstances",
+                "ImageId": "123456",
+                "InstanceType": "m1.large",
+                "UserData": base64.b64encode(b"#!/bin/bash").decode("utf-8"),
+                "MaxCount": 1,
+                "MinCount": 1,
+                "SecurityGroup.1": "group1",
+                "SecurityGroup.2": "group2",
+            },
+            ignore_params_values=[
+                "Version",
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+            ],
+        )
 
 
 class TestDescribeInstances(AWSMockServiceTestCase):
@@ -263,15 +273,15 @@ class TestDescribeInstances(AWSMockServiceTestCase):
         self.assertEqual(len(interface.private_ip_addresses), 3)
 
         addresses = interface.private_ip_addresses
-        self.assertEqual(addresses[0].private_ip_address, '10.0.0.67')
+        self.assertEqual(addresses[0].private_ip_address, "10.0.0.67")
         self.assertTrue(addresses[0].primary)
 
-        self.assertEqual(addresses[1].private_ip_address, '10.0.0.54')
+        self.assertEqual(addresses[1].private_ip_address, "10.0.0.54")
         self.assertFalse(addresses[1].primary)
 
-        self.assertEqual(addresses[2].private_ip_address, '10.0.0.55')
+        self.assertEqual(addresses[2].private_ip_address, "10.0.0.55")
         self.assertFalse(addresses[2].primary)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

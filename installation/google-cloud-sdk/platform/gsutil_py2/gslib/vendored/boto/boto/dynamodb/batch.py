@@ -48,8 +48,7 @@ class Batch(object):
 
     """
 
-    def __init__(self, table, keys, attributes_to_get=None,
-                 consistent_read=False):
+    def __init__(self, table, keys, attributes_to_get=None, consistent_read=False):
         self.table = table
         self.keys = keys
         self.attributes_to_get = attributes_to_get
@@ -67,16 +66,17 @@ class Batch(object):
             else:
                 hash_key = key
                 range_key = None
-            k = self.table.layer2.build_key_from_values(self.table.schema,
-                                                        hash_key, range_key)
+            k = self.table.layer2.build_key_from_values(
+                self.table.schema, hash_key, range_key
+            )
             key_list.append(k)
-        batch_dict['Keys'] = key_list
+        batch_dict["Keys"] = key_list
         if self.attributes_to_get:
-            batch_dict['AttributesToGet'] = self.attributes_to_get
+            batch_dict["AttributesToGet"] = self.attributes_to_get
         if self.consistent_read:
-            batch_dict['ConsistentRead'] = True
+            batch_dict["ConsistentRead"] = True
         else:
-            batch_dict['ConsistentRead'] = False
+            batch_dict["ConsistentRead"] = False
         return batch_dict
 
 
@@ -111,8 +111,8 @@ class BatchWrite(object):
         """
         op_list = []
         for item in self.puts:
-            d = {'Item': self.table.layer2.dynamize_item(item)}
-            d = {'PutRequest': d}
+            d = {"Item": self.table.layer2.dynamize_item(item)}
+            d = {"PutRequest": d}
             op_list.append(d)
         for key in self.deletes:
             if isinstance(key, tuple):
@@ -120,10 +120,11 @@ class BatchWrite(object):
             else:
                 hash_key = key
                 range_key = None
-            k = self.table.layer2.build_key_from_values(self.table.schema,
-                                                        hash_key, range_key)
-            d = {'Key': k}
-            op_list.append({'DeleteRequest': d})
+            k = self.table.layer2.build_key_from_values(
+                self.table.schema, hash_key, range_key
+            )
+            d = {"Key": k}
+            op_list.append({"DeleteRequest": d})
         return (self.table.name, op_list)
 
 
@@ -138,8 +139,7 @@ class BatchList(list):
         self.unprocessed = None
         self.layer2 = layer2
 
-    def add_batch(self, table, keys, attributes_to_get=None,
-                  consistent_read=False):
+    def add_batch(self, table, keys, attributes_to_get=None, consistent_read=False):
         """
         Add a Batch to this BatchList.
 
@@ -178,20 +178,20 @@ class BatchList(list):
             return None
 
         for table_name, table_req in six.iteritems(self.unprocessed):
-            table_keys = table_req['Keys']
+            table_keys = table_req["Keys"]
             table = self.layer2.get_table(table_name)
 
             keys = []
             for key in table_keys:
-                h = key['HashKeyElement']
+                h = key["HashKeyElement"]
                 r = None
-                if 'RangeKeyElement' in key:
-                    r = key['RangeKeyElement']
+                if "RangeKeyElement" in key:
+                    r = key["RangeKeyElement"]
                 keys.append((h, r))
 
             attributes_to_get = None
-            if 'AttributesToGet' in table_req:
-                attributes_to_get = table_req['AttributesToGet']
+            if "AttributesToGet" in table_req:
+                attributes_to_get = table_req["AttributesToGet"]
 
             self.add_batch(table, keys, attributes_to_get=attributes_to_get)
 
@@ -199,8 +199,8 @@ class BatchList(list):
 
     def submit(self):
         res = self.layer2.batch_get_item(self)
-        if 'UnprocessedKeys' in res:
-            self.unprocessed = res['UnprocessedKeys']
+        if "UnprocessedKeys" in res:
+            self.unprocessed = res["UnprocessedKeys"]
         return res
 
     def to_dict(self):
@@ -210,7 +210,7 @@ class BatchList(list):
         d = {}
         for batch in self:
             b = batch.to_dict()
-            if b['Keys']:
+            if b["Keys"]:
                 d[batch.table.name] = b
         return d
 

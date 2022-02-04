@@ -16,7 +16,7 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 # OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
 # ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
@@ -34,12 +34,11 @@ from boto.exception import S3ResponseError
 from boto.s3.deletemarker import DeleteMarker
 
 
-@attr('notdefault', 's3mfa')
-class S3MFATest (unittest.TestCase):
-
+@attr("notdefault", "s3mfa")
+class S3MFATest(unittest.TestCase):
     def setUp(self):
         self.conn = S3Connection()
-        self.bucket_name = 'mfa-%d' % int(time.time())
+        self.bucket_name = "mfa-%d" % int(time.time())
         self.bucket = self.conn.create_bucket(self.bucket_name)
 
     def tearDown(self):
@@ -49,47 +48,51 @@ class S3MFATest (unittest.TestCase):
 
     def test_mfadel(self):
         # Enable Versioning with MfaDelete
-        mfa_sn = raw_input('MFA S/N: ')
-        mfa_code = raw_input('MFA Code: ')
-        self.bucket.configure_versioning(True, mfa_delete=True, mfa_token=(mfa_sn, mfa_code))
+        mfa_sn = raw_input("MFA S/N: ")
+        mfa_code = raw_input("MFA Code: ")
+        self.bucket.configure_versioning(
+            True, mfa_delete=True, mfa_token=(mfa_sn, mfa_code)
+        )
 
         # Check enabling mfa worked.
         i = 0
         for i in range(1, 8):
-            time.sleep(2**i)
+            time.sleep(2 ** i)
             d = self.bucket.get_versioning_status()
-            if d['Versioning'] == 'Enabled' and d['MfaDelete'] == 'Enabled':
+            if d["Versioning"] == "Enabled" and d["MfaDelete"] == "Enabled":
                 break
-        self.assertEqual('Enabled', d['Versioning'])
-        self.assertEqual('Enabled', d['MfaDelete'])
+        self.assertEqual("Enabled", d["Versioning"])
+        self.assertEqual("Enabled", d["MfaDelete"])
 
         # Add a key to the bucket
-        k = self.bucket.new_key('foobar')
-        s1 = 'This is v1'
+        k = self.bucket.new_key("foobar")
+        s1 = "This is v1"
         k.set_contents_from_string(s1)
         v1 = k.version_id
 
         # Now try to delete v1 without the MFA token
         try:
-            self.bucket.delete_key('foobar', version_id=v1)
+            self.bucket.delete_key("foobar", version_id=v1)
             self.fail("Must fail if not using MFA token")
         except S3ResponseError:
             pass
 
         # Now try delete again with the MFA token
-        mfa_code = raw_input('MFA Code: ')
-        self.bucket.delete_key('foobar', version_id=v1, mfa_token=(mfa_sn, mfa_code))
+        mfa_code = raw_input("MFA Code: ")
+        self.bucket.delete_key("foobar", version_id=v1, mfa_token=(mfa_sn, mfa_code))
 
         # Next suspend versioning and disable MfaDelete on the bucket
-        mfa_code = raw_input('MFA Code: ')
-        self.bucket.configure_versioning(False, mfa_delete=False, mfa_token=(mfa_sn, mfa_code))
+        mfa_code = raw_input("MFA Code: ")
+        self.bucket.configure_versioning(
+            False, mfa_delete=False, mfa_token=(mfa_sn, mfa_code)
+        )
 
         # Lastly, check disabling mfa worked.
         i = 0
         for i in range(1, 8):
-            time.sleep(2**i)
+            time.sleep(2 ** i)
             d = self.bucket.get_versioning_status()
-            if d['Versioning'] == 'Suspended' and d['MfaDelete'] != 'Enabled':
+            if d["Versioning"] == "Suspended" and d["MfaDelete"] != "Enabled":
                 break
-        self.assertEqual('Suspended', d['Versioning'])
-        self.assertNotEqual('Enabled', d['MfaDelete'])
+        self.assertEqual("Suspended", d["Versioning"])
+        self.assertNotEqual("Enabled", d["MfaDelete"])

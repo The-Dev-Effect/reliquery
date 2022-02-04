@@ -23,13 +23,17 @@ from tests.unit import AWSMockServiceTestCase
 from boto.glacier.layer1 import Layer1
 from boto.glacier.response import GlacierResponse
 
+
 class TestResponse(AWSMockServiceTestCase):
     connection_class = Layer1
 
     def test_204_body_isnt_passed_to_json(self):
-        response = self.create_response(status_code=204,header=[('Content-Type','application/json')])
-        result = GlacierResponse(response,response.getheaders())
+        response = self.create_response(
+            status_code=204, header=[("Content-Type", "application/json")]
+        )
+        result = GlacierResponse(response, response.getheaders())
         self.assertEquals(result.status, response.status)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

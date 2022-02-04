@@ -21,28 +21,26 @@
 
 from boto.s3.key import Key
 
-class Object(Key):
 
+class Object(Key):
     def __init__(self, bucket, name=None):
         super(Object, self).__init__(bucket, name=name)
         self.distribution = bucket.distribution
 
     def __repr__(self):
-        return '<Object: %s/%s>' % (self.distribution.config.origin, self.name)
+        return "<Object: %s/%s>" % (self.distribution.config.origin, self.name)
 
-    def url(self, scheme='http'):
-        url = '%s://' % scheme
+    def url(self, scheme="http"):
+        url = "%s://" % scheme
         url += self.distribution.domain_name
-        if scheme.lower().startswith('rtmp'):
-            url += '/cfx/st/'
+        if scheme.lower().startswith("rtmp"):
+            url += "/cfx/st/"
         else:
-            url += '/'
+            url += "/"
         url += self.name
         return url
 
+
 class StreamingObject(Object):
-
-    def url(self, scheme='rtmp'):
+    def url(self, scheme="rtmp"):
         return super(StreamingObject, self).url(scheme)
-
-

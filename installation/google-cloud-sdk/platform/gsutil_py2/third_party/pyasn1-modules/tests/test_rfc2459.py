@@ -56,7 +56,9 @@ PhmcGcwTTYJBtYze4D1gCCAPRX5ron+jjBXu
 
         substrate = pem.readBase64fromText(self.pem_text)
 
-        asn1Object, rest = der_decoder.decode(substrate, asn1Spec=self.asn1Spec, decodeOpenTypes=True)
+        asn1Object, rest = der_decoder.decode(
+            substrate, asn1Spec=self.asn1Spec, decodeOpenTypes=True
+        )
 
         assert not rest
         assert asn1Object.prettyPrint()
@@ -92,7 +94,9 @@ vjnIhxTFoCb5vA==
 
         substrate = pem.readBase64fromText(self.pem_text)
 
-        asn1Object, rest = der_decoder.decode(substrate, asn1Spec=self.asn1Spec, decodeOpenTypes=True)
+        asn1Object, rest = der_decoder.decode(
+            substrate, asn1Spec=self.asn1Spec, decodeOpenTypes=True
+        )
 
         assert not rest
         assert asn1Object.prettyPrint()
@@ -130,15 +134,16 @@ INow2I3/ks+0MxDabTY=
 
         substrate = pem.readBase64fromText(self.pem_text)
 
-        asn1Object, rest = der_decoder.decode(substrate, asn1Spec=self.asn1Spec, decodeOpenTypes=True)
+        asn1Object, rest = der_decoder.decode(
+            substrate, asn1Spec=self.asn1Spec, decodeOpenTypes=True
+        )
 
         assert not rest
         assert asn1Object.prettyPrint()
         assert der_encoder.encode(asn1Object) == substrate
 
 
-
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.TextTestRunner(verbosity=2).run(suite)

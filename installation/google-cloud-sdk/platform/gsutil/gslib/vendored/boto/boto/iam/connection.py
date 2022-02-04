@@ -27,56 +27,75 @@ from boto.iam.summarymap import SummaryMap
 from boto.connection import AWSQueryConnection
 
 DEFAULT_POLICY_DOCUMENTS = {
-    'default': {
-        'Statement': [
+    "default": {
+        "Statement": [
             {
-                'Principal': {
-                    'Service': ['ec2.amazonaws.com']
-                },
-                'Effect': 'Allow',
-                'Action': ['sts:AssumeRole']
+                "Principal": {"Service": ["ec2.amazonaws.com"]},
+                "Effect": "Allow",
+                "Action": ["sts:AssumeRole"],
             }
         ]
     },
-    'amazonaws.com.cn': {
-        'Statement': [
+    "amazonaws.com.cn": {
+        "Statement": [
             {
-                'Principal': {
-                    'Service': ['ec2.amazonaws.com.cn']
-                },
-                'Effect': 'Allow',
-                'Action': ['sts:AssumeRole']
+                "Principal": {"Service": ["ec2.amazonaws.com.cn"]},
+                "Effect": "Allow",
+                "Action": ["sts:AssumeRole"],
             }
         ]
     },
 }
 # For backward-compatibility, we'll preserve this here.
-ASSUME_ROLE_POLICY_DOCUMENT = json.dumps(DEFAULT_POLICY_DOCUMENTS['default'])
+ASSUME_ROLE_POLICY_DOCUMENT = json.dumps(DEFAULT_POLICY_DOCUMENTS["default"])
 
 
 class IAMConnection(AWSQueryConnection):
 
-    APIVersion = '2010-05-08'
+    APIVersion = "2010-05-08"
 
-    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None,
-                 is_secure=True, port=None, proxy=None, proxy_port=None,
-                 proxy_user=None, proxy_pass=None, host='iam.amazonaws.com',
-                 debug=0, https_connection_factory=None, path='/',
-                 security_token=None, validate_certs=True, profile_name=None):
-        super(IAMConnection, self).__init__(aws_access_key_id,
-                                            aws_secret_access_key,
-                                            is_secure, port, proxy,
-                                            proxy_port, proxy_user, proxy_pass,
-                                            host, debug, https_connection_factory,
-                                            path, security_token,
-                                            validate_certs=validate_certs,
-                                            profile_name=profile_name)
+    def __init__(
+        self,
+        aws_access_key_id=None,
+        aws_secret_access_key=None,
+        is_secure=True,
+        port=None,
+        proxy=None,
+        proxy_port=None,
+        proxy_user=None,
+        proxy_pass=None,
+        host="iam.amazonaws.com",
+        debug=0,
+        https_connection_factory=None,
+        path="/",
+        security_token=None,
+        validate_certs=True,
+        profile_name=None,
+    ):
+        super(IAMConnection, self).__init__(
+            aws_access_key_id,
+            aws_secret_access_key,
+            is_secure,
+            port,
+            proxy,
+            proxy_port,
+            proxy_user,
+            proxy_pass,
+            host,
+            debug,
+            https_connection_factory,
+            path,
+            security_token,
+            validate_certs=validate_certs,
+            profile_name=profile_name,
+        )
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
-    def get_response(self, action, params, path='/', parent=None,
-                     verb='POST', list_marker='Set'):
+    def get_response(
+        self, action, params, path="/", parent=None, verb="POST", list_marker="Set"
+    ):
         """
         Utility method to handle calls to IAM and parsing of responses.
         """
@@ -87,8 +106,9 @@ class IAMConnection(AWSQueryConnection):
         boto.log.debug(body)
         if response.status == 200:
             if body:
-                e = boto.jsonresponse.Element(list_marker=list_marker,
-                                              pythonize_name=True)
+                e = boto.jsonresponse.Element(
+                    list_marker=list_marker, pythonize_name=True
+                )
                 h = boto.jsonresponse.XmlHandler(e, parent)
                 h.parse(body)
                 return e
@@ -97,15 +117,15 @@ class IAMConnection(AWSQueryConnection):
                 # according to the official documentation.
                 return {}
         else:
-            boto.log.error('%s %s' % (response.status, response.reason))
-            boto.log.error('%s' % body)
+            boto.log.error("%s %s" % (response.status, response.reason))
+            boto.log.error("%s" % body)
             raise self.ResponseError(response.status, response.reason, body)
 
     #
     # Group methods
     #
 
-    def get_all_groups(self, path_prefix='/', marker=None, max_items=None):
+    def get_all_groups(self, path_prefix="/", marker=None, max_items=None):
         """
         List the groups that have the specified path prefix.
 
@@ -125,13 +145,12 @@ class IAMConnection(AWSQueryConnection):
         """
         params = {}
         if path_prefix:
-            params['PathPrefix'] = path_prefix
+            params["PathPrefix"] = path_prefix
         if marker:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if max_items:
-            params['MaxItems'] = max_items
-        return self.get_response('ListGroups', params,
-                                 list_marker='Groups')
+            params["MaxItems"] = max_items
+        return self.get_response("ListGroups", params, list_marker="Groups")
 
     def get_group(self, group_name, marker=None, max_items=None):
         """
@@ -150,14 +169,14 @@ class IAMConnection(AWSQueryConnection):
         :param max_items: Use this only when paginating results to indicate
             the maximum number of groups you want in the response.
         """
-        params = {'GroupName': group_name}
+        params = {"GroupName": group_name}
         if marker:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if max_items:
-            params['MaxItems'] = max_items
-        return self.get_response('GetGroup', params, list_marker='Users')
+            params["MaxItems"] = max_items
+        return self.get_response("GetGroup", params, list_marker="Users")
 
-    def create_group(self, group_name, path='/'):
+    def create_group(self, group_name, path="/"):
         """
         Create a group.
 
@@ -168,9 +187,8 @@ class IAMConnection(AWSQueryConnection):
         :param path: The path to the group (Optional).  Defaults to /.
 
         """
-        params = {'GroupName': group_name,
-                  'Path': path}
-        return self.get_response('CreateGroup', params)
+        params = {"GroupName": group_name, "Path": path}
+        return self.get_response("CreateGroup", params)
 
     def delete_group(self, group_name):
         """
@@ -181,8 +199,8 @@ class IAMConnection(AWSQueryConnection):
         :param group_name: The name of the group to delete.
 
         """
-        params = {'GroupName': group_name}
-        return self.get_response('DeleteGroup', params)
+        params = {"GroupName": group_name}
+        return self.get_response("DeleteGroup", params)
 
     def update_group(self, group_name, new_group_name=None, new_path=None):
         """
@@ -200,12 +218,12 @@ class IAMConnection(AWSQueryConnection):
             changed to this path.
 
         """
-        params = {'GroupName': group_name}
+        params = {"GroupName": group_name}
         if new_group_name:
-            params['NewGroupName'] = new_group_name
+            params["NewGroupName"] = new_group_name
         if new_path:
-            params['NewPath'] = new_path
-        return self.get_response('UpdateGroup', params)
+            params["NewPath"] = new_path
+        return self.get_response("UpdateGroup", params)
 
     def add_user_to_group(self, group_name, user_name):
         """
@@ -218,9 +236,8 @@ class IAMConnection(AWSQueryConnection):
         :param user_name: The to be added to the group.
 
         """
-        params = {'GroupName': group_name,
-                  'UserName': user_name}
-        return self.get_response('AddUserToGroup', params)
+        params = {"GroupName": group_name, "UserName": user_name}
+        return self.get_response("AddUserToGroup", params)
 
     def remove_user_from_group(self, group_name, user_name):
         """
@@ -233,9 +250,8 @@ class IAMConnection(AWSQueryConnection):
         :param user_name: The user to remove from the group.
 
         """
-        params = {'GroupName': group_name,
-                  'UserName': user_name}
-        return self.get_response('RemoveUserFromGroup', params)
+        params = {"GroupName": group_name, "UserName": user_name}
+        return self.get_response("RemoveUserFromGroup", params)
 
     def put_group_policy(self, group_name, policy_name, policy_json):
         """
@@ -251,10 +267,12 @@ class IAMConnection(AWSQueryConnection):
         :param policy_json: The policy document.
 
         """
-        params = {'GroupName': group_name,
-                  'PolicyName': policy_name,
-                  'PolicyDocument': policy_json}
-        return self.get_response('PutGroupPolicy', params, verb='POST')
+        params = {
+            "GroupName": group_name,
+            "PolicyName": policy_name,
+            "PolicyDocument": policy_json,
+        }
+        return self.get_response("PutGroupPolicy", params, verb="POST")
 
     def get_all_group_policies(self, group_name, marker=None, max_items=None):
         """
@@ -273,13 +291,12 @@ class IAMConnection(AWSQueryConnection):
         :param max_items: Use this only when paginating results to indicate
             the maximum number of groups you want in the response.
         """
-        params = {'GroupName': group_name}
+        params = {"GroupName": group_name}
         if marker:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if max_items:
-            params['MaxItems'] = max_items
-        return self.get_response('ListGroupPolicies', params,
-                                 list_marker='PolicyNames')
+            params["MaxItems"] = max_items
+        return self.get_response("ListGroupPolicies", params, list_marker="PolicyNames")
 
     def get_group_policy(self, group_name, policy_name):
         """
@@ -292,9 +309,8 @@ class IAMConnection(AWSQueryConnection):
         :param policy_name: The policy document to get.
 
         """
-        params = {'GroupName': group_name,
-                  'PolicyName': policy_name}
-        return self.get_response('GetGroupPolicy', params, verb='POST')
+        params = {"GroupName": group_name, "PolicyName": policy_name}
+        return self.get_response("GetGroupPolicy", params, verb="POST")
 
     def delete_group_policy(self, group_name, policy_name):
         """
@@ -307,11 +323,10 @@ class IAMConnection(AWSQueryConnection):
         :param policy_name: The policy document to delete.
 
         """
-        params = {'GroupName': group_name,
-                  'PolicyName': policy_name}
-        return self.get_response('DeleteGroupPolicy', params, verb='POST')
+        params = {"GroupName": group_name, "PolicyName": policy_name}
+        return self.get_response("DeleteGroupPolicy", params, verb="POST")
 
-    def get_all_users(self, path_prefix='/', marker=None, max_items=None):
+    def get_all_users(self, path_prefix="/", marker=None, max_items=None):
         """
         List the users that have the specified path prefix.
 
@@ -329,18 +344,18 @@ class IAMConnection(AWSQueryConnection):
         :param max_items: Use this only when paginating results to indicate
             the maximum number of groups you want in the response.
         """
-        params = {'PathPrefix': path_prefix}
+        params = {"PathPrefix": path_prefix}
         if marker:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if max_items:
-            params['MaxItems'] = max_items
-        return self.get_response('ListUsers', params, list_marker='Users')
+            params["MaxItems"] = max_items
+        return self.get_response("ListUsers", params, list_marker="Users")
 
     #
     # User methods
     #
 
-    def create_user(self, user_name, path='/'):
+    def create_user(self, user_name, path="/"):
         """
         Create a user.
 
@@ -352,9 +367,8 @@ class IAMConnection(AWSQueryConnection):
             Defaults to /.
 
         """
-        params = {'UserName': user_name,
-                  'Path': path}
-        return self.get_response('CreateUser', params)
+        params = {"UserName": user_name, "Path": path}
+        return self.get_response("CreateUser", params)
 
     def delete_user(self, user_name):
         """
@@ -367,8 +381,8 @@ class IAMConnection(AWSQueryConnection):
         :param user_name: The name of the user to delete.
 
         """
-        params = {'UserName': user_name}
-        return self.get_response('DeleteUser', params)
+        params = {"UserName": user_name}
+        return self.get_response("DeleteUser", params)
 
     def get_user(self, user_name=None):
         """
@@ -383,8 +397,8 @@ class IAMConnection(AWSQueryConnection):
         """
         params = {}
         if user_name:
-            params['UserName'] = user_name
-        return self.get_response('GetUser', params)
+            params["UserName"] = user_name
+        return self.get_response("GetUser", params)
 
     def update_user(self, user_name, new_user_name=None, new_path=None):
         """
@@ -402,12 +416,12 @@ class IAMConnection(AWSQueryConnection):
             changed to this path.
 
         """
-        params = {'UserName': user_name}
+        params = {"UserName": user_name}
         if new_user_name:
-            params['NewUserName'] = new_user_name
+            params["NewUserName"] = new_user_name
         if new_path:
-            params['NewPath'] = new_path
-        return self.get_response('UpdateUser', params)
+            params["NewPath"] = new_path
+        return self.get_response("UpdateUser", params)
 
     def get_all_user_policies(self, user_name, marker=None, max_items=None):
         """
@@ -426,13 +440,12 @@ class IAMConnection(AWSQueryConnection):
         :param max_items: Use this only when paginating results to indicate
             the maximum number of groups you want in the response.
         """
-        params = {'UserName': user_name}
+        params = {"UserName": user_name}
         if marker:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if max_items:
-            params['MaxItems'] = max_items
-        return self.get_response('ListUserPolicies', params,
-                                 list_marker='PolicyNames')
+            params["MaxItems"] = max_items
+        return self.get_response("ListUserPolicies", params, list_marker="PolicyNames")
 
     def put_user_policy(self, user_name, policy_name, policy_json):
         """
@@ -448,10 +461,12 @@ class IAMConnection(AWSQueryConnection):
         :param policy_json: The policy document.
 
         """
-        params = {'UserName': user_name,
-                  'PolicyName': policy_name,
-                  'PolicyDocument': policy_json}
-        return self.get_response('PutUserPolicy', params, verb='POST')
+        params = {
+            "UserName": user_name,
+            "PolicyName": policy_name,
+            "PolicyDocument": policy_json,
+        }
+        return self.get_response("PutUserPolicy", params, verb="POST")
 
     def get_user_policy(self, user_name, policy_name):
         """
@@ -464,9 +479,8 @@ class IAMConnection(AWSQueryConnection):
         :param policy_name: The policy document to get.
 
         """
-        params = {'UserName': user_name,
-                  'PolicyName': policy_name}
-        return self.get_response('GetUserPolicy', params, verb='POST')
+        params = {"UserName": user_name, "PolicyName": policy_name}
+        return self.get_response("GetUserPolicy", params, verb="POST")
 
     def delete_user_policy(self, user_name, policy_name):
         """
@@ -479,9 +493,8 @@ class IAMConnection(AWSQueryConnection):
         :param policy_name: The policy document to delete.
 
         """
-        params = {'UserName': user_name,
-                  'PolicyName': policy_name}
-        return self.get_response('DeleteUserPolicy', params, verb='POST')
+        params = {"UserName": user_name, "PolicyName": policy_name}
+        return self.get_response("DeleteUserPolicy", params, verb="POST")
 
     def get_groups_for_user(self, user_name, marker=None, max_items=None):
         """
@@ -500,13 +513,12 @@ class IAMConnection(AWSQueryConnection):
         :param max_items: Use this only when paginating results to indicate
             the maximum number of groups you want in the response.
         """
-        params = {'UserName': user_name}
+        params = {"UserName": user_name}
         if marker:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if max_items:
-            params['MaxItems'] = max_items
-        return self.get_response('ListGroupsForUser', params,
-                                 list_marker='Groups')
+            params["MaxItems"] = max_items
+        return self.get_response("ListGroupsForUser", params, list_marker="Groups")
 
     #
     # Access Keys
@@ -529,13 +541,14 @@ class IAMConnection(AWSQueryConnection):
         :param max_items: Use this only when paginating results to indicate
             the maximum number of groups you want in the response.
         """
-        params = {'UserName': user_name}
+        params = {"UserName": user_name}
         if marker:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if max_items:
-            params['MaxItems'] = max_items
-        return self.get_response('ListAccessKeys', params,
-                                 list_marker='AccessKeyMetadata')
+            params["MaxItems"] = max_items
+        return self.get_response(
+            "ListAccessKeys", params, list_marker="AccessKeyMetadata"
+        )
 
     def create_access_key(self, user_name=None):
         """
@@ -549,8 +562,8 @@ class IAMConnection(AWSQueryConnection):
         :param user_name: The username of the user
 
         """
-        params = {'UserName': user_name}
-        return self.get_response('CreateAccessKey', params)
+        params = {"UserName": user_name}
+        return self.get_response("CreateAccessKey", params)
 
     def update_access_key(self, access_key_id, status, user_name=None):
         """
@@ -571,11 +584,10 @@ class IAMConnection(AWSQueryConnection):
         :param user_name: The username of user (optional).
 
         """
-        params = {'AccessKeyId': access_key_id,
-                  'Status': status}
+        params = {"AccessKeyId": access_key_id, "Status": status}
         if user_name:
-            params['UserName'] = user_name
-        return self.get_response('UpdateAccessKey', params)
+            params["UserName"] = user_name
+        return self.get_response("UpdateAccessKey", params)
 
     def delete_access_key(self, access_key_id, user_name=None):
         """
@@ -591,17 +603,16 @@ class IAMConnection(AWSQueryConnection):
         :param user_name: The username of the user
 
         """
-        params = {'AccessKeyId': access_key_id}
+        params = {"AccessKeyId": access_key_id}
         if user_name:
-            params['UserName'] = user_name
-        return self.get_response('DeleteAccessKey', params)
+            params["UserName"] = user_name
+        return self.get_response("DeleteAccessKey", params)
 
     #
     # Signing Certificates
     #
 
-    def get_all_signing_certs(self, marker=None, max_items=None,
-                              user_name=None):
+    def get_all_signing_certs(self, marker=None, max_items=None, user_name=None):
         """
         Get all signing certificates associated with an account.
 
@@ -624,13 +635,14 @@ class IAMConnection(AWSQueryConnection):
         """
         params = {}
         if marker:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if max_items:
-            params['MaxItems'] = max_items
+            params["MaxItems"] = max_items
         if user_name:
-            params['UserName'] = user_name
-        return self.get_response('ListSigningCertificates',
-                                 params, list_marker='Certificates')
+            params["UserName"] = user_name
+        return self.get_response(
+            "ListSigningCertificates", params, list_marker="Certificates"
+        )
 
     def update_signing_cert(self, cert_id, status, user_name=None):
         """
@@ -649,11 +661,10 @@ class IAMConnection(AWSQueryConnection):
         :type user_name: string
         :param user_name: The username of the user
         """
-        params = {'CertificateId': cert_id,
-                  'Status': status}
+        params = {"CertificateId": cert_id, "Status": status}
         if user_name:
-            params['UserName'] = user_name
-        return self.get_response('UpdateSigningCertificate', params)
+            params["UserName"] = user_name
+        return self.get_response("UpdateSigningCertificate", params)
 
     def upload_signing_cert(self, cert_body, user_name=None):
         """
@@ -670,11 +681,10 @@ class IAMConnection(AWSQueryConnection):
         :param user_name: The username of the user
 
         """
-        params = {'CertificateBody': cert_body}
+        params = {"CertificateBody": cert_body}
         if user_name:
-            params['UserName'] = user_name
-        return self.get_response('UploadSigningCertificate', params,
-                                 verb='POST')
+            params["UserName"] = user_name
+        return self.get_response("UploadSigningCertificate", params, verb="POST")
 
     def delete_signing_cert(self, cert_id, user_name=None):
         """
@@ -690,17 +700,16 @@ class IAMConnection(AWSQueryConnection):
         :param cert_id: The ID of the certificate.
 
         """
-        params = {'CertificateId': cert_id}
+        params = {"CertificateId": cert_id}
         if user_name:
-            params['UserName'] = user_name
-        return self.get_response('DeleteSigningCertificate', params)
+            params["UserName"] = user_name
+        return self.get_response("DeleteSigningCertificate", params)
 
     #
     # Server Certificates
     #
 
-    def list_server_certs(self, path_prefix='/',
-                          marker=None, max_items=None):
+    def list_server_certs(self, path_prefix="/", marker=None, max_items=None):
         """
         Lists the server certificates that have the specified path prefix.
         If none exist, the action returns an empty list.
@@ -722,21 +731,22 @@ class IAMConnection(AWSQueryConnection):
         """
         params = {}
         if path_prefix:
-            params['PathPrefix'] = path_prefix
+            params["PathPrefix"] = path_prefix
         if marker:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if max_items:
-            params['MaxItems'] = max_items
-        return self.get_response('ListServerCertificates',
-                                 params,
-                                 list_marker='ServerCertificateMetadataList')
+            params["MaxItems"] = max_items
+        return self.get_response(
+            "ListServerCertificates",
+            params,
+            list_marker="ServerCertificateMetadataList",
+        )
 
     # Preserves backwards compatibility.
     # TODO: Look into deprecating this eventually?
     get_all_server_certs = list_server_certs
 
-    def update_server_cert(self, cert_name, new_cert_name=None,
-                           new_path=None):
+    def update_server_cert(self, cert_name, new_cert_name=None, new_path=None):
         """
         Updates the name and/or the path of the specified server certificate.
 
@@ -753,15 +763,16 @@ class IAMConnection(AWSQueryConnection):
         :param new_path: If provided, the path of the certificate will be
                          changed to this path.
         """
-        params = {'ServerCertificateName': cert_name}
+        params = {"ServerCertificateName": cert_name}
         if new_cert_name:
-            params['NewServerCertificateName'] = new_cert_name
+            params["NewServerCertificateName"] = new_cert_name
         if new_path:
-            params['NewPath'] = new_path
-        return self.get_response('UpdateServerCertificate', params)
+            params["NewPath"] = new_path
+        return self.get_response("UpdateServerCertificate", params)
 
-    def upload_server_cert(self, cert_name, cert_body, private_key,
-                           cert_chain=None, path=None):
+    def upload_server_cert(
+        self, cert_name, cert_body, private_key, cert_chain=None, path=None
+    ):
         """
         Uploads a server certificate entity for the AWS Account.
         The server certificate entity includes a public key certificate,
@@ -788,15 +799,16 @@ class IAMConnection(AWSQueryConnection):
         :type path: string
         :param path: The path for the server certificate.
         """
-        params = {'ServerCertificateName': cert_name,
-                  'CertificateBody': cert_body,
-                  'PrivateKey': private_key}
+        params = {
+            "ServerCertificateName": cert_name,
+            "CertificateBody": cert_body,
+            "PrivateKey": private_key,
+        }
         if cert_chain:
-            params['CertificateChain'] = cert_chain
+            params["CertificateChain"] = cert_chain
         if path:
-            params['Path'] = path
-        return self.get_response('UploadServerCertificate', params,
-                                 verb='POST')
+            params["Path"] = path
+        return self.get_response("UploadServerCertificate", params, verb="POST")
 
     def get_server_certificate(self, cert_name):
         """
@@ -807,8 +819,8 @@ class IAMConnection(AWSQueryConnection):
             to retrieve information about.
 
         """
-        params = {'ServerCertificateName': cert_name}
-        return self.get_response('GetServerCertificate', params)
+        params = {"ServerCertificateName": cert_name}
+        return self.get_response("GetServerCertificate", params)
 
     def delete_server_cert(self, cert_name):
         """
@@ -819,8 +831,8 @@ class IAMConnection(AWSQueryConnection):
             to delete.
 
         """
-        params = {'ServerCertificateName': cert_name}
-        return self.get_response('DeleteServerCertificate', params)
+        params = {"ServerCertificateName": cert_name}
+        return self.get_response("DeleteServerCertificate", params)
 
     #
     # MFA Devices
@@ -844,16 +856,14 @@ class IAMConnection(AWSQueryConnection):
             the maximum number of groups you want in the response.
 
         """
-        params = {'UserName': user_name}
+        params = {"UserName": user_name}
         if marker:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if max_items:
-            params['MaxItems'] = max_items
-        return self.get_response('ListMFADevices',
-                                 params, list_marker='MFADevices')
+            params["MaxItems"] = max_items
+        return self.get_response("ListMFADevices", params, list_marker="MFADevices")
 
-    def enable_mfa_device(self, user_name, serial_number,
-                          auth_code_1, auth_code_2):
+    def enable_mfa_device(self, user_name, serial_number, auth_code_1, auth_code_2):
         """
         Enables the specified MFA device and associates it with the
         specified user.
@@ -873,11 +883,13 @@ class IAMConnection(AWSQueryConnection):
             by the device.
 
         """
-        params = {'UserName': user_name,
-                  'SerialNumber': serial_number,
-                  'AuthenticationCode1': auth_code_1,
-                  'AuthenticationCode2': auth_code_2}
-        return self.get_response('EnableMFADevice', params)
+        params = {
+            "UserName": user_name,
+            "SerialNumber": serial_number,
+            "AuthenticationCode1": auth_code_1,
+            "AuthenticationCode2": auth_code_2,
+        }
+        return self.get_response("EnableMFADevice", params)
 
     def deactivate_mfa_device(self, user_name, serial_number):
         """
@@ -892,12 +904,10 @@ class IAMConnection(AWSQueryConnection):
             the MFA device.
 
         """
-        params = {'UserName': user_name,
-                  'SerialNumber': serial_number}
-        return self.get_response('DeactivateMFADevice', params)
+        params = {"UserName": user_name, "SerialNumber": serial_number}
+        return self.get_response("DeactivateMFADevice", params)
 
-    def resync_mfa_device(self, user_name, serial_number,
-                          auth_code_1, auth_code_2):
+    def resync_mfa_device(self, user_name, serial_number, auth_code_1, auth_code_2):
         """
         Syncronizes the specified MFA device with the AWS servers.
 
@@ -916,11 +926,13 @@ class IAMConnection(AWSQueryConnection):
             by the device.
 
         """
-        params = {'UserName': user_name,
-                  'SerialNumber': serial_number,
-                  'AuthenticationCode1': auth_code_1,
-                  'AuthenticationCode2': auth_code_2}
-        return self.get_response('ResyncMFADevice', params)
+        params = {
+            "UserName": user_name,
+            "SerialNumber": serial_number,
+            "AuthenticationCode1": auth_code_1,
+            "AuthenticationCode2": auth_code_2,
+        }
+        return self.get_response("ResyncMFADevice", params)
 
     #
     # Login Profiles
@@ -934,8 +946,8 @@ class IAMConnection(AWSQueryConnection):
         :param user_name: The username of the user
 
         """
-        params = {'UserName': user_name}
-        return self.get_response('GetLoginProfile', params)
+        params = {"UserName": user_name}
+        return self.get_response("GetLoginProfile", params)
 
     def create_login_profile(self, user_name, password):
         """
@@ -949,9 +961,8 @@ class IAMConnection(AWSQueryConnection):
         :param password: The new password for the user
 
         """
-        params = {'UserName': user_name,
-                  'Password': password}
-        return self.get_response('CreateLoginProfile', params)
+        params = {"UserName": user_name, "Password": password}
+        return self.get_response("CreateLoginProfile", params)
 
     def delete_login_profile(self, user_name):
         """
@@ -961,8 +972,8 @@ class IAMConnection(AWSQueryConnection):
         :param user_name: The name of the user to delete.
 
         """
-        params = {'UserName': user_name}
-        return self.get_response('DeleteLoginProfile', params)
+        params = {"UserName": user_name}
+        return self.get_response("DeleteLoginProfile", params)
 
     def update_login_profile(self, user_name, password):
         """
@@ -975,9 +986,8 @@ class IAMConnection(AWSQueryConnection):
         :param password: The new password for the user
 
         """
-        params = {'UserName': user_name,
-                  'Password': password}
-        return self.get_response('UpdateLoginProfile', params)
+        params = {"UserName": user_name, "Password": password}
+        return self.get_response("UpdateLoginProfile", params)
 
     def create_account_alias(self, alias):
         """
@@ -989,8 +999,8 @@ class IAMConnection(AWSQueryConnection):
         :type alias: string
         :param alias: The alias to attach to the account.
         """
-        params = {'AccountAlias': alias}
-        return self.get_response('CreateAccountAlias', params)
+        params = {"AccountAlias": alias}
+        return self.get_response("CreateAccountAlias", params)
 
     def delete_account_alias(self, alias):
         """
@@ -1002,8 +1012,8 @@ class IAMConnection(AWSQueryConnection):
         :type alias: string
         :param alias: The alias to remove from the account.
         """
-        params = {'AccountAlias': alias}
-        return self.get_response('DeleteAccountAlias', params)
+        params = {"AccountAlias": alias}
+        return self.get_response("DeleteAccountAlias", params)
 
     def get_account_alias(self):
         """
@@ -1015,10 +1025,9 @@ class IAMConnection(AWSQueryConnection):
         For more information on account id aliases, please see
         http://goo.gl/ToB7G
         """
-        return self.get_response('ListAccountAliases', {},
-                                 list_marker='AccountAliases')
+        return self.get_response("ListAccountAliases", {}, list_marker="AccountAliases")
 
-    def get_signin_url(self, service='ec2'):
+    def get_signin_url(self, service="ec2"):
         """
         Get the URL where IAM users can use their login profile to sign in
         to this account's console.
@@ -1029,33 +1038,31 @@ class IAMConnection(AWSQueryConnection):
         alias = self.get_account_alias()
 
         if not alias:
-            raise Exception('No alias associated with this account.  Please use iam.create_account_alias() first.')
+            raise Exception(
+                "No alias associated with this account.  Please use iam.create_account_alias() first."
+            )
 
-        resp = alias.get('list_account_aliases_response', {})
-        result = resp.get('list_account_aliases_result', {})
-        aliases = result.get('account_aliases', [])
+        resp = alias.get("list_account_aliases_response", {})
+        result = resp.get("list_account_aliases_result", {})
+        aliases = result.get("account_aliases", [])
 
         if not len(aliases):
-            raise Exception('No alias associated with this account.  Please use iam.create_account_alias() first.')
+            raise Exception(
+                "No alias associated with this account.  Please use iam.create_account_alias() first."
+            )
 
         # We'll just use the first one we find.
         alias = aliases[0]
 
-        if self.host == 'iam.us-gov.amazonaws.com':
+        if self.host == "iam.us-gov.amazonaws.com":
             return "https://%s.signin.amazonaws-us-gov.com/console/%s" % (
                 alias,
-                service
+                service,
             )
-        elif self.host.endswith('amazonaws.com.cn'):
-            return "https://%s.signin.amazonaws.cn/console/%s" % (
-                alias,
-                service
-            )
+        elif self.host.endswith("amazonaws.com.cn"):
+            return "https://%s.signin.amazonaws.cn/console/%s" % (alias, service)
         else:
-            return "https://%s.signin.aws.amazon.com/console/%s" % (
-                alias,
-                service
-            )
+            return "https://%s.signin.aws.amazon.com/console/%s" % (alias, service)
 
     def get_account_summary(self):
         """
@@ -1067,7 +1074,7 @@ class IAMConnection(AWSQueryConnection):
         For more information on account id aliases, please see
         http://goo.gl/ToB7G
         """
-        return self.get_object('GetAccountSummary', {}, SummaryMap)
+        return self.get_object("GetAccountSummary", {}, SummaryMap)
 
     #
     # IAM Roles
@@ -1083,9 +1090,10 @@ class IAMConnection(AWSQueryConnection):
         :type role_name: string
         :param role_name: Name of the role to add.
         """
-        return self.get_response('AddRoleToInstanceProfile',
-                                 {'InstanceProfileName': instance_profile_name,
-                                  'RoleName': role_name})
+        return self.get_response(
+            "AddRoleToInstanceProfile",
+            {"InstanceProfileName": instance_profile_name, "RoleName": role_name},
+        )
 
     def create_instance_profile(self, instance_profile_name, path=None):
         """
@@ -1097,10 +1105,10 @@ class IAMConnection(AWSQueryConnection):
         :type path: string
         :param path: The path to the instance profile.
         """
-        params = {'InstanceProfileName': instance_profile_name}
+        params = {"InstanceProfileName": instance_profile_name}
         if path is not None:
-            params['Path'] = path
-        return self.get_response('CreateInstanceProfile', params)
+            params["Path"] = path
+        return self.get_response("CreateInstanceProfile", params)
 
     def _build_policy(self, assume_role_policy_document=None):
         if assume_role_policy_document is not None:
@@ -1111,7 +1119,7 @@ class IAMConnection(AWSQueryConnection):
         else:
 
             for tld, policy in DEFAULT_POLICY_DOCUMENTS.items():
-                if tld is 'default':
+                if tld is "default":
                     # Skip the default. We'll fall back to it if we don't find
                     # anything.
                     continue
@@ -1121,7 +1129,7 @@ class IAMConnection(AWSQueryConnection):
                     break
 
             if not assume_role_policy_document:
-                assume_role_policy_document = DEFAULT_POLICY_DOCUMENTS['default']
+                assume_role_policy_document = DEFAULT_POLICY_DOCUMENTS["default"]
 
         # Dump the policy (either user-supplied ``dict`` or one of the defaults)
         return json.dumps(assume_role_policy_document)
@@ -1145,14 +1153,12 @@ class IAMConnection(AWSQueryConnection):
         :param path: The path to the role.
         """
         params = {
-            'RoleName': role_name,
-            'AssumeRolePolicyDocument': self._build_policy(
-                assume_role_policy_document
-            ),
+            "RoleName": role_name,
+            "AssumeRolePolicyDocument": self._build_policy(assume_role_policy_document),
         }
         if path is not None:
-            params['Path'] = path
-        return self.get_response('CreateRole', params)
+            params["Path"] = path
+        return self.get_response("CreateRole", params)
 
     def delete_instance_profile(self, instance_profile_name):
         """
@@ -1163,8 +1169,8 @@ class IAMConnection(AWSQueryConnection):
         :param instance_profile_name: Name of the instance profile to delete.
         """
         return self.get_response(
-            'DeleteInstanceProfile',
-            {'InstanceProfileName': instance_profile_name})
+            "DeleteInstanceProfile", {"InstanceProfileName": instance_profile_name}
+        )
 
     def delete_role(self, role_name):
         """
@@ -1174,7 +1180,7 @@ class IAMConnection(AWSQueryConnection):
         :type role_name: string
         :param role_name: Name of the role to delete.
         """
-        return self.get_response('DeleteRole', {'RoleName': role_name})
+        return self.get_response("DeleteRole", {"RoleName": role_name})
 
     def delete_role_policy(self, role_name, policy_name):
         """
@@ -1187,8 +1193,8 @@ class IAMConnection(AWSQueryConnection):
         :param policy_name: Name of the policy to delete.
         """
         return self.get_response(
-            'DeleteRolePolicy',
-            {'RoleName': role_name, 'PolicyName': policy_name})
+            "DeleteRolePolicy", {"RoleName": role_name, "PolicyName": policy_name}
+        )
 
     def get_instance_profile(self, instance_profile_name):
         """
@@ -1199,8 +1205,9 @@ class IAMConnection(AWSQueryConnection):
         :param instance_profile_name: Name of the instance profile to get
             information about.
         """
-        return self.get_response('GetInstanceProfile',
-                                 {'InstanceProfileName': instance_profile_name})
+        return self.get_response(
+            "GetInstanceProfile", {"InstanceProfileName": instance_profile_name}
+        )
 
     def get_role(self, role_name):
         """
@@ -1211,7 +1218,7 @@ class IAMConnection(AWSQueryConnection):
         :type role_name: string
         :param role_name: Name of the role associated with the policy.
         """
-        return self.get_response('GetRole', {'RoleName': role_name})
+        return self.get_response("GetRole", {"RoleName": role_name})
 
     def get_role_policy(self, role_name, policy_name):
         """
@@ -1223,12 +1230,11 @@ class IAMConnection(AWSQueryConnection):
         :type policy_name: string
         :param policy_name: Name of the policy to get.
         """
-        return self.get_response('GetRolePolicy',
-                                 {'RoleName': role_name,
-                                  'PolicyName': policy_name})
+        return self.get_response(
+            "GetRolePolicy", {"RoleName": role_name, "PolicyName": policy_name}
+        )
 
-    def list_instance_profiles(self, path_prefix=None, marker=None,
-                               max_items=None):
+    def list_instance_profiles(self, path_prefix=None, marker=None, max_items=None):
         """
         Lists the instance profiles that have the specified path prefix. If
         there are none, the action returns an empty list.
@@ -1251,17 +1257,17 @@ class IAMConnection(AWSQueryConnection):
         """
         params = {}
         if path_prefix is not None:
-            params['PathPrefix'] = path_prefix
+            params["PathPrefix"] = path_prefix
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if max_items is not None:
-            params['MaxItems'] = max_items
+            params["MaxItems"] = max_items
 
-        return self.get_response('ListInstanceProfiles', params,
-                                 list_marker='InstanceProfiles')
+        return self.get_response(
+            "ListInstanceProfiles", params, list_marker="InstanceProfiles"
+        )
 
-    def list_instance_profiles_for_role(self, role_name, marker=None,
-                                        max_items=None):
+    def list_instance_profiles_for_role(self, role_name, marker=None, max_items=None):
         """
         Lists the instance profiles that have the specified associated role. If
         there are none, the action returns an empty list.
@@ -1279,13 +1285,14 @@ class IAMConnection(AWSQueryConnection):
         :param max_items: Use this parameter only when paginating results to
             indicate the maximum number of user names you want in the response.
         """
-        params = {'RoleName': role_name}
+        params = {"RoleName": role_name}
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if max_items is not None:
-            params['MaxItems'] = max_items
-        return self.get_response('ListInstanceProfilesForRole', params,
-                                 list_marker='InstanceProfiles')
+            params["MaxItems"] = max_items
+        return self.get_response(
+            "ListInstanceProfilesForRole", params, list_marker="InstanceProfiles"
+        )
 
     def list_role_policies(self, role_name, marker=None, max_items=None):
         """
@@ -1305,13 +1312,12 @@ class IAMConnection(AWSQueryConnection):
         :param max_items: Use this parameter only when paginating results to
             indicate the maximum number of user names you want in the response.
         """
-        params = {'RoleName': role_name}
+        params = {"RoleName": role_name}
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if max_items is not None:
-            params['MaxItems'] = max_items
-        return self.get_response('ListRolePolicies', params,
-                                 list_marker='PolicyNames')
+            params["MaxItems"] = max_items
+        return self.get_response("ListRolePolicies", params, list_marker="PolicyNames")
 
     def list_roles(self, path_prefix=None, marker=None, max_items=None):
         """
@@ -1333,12 +1339,12 @@ class IAMConnection(AWSQueryConnection):
         """
         params = {}
         if path_prefix is not None:
-            params['PathPrefix'] = path_prefix
+            params["PathPrefix"] = path_prefix
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if max_items is not None:
-            params['MaxItems'] = max_items
-        return self.get_response('ListRoles', params, list_marker='Roles')
+            params["MaxItems"] = max_items
+        return self.get_response("ListRoles", params, list_marker="Roles")
 
     def put_role_policy(self, role_name, policy_name, policy_document):
         """
@@ -1353,13 +1359,16 @@ class IAMConnection(AWSQueryConnection):
         :type policy_document: string
         :param policy_document: The policy document.
         """
-        return self.get_response('PutRolePolicy',
-                                 {'RoleName': role_name,
-                                  'PolicyName': policy_name,
-                                  'PolicyDocument': policy_document})
+        return self.get_response(
+            "PutRolePolicy",
+            {
+                "RoleName": role_name,
+                "PolicyName": policy_name,
+                "PolicyDocument": policy_document,
+            },
+        )
 
-    def remove_role_from_instance_profile(self, instance_profile_name,
-                                          role_name):
+    def remove_role_from_instance_profile(self, instance_profile_name, role_name):
         """
         Removes the specified role from the specified instance profile.
 
@@ -1369,9 +1378,10 @@ class IAMConnection(AWSQueryConnection):
         :type role_name: string
         :param role_name: Name of the role to remove.
         """
-        return self.get_response('RemoveRoleFromInstanceProfile',
-                                 {'InstanceProfileName': instance_profile_name,
-                                  'RoleName': role_name})
+        return self.get_response(
+            "RemoveRoleFromInstanceProfile",
+            {"InstanceProfileName": instance_profile_name, "RoleName": role_name},
+        )
 
     def update_assume_role_policy(self, role_name, policy_document):
         """
@@ -1385,9 +1395,10 @@ class IAMConnection(AWSQueryConnection):
         :param policy_document: The policy that grants an entity permission to
             assume the role.
         """
-        return self.get_response('UpdateAssumeRolePolicy',
-                                 {'RoleName': role_name,
-                                  'PolicyDocument': policy_document})
+        return self.get_response(
+            "UpdateAssumeRolePolicy",
+            {"RoleName": role_name, "PolicyDocument": policy_document},
+        )
 
     def create_saml_provider(self, saml_metadata_document, name):
         """
@@ -1430,17 +1441,19 @@ class IAMConnection(AWSQueryConnection):
 
         """
         params = {
-            'SAMLMetadataDocument': saml_metadata_document,
-            'Name': name,
+            "SAMLMetadataDocument": saml_metadata_document,
+            "Name": name,
         }
-        return self.get_response('CreateSAMLProvider', params)
+        return self.get_response("CreateSAMLProvider", params)
 
     def list_saml_providers(self):
         """
         Lists the SAML providers in the account.
         This operation requires `Signature Version 4`_.
         """
-        return self.get_response('ListSAMLProviders', {}, list_marker='SAMLProviderList')
+        return self.get_response(
+            "ListSAMLProviders", {}, list_marker="SAMLProviderList"
+        )
 
     def get_saml_provider(self, saml_provider_arn):
         """
@@ -1453,8 +1466,8 @@ class IAMConnection(AWSQueryConnection):
             provider to get information about.
 
         """
-        params = {'SAMLProviderArn': saml_provider_arn}
-        return self.get_response('GetSAMLProvider', params)
+        params = {"SAMLProviderArn": saml_provider_arn}
+        return self.get_response("GetSAMLProvider", params)
 
     def update_saml_provider(self, saml_provider_arn, saml_metadata_document):
         """
@@ -1476,10 +1489,10 @@ class IAMConnection(AWSQueryConnection):
 
         """
         params = {
-            'SAMLMetadataDocument': saml_metadata_document,
-            'SAMLProviderArn': saml_provider_arn,
+            "SAMLMetadataDocument": saml_metadata_document,
+            "SAMLProviderArn": saml_provider_arn,
         }
-        return self.get_response('UpdateSAMLProvider', params)
+        return self.get_response("UpdateSAMLProvider", params)
 
     def delete_saml_provider(self, saml_provider_arn):
         """
@@ -1496,8 +1509,8 @@ class IAMConnection(AWSQueryConnection):
             provider to delete.
 
         """
-        params = {'SAMLProviderArn': saml_provider_arn}
-        return self.get_response('DeleteSAMLProvider', params)
+        params = {"SAMLProviderArn": saml_provider_arn}
+        return self.get_response("DeleteSAMLProvider", params)
 
     #
     # IAM Reports
@@ -1512,7 +1525,7 @@ class IAMConnection(AWSQueryConnection):
         will error when called
         """
         params = {}
-        return self.get_response('GenerateCredentialReport', params)
+        return self.get_response("GenerateCredentialReport", params)
 
     def get_credential_report(self):
         """
@@ -1522,7 +1535,7 @@ class IAMConnection(AWSQueryConnection):
         The report is returned as a base64 encoded blob within the response.
         """
         params = {}
-        return self.get_response('GetCredentialReport', params)
+        return self.get_response("GetCredentialReport", params)
 
     def create_virtual_mfa_device(self, path, device_name):
         """
@@ -1539,11 +1552,8 @@ class IAMConnection(AWSQueryConnection):
             Used with path to uniquely identify a virtual MFA device.
 
         """
-        params = {
-            'Path': path,
-            'VirtualMFADeviceName': device_name
-        }
-        return self.get_response('CreateVirtualMFADevice', params)
+        params = {"Path": path, "VirtualMFADeviceName": device_name}
+        return self.get_response("CreateVirtualMFADevice", params)
 
     #
     # IAM password policy
@@ -1554,22 +1564,27 @@ class IAMConnection(AWSQueryConnection):
         Returns the password policy for the AWS account.
         """
         params = {}
-        return self.get_response('GetAccountPasswordPolicy', params)
+        return self.get_response("GetAccountPasswordPolicy", params)
 
     def delete_account_password_policy(self):
         """
         Delete the password policy currently set for the AWS account.
         """
         params = {}
-        return self.get_response('DeleteAccountPasswordPolicy', params)
+        return self.get_response("DeleteAccountPasswordPolicy", params)
 
-    def update_account_password_policy(self, allow_users_to_change_password=None,
-                                        hard_expiry=None, max_password_age=None ,
-                                        minimum_password_length=None ,
-                                        password_reuse_prevention=None,
-                                        require_lowercase_characters=None,
-                                        require_numbers=None, require_symbols=None ,
-                                        require_uppercase_characters=None):
+    def update_account_password_policy(
+        self,
+        allow_users_to_change_password=None,
+        hard_expiry=None,
+        max_password_age=None,
+        minimum_password_length=None,
+        password_reuse_prevention=None,
+        require_lowercase_characters=None,
+        require_numbers=None,
+        require_symbols=None,
+        require_uppercase_characters=None,
+    ):
         """
         Update the password policy for the AWS account.
 
@@ -1621,28 +1636,42 @@ class IAMConnection(AWSQueryConnection):
             alphabet (``A`` to ``Z``).
         """
         params = {}
-        if allow_users_to_change_password is not None and type(allow_users_to_change_password) is bool:
-            params['AllowUsersToChangePassword'] = str(allow_users_to_change_password).lower()
+        if (
+            allow_users_to_change_password is not None
+            and type(allow_users_to_change_password) is bool
+        ):
+            params["AllowUsersToChangePassword"] = str(
+                allow_users_to_change_password
+            ).lower()
         if hard_expiry is not None and type(allow_users_to_change_password) is bool:
-            params['HardExpiry'] = str(hard_expiry).lower()
+            params["HardExpiry"] = str(hard_expiry).lower()
         if max_password_age is not None:
-            params['MaxPasswordAge'] = max_password_age
+            params["MaxPasswordAge"] = max_password_age
         if minimum_password_length is not None:
-            params['MinimumPasswordLength'] = minimum_password_length
+            params["MinimumPasswordLength"] = minimum_password_length
         if password_reuse_prevention is not None:
-            params['PasswordReusePrevention'] = password_reuse_prevention
-        if require_lowercase_characters is not None and type(allow_users_to_change_password) is bool:
-            params['RequireLowercaseCharacters'] = str(require_lowercase_characters).lower()
+            params["PasswordReusePrevention"] = password_reuse_prevention
+        if (
+            require_lowercase_characters is not None
+            and type(allow_users_to_change_password) is bool
+        ):
+            params["RequireLowercaseCharacters"] = str(
+                require_lowercase_characters
+            ).lower()
         if require_numbers is not None and type(allow_users_to_change_password) is bool:
-            params['RequireNumbers'] = str(require_numbers).lower()
+            params["RequireNumbers"] = str(require_numbers).lower()
         if require_symbols is not None and type(allow_users_to_change_password) is bool:
-            params['RequireSymbols'] = str(require_symbols).lower()
-        if require_uppercase_characters is not None and type(allow_users_to_change_password) is bool:
-            params['RequireUppercaseCharacters'] = str(require_uppercase_characters).lower()
-        return self.get_response('UpdateAccountPasswordPolicy', params)
+            params["RequireSymbols"] = str(require_symbols).lower()
+        if (
+            require_uppercase_characters is not None
+            and type(allow_users_to_change_password) is bool
+        ):
+            params["RequireUppercaseCharacters"] = str(
+                require_uppercase_characters
+            ).lower()
+        return self.get_response("UpdateAccountPasswordPolicy", params)
 
-    def create_policy(self, policy_name, policy_document, path='/',
-                      description=None):
+    def create_policy(self, policy_name, policy_document, path="/", description=None):
         """
         Create a policy.
 
@@ -1660,19 +1689,17 @@ class IAMConnection(AWSQueryConnection):
         :param path: A description of the new policy.
 
         """
-        params = {'PolicyName': policy_name,
-                  'PolicyDocument': policy_document,
-                  'Path': path}
+        params = {
+            "PolicyName": policy_name,
+            "PolicyDocument": policy_document,
+            "Path": path,
+        }
         if description is not None:
-            params['Description'] = str(description)
+            params["Description"] = str(description)
 
-        return self.get_response('CreatePolicy', params)
+        return self.get_response("CreatePolicy", params)
 
-    def create_policy_version(
-            self,
-            policy_arn,
-            policy_document,
-            set_as_default=None):
+    def create_policy_version(self, policy_arn, policy_document, set_as_default=None):
         """
         Create a policy version.
 
@@ -1687,11 +1714,10 @@ class IAMConnection(AWSQueryConnection):
             Defaults to None.
 
         """
-        params = {'PolicyArn': policy_arn,
-                  'PolicyDocument': policy_document}
+        params = {"PolicyArn": policy_arn, "PolicyDocument": policy_document}
         if type(set_as_default) == bool:
-            params['SetAsDefault'] = str(set_as_default).lower()
-        return self.get_response('CreatePolicyVersion', params)
+            params["SetAsDefault"] = str(set_as_default).lower()
+        return self.get_response("CreatePolicyVersion", params)
 
     def delete_policy(self, policy_arn):
         """
@@ -1701,8 +1727,8 @@ class IAMConnection(AWSQueryConnection):
         :param policy_arn: The ARN of the policy to delete
 
         """
-        params = {'PolicyArn': policy_arn}
-        return self.get_response('DeletePolicy', params)
+        params = {"PolicyArn": policy_arn}
+        return self.get_response("DeletePolicy", params)
 
     def delete_policy_version(self, policy_arn, version_id):
         """
@@ -1715,9 +1741,8 @@ class IAMConnection(AWSQueryConnection):
         :param version_id: The id of the version to delete
 
         """
-        params = {'PolicyArn': policy_arn,
-                  'VersionId': version_id}
-        return self.get_response('DeletePolicyVersion', params)
+        params = {"PolicyArn": policy_arn, "VersionId": version_id}
+        return self.get_response("DeletePolicyVersion", params)
 
     def get_policy(self, policy_arn):
         """
@@ -1727,8 +1752,8 @@ class IAMConnection(AWSQueryConnection):
         :param policy_arn: The ARN of the policy to get information for
 
         """
-        params = {'PolicyArn': policy_arn}
-        return self.get_response('GetPolicy', params)
+        params = {"PolicyArn": policy_arn}
+        return self.get_response("GetPolicy", params)
 
     def get_policy_version(self, policy_arn, version_id):
         """
@@ -1742,12 +1767,17 @@ class IAMConnection(AWSQueryConnection):
         :param version_id: The id of the version to get information for
 
         """
-        params = {'PolicyArn': policy_arn,
-                  'VersionId': version_id}
-        return self.get_response('GetPolicyVersion', params)
+        params = {"PolicyArn": policy_arn, "VersionId": version_id}
+        return self.get_response("GetPolicyVersion", params)
 
-    def list_policies(self, marker=None, max_items=None, only_attached=None,
-                      path_prefix=None, scope=None):
+    def list_policies(
+        self,
+        marker=None,
+        max_items=None,
+        only_attached=None,
+        path_prefix=None,
+        scope=None,
+    ):
         """
         List policies of account.
 
@@ -1769,19 +1799,16 @@ class IAMConnection(AWSQueryConnection):
         """
         params = {}
         if path_prefix is not None:
-            params['PathPrefix'] = path_prefix
+            params["PathPrefix"] = path_prefix
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if max_items is not None:
-            params['MaxItems'] = max_items
+            params["MaxItems"] = max_items
         if type(only_attached) == bool:
-            params['OnlyAttached'] = str(only_attached).lower()
+            params["OnlyAttached"] = str(only_attached).lower()
         if scope is not None:
-            params['Scope'] = scope
-        return self.get_response(
-            'ListPolicies',
-            params,
-            list_marker='Policies')
+            params["Scope"] = scope
+        return self.get_response("ListPolicies", params, list_marker="Policies")
 
     def list_policy_versions(self, policy_arn, marker=None, max_items=None):
         """
@@ -1798,15 +1825,12 @@ class IAMConnection(AWSQueryConnection):
         :param max_items: Send only max_items; allows paginations
 
         """
-        params = {'PolicyArn': policy_arn}
+        params = {"PolicyArn": policy_arn}
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if max_items is not None:
-            params['MaxItems'] = max_items
-        return self.get_response(
-            'ListPolicyVersions',
-            params,
-            list_marker='Versions')
+            params["MaxItems"] = max_items
+        return self.get_response("ListPolicyVersions", params, list_marker="Versions")
 
     def set_default_policy_version(self, policy_arn, version_id):
         """
@@ -1819,13 +1843,17 @@ class IAMConnection(AWSQueryConnection):
         :type version_id: string
         :param version_id: The id of the version to set as default
         """
-        params = {'PolicyArn': policy_arn,
-                  'VersionId': version_id}
-        return self.get_response('SetDefaultPolicyVersion', params)
+        params = {"PolicyArn": policy_arn, "VersionId": version_id}
+        return self.get_response("SetDefaultPolicyVersion", params)
 
-    def list_entities_for_policy(self, policy_arn, path_prefix=None,
-                                 marker=None, max_items=None,
-                                 entity_filter=None):
+    def list_entities_for_policy(
+        self,
+        policy_arn,
+        path_prefix=None,
+        marker=None,
+        max_items=None,
+        entity_filter=None,
+    ):
         """
         :type policy_arn: string
         :param policy_arn: The ARN of the policy to get entities for
@@ -1845,19 +1873,20 @@ class IAMConnection(AWSQueryConnection):
             LocalManagedPolicy | AWSManagedPolicy to return
 
         """
-        params = {'PolicyArn': policy_arn}
+        params = {"PolicyArn": policy_arn}
         if marker is not None:
-            params['Marker'] = marker
+            params["Marker"] = marker
         if max_items is not None:
-            params['MaxItems'] = max_items
+            params["MaxItems"] = max_items
         if path_prefix is not None:
-            params['PathPrefix'] = path_prefix
+            params["PathPrefix"] = path_prefix
         if entity_filter is not None:
-            params['EntityFilter'] = entity_filter
-        return self.get_response('ListEntitiesForPolicy', params,
-                                 list_marker=('PolicyGroups',
-                                              'PolicyUsers',
-                                              'PolicyRoles'))
+            params["EntityFilter"] = entity_filter
+        return self.get_response(
+            "ListEntitiesForPolicy",
+            params,
+            list_marker=("PolicyGroups", "PolicyUsers", "PolicyRoles"),
+        )
 
     def attach_group_policy(self, policy_arn, group_name):
         """
@@ -1868,8 +1897,8 @@ class IAMConnection(AWSQueryConnection):
         :param group_name: Group to attach the policy to
 
         """
-        params = {'PolicyArn': policy_arn, 'GroupName': group_name}
-        return self.get_response('AttachGroupPolicy', params)
+        params = {"PolicyArn": policy_arn, "GroupName": group_name}
+        return self.get_response("AttachGroupPolicy", params)
 
     def attach_role_policy(self, policy_arn, role_name):
         """
@@ -1880,8 +1909,8 @@ class IAMConnection(AWSQueryConnection):
         :param role_name: Role to attach the policy to
 
         """
-        params = {'PolicyArn': policy_arn, 'RoleName': role_name}
-        return self.get_response('AttachRolePolicy', params)
+        params = {"PolicyArn": policy_arn, "RoleName": role_name}
+        return self.get_response("AttachRolePolicy", params)
 
     def attach_user_policy(self, policy_arn, user_name):
         """
@@ -1892,8 +1921,8 @@ class IAMConnection(AWSQueryConnection):
         :param user_name: User to attach the policy to
 
         """
-        params = {'PolicyArn': policy_arn, 'UserName': user_name}
-        return self.get_response('AttachUserPolicy', params)
+        params = {"PolicyArn": policy_arn, "UserName": user_name}
+        return self.get_response("AttachUserPolicy", params)
 
     def detach_group_policy(self, policy_arn, group_name):
         """
@@ -1904,8 +1933,8 @@ class IAMConnection(AWSQueryConnection):
         :param group_name: Group to detach the policy from
 
         """
-        params = {'PolicyArn': policy_arn, 'GroupName': group_name}
-        return self.get_response('DetachGroupPolicy', params)
+        params = {"PolicyArn": policy_arn, "GroupName": group_name}
+        return self.get_response("DetachGroupPolicy", params)
 
     def detach_role_policy(self, policy_arn, role_name):
         """
@@ -1916,8 +1945,8 @@ class IAMConnection(AWSQueryConnection):
         :param role_name: Role to detach the policy from
 
         """
-        params = {'PolicyArn': policy_arn, 'RoleName': role_name}
-        return self.get_response('DetachRolePolicy', params)
+        params = {"PolicyArn": policy_arn, "RoleName": role_name}
+        return self.get_response("DetachRolePolicy", params)
 
     def detach_user_policy(self, policy_arn, user_name):
         """
@@ -1928,5 +1957,5 @@ class IAMConnection(AWSQueryConnection):
         :param user_name: User to detach the policy from
 
         """
-        params = {'PolicyArn': policy_arn, 'UserName': user_name}
-        return self.get_response('DetachUserPolicy', params)
+        params = {"PolicyArn": policy_arn, "UserName": user_name}
+        return self.get_response("DetachUserPolicy", params)

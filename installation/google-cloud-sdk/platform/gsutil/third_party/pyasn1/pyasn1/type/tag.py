@@ -6,10 +6,19 @@
 #
 from pyasn1 import error
 
-__all__ = ['tagClassUniversal', 'tagClassApplication', 'tagClassContext',
-           'tagClassPrivate', 'tagFormatSimple', 'tagFormatConstructed',
-           'tagCategoryImplicit', 'tagCategoryExplicit',
-           'tagCategoryUntagged', 'Tag', 'TagSet']
+__all__ = [
+    "tagClassUniversal",
+    "tagClassApplication",
+    "tagClassContext",
+    "tagClassPrivate",
+    "tagFormatSimple",
+    "tagFormatConstructed",
+    "tagCategoryImplicit",
+    "tagCategoryExplicit",
+    "tagCategoryUntagged",
+    "Tag",
+    "TagSet",
+]
 
 #: Identifier for ASN.1 class UNIVERSAL
 tagClassUniversal = 0x00
@@ -54,9 +63,10 @@ class Tag(object):
     tagId: :py:class:`int`
         Tag ID value
     """
+
     def __init__(self, tagClass, tagFormat, tagId):
         if tagId < 0:
-            raise error.PyAsn1Error('Negative tag ID (%s) not allowed' % tagId)
+            raise error.PyAsn1Error("Negative tag ID (%s) not allowed" % tagId)
         self.__tagClass = tagClass
         self.__tagFormat = tagFormat
         self.__tagId = tagId
@@ -64,8 +74,16 @@ class Tag(object):
         self.__hash = hash(self.__tagClassId)
 
     def __repr__(self):
-        representation = '[%s:%s:%s]' % (self.__tagClass, self.__tagFormat, self.__tagId)
-        return '<%s object at 0x%x tag %s>' % (self.__class__.__name__, id(self), representation)
+        representation = "[%s:%s:%s]" % (
+            self.__tagClass,
+            self.__tagFormat,
+            self.__tagId,
+        )
+        return "<%s object at 0x%x tag %s>" % (
+            self.__class__.__name__,
+            id(self),
+            representation,
+        )
 
     def __eq__(self, other):
         return self.__tagClassId == other
@@ -104,14 +122,18 @@ class Tag(object):
         yield self.__tagId
 
     def __and__(self, otherTag):
-        return self.__class__(self.__tagClass & otherTag.tagClass,
-                              self.__tagFormat & otherTag.tagFormat,
-                              self.__tagId & otherTag.tagId)
+        return self.__class__(
+            self.__tagClass & otherTag.tagClass,
+            self.__tagFormat & otherTag.tagFormat,
+            self.__tagId & otherTag.tagId,
+        )
 
     def __or__(self, otherTag):
-        return self.__class__(self.__tagClass | otherTag.tagClass,
-                              self.__tagFormat | otherTag.tagFormat,
-                              self.__tagId | otherTag.tagId)
+        return self.__class__(
+            self.__tagClass | otherTag.tagClass,
+            self.__tagFormat | otherTag.tagFormat,
+            self.__tagId | otherTag.tagId,
+        )
 
     @property
     def tagClass(self):
@@ -182,6 +204,7 @@ class TagSet(object):
 
         orderNumber = OrderNumber('1234')
     """
+
     def __init__(self, baseTag=(), *superTags):
         self.__baseTag = baseTag
         self.__superTags = superTags
@@ -192,14 +215,19 @@ class TagSet(object):
         self.__hash = hash(self.__superTagsClassId)
 
     def __repr__(self):
-        representation = '-'.join(['%s:%s:%s' % (x.tagClass, x.tagFormat, x.tagId)
-                                   for x in self.__superTags])
+        representation = "-".join(
+            ["%s:%s:%s" % (x.tagClass, x.tagFormat, x.tagId) for x in self.__superTags]
+        )
         if representation:
-            representation = 'tags ' + representation
+            representation = "tags " + representation
         else:
-            representation = 'untagged'
+            representation = "untagged"
 
-        return '<%s object at 0x%x %s>' % (self.__class__.__name__, id(self), representation)
+        return "<%s object at 0x%x %s>" % (
+            self.__class__.__name__,
+            id(self),
+            representation,
+        )
 
     def __add__(self, superTag):
         return self.__class__(self.__baseTag, *self.__superTags + (superTag,))
@@ -300,7 +328,9 @@ class TagSet(object):
             New *TagSet* object
         """
         if self.__superTags:
-            superTag = Tag(superTag.tagClass, self.__superTags[-1].tagFormat, superTag.tagId)
+            superTag = Tag(
+                superTag.tagClass, self.__superTags[-1].tagFormat, superTag.tagId
+            )
         return self[:-1] + superTag
 
     def isSuperTagSetOf(self, tagSet):
@@ -322,12 +352,13 @@ class TagSet(object):
         """
         if len(tagSet) < self.__lenOfSuperTags:
             return False
-        return self.__superTags == tagSet[:self.__lenOfSuperTags]
+        return self.__superTags == tagSet[: self.__lenOfSuperTags]
 
     # Backward compatibility
 
     def getBaseTag(self):
         return self.__baseTag
+
 
 def initTagSet(tag):
     return TagSet(tag, tag)

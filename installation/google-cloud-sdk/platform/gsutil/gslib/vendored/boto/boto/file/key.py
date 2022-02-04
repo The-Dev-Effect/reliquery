@@ -27,17 +27,18 @@ import sys
 
 from boto.compat import StringIO
 
+
 class Key(object):
 
     KEY_STREAM_READABLE = 0x01
     KEY_STREAM_WRITABLE = 0x02
-    KEY_STREAM          = (KEY_STREAM_READABLE | KEY_STREAM_WRITABLE)
-    KEY_REGULAR_FILE    = 0x00
+    KEY_STREAM = KEY_STREAM_READABLE | KEY_STREAM_WRITABLE
+    KEY_REGULAR_FILE = 0x00
 
     def __init__(self, bucket, name, fp=None, key_type=KEY_REGULAR_FILE):
         self.bucket = bucket
         self.full_path = name
-        if name == '-':
+        if name == "-":
             self.name = None
             self.size = None
         else:
@@ -46,15 +47,15 @@ class Key(object):
         self.key_type = key_type
         if key_type == self.KEY_STREAM_READABLE:
             self.fp = sys.stdin
-            self.full_path = '<STDIN>'
+            self.full_path = "<STDIN>"
         elif key_type == self.KEY_STREAM_WRITABLE:
             self.fp = sys.stdout
-            self.full_path = '<STDOUT>'
+            self.full_path = "<STDOUT>"
         else:
             self.fp = fp
 
     def __str__(self):
-        return 'file://' + self.full_path
+        return "file://" + self.full_path
 
     def get_file(self, fp, headers=None, cb=None, num_cb=10, torrent=False):
         """
@@ -73,18 +74,19 @@ class Key(object):
         :param num_cb: ignored in this subclass.
         """
         if self.key_type & self.KEY_STREAM_WRITABLE:
-            raise BotoClientError('Stream is not readable')
+            raise BotoClientError("Stream is not readable")
         elif self.key_type & self.KEY_STREAM_READABLE:
             key_file = self.fp
         else:
-            key_file = open(self.full_path, 'rb')
+            key_file = open(self.full_path, "rb")
         try:
             shutil.copyfileobj(key_file, fp)
         finally:
             key_file.close()
 
-    def set_contents_from_file(self, fp, headers=None, replace=True, cb=None,
-                               num_cb=10, policy=None, md5=None):
+    def set_contents_from_file(
+        self, fp, headers=None, replace=True, cb=None, num_cb=10, policy=None, md5=None
+    ):
         """
         Store an object in a file using the name of the Key object as the
         key in file URI and the contents of the file pointed to by 'fp' as the
@@ -119,21 +121,29 @@ class Key(object):
         :param md5: ignored in this subclass.
         """
         if self.key_type & self.KEY_STREAM_READABLE:
-            raise BotoClientError('Stream is not writable')
+            raise BotoClientError("Stream is not writable")
         elif self.key_type & self.KEY_STREAM_WRITABLE:
             key_file = self.fp
         else:
             if not replace and os.path.exists(self.full_path):
                 return
-            key_file = open(self.full_path, 'wb')
+            key_file = open(self.full_path, "wb")
         try:
             shutil.copyfileobj(fp, key_file)
         finally:
             key_file.close()
 
-    def get_contents_to_file(self, fp, headers=None, cb=None, num_cb=None,
-                             torrent=False, version_id=None,
-                             res_download_handler=None, response_headers=None):
+    def get_contents_to_file(
+        self,
+        fp,
+        headers=None,
+        cb=None,
+        num_cb=None,
+        torrent=False,
+        version_id=None,
+        res_download_handler=None,
+        response_headers=None,
+    ):
         """
         Copy contents from the current file to the file pointed to by 'fp'.
 
@@ -160,8 +170,7 @@ class Key(object):
         """
         shutil.copyfileobj(self.fp, fp)
 
-    def get_contents_as_string(self, headers=None, cb=None, num_cb=10,
-                               torrent=False):
+    def get_contents_as_string(self, headers=None, cb=None, num_cb=10, torrent=False):
         """
         Retrieve file data from the Key, and return contents as a string.
 
@@ -189,7 +198,7 @@ class Key(object):
         return fp.getvalue()
 
     def is_stream(self):
-        return (self.key_type & self.KEY_STREAM)
+        return self.key_type & self.KEY_STREAM
 
     def close(self):
         """

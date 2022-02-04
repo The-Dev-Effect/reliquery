@@ -83,9 +83,9 @@ class Cache(base.Cache):
     def __init__(self, max_age):
         """Constructor.
 
-      Args:
-        max_age: Cache expiration in seconds.
-      """
+        Args:
+          max_age: Cache expiration in seconds.
+        """
         self._max_age = max_age
         self._file = os.path.join(tempfile.gettempdir(), FILENAME)
         f = LockedFile(self._file, "a+", "r")

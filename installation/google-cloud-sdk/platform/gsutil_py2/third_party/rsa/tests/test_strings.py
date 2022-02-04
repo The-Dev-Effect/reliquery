@@ -30,7 +30,7 @@ class StringTest(unittest.TestCase):
         (self.pub, self.priv) = rsa.newkeys(384)
 
     def test_enc_dec(self):
-        message = unicode_string.encode('utf-8')
+        message = unicode_string.encode("utf-8")
         print("\tMessage:   %s" % message)
 
         encrypted = rsa.encrypt(message, self.pub)

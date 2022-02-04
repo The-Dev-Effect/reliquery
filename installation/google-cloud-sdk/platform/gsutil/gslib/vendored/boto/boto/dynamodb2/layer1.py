@@ -137,6 +137,7 @@ class DynamoDBConnection(AWSQueryConnection):
     with Items`_ and `Query and Scan Operations`_ in the Amazon
     DynamoDB Developer Guide .
     """
+
     APIVersion = "2012-08-10"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "dynamodb.us-east-1.amazonaws.com"
@@ -156,30 +157,29 @@ class DynamoDBConnection(AWSQueryConnection):
 
     NumberRetries = 10
 
-
     def __init__(self, **kwargs):
-        region = kwargs.pop('region', None)
-        validate_checksums = kwargs.pop('validate_checksums', True)
+        region = kwargs.pop("region", None)
+        validate_checksums = kwargs.pop("validate_checksums", True)
         if not region:
-            region_name = boto.config.get('DynamoDB', 'region',
-                                          self.DefaultRegionName)
+            region_name = boto.config.get("DynamoDB", "region", self.DefaultRegionName)
             for reg in boto.dynamodb2.regions():
                 if reg.name == region_name:
                     region = reg
                     break
 
         # Only set host if it isn't manually overwritten
-        if 'host' not in kwargs:
-            kwargs['host'] = region.endpoint
+        if "host" not in kwargs:
+            kwargs["host"] = region.endpoint
 
         super(DynamoDBConnection, self).__init__(**kwargs)
         self.region = region
         self._validate_checksums = boto.config.getbool(
-            'DynamoDB', 'validate_checksums', validate_checksums)
+            "DynamoDB", "validate_checksums", validate_checksums
+        )
         self.throughput_exceeded_events = 0
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
     def batch_get_item(self, request_items, return_consumed_capacity=None):
         """
@@ -275,14 +275,19 @@ class DynamoDBConnection(AWSQueryConnection):
             included in the response.
 
         """
-        params = {'RequestItems': request_items, }
+        params = {
+            "RequestItems": request_items,
+        }
         if return_consumed_capacity is not None:
-            params['ReturnConsumedCapacity'] = return_consumed_capacity
-        return self.make_request(action='BatchGetItem',
-                                 body=json.dumps(params))
+            params["ReturnConsumedCapacity"] = return_consumed_capacity
+        return self.make_request(action="BatchGetItem", body=json.dumps(params))
 
-    def batch_write_item(self, request_items, return_consumed_capacity=None,
-                         return_item_collection_metrics=None):
+    def batch_write_item(
+        self,
+        request_items,
+        return_consumed_capacity=None,
+        return_item_collection_metrics=None,
+    ):
         """
         The BatchWriteItem operation puts or deletes multiple items in
         one or more tables. A single call to BatchWriteItem can write
@@ -411,17 +416,24 @@ class DynamoDBConnection(AWSQueryConnection):
             returned.
 
         """
-        params = {'RequestItems': request_items, }
+        params = {
+            "RequestItems": request_items,
+        }
         if return_consumed_capacity is not None:
-            params['ReturnConsumedCapacity'] = return_consumed_capacity
+            params["ReturnConsumedCapacity"] = return_consumed_capacity
         if return_item_collection_metrics is not None:
-            params['ReturnItemCollectionMetrics'] = return_item_collection_metrics
-        return self.make_request(action='BatchWriteItem',
-                                 body=json.dumps(params))
+            params["ReturnItemCollectionMetrics"] = return_item_collection_metrics
+        return self.make_request(action="BatchWriteItem", body=json.dumps(params))
 
-    def create_table(self, attribute_definitions, table_name, key_schema,
-                     provisioned_throughput, local_secondary_indexes=None,
-                     global_secondary_indexes=None):
+    def create_table(
+        self,
+        attribute_definitions,
+        table_name,
+        key_schema,
+        provisioned_throughput,
+        local_secondary_indexes=None,
+        global_secondary_indexes=None,
+    ):
         """
         The CreateTable operation adds a new table to your account. In
         an AWS account, table names must be unique within each region.
@@ -552,25 +564,30 @@ class DynamoDBConnection(AWSQueryConnection):
 
         """
         params = {
-            'AttributeDefinitions': attribute_definitions,
-            'TableName': table_name,
-            'KeySchema': key_schema,
-            'ProvisionedThroughput': provisioned_throughput,
+            "AttributeDefinitions": attribute_definitions,
+            "TableName": table_name,
+            "KeySchema": key_schema,
+            "ProvisionedThroughput": provisioned_throughput,
         }
         if local_secondary_indexes is not None:
-            params['LocalSecondaryIndexes'] = local_secondary_indexes
+            params["LocalSecondaryIndexes"] = local_secondary_indexes
         if global_secondary_indexes is not None:
-            params['GlobalSecondaryIndexes'] = global_secondary_indexes
-        return self.make_request(action='CreateTable',
-                                 body=json.dumps(params))
+            params["GlobalSecondaryIndexes"] = global_secondary_indexes
+        return self.make_request(action="CreateTable", body=json.dumps(params))
 
-    def delete_item(self, table_name, key, expected=None,
-                    conditional_operator=None, return_values=None,
-                    return_consumed_capacity=None,
-                    return_item_collection_metrics=None,
-                    condition_expression=None,
-                    expression_attribute_names=None,
-                    expression_attribute_values=None):
+    def delete_item(
+        self,
+        table_name,
+        key,
+        expected=None,
+        conditional_operator=None,
+        return_values=None,
+        return_consumed_capacity=None,
+        return_item_collection_metrics=None,
+        condition_expression=None,
+        expression_attribute_names=None,
+        expression_attribute_values=None,
+    ):
         """
         Deletes a single item in a table by primary key. You can
         perform a conditional delete operation that deletes the item
@@ -904,25 +921,27 @@ class DynamoDBConnection(AWSQueryConnection):
             Conditions`_ in the Amazon DynamoDB Developer Guide .
 
         """
-        params = {'TableName': table_name, 'Key': key, }
+        params = {
+            "TableName": table_name,
+            "Key": key,
+        }
         if expected is not None:
-            params['Expected'] = expected
+            params["Expected"] = expected
         if conditional_operator is not None:
-            params['ConditionalOperator'] = conditional_operator
+            params["ConditionalOperator"] = conditional_operator
         if return_values is not None:
-            params['ReturnValues'] = return_values
+            params["ReturnValues"] = return_values
         if return_consumed_capacity is not None:
-            params['ReturnConsumedCapacity'] = return_consumed_capacity
+            params["ReturnConsumedCapacity"] = return_consumed_capacity
         if return_item_collection_metrics is not None:
-            params['ReturnItemCollectionMetrics'] = return_item_collection_metrics
+            params["ReturnItemCollectionMetrics"] = return_item_collection_metrics
         if condition_expression is not None:
-            params['ConditionExpression'] = condition_expression
+            params["ConditionExpression"] = condition_expression
         if expression_attribute_names is not None:
-            params['ExpressionAttributeNames'] = expression_attribute_names
+            params["ExpressionAttributeNames"] = expression_attribute_names
         if expression_attribute_values is not None:
-            params['ExpressionAttributeValues'] = expression_attribute_values
-        return self.make_request(action='DeleteItem',
-                                 body=json.dumps(params))
+            params["ExpressionAttributeValues"] = expression_attribute_values
+        return self.make_request(action="DeleteItem", body=json.dumps(params))
 
     def delete_table(self, table_name):
         """
@@ -951,9 +970,10 @@ class DynamoDBConnection(AWSQueryConnection):
         :param table_name: The name of the table to delete.
 
         """
-        params = {'TableName': table_name, }
-        return self.make_request(action='DeleteTable',
-                                 body=json.dumps(params))
+        params = {
+            "TableName": table_name,
+        }
+        return self.make_request(action="DeleteTable", body=json.dumps(params))
 
     def describe_table(self, table_name):
         """
@@ -973,13 +993,21 @@ class DynamoDBConnection(AWSQueryConnection):
         :param table_name: The name of the table to describe.
 
         """
-        params = {'TableName': table_name, }
-        return self.make_request(action='DescribeTable',
-                                 body=json.dumps(params))
+        params = {
+            "TableName": table_name,
+        }
+        return self.make_request(action="DescribeTable", body=json.dumps(params))
 
-    def get_item(self, table_name, key, attributes_to_get=None,
-                 consistent_read=None, return_consumed_capacity=None,
-                 projection_expression=None, expression_attribute_names=None):
+    def get_item(
+        self,
+        table_name,
+        key,
+        attributes_to_get=None,
+        consistent_read=None,
+        return_consumed_capacity=None,
+        projection_expression=None,
+        expression_attribute_names=None,
+    ):
         """
         The GetItem operation returns a set of attributes for the item
         with the given primary key. If there is no matching item,
@@ -1084,19 +1112,21 @@ class DynamoDBConnection(AWSQueryConnection):
             Item Attributes`_ in the Amazon DynamoDB Developer Guide .
 
         """
-        params = {'TableName': table_name, 'Key': key, }
+        params = {
+            "TableName": table_name,
+            "Key": key,
+        }
         if attributes_to_get is not None:
-            params['AttributesToGet'] = attributes_to_get
+            params["AttributesToGet"] = attributes_to_get
         if consistent_read is not None:
-            params['ConsistentRead'] = consistent_read
+            params["ConsistentRead"] = consistent_read
         if return_consumed_capacity is not None:
-            params['ReturnConsumedCapacity'] = return_consumed_capacity
+            params["ReturnConsumedCapacity"] = return_consumed_capacity
         if projection_expression is not None:
-            params['ProjectionExpression'] = projection_expression
+            params["ProjectionExpression"] = projection_expression
         if expression_attribute_names is not None:
-            params['ExpressionAttributeNames'] = expression_attribute_names
-        return self.make_request(action='GetItem',
-                                 body=json.dumps(params))
+            params["ExpressionAttributeNames"] = expression_attribute_names
+        return self.make_request(action="GetItem", body=json.dumps(params))
 
     def list_tables(self, exclusive_start_table_name=None, limit=None):
         """
@@ -1117,18 +1147,24 @@ class DynamoDBConnection(AWSQueryConnection):
         """
         params = {}
         if exclusive_start_table_name is not None:
-            params['ExclusiveStartTableName'] = exclusive_start_table_name
+            params["ExclusiveStartTableName"] = exclusive_start_table_name
         if limit is not None:
-            params['Limit'] = limit
-        return self.make_request(action='ListTables',
-                                 body=json.dumps(params))
+            params["Limit"] = limit
+        return self.make_request(action="ListTables", body=json.dumps(params))
 
-    def put_item(self, table_name, item, expected=None, return_values=None,
-                 return_consumed_capacity=None,
-                 return_item_collection_metrics=None,
-                 conditional_operator=None, condition_expression=None,
-                 expression_attribute_names=None,
-                 expression_attribute_values=None):
+    def put_item(
+        self,
+        table_name,
+        item,
+        expected=None,
+        return_values=None,
+        return_consumed_capacity=None,
+        return_item_collection_metrics=None,
+        conditional_operator=None,
+        condition_expression=None,
+        expression_attribute_names=None,
+        expression_attribute_values=None,
+    ):
         """
         Creates a new item, or replaces an old item with a new item.
         If an item that has the same primary key as the new item
@@ -1489,33 +1525,47 @@ class DynamoDBConnection(AWSQueryConnection):
             Conditions`_ in the Amazon DynamoDB Developer Guide .
 
         """
-        params = {'TableName': table_name, 'Item': item, }
+        params = {
+            "TableName": table_name,
+            "Item": item,
+        }
         if expected is not None:
-            params['Expected'] = expected
+            params["Expected"] = expected
         if return_values is not None:
-            params['ReturnValues'] = return_values
+            params["ReturnValues"] = return_values
         if return_consumed_capacity is not None:
-            params['ReturnConsumedCapacity'] = return_consumed_capacity
+            params["ReturnConsumedCapacity"] = return_consumed_capacity
         if return_item_collection_metrics is not None:
-            params['ReturnItemCollectionMetrics'] = return_item_collection_metrics
+            params["ReturnItemCollectionMetrics"] = return_item_collection_metrics
         if conditional_operator is not None:
-            params['ConditionalOperator'] = conditional_operator
+            params["ConditionalOperator"] = conditional_operator
         if condition_expression is not None:
-            params['ConditionExpression'] = condition_expression
+            params["ConditionExpression"] = condition_expression
         if expression_attribute_names is not None:
-            params['ExpressionAttributeNames'] = expression_attribute_names
+            params["ExpressionAttributeNames"] = expression_attribute_names
         if expression_attribute_values is not None:
-            params['ExpressionAttributeValues'] = expression_attribute_values
-        return self.make_request(action='PutItem',
-                                 body=json.dumps(params))
+            params["ExpressionAttributeValues"] = expression_attribute_values
+        return self.make_request(action="PutItem", body=json.dumps(params))
 
-    def query(self, table_name, key_conditions, index_name=None, select=None,
-              attributes_to_get=None, limit=None, consistent_read=None,
-              query_filter=None, conditional_operator=None,
-              scan_index_forward=None, exclusive_start_key=None,
-              return_consumed_capacity=None, projection_expression=None,
-              filter_expression=None, expression_attribute_names=None,
-              expression_attribute_values=None):
+    def query(
+        self,
+        table_name,
+        key_conditions,
+        index_name=None,
+        select=None,
+        attributes_to_get=None,
+        limit=None,
+        consistent_read=None,
+        query_filter=None,
+        conditional_operator=None,
+        scan_index_forward=None,
+        exclusive_start_key=None,
+        return_consumed_capacity=None,
+        projection_expression=None,
+        filter_expression=None,
+        expression_attribute_names=None,
+        expression_attribute_values=None,
+    ):
         """
         A Query operation directly accesses items from a table using
         the table primary key, or from an index using the index key.
@@ -1908,46 +1958,56 @@ class DynamoDBConnection(AWSQueryConnection):
 
         """
         params = {
-            'TableName': table_name,
-            'KeyConditions': key_conditions,
+            "TableName": table_name,
+            "KeyConditions": key_conditions,
         }
         if index_name is not None:
-            params['IndexName'] = index_name
+            params["IndexName"] = index_name
         if select is not None:
-            params['Select'] = select
+            params["Select"] = select
         if attributes_to_get is not None:
-            params['AttributesToGet'] = attributes_to_get
+            params["AttributesToGet"] = attributes_to_get
         if limit is not None:
-            params['Limit'] = limit
+            params["Limit"] = limit
         if consistent_read is not None:
-            params['ConsistentRead'] = consistent_read
+            params["ConsistentRead"] = consistent_read
         if query_filter is not None:
-            params['QueryFilter'] = query_filter
+            params["QueryFilter"] = query_filter
         if conditional_operator is not None:
-            params['ConditionalOperator'] = conditional_operator
+            params["ConditionalOperator"] = conditional_operator
         if scan_index_forward is not None:
-            params['ScanIndexForward'] = scan_index_forward
+            params["ScanIndexForward"] = scan_index_forward
         if exclusive_start_key is not None:
-            params['ExclusiveStartKey'] = exclusive_start_key
+            params["ExclusiveStartKey"] = exclusive_start_key
         if return_consumed_capacity is not None:
-            params['ReturnConsumedCapacity'] = return_consumed_capacity
+            params["ReturnConsumedCapacity"] = return_consumed_capacity
         if projection_expression is not None:
-            params['ProjectionExpression'] = projection_expression
+            params["ProjectionExpression"] = projection_expression
         if filter_expression is not None:
-            params['FilterExpression'] = filter_expression
+            params["FilterExpression"] = filter_expression
         if expression_attribute_names is not None:
-            params['ExpressionAttributeNames'] = expression_attribute_names
+            params["ExpressionAttributeNames"] = expression_attribute_names
         if expression_attribute_values is not None:
-            params['ExpressionAttributeValues'] = expression_attribute_values
-        return self.make_request(action='Query',
-                                 body=json.dumps(params))
+            params["ExpressionAttributeValues"] = expression_attribute_values
+        return self.make_request(action="Query", body=json.dumps(params))
 
-    def scan(self, table_name, attributes_to_get=None, limit=None,
-             select=None, scan_filter=None, conditional_operator=None,
-             exclusive_start_key=None, return_consumed_capacity=None,
-             total_segments=None, segment=None, projection_expression=None,
-             filter_expression=None, expression_attribute_names=None,
-             expression_attribute_values=None):
+    def scan(
+        self,
+        table_name,
+        attributes_to_get=None,
+        limit=None,
+        select=None,
+        scan_filter=None,
+        conditional_operator=None,
+        exclusive_start_key=None,
+        return_consumed_capacity=None,
+        total_segments=None,
+        segment=None,
+        projection_expression=None,
+        filter_expression=None,
+        expression_attribute_names=None,
+        expression_attribute_values=None,
+    ):
         """
         The Scan operation returns one or more items and item
         attributes by accessing every item in the table. To have
@@ -2215,43 +2275,52 @@ class DynamoDBConnection(AWSQueryConnection):
             Conditions`_ in the Amazon DynamoDB Developer Guide .
 
         """
-        params = {'TableName': table_name, }
+        params = {
+            "TableName": table_name,
+        }
         if attributes_to_get is not None:
-            params['AttributesToGet'] = attributes_to_get
+            params["AttributesToGet"] = attributes_to_get
         if limit is not None:
-            params['Limit'] = limit
+            params["Limit"] = limit
         if select is not None:
-            params['Select'] = select
+            params["Select"] = select
         if scan_filter is not None:
-            params['ScanFilter'] = scan_filter
+            params["ScanFilter"] = scan_filter
         if conditional_operator is not None:
-            params['ConditionalOperator'] = conditional_operator
+            params["ConditionalOperator"] = conditional_operator
         if exclusive_start_key is not None:
-            params['ExclusiveStartKey'] = exclusive_start_key
+            params["ExclusiveStartKey"] = exclusive_start_key
         if return_consumed_capacity is not None:
-            params['ReturnConsumedCapacity'] = return_consumed_capacity
+            params["ReturnConsumedCapacity"] = return_consumed_capacity
         if total_segments is not None:
-            params['TotalSegments'] = total_segments
+            params["TotalSegments"] = total_segments
         if segment is not None:
-            params['Segment'] = segment
+            params["Segment"] = segment
         if projection_expression is not None:
-            params['ProjectionExpression'] = projection_expression
+            params["ProjectionExpression"] = projection_expression
         if filter_expression is not None:
-            params['FilterExpression'] = filter_expression
+            params["FilterExpression"] = filter_expression
         if expression_attribute_names is not None:
-            params['ExpressionAttributeNames'] = expression_attribute_names
+            params["ExpressionAttributeNames"] = expression_attribute_names
         if expression_attribute_values is not None:
-            params['ExpressionAttributeValues'] = expression_attribute_values
-        return self.make_request(action='Scan',
-                                 body=json.dumps(params))
+            params["ExpressionAttributeValues"] = expression_attribute_values
+        return self.make_request(action="Scan", body=json.dumps(params))
 
-    def update_item(self, table_name, key, attribute_updates=None,
-                    expected=None, conditional_operator=None,
-                    return_values=None, return_consumed_capacity=None,
-                    return_item_collection_metrics=None,
-                    update_expression=None, condition_expression=None,
-                    expression_attribute_names=None,
-                    expression_attribute_values=None):
+    def update_item(
+        self,
+        table_name,
+        key,
+        attribute_updates=None,
+        expected=None,
+        conditional_operator=None,
+        return_values=None,
+        return_consumed_capacity=None,
+        return_item_collection_metrics=None,
+        update_expression=None,
+        condition_expression=None,
+        expression_attribute_names=None,
+        expression_attribute_values=None,
+    ):
         """
         Edits an existing item's attributes, or adds a new item to the
         table if it does not already exist. You can put, delete, or
@@ -2740,33 +2809,39 @@ class DynamoDBConnection(AWSQueryConnection):
             Conditions`_ in the Amazon DynamoDB Developer Guide .
 
         """
-        params = {'TableName': table_name, 'Key': key, }
+        params = {
+            "TableName": table_name,
+            "Key": key,
+        }
         if attribute_updates is not None:
-            params['AttributeUpdates'] = attribute_updates
+            params["AttributeUpdates"] = attribute_updates
         if expected is not None:
-            params['Expected'] = expected
+            params["Expected"] = expected
         if conditional_operator is not None:
-            params['ConditionalOperator'] = conditional_operator
+            params["ConditionalOperator"] = conditional_operator
         if return_values is not None:
-            params['ReturnValues'] = return_values
+            params["ReturnValues"] = return_values
         if return_consumed_capacity is not None:
-            params['ReturnConsumedCapacity'] = return_consumed_capacity
+            params["ReturnConsumedCapacity"] = return_consumed_capacity
         if return_item_collection_metrics is not None:
-            params['ReturnItemCollectionMetrics'] = return_item_collection_metrics
+            params["ReturnItemCollectionMetrics"] = return_item_collection_metrics
         if update_expression is not None:
-            params['UpdateExpression'] = update_expression
+            params["UpdateExpression"] = update_expression
         if condition_expression is not None:
-            params['ConditionExpression'] = condition_expression
+            params["ConditionExpression"] = condition_expression
         if expression_attribute_names is not None:
-            params['ExpressionAttributeNames'] = expression_attribute_names
+            params["ExpressionAttributeNames"] = expression_attribute_names
         if expression_attribute_values is not None:
-            params['ExpressionAttributeValues'] = expression_attribute_values
-        return self.make_request(action='UpdateItem',
-                                 body=json.dumps(params))
+            params["ExpressionAttributeValues"] = expression_attribute_values
+        return self.make_request(action="UpdateItem", body=json.dumps(params))
 
-    def update_table(self, table_name, provisioned_throughput=None,
-                     global_secondary_index_updates=None,
-                     attribute_definitions=None):
+    def update_table(
+        self,
+        table_name,
+        provisioned_throughput=None,
+        global_secondary_index_updates=None,
+        attribute_definitions=None,
+    ):
         """
         Updates the provisioned throughput for the given table, or
         manages the global secondary indexes on the table.
@@ -2817,53 +2892,62 @@ class DynamoDBConnection(AWSQueryConnection):
         + Delete - remove a global secondary index from the table.
 
         """
-        params = {'TableName': table_name, }
+        params = {
+            "TableName": table_name,
+        }
         if attribute_definitions is not None:
-            params['AttributeDefinitions'] = attribute_definitions
+            params["AttributeDefinitions"] = attribute_definitions
         if provisioned_throughput is not None:
-            params['ProvisionedThroughput'] = provisioned_throughput
+            params["ProvisionedThroughput"] = provisioned_throughput
         if global_secondary_index_updates is not None:
-            params['GlobalSecondaryIndexUpdates'] = global_secondary_index_updates
-        return self.make_request(action='UpdateTable',
-                                 body=json.dumps(params))
+            params["GlobalSecondaryIndexUpdates"] = global_secondary_index_updates
+        return self.make_request(action="UpdateTable", body=json.dumps(params))
 
     def make_request(self, action, body):
         headers = {
-            'X-Amz-Target': '%s.%s' % (self.TargetPrefix, action),
-            'Host': self.host,
-            'Content-Type': 'application/x-amz-json-1.0',
-            'Content-Length': str(len(body)),
+            "X-Amz-Target": "%s.%s" % (self.TargetPrefix, action),
+            "Host": self.host,
+            "Content-Type": "application/x-amz-json-1.0",
+            "Content-Length": str(len(body)),
         }
         http_request = self.build_base_http_request(
-            method='POST', path='/', auth_path='/', params={},
-            headers=headers, data=body, host=self.host)
-        response = self._mexe(http_request, sender=None,
-                              override_num_retries=self.NumberRetries,
-                              retry_handler=self._retry_handler)
-        response_body = response.read().decode('utf-8')
+            method="POST",
+            path="/",
+            auth_path="/",
+            params={},
+            headers=headers,
+            data=body,
+            host=self.host,
+        )
+        response = self._mexe(
+            http_request,
+            sender=None,
+            override_num_retries=self.NumberRetries,
+            retry_handler=self._retry_handler,
+        )
+        response_body = response.read().decode("utf-8")
         boto.log.debug(response_body)
         if response.status == 200:
             if response_body:
                 return json.loads(response_body)
         else:
             json_body = json.loads(response_body)
-            fault_name = json_body.get('__type', None)
+            fault_name = json_body.get("__type", None)
             exception_class = self._faults.get(fault_name, self.ResponseError)
-            raise exception_class(response.status, response.reason,
-                                  body=json_body)
+            raise exception_class(response.status, response.reason, body=json_body)
 
     def _retry_handler(self, response, i, next_sleep):
         status = None
         boto.log.debug("Saw HTTP status: %s" % response.status)
         if response.status == 400:
-            response_body = response.read().decode('utf-8')
+            response_body = response.read().decode("utf-8")
             boto.log.debug(response_body)
             data = json.loads(response_body)
-            if 'ProvisionedThroughputExceededException' in data.get('__type'):
+            if "ProvisionedThroughputExceededException" in data.get("__type"):
                 self.throughput_exceeded_events += 1
                 msg = "%s, retry attempt %s" % (
-                    'ProvisionedThroughputExceededException',
-                    i
+                    "ProvisionedThroughputExceededException",
+                    i,
                 )
                 next_sleep = self._truncated_exponential_time(i)
                 i += 1
@@ -2873,25 +2957,28 @@ class DynamoDBConnection(AWSQueryConnection):
                     # a specific error saying that the throughput
                     # was exceeded.
                     raise exceptions.ProvisionedThroughputExceededException(
-                        response.status, response.reason, data)
-            elif 'ConditionalCheckFailedException' in data.get('__type'):
+                        response.status, response.reason, data
+                    )
+            elif "ConditionalCheckFailedException" in data.get("__type"):
                 raise exceptions.ConditionalCheckFailedException(
-                    response.status, response.reason, data)
-            elif 'ValidationException' in data.get('__type'):
+                    response.status, response.reason, data
+                )
+            elif "ValidationException" in data.get("__type"):
                 raise exceptions.ValidationException(
-                    response.status, response.reason, data)
+                    response.status, response.reason, data
+                )
             else:
-                raise self.ResponseError(response.status, response.reason,
-                                         data)
-        expected_crc32 = response.getheader('x-amz-crc32')
+                raise self.ResponseError(response.status, response.reason, data)
+        expected_crc32 = response.getheader("x-amz-crc32")
         if self._validate_checksums and expected_crc32 is not None:
-            boto.log.debug('Validating crc32 checksum for body: %s',
-                           response.read())
-            actual_crc32 = crc32(response.read()) & 0xffffffff
+            boto.log.debug("Validating crc32 checksum for body: %s", response.read())
+            actual_crc32 = crc32(response.read()) & 0xFFFFFFFF
             expected_crc32 = int(expected_crc32)
             if actual_crc32 != expected_crc32:
-                msg = ("The calculated checksum %s did not match the expected "
-                       "checksum %s" % (actual_crc32, expected_crc32))
+                msg = (
+                    "The calculated checksum %s did not match the expected "
+                    "checksum %s" % (actual_crc32, expected_crc32)
+                )
                 status = (msg, i + 1, self._truncated_exponential_time(i))
         return status
 
@@ -2899,6 +2986,7 @@ class DynamoDBConnection(AWSQueryConnection):
         if i == 0:
             next_sleep = 0
         else:
-            next_sleep = min(0.05 * (2 ** i),
-                             boto.config.get('Boto', 'max_retry_delay', 60))
+            next_sleep = min(
+                0.05 * (2 ** i), boto.config.get("Boto", "max_retry_delay", 60)
+            )
         return next_sleep

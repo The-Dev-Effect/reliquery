@@ -32,10 +32,13 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.cloudtrail.layer1 import CloudTrailConnection
-    return get_regions('cloudtrail', connection_cls=CloudTrailConnection)
+
+    return get_regions("cloudtrail", connection_cls=CloudTrailConnection)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.cloudtrail.layer1 import CloudTrailConnection
-    return connect('cloudtrail', region_name,
-                   connection_cls=CloudTrailConnection, **kw_params)
+
+    return connect(
+        "cloudtrail", region_name, connection_cls=CloudTrailConnection, **kw_params
+    )

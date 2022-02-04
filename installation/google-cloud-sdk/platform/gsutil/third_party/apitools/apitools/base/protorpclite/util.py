@@ -28,12 +28,12 @@ import sys
 import six
 
 __all__ = [
-    'Error',
-    'decode_datetime',
-    'get_package_for_module',
-    'positional',
-    'TimeZoneOffset',
-    'total_seconds',
+    "Error",
+    "decode_datetime",
+    "get_package_for_module",
+    "positional",
+    "TimeZoneOffset",
+    "total_seconds",
 ]
 
 
@@ -130,19 +130,23 @@ def positional(max_positional_args):
       ValueError if no maximum number of arguments is provided and the function
         has no arguments with default values.
     """
+
     def positional_decorator(wrapped):
         """Creates a function wraper to enforce number of arguments."""
+
         @functools.wraps(wrapped)
         def positional_wrapper(*args, **kwargs):
             if len(args) > max_positional_args:
-                plural_s = ''
+                plural_s = ""
                 if max_positional_args != 1:
-                    plural_s = 's'
-                raise TypeError('%s() takes at most %d positional argument%s '
-                                '(%d given)' % (wrapped.__name__,
-                                                max_positional_args,
-                                                plural_s, len(args)))
+                    plural_s = "s"
+                raise TypeError(
+                    "%s() takes at most %d positional argument%s "
+                    "(%d given)"
+                    % (wrapped.__name__, max_positional_args, plural_s, len(args))
+                )
             return wrapped(*args, **kwargs)
+
         return positional_wrapper
 
     if isinstance(max_positional_args, six.integer_types):
@@ -151,8 +155,9 @@ def positional(max_positional_args):
         args, _, _, defaults = inspect.getargspec(max_positional_args)
         if defaults is None:
             raise ValueError(
-                'Functions with no keyword arguments must specify '
-                'max_positional_args')
+                "Functions with no keyword arguments must specify "
+                "max_positional_args"
+            )
         return positional(len(args) - len(defaults))(max_positional_args)
 
 
@@ -180,7 +185,7 @@ def get_package_for_module(module):
     try:
         return six.text_type(module.package)
     except AttributeError:
-        if module.__name__ == '__main__':
+        if module.__name__ == "__main__":
             try:
                 file_name = module.__file__
             except AttributeError:
@@ -190,7 +195,7 @@ def get_package_for_module(module):
                 split_name = os.path.splitext(base_name)
                 if len(split_name) == 1:
                     return six.text_type(base_name)
-                return u'.'.join(split_name[:-1])
+                return u".".join(split_name[:-1])
 
         return six.text_type(module.__name__)
 
@@ -198,8 +203,8 @@ def get_package_for_module(module):
 def total_seconds(offset):
     """Backport of offset.total_seconds() from python 2.7+."""
     seconds = offset.days * 24 * 60 * 60 + offset.seconds
-    microseconds = seconds * 10**6 + offset.microseconds
-    return microseconds / (10**6 * 1.0)
+    microseconds = seconds * 10 ** 6 + offset.microseconds
+    return microseconds / (10 ** 6 * 1.0)
 
 
 class TimeZoneOffset(datetime.tzinfo):
@@ -258,31 +263,33 @@ def decode_datetime(encoded_datetime, truncate_time=False):
     # because all our comparisons should be case-insensitive.
     time_zone_match = _TIME_ZONE_RE.search(encoded_datetime)
     if time_zone_match:
-        time_string = encoded_datetime[:time_zone_match.start(1)].upper()
+        time_string = encoded_datetime[: time_zone_match.start(1)].upper()
     else:
         time_string = encoded_datetime.upper()
 
-    if '.' in time_string:
-        format_string = '%Y-%m-%dT%H:%M:%S.%f'
+    if "." in time_string:
+        format_string = "%Y-%m-%dT%H:%M:%S.%f"
     else:
-        format_string = '%Y-%m-%dT%H:%M:%S'
+        format_string = "%Y-%m-%dT%H:%M:%S"
 
     try:
-        decoded_datetime = datetime.datetime.strptime(time_string,
-                                                      format_string)
+        decoded_datetime = datetime.datetime.strptime(time_string, format_string)
     except ValueError:
-        if truncate_time and '.' in time_string:
-            datetime_string, decimal_secs = time_string.split('.')
+        if truncate_time and "." in time_string:
+            datetime_string, decimal_secs = time_string.split(".")
             if len(decimal_secs) > 6:
                 # datetime can handle only microsecs precision.
-                truncated_time_string = '{}.{}'.format(
-                    datetime_string, decimal_secs[:6])
+                truncated_time_string = "{}.{}".format(
+                    datetime_string, decimal_secs[:6]
+                )
                 decoded_datetime = datetime.datetime.strptime(
-                    truncated_time_string,
-                    format_string)
+                    truncated_time_string, format_string
+                )
                 logging.warning(
-                    'Truncating the datetime string from %s to %s',
-                    time_string, truncated_time_string)
+                    "Truncating the datetime string from %s to %s",
+                    time_string,
+                    truncated_time_string,
+                )
             else:
                 raise
         else:
@@ -294,21 +301,24 @@ def decode_datetime(encoded_datetime, truncate_time=False):
     # Time zone info was included in the parameter.  Add a tzinfo
     # object to the datetime.  Datetimes can't be changed after they're
     # created, so we'll need to create a new one.
-    if time_zone_match.group('z'):
+    if time_zone_match.group("z"):
         offset_minutes = 0
     else:
-        sign = time_zone_match.group('sign')
-        hours, minutes = [int(value) for value in
-                          time_zone_match.group('hours', 'minutes')]
+        sign = time_zone_match.group("sign")
+        hours, minutes = [
+            int(value) for value in time_zone_match.group("hours", "minutes")
+        ]
         offset_minutes = hours * 60 + minutes
-        if sign == '-':
+        if sign == "-":
             offset_minutes *= -1
 
-    return datetime.datetime(decoded_datetime.year,
-                             decoded_datetime.month,
-                             decoded_datetime.day,
-                             decoded_datetime.hour,
-                             decoded_datetime.minute,
-                             decoded_datetime.second,
-                             decoded_datetime.microsecond,
-                             TimeZoneOffset(offset_minutes))
+    return datetime.datetime(
+        decoded_datetime.year,
+        decoded_datetime.month,
+        decoded_datetime.day,
+        decoded_datetime.hour,
+        decoded_datetime.minute,
+        decoded_datetime.second,
+        decoded_datetime.microsecond,
+        TimeZoneOffset(offset_minutes),
+    )

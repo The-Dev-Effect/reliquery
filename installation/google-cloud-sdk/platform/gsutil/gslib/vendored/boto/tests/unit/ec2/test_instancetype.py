@@ -16,7 +16,6 @@ class TestEC2ConnectionBase(AWSMockServiceTestCase):
 
 
 class TestReservedInstanceOfferings(TestEC2ConnectionBase):
-
     def default_body(self):
         return b"""
             <DescribeInstanceTypesResponseType xmlns="http://ec2.amazonaws.com/doc/2013-02-01/">
@@ -103,16 +102,16 @@ class TestReservedInstanceOfferings(TestEC2ConnectionBase):
         response = self.ec2.get_all_instance_types()
         self.assertEqual(len(response), 18)
         instance_type = response[0]
-        self.assertEqual(instance_type.name, 'm1.small')
-        self.assertEqual(instance_type.cores, '1')
-        self.assertEqual(instance_type.disk, '5')
-        self.assertEqual(instance_type.memory, '256')
+        self.assertEqual(instance_type.name, "m1.small")
+        self.assertEqual(instance_type.cores, "1")
+        self.assertEqual(instance_type.disk, "5")
+        self.assertEqual(instance_type.memory, "256")
         instance_type = response[17]
-        self.assertEqual(instance_type.name, 'hs1.8xlarge')
-        self.assertEqual(instance_type.cores, '48')
-        self.assertEqual(instance_type.disk, '24000')
-        self.assertEqual(instance_type.memory, '119808')
+        self.assertEqual(instance_type.name, "hs1.8xlarge")
+        self.assertEqual(instance_type.cores, "48")
+        self.assertEqual(instance_type.disk, "24000")
+        self.assertEqual(instance_type.memory, "119808")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

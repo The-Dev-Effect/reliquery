@@ -43,7 +43,7 @@ class Snapshot(TaggedEC2Object):
     :ivar encrypted: True if this snapshot is encrypted
     """
 
-    AttrName = 'createVolumePermission'
+    AttrName = "createVolumePermission"
 
     def __init__(self, connection=None):
         super(Snapshot, self).__init__(connection)
@@ -59,30 +59,30 @@ class Snapshot(TaggedEC2Object):
         self.encrypted = None
 
     def __repr__(self):
-        return 'Snapshot:%s' % self.id
+        return "Snapshot:%s" % self.id
 
     def endElement(self, name, value, connection):
-        if name == 'snapshotId':
+        if name == "snapshotId":
             self.id = value
-        elif name == 'volumeId':
+        elif name == "volumeId":
             self.volume_id = value
-        elif name == 'status':
+        elif name == "status":
             self.status = value
-        elif name == 'startTime':
+        elif name == "startTime":
             self.start_time = value
-        elif name == 'ownerId':
+        elif name == "ownerId":
             self.owner_id = value
-        elif name == 'ownerAlias':
+        elif name == "ownerAlias":
             self.owner_alias = value
-        elif name == 'volumeSize':
+        elif name == "volumeSize":
             try:
                 self.volume_size = int(value)
             except:
                 self.volume_size = value
-        elif name == 'description':
+        elif name == "description":
             self.description = value
-        elif name == 'encrypted':
-            self.encrypted = (value.lower() == 'true')
+        elif name == "encrypted":
+            self.encrypted = value.lower() == "true"
         else:
             setattr(self, name, value)
 
@@ -105,7 +105,7 @@ class Snapshot(TaggedEC2Object):
         if len(rs) > 0:
             self._update(rs[0])
         elif validate:
-            raise ValueError('%s is not a valid Snapshot ID' % self.id)
+            raise ValueError("%s is not a valid Snapshot ID" % self.id)
         return self.progress
 
     def delete(self, dry_run=False):
@@ -113,37 +113,28 @@ class Snapshot(TaggedEC2Object):
 
     def get_permissions(self, dry_run=False):
         attrs = self.connection.get_snapshot_attribute(
-            self.id,
-            self.AttrName,
-            dry_run=dry_run
+            self.id, self.AttrName, dry_run=dry_run
         )
         return attrs.attrs
 
     def share(self, user_ids=None, groups=None, dry_run=False):
-        return self.connection.modify_snapshot_attribute(self.id,
-                                                         self.AttrName,
-                                                         'add',
-                                                         user_ids,
-                                                         groups,
-                                                         dry_run=dry_run)
+        return self.connection.modify_snapshot_attribute(
+            self.id, self.AttrName, "add", user_ids, groups, dry_run=dry_run
+        )
 
     def unshare(self, user_ids=None, groups=None, dry_run=False):
-        return self.connection.modify_snapshot_attribute(self.id,
-                                                         self.AttrName,
-                                                         'remove',
-                                                         user_ids,
-                                                         groups,
-                                                         dry_run=dry_run)
+        return self.connection.modify_snapshot_attribute(
+            self.id, self.AttrName, "remove", user_ids, groups, dry_run=dry_run
+        )
 
     def reset_permissions(self, dry_run=False):
         return self.connection.reset_snapshot_attribute(
-            self.id,
-            self.AttrName,
-            dry_run=dry_run
+            self.id, self.AttrName, dry_run=dry_run
         )
 
-    def create_volume(self, zone, size=None, volume_type=None, iops=None,
-                      dry_run=False):
+    def create_volume(
+        self, zone, size=None, volume_type=None, iops=None, dry_run=False
+    ):
         """
         Create a new EBS Volume from this Snapshot
 
@@ -165,13 +156,7 @@ class Snapshot(TaggedEC2Object):
         if isinstance(zone, Zone):
             zone = zone.name
         return self.connection.create_volume(
-            size,
-            zone,
-            self.id,
-            volume_type,
-            iops,
-            self.encrypted,
-            dry_run=dry_run
+            size, zone, self.id, volume_type, iops, self.encrypted, dry_run=dry_run
         )
 
 
@@ -184,19 +169,19 @@ class SnapshotAttribute(object):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'createVolumePermission':
-            self.name = 'create_volume_permission'
-        elif name == 'group':
-            if 'groups' in self.attrs:
-                self.attrs['groups'].append(value)
+        if name == "createVolumePermission":
+            self.name = "create_volume_permission"
+        elif name == "group":
+            if "groups" in self.attrs:
+                self.attrs["groups"].append(value)
             else:
-                self.attrs['groups'] = [value]
-        elif name == 'userId':
-            if 'user_ids' in self.attrs:
-                self.attrs['user_ids'].append(value)
+                self.attrs["groups"] = [value]
+        elif name == "userId":
+            if "user_ids" in self.attrs:
+                self.attrs["user_ids"].append(value)
             else:
-                self.attrs['user_ids'] = [value]
-        elif name == 'snapshotId':
+                self.attrs["user_ids"] = [value]
+        elif name == "snapshotId":
             self.snapshot_id = value
         else:
             setattr(self, name, value)

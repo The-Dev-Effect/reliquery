@@ -22,14 +22,13 @@
 
 
 class Dimension(dict):
-
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'Name':
+        if name == "Name":
             self._name = value
-        elif name == 'Value':
+        elif name == "Value":
             if self._name in self:
                 self[self._name].append(value)
             else:

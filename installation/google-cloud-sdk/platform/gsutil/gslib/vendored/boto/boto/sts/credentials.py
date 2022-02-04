@@ -78,15 +78,15 @@ class Credentials(object):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'AccessKeyId':
+        if name == "AccessKeyId":
             self.access_key = value
-        elif name == 'SecretAccessKey':
+        elif name == "SecretAccessKey":
             self.secret_key = value
-        elif name == 'SessionToken':
+        elif name == "SessionToken":
             self.session_token = value
-        elif name == 'Expiration':
+        elif name == "Expiration":
             self.expiration = value
-        elif name == 'RequestId':
+        elif name == "RequestId":
             self.request_id = value
         else:
             pass
@@ -96,11 +96,13 @@ class Credentials(object):
         Return a Python dict containing the important information
         about this Session Token.
         """
-        return {'access_key': self.access_key,
-                'secret_key': self.secret_key,
-                'session_token': self.session_token,
-                'expiration': self.expiration,
-                'request_id': self.request_id}
+        return {
+            "access_key": self.access_key,
+            "secret_key": self.secret_key,
+            "session_token": self.session_token,
+            "expiration": self.expiration,
+            "request_id": self.request_id,
+        }
 
     def save(self, file_path):
         """
@@ -113,7 +115,7 @@ class Credentials(object):
             the credentials contained in the file, the permissions
             of the file will be set to readable/writable by owner only.
         """
-        fp = open(file_path, 'w')
+        fp = open(file_path, "w")
         json.dump(self.to_dict(), fp)
         fp.close()
         os.chmod(file_path, 0o600)
@@ -158,20 +160,20 @@ class FederationToken(object):
         self.request_id = None
 
     def startElement(self, name, attrs, connection):
-        if name == 'Credentials':
+        if name == "Credentials":
             self.credentials = Credentials()
             return self.credentials
         else:
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'Arn':
+        if name == "Arn":
             self.federated_user_arn = value
-        elif name == 'FederatedUserId':
+        elif name == "FederatedUserId":
             self.federated_user_id = value
-        elif name == 'PackedPolicySize':
+        elif name == "PackedPolicySize":
             self.packed_policy_size = int(value)
-        elif name == 'RequestId':
+        elif name == "RequestId":
             self.request_id = value
         else:
             pass
@@ -182,16 +184,17 @@ class AssumedRole(object):
     :ivar user: The assumed role user.
     :ivar credentials: A Credentials object containing the credentials.
     """
+
     def __init__(self, connection=None, credentials=None, user=None):
         self._connection = connection
         self.credentials = credentials
         self.user = user
 
     def startElement(self, name, attrs, connection):
-        if name == 'Credentials':
+        if name == "Credentials":
             self.credentials = Credentials()
             return self.credentials
-        elif name == 'AssumedRoleUser':
+        elif name == "AssumedRoleUser":
             self.user = User()
             return self.user
 
@@ -204,6 +207,7 @@ class User(object):
     :ivar arn: The arn of the user assuming the role.
     :ivar assume_role_id: The identifier of the assumed role.
     """
+
     def __init__(self, arn=None, assume_role_id=None):
         self.arn = arn
         self.assume_role_id = assume_role_id
@@ -212,9 +216,9 @@ class User(object):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'Arn':
+        if name == "Arn":
             self.arn = value
-        elif name == 'AssumedRoleId':
+        elif name == "AssumedRoleId":
             self.assume_role_id = value
 
 
@@ -223,6 +227,7 @@ class DecodeAuthorizationMessage(object):
     :ivar request_id: The request ID.
     :ivar decoded_message: The decoded authorization message (may be JSON).
     """
+
     def __init__(self, request_id=None, decoded_message=None):
         self.request_id = request_id
         self.decoded_message = decoded_message
@@ -231,7 +236,7 @@ class DecodeAuthorizationMessage(object):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'requestId':
+        if name == "requestId":
             self.request_id = value
-        elif name == 'DecodedMessage':
+        elif name == "DecodedMessage":
             self.decoded_message = value

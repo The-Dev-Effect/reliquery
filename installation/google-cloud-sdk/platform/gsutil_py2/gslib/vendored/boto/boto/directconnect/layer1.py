@@ -53,6 +53,7 @@ class DirectConnectConnection(AWSQueryConnection):
     + `Common Errors`_: Client and server errors that all actions can
       return.
     """
+
     APIVersion = "2012-10-25"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "directconnect.us-east-1.amazonaws.com"
@@ -66,23 +67,24 @@ class DirectConnectConnection(AWSQueryConnection):
     }
 
     def __init__(self, **kwargs):
-        region = kwargs.pop('region', None)
+        region = kwargs.pop("region", None)
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
 
-        if 'host' not in kwargs:
-            kwargs['host'] = region.endpoint
+        if "host" not in kwargs:
+            kwargs["host"] = region.endpoint
 
         super(DirectConnectConnection, self).__init__(**kwargs)
         self.region = region
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
-    def allocate_connection_on_interconnect(self, bandwidth, connection_name,
-                                            owner_account, interconnect_id,
-                                            vlan):
+    def allocate_connection_on_interconnect(
+        self, bandwidth, connection_name, owner_account, interconnect_id, vlan
+    ):
         """
         Creates a hosted connection on an interconnect.
 
@@ -123,18 +125,19 @@ class DirectConnectConnection(AWSQueryConnection):
 
         """
         params = {
-            'bandwidth': bandwidth,
-            'connectionName': connection_name,
-            'ownerAccount': owner_account,
-            'interconnectId': interconnect_id,
-            'vlan': vlan,
+            "bandwidth": bandwidth,
+            "connectionName": connection_name,
+            "ownerAccount": owner_account,
+            "interconnectId": interconnect_id,
+            "vlan": vlan,
         }
-        return self.make_request(action='AllocateConnectionOnInterconnect',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="AllocateConnectionOnInterconnect", body=json.dumps(params)
+        )
 
-    def allocate_private_virtual_interface(self, connection_id,
-                                           owner_account,
-                                           new_private_virtual_interface_allocation):
+    def allocate_private_virtual_interface(
+        self, connection_id, owner_account, new_private_virtual_interface_allocation
+    ):
         """
         Provisions a private virtual interface to be owned by a
         different customer.
@@ -166,15 +169,17 @@ class DirectConnectConnection(AWSQueryConnection):
 
         """
         params = {
-            'connectionId': connection_id,
-            'ownerAccount': owner_account,
-            'newPrivateVirtualInterfaceAllocation': new_private_virtual_interface_allocation,
+            "connectionId": connection_id,
+            "ownerAccount": owner_account,
+            "newPrivateVirtualInterfaceAllocation": new_private_virtual_interface_allocation,
         }
-        return self.make_request(action='AllocatePrivateVirtualInterface',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="AllocatePrivateVirtualInterface", body=json.dumps(params)
+        )
 
-    def allocate_public_virtual_interface(self, connection_id, owner_account,
-                                          new_public_virtual_interface_allocation):
+    def allocate_public_virtual_interface(
+        self, connection_id, owner_account, new_public_virtual_interface_allocation
+    ):
         """
         Provisions a public virtual interface to be owned by a
         different customer.
@@ -206,12 +211,13 @@ class DirectConnectConnection(AWSQueryConnection):
 
         """
         params = {
-            'connectionId': connection_id,
-            'ownerAccount': owner_account,
-            'newPublicVirtualInterfaceAllocation': new_public_virtual_interface_allocation,
+            "connectionId": connection_id,
+            "ownerAccount": owner_account,
+            "newPublicVirtualInterfaceAllocation": new_public_virtual_interface_allocation,
         }
-        return self.make_request(action='AllocatePublicVirtualInterface',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="AllocatePublicVirtualInterface", body=json.dumps(params)
+        )
 
     def confirm_connection(self, connection_id):
         """
@@ -230,12 +236,14 @@ class DirectConnectConnection(AWSQueryConnection):
         Default: None
 
         """
-        params = {'connectionId': connection_id, }
-        return self.make_request(action='ConfirmConnection',
-                                 body=json.dumps(params))
+        params = {
+            "connectionId": connection_id,
+        }
+        return self.make_request(action="ConfirmConnection", body=json.dumps(params))
 
-    def confirm_private_virtual_interface(self, virtual_interface_id,
-                                          virtual_gateway_id):
+    def confirm_private_virtual_interface(
+        self, virtual_interface_id, virtual_gateway_id
+    ):
         """
         Accept ownership of a private virtual interface created by
         another customer.
@@ -261,11 +269,12 @@ class DirectConnectConnection(AWSQueryConnection):
 
         """
         params = {
-            'virtualInterfaceId': virtual_interface_id,
-            'virtualGatewayId': virtual_gateway_id,
+            "virtualInterfaceId": virtual_interface_id,
+            "virtualGatewayId": virtual_gateway_id,
         }
-        return self.make_request(action='ConfirmPrivateVirtualInterface',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="ConfirmPrivateVirtualInterface", body=json.dumps(params)
+        )
 
     def confirm_public_virtual_interface(self, virtual_interface_id):
         """
@@ -283,9 +292,12 @@ class DirectConnectConnection(AWSQueryConnection):
         Default: None
 
         """
-        params = {'virtualInterfaceId': virtual_interface_id, }
-        return self.make_request(action='ConfirmPublicVirtualInterface',
-                                 body=json.dumps(params))
+        params = {
+            "virtualInterfaceId": virtual_interface_id,
+        }
+        return self.make_request(
+            action="ConfirmPublicVirtualInterface", body=json.dumps(params)
+        )
 
     def create_connection(self, location, bandwidth, connection_name):
         """
@@ -322,12 +334,11 @@ class DirectConnectConnection(AWSQueryConnection):
 
         """
         params = {
-            'location': location,
-            'bandwidth': bandwidth,
-            'connectionName': connection_name,
+            "location": location,
+            "bandwidth": bandwidth,
+            "connectionName": connection_name,
         }
-        return self.make_request(action='CreateConnection',
-                                 body=json.dumps(params))
+        return self.make_request(action="CreateConnection", body=json.dumps(params))
 
     def create_interconnect(self, interconnect_name, bandwidth, location):
         """
@@ -373,15 +384,15 @@ class DirectConnectConnection(AWSQueryConnection):
 
         """
         params = {
-            'interconnectName': interconnect_name,
-            'bandwidth': bandwidth,
-            'location': location,
+            "interconnectName": interconnect_name,
+            "bandwidth": bandwidth,
+            "location": location,
         }
-        return self.make_request(action='CreateInterconnect',
-                                 body=json.dumps(params))
+        return self.make_request(action="CreateInterconnect", body=json.dumps(params))
 
-    def create_private_virtual_interface(self, connection_id,
-                                         new_private_virtual_interface):
+    def create_private_virtual_interface(
+        self, connection_id, new_private_virtual_interface
+    ):
         """
         Creates a new private virtual interface. A virtual interface
         is the VLAN that transports AWS Direct Connect traffic. A
@@ -401,14 +412,16 @@ class DirectConnectConnection(AWSQueryConnection):
 
         """
         params = {
-            'connectionId': connection_id,
-            'newPrivateVirtualInterface': new_private_virtual_interface,
+            "connectionId": connection_id,
+            "newPrivateVirtualInterface": new_private_virtual_interface,
         }
-        return self.make_request(action='CreatePrivateVirtualInterface',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="CreatePrivateVirtualInterface", body=json.dumps(params)
+        )
 
-    def create_public_virtual_interface(self, connection_id,
-                                        new_public_virtual_interface):
+    def create_public_virtual_interface(
+        self, connection_id, new_public_virtual_interface
+    ):
         """
         Creates a new public virtual interface. A virtual interface is
         the VLAN that transports AWS Direct Connect traffic. A public
@@ -428,11 +441,12 @@ class DirectConnectConnection(AWSQueryConnection):
 
         """
         params = {
-            'connectionId': connection_id,
-            'newPublicVirtualInterface': new_public_virtual_interface,
+            "connectionId": connection_id,
+            "newPublicVirtualInterface": new_public_virtual_interface,
         }
-        return self.make_request(action='CreatePublicVirtualInterface',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="CreatePublicVirtualInterface", body=json.dumps(params)
+        )
 
     def delete_connection(self, connection_id):
         """
@@ -451,9 +465,10 @@ class DirectConnectConnection(AWSQueryConnection):
         Default: None
 
         """
-        params = {'connectionId': connection_id, }
-        return self.make_request(action='DeleteConnection',
-                                 body=json.dumps(params))
+        params = {
+            "connectionId": connection_id,
+        }
+        return self.make_request(action="DeleteConnection", body=json.dumps(params))
 
     def delete_interconnect(self, interconnect_id):
         """
@@ -464,9 +479,10 @@ class DirectConnectConnection(AWSQueryConnection):
         Example: dxcon-abc123
 
         """
-        params = {'interconnectId': interconnect_id, }
-        return self.make_request(action='DeleteInterconnect',
-                                 body=json.dumps(params))
+        params = {
+            "interconnectId": interconnect_id,
+        }
+        return self.make_request(action="DeleteInterconnect", body=json.dumps(params))
 
     def delete_virtual_interface(self, virtual_interface_id):
         """
@@ -479,9 +495,12 @@ class DirectConnectConnection(AWSQueryConnection):
         Default: None
 
         """
-        params = {'virtualInterfaceId': virtual_interface_id, }
-        return self.make_request(action='DeleteVirtualInterface',
-                                 body=json.dumps(params))
+        params = {
+            "virtualInterfaceId": virtual_interface_id,
+        }
+        return self.make_request(
+            action="DeleteVirtualInterface", body=json.dumps(params)
+        )
 
     def describe_connections(self, connection_id=None):
         """
@@ -499,9 +518,8 @@ class DirectConnectConnection(AWSQueryConnection):
         """
         params = {}
         if connection_id is not None:
-            params['connectionId'] = connection_id
-        return self.make_request(action='DescribeConnections',
-                                 body=json.dumps(params))
+            params["connectionId"] = connection_id
+        return self.make_request(action="DescribeConnections", body=json.dumps(params))
 
     def describe_connections_on_interconnect(self, interconnect_id):
         """
@@ -516,9 +534,12 @@ class DirectConnectConnection(AWSQueryConnection):
         Default: None
 
         """
-        params = {'interconnectId': interconnect_id, }
-        return self.make_request(action='DescribeConnectionsOnInterconnect',
-                                 body=json.dumps(params))
+        params = {
+            "interconnectId": interconnect_id,
+        }
+        return self.make_request(
+            action="DescribeConnectionsOnInterconnect", body=json.dumps(params)
+        )
 
     def describe_interconnects(self, interconnect_id=None):
         """
@@ -534,9 +555,10 @@ class DirectConnectConnection(AWSQueryConnection):
         """
         params = {}
         if interconnect_id is not None:
-            params['interconnectId'] = interconnect_id
-        return self.make_request(action='DescribeInterconnects',
-                                 body=json.dumps(params))
+            params["interconnectId"] = interconnect_id
+        return self.make_request(
+            action="DescribeInterconnects", body=json.dumps(params)
+        )
 
     def describe_locations(self):
         """
@@ -545,8 +567,7 @@ class DirectConnectConnection(AWSQueryConnection):
         selected when calling CreateConnection or CreateInterconnect.
         """
         params = {}
-        return self.make_request(action='DescribeLocations',
-                                 body=json.dumps(params))
+        return self.make_request(action="DescribeLocations", body=json.dumps(params))
 
     def describe_virtual_gateways(self):
         """
@@ -559,11 +580,13 @@ class DirectConnectConnection(AWSQueryConnection):
         Cloud (VPC) console or the `EC2 CreateVpnGateway`_ action.
         """
         params = {}
-        return self.make_request(action='DescribeVirtualGateways',
-                                 body=json.dumps(params))
+        return self.make_request(
+            action="DescribeVirtualGateways", body=json.dumps(params)
+        )
 
-    def describe_virtual_interfaces(self, connection_id=None,
-                                    virtual_interface_id=None):
+    def describe_virtual_interfaces(
+        self, connection_id=None, virtual_interface_id=None
+    ):
         """
         Displays all virtual interfaces for an AWS account. Virtual
         interfaces deleted fewer than 15 minutes before
@@ -596,32 +619,36 @@ class DirectConnectConnection(AWSQueryConnection):
         """
         params = {}
         if connection_id is not None:
-            params['connectionId'] = connection_id
+            params["connectionId"] = connection_id
         if virtual_interface_id is not None:
-            params['virtualInterfaceId'] = virtual_interface_id
-        return self.make_request(action='DescribeVirtualInterfaces',
-                                 body=json.dumps(params))
+            params["virtualInterfaceId"] = virtual_interface_id
+        return self.make_request(
+            action="DescribeVirtualInterfaces", body=json.dumps(params)
+        )
 
     def make_request(self, action, body):
         headers = {
-            'X-Amz-Target': '%s.%s' % (self.TargetPrefix, action),
-            'Host': self.region.endpoint,
-            'Content-Type': 'application/x-amz-json-1.1',
-            'Content-Length': str(len(body)),
+            "X-Amz-Target": "%s.%s" % (self.TargetPrefix, action),
+            "Host": self.region.endpoint,
+            "Content-Type": "application/x-amz-json-1.1",
+            "Content-Length": str(len(body)),
         }
         http_request = self.build_base_http_request(
-            method='POST', path='/', auth_path='/', params={},
-            headers=headers, data=body)
-        response = self._mexe(http_request, sender=None,
-                              override_num_retries=10)
-        response_body = response.read().decode('utf-8')
+            method="POST",
+            path="/",
+            auth_path="/",
+            params={},
+            headers=headers,
+            data=body,
+        )
+        response = self._mexe(http_request, sender=None, override_num_retries=10)
+        response_body = response.read().decode("utf-8")
         boto.log.debug(response_body)
         if response.status == 200:
             if response_body:
                 return json.loads(response_body)
         else:
             json_body = json.loads(response_body)
-            fault_name = json_body.get('__type', None)
+            fault_name = json_body.get("__type", None)
             exception_class = self._faults.get(fault_name, self.ResponseError)
-            raise exception_class(response.status, response.reason,
-                                  body=json_body)
+            raise exception_class(response.status, response.reason, body=json_body)

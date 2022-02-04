@@ -27,12 +27,12 @@ class AccountAttribute(object):
         self.attribute_values = None
 
     def startElement(self, name, attrs, connection):
-        if name == 'attributeValueSet':
+        if name == "attributeValueSet":
             self.attribute_values = AttributeValues()
             return self.attribute_values
 
     def endElement(self, name, value, connection):
-        if name == 'attributeName':
+        if name == "attributeName":
             self.attribute_name = value
 
 
@@ -41,7 +41,7 @@ class AttributeValues(list):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'attributeValue':
+        if name == "attributeValue":
             self.append(value)
 
 
@@ -54,18 +54,18 @@ class VPCAttribute(object):
         self._current_attr = None
 
     def startElement(self, name, attrs, connection):
-        if name in ('enableDnsHostnames', 'enableDnsSupport'):
+        if name in ("enableDnsHostnames", "enableDnsSupport"):
             self._current_attr = name
 
     def endElement(self, name, value, connection):
-        if name == 'vpcId':
+        if name == "vpcId":
             self.vpc_id = value
-        elif name == 'value':
-            if value == 'true':
+        elif name == "value":
+            if value == "true":
                 value = True
             else:
                 value = False
-            if self._current_attr == 'enableDnsHostnames':
+            if self._current_attr == "enableDnsHostnames":
                 self.enable_dns_hostnames = value
-            elif self._current_attr == 'enableDnsSupport':
+            elif self._current_attr == "enableDnsSupport":
                 self.enable_dns_support = value

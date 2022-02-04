@@ -56,13 +56,13 @@ class ProcessLockTest(test.TestCase):
                 shutil.rmtree(a_dir, ignore_errors=True)
 
     def test_lock_acquire_release_file_lock(self):
-        lock_file = os.path.join(self.lock_dir, 'lock')
+        lock_file = os.path.join(self.lock_dir, "lock")
         lock = pl.InterProcessLock(lock_file)
 
         def try_lock():
             try:
                 my_lock = pl.InterProcessLock(lock_file)
-                my_lock.lockfile = open(lock_file, 'w')
+                my_lock.lockfile = open(lock_file, "w")
                 my_lock.trylock()
                 my_lock.unlock()
                 os._exit(1)
@@ -94,10 +94,9 @@ class ProcessLockTest(test.TestCase):
     def test_nested_synchronized_external_works(self):
         sentinel = object()
 
-        @pl.interprocess_locked(os.path.join(self.lock_dir, 'test-lock-1'))
+        @pl.interprocess_locked(os.path.join(self.lock_dir, "test-lock-1"))
         def outer_lock():
-
-            @pl.interprocess_locked(os.path.join(self.lock_dir, 'test-lock-2'))
+            @pl.interprocess_locked(os.path.join(self.lock_dir, "test-lock-2"))
             def inner_lock():
                 return sentinel
 
@@ -114,8 +113,8 @@ class ProcessLockTest(test.TestCase):
                 # Open some files we can use for locking
                 handles = []
                 for n in range(50):
-                    path = os.path.join(handles_dir, ('file-%s' % n))
-                    handles.append(open(path, 'w'))
+                    path = os.path.join(handles_dir, ("file-%s" % n))
+                    handles.append(open(path, "w"))
 
                 # Loop over all the handles and try locking the file
                 # without blocking, keep a count of how many files we
@@ -160,7 +159,7 @@ class ProcessLockTest(test.TestCase):
         self._do_test_lock_externally(self.lock_dir)
 
     def test_lock_file_exists(self):
-        lock_file = os.path.join(self.lock_dir, 'lock')
+        lock_file = os.path.join(self.lock_dir, "lock")
 
         @pl.interprocess_locked(lock_file)
         def foo():
@@ -169,17 +168,17 @@ class ProcessLockTest(test.TestCase):
         foo()
 
     def test_bad_acquire(self):
-        lock_file = os.path.join(self.lock_dir, 'lock')
+        lock_file = os.path.join(self.lock_dir, "lock")
         lock = BrokenLock(lock_file, errno.EBUSY)
         self.assertRaises(threading.ThreadError, lock.acquire)
 
     def test_bad_release(self):
-        lock_file = os.path.join(self.lock_dir, 'lock')
+        lock_file = os.path.join(self.lock_dir, "lock")
         lock = pl.InterProcessLock(lock_file)
         self.assertRaises(threading.ThreadError, lock.release)
 
     def test_interprocess_lock(self):
-        lock_file = os.path.join(self.lock_dir, 'lock')
+        lock_file = os.path.join(self.lock_dir, "lock")
 
         pid = os.fork()
         if pid:
@@ -187,10 +186,10 @@ class ProcessLockTest(test.TestCase):
             start = time.time()
             while not os.path.exists(lock_file):
                 if time.time() - start > 5:
-                    self.fail('Timed out waiting for child to grab lock')
+                    self.fail("Timed out waiting for child to grab lock")
                 time.sleep(0)
-            lock1 = pl.InterProcessLock('foo')
-            lock1.lockfile = open(lock_file, 'w')
+            lock1 = pl.InterProcessLock("foo")
+            lock1.lockfile = open(lock_file, "w")
             # NOTE(bnemec): There is a brief window between when the lock file
             # is created and when it actually becomes locked.  If we happen to
             # context switch in that window we may succeed in locking the
@@ -205,13 +204,13 @@ class ProcessLockTest(test.TestCase):
                     # This is what we expect to happen
                     break
             else:
-                self.fail('Never caught expected lock exception')
+                self.fail("Never caught expected lock exception")
             # We don't need to wait for the full sleep in the child here
             os.kill(pid, signal.SIGKILL)
         else:
             try:
-                lock2 = pl.InterProcessLock('foo')
-                lock2.lockfile = open(lock_file, 'w')
+                lock2 = pl.InterProcessLock("foo")
+                lock2.lockfile = open(lock_file, "w")
                 have_lock = False
                 while not have_lock:
                     try:
@@ -223,13 +222,13 @@ class ProcessLockTest(test.TestCase):
                 # NOTE(bnemec): This is racy, but I don't want to add any
                 # synchronization primitives that might mask a problem
                 # with the one we're trying to test here.
-                time.sleep(.5)
+                time.sleep(0.5)
                 os._exit(0)
 
     def test_non_destructive(self):
-        lock_file = os.path.join(self.lock_dir, 'not-destroyed')
-        with open(lock_file, 'w') as f:
-            f.write('test')
+        lock_file = os.path.join(self.lock_dir, "not-destroyed")
+        with open(lock_file, "w") as f:
+            f.write("test")
         with pl.InterProcessLock(lock_file):
             with open(lock_file) as f:
-                self.assertEqual(f.read(), 'test')
+                self.assertEqual(f.read(), "test")

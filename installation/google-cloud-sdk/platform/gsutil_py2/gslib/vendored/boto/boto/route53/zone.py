@@ -37,16 +37,17 @@ class Zone(object):
     :ivar route53connection: A :class:`boto.route53.connection.Route53Connection` connection
     :ivar id: The ID of the hosted zone
     """
+
     def __init__(self, route53connection, zone_dict):
         self.route53connection = route53connection
         for key in zone_dict:
-            if key == 'Id':
-                self.id = zone_dict['Id'].replace('/hostedzone/', '')
+            if key == "Id":
+                self.id = zone_dict["Id"].replace("/hostedzone/", "")
             else:
                 self.__setattr__(key.lower(), zone_dict[key])
 
     def __repr__(self):
-        return '<Zone:%s>' % self.name
+        return "<Zone:%s>" % self.name
 
     def _commit(self, changes):
         """
@@ -57,10 +58,11 @@ class Zone(object):
         :param changes: changes to be committed
         """
         response = changes.commit()
-        return response['ChangeResourceRecordSetsResponse']['ChangeInfo']
+        return response["ChangeResourceRecordSetsResponse"]["ChangeInfo"]
 
-    def _new_record(self, changes, resource_type, name, value, ttl, identifier,
-                    comment=""):
+    def _new_record(
+        self, changes, resource_type, name, value, ttl, identifier, comment=""
+    ):
         """
         Add a CREATE change record to an existing ResourceRecordSets
 
@@ -99,28 +101,35 @@ class Zone(object):
             except:
                 region = identifier[1]
                 identifier = identifier[0]
-        change = changes.add_change("CREATE", name, resource_type, ttl,
-                                    identifier=identifier, weight=weight,
-                                    region=region)
+        change = changes.add_change(
+            "CREATE",
+            name,
+            resource_type,
+            ttl,
+            identifier=identifier,
+            weight=weight,
+            region=region,
+        )
         if type(value) in [list, tuple, set]:
             for record in value:
                 change.add_value(record)
         else:
             change.add_value(value)
 
-    def add_record(self, resource_type, name, value, ttl=60, identifier=None,
-                   comment=""):
+    def add_record(
+        self, resource_type, name, value, ttl=60, identifier=None, comment=""
+    ):
         """
         Add a new record to this Zone.  See _new_record for parameter
         documentation.  Returns a Status object.
         """
         changes = ResourceRecordSets(self.route53connection, self.id, comment)
-        self._new_record(changes, resource_type, name, value, ttl, identifier,
-                         comment)
+        self._new_record(changes, resource_type, name, value, ttl, identifier, comment)
         return Status(self.route53connection, self._commit(changes))
 
-    def update_record(self, old_record, new_value, new_ttl=None,
-                      new_identifier=None, comment=""):
+    def update_record(
+        self, old_record, new_value, new_ttl=None, new_identifier=None, comment=""
+    ):
         """
         Update an existing record in this Zone.  Returns a Status object.
 
@@ -133,8 +142,15 @@ class Zone(object):
         record = copy.copy(old_record)
         changes = ResourceRecordSets(self.route53connection, self.id, comment)
         changes.add_change_record("DELETE", record)
-        self._new_record(changes, record.type, record.name,
-                         new_value, new_ttl, new_identifier, comment)
+        self._new_record(
+            changes,
+            record.type,
+            record.name,
+            new_value,
+            new_ttl,
+            new_identifier,
+            comment,
+        )
         return Status(self.route53connection, self._commit(changes))
 
     def delete_record(self, record, comment=""):
@@ -163,12 +179,14 @@ class Zone(object):
         ttl = ttl or default_ttl
         name = self.route53connection._make_qualified(name)
         value = self.route53connection._make_qualified(value)
-        return self.add_record(resource_type='CNAME',
-                               name=name,
-                               value=value,
-                               ttl=ttl,
-                               identifier=identifier,
-                               comment=comment)
+        return self.add_record(
+            resource_type="CNAME",
+            name=name,
+            value=value,
+            ttl=ttl,
+            identifier=identifier,
+            comment=comment,
+        )
 
     def add_a(self, name, value, ttl=None, identifier=None, comment=""):
         """
@@ -177,12 +195,14 @@ class Zone(object):
         """
         ttl = ttl or default_ttl
         name = self.route53connection._make_qualified(name)
-        return self.add_record(resource_type='A',
-                               name=name,
-                               value=value,
-                               ttl=ttl,
-                               identifier=identifier,
-                               comment=comment)
+        return self.add_record(
+            resource_type="A",
+            name=name,
+            value=value,
+            ttl=ttl,
+            identifier=identifier,
+            comment=comment,
+        )
 
     def add_mx(self, name, records, ttl=None, identifier=None, comment=""):
         """
@@ -191,12 +211,14 @@ class Zone(object):
         """
         ttl = ttl or default_ttl
         records = self.route53connection._make_qualified(records)
-        return self.add_record(resource_type='MX',
-                               name=name,
-                               value=records,
-                               ttl=ttl,
-                               identifier=identifier,
-                               comment=comment)
+        return self.add_record(
+            resource_type="MX",
+            name=name,
+            value=records,
+            ttl=ttl,
+            identifier=identifier,
+            comment=comment,
+        )
 
     def find_records(self, name, type, desired=1, all=False, identifier=None):
         """
@@ -228,8 +250,7 @@ class Zone(object):
 
         """
         name = self.route53connection._make_qualified(name)
-        returned = self.route53connection.get_all_rrsets(self.id, name=name,
-                                                         type=type)
+        returned = self.route53connection.get_all_rrsets(self.id, name=name, type=type)
 
         # name/type for get_all_rrsets sets the starting record; they
         # are not a filter
@@ -252,17 +273,24 @@ class Zone(object):
                 region = identifier[1]
 
         if weight is not None:
-            results = [r for r in results if (r.weight == weight and
-                                              r.identifier == identifier[0])]
+            results = [
+                r
+                for r in results
+                if (r.weight == weight and r.identifier == identifier[0])
+            ]
         if region is not None:
-            results = [r for r in results if (r.region == region and
-                                              r.identifier == identifier[0])]
+            results = [
+                r
+                for r in results
+                if (r.region == region and r.identifier == identifier[0])
+            ]
 
-        if ((not all) and (len(results) > desired)):
+        if (not all) and (len(results) > desired):
             message = "Search: name %s type %s" % (name, type)
             message += "\nFound: "
-            message += ", ".join(["%s %s %s" % (r.name, r.type, r.to_print())
-                                  for r in results])
+            message += ", ".join(
+                ["%s %s %s" % (r.name, r.type, r.to_print()) for r in results]
+            )
             raise TooManyRecordsException(message)
         elif len(results) > 1:
             return results
@@ -281,7 +309,7 @@ class Zone(object):
         ResourceRecordSets if all is True, otherwise throws
         TooManyRecordsException.
         """
-        return self.find_records(name, 'CNAME', all=all)
+        return self.find_records(name, "CNAME", all=all)
 
     def get_a(self, name, all=False):
         """
@@ -293,7 +321,7 @@ class Zone(object):
         ResourceRecordSets if all is True, otherwise throws
         TooManyRecordsException.
         """
-        return self.find_records(name, 'A', all=all)
+        return self.find_records(name, "A", all=all)
 
     def get_mx(self, name, all=False):
         """
@@ -305,7 +333,7 @@ class Zone(object):
         ResourceRecordSets if all is True, otherwise throws
         TooManyRecordsException.
         """
-        return self.find_records(name, 'MX', all=all)
+        return self.find_records(name, "MX", all=all)
 
     def update_cname(self, name, value, ttl=None, identifier=None, comment=""):
         """
@@ -319,11 +347,13 @@ class Zone(object):
         value = self.route53connection._make_qualified(value)
         old_record = self.get_cname(name)
         ttl = ttl or old_record.ttl
-        return self.update_record(old_record,
-                                  new_value=value,
-                                  new_ttl=ttl,
-                                  new_identifier=identifier,
-                                  comment=comment)
+        return self.update_record(
+            old_record,
+            new_value=value,
+            new_ttl=ttl,
+            new_identifier=identifier,
+            comment=comment,
+        )
 
     def update_a(self, name, value, ttl=None, identifier=None, comment=""):
         """
@@ -336,11 +366,13 @@ class Zone(object):
         name = self.route53connection._make_qualified(name)
         old_record = self.get_a(name)
         ttl = ttl or old_record.ttl
-        return self.update_record(old_record,
-                                  new_value=value,
-                                  new_ttl=ttl,
-                                  new_identifier=identifier,
-                                  comment=comment)
+        return self.update_record(
+            old_record,
+            new_value=value,
+            new_ttl=ttl,
+            new_identifier=identifier,
+            comment=comment,
+        )
 
     def update_mx(self, name, value, ttl=None, identifier=None, comment=""):
         """
@@ -354,11 +386,13 @@ class Zone(object):
         value = self.route53connection._make_qualified(value)
         old_record = self.get_mx(name)
         ttl = ttl or old_record.ttl
-        return self.update_record(old_record,
-                                  new_value=value,
-                                  new_ttl=ttl,
-                                  new_identifier=identifier,
-                                  comment=comment)
+        return self.update_record(
+            old_record,
+            new_value=value,
+            new_ttl=ttl,
+            new_identifier=identifier,
+            comment=comment,
+        )
 
     def delete_cname(self, name, identifier=None, all=False):
         """
@@ -369,8 +403,7 @@ class Zone(object):
         all is True, otherwise throws TooManyRecordsException.
         """
         name = self.route53connection._make_qualified(name)
-        record = self.find_records(name, 'CNAME', identifier=identifier,
-                                   all=all)
+        record = self.find_records(name, "CNAME", identifier=identifier, all=all)
         return self.delete_record(record)
 
     def delete_a(self, name, identifier=None, all=False):
@@ -382,8 +415,7 @@ class Zone(object):
         all is True, otherwise throws TooManyRecordsException.
         """
         name = self.route53connection._make_qualified(name)
-        record = self.find_records(name, 'A', identifier=identifier,
-                                   all=all)
+        record = self.find_records(name, "A", identifier=identifier, all=all)
         return self.delete_record(record)
 
     def delete_mx(self, name, identifier=None, all=False):
@@ -395,8 +427,7 @@ class Zone(object):
         all is True, otherwise throws TooManyRecordsException.
         """
         name = self.route53connection._make_qualified(name)
-        record = self.find_records(name, 'MX', identifier=identifier,
-                                   all=all)
+        record = self.find_records(name, "MX", identifier=identifier, all=all)
         return self.delete_record(record)
 
     def get_records(self):
@@ -412,8 +443,8 @@ class Zone(object):
         self.route53connection.delete_hosted_zone(self.id)
 
     def get_nameservers(self):
-        """ Get the list of nameservers for this zone."""
-        ns = self.find_records(self.name, 'NS')
+        """Get the list of nameservers for this zone."""
+        ns = self.find_records(self.name, "NS")
         if ns is not None:
             ns = ns.resource_records
         return ns

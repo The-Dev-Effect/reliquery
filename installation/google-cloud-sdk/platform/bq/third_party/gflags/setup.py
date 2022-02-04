@@ -31,14 +31,15 @@
 
 from setuptools import setup
 
-setup(name='python-gflags',
-      version='2.0',
-      description='Google Commandline Flags Module',
-      license='BSD',
-      author='Google Inc. and others',
-      author_email='google-gflags@googlegroups.com',
-      url='http://code.google.com/p/python-gflags',
-      py_modules=["gflags", "gflags_validators"],
-      data_files=[("bin", ["gflags2man.py"])],
-      include_package_data=True,
-      )
+setup(
+    name="python-gflags",
+    version="2.0",
+    description="Google Commandline Flags Module",
+    license="BSD",
+    author="Google Inc. and others",
+    author_email="google-gflags@googlegroups.com",
+    url="http://code.google.com/p/python-gflags",
+    py_modules=["gflags", "gflags_validators"],
+    data_files=[("bin", ["gflags2man.py"])],
+    include_package_data=True,
+)

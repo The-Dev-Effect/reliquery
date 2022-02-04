@@ -32,11 +32,15 @@ import time
 
 
 class CallbackTestHarness(object):
-
-    def __init__(self, fail_after_n_bytes=0, num_times_to_fail=1,
-                 exception=socket.error('mock socket error', 0),
-                 fp_to_change=None, fp_change_pos=None,
-                 delay_after_change=None):
+    def __init__(
+        self,
+        fail_after_n_bytes=0,
+        num_times_to_fail=1,
+        exception=socket.error("mock socket error", 0),
+        fp_to_change=None,
+        fp_change_pos=None,
+        delay_after_change=None,
+    ):
         self.fail_after_n_bytes = fail_after_n_bytes
         self.num_times_to_fail = num_times_to_fail
         self.exception = exception
@@ -57,18 +61,18 @@ class CallbackTestHarness(object):
         """
         # Record transfer sequence to allow verification.
         if self.num_failures:
-            self.transferred_seq_after_first_failure.append(
-                total_bytes_transferred)
+            self.transferred_seq_after_first_failure.append(total_bytes_transferred)
         else:
-            self.transferred_seq_before_first_failure.append(
-                total_bytes_transferred)
-        if (total_bytes_transferred >= self.fail_after_n_bytes and
-            self.num_failures < self.num_times_to_fail):
+            self.transferred_seq_before_first_failure.append(total_bytes_transferred)
+        if (
+            total_bytes_transferred >= self.fail_after_n_bytes
+            and self.num_failures < self.num_times_to_fail
+        ):
             self.num_failures += 1
             if self.fp_to_change and self.fp_change_pos is not None:
                 cur_pos = self.fp_to_change.tell()
                 self.fp_to_change.seek(self.fp_change_pos)
-                self.fp_to_change.write('abc')
+                self.fp_to_change.write("abc")
                 self.fp_to_change.seek(cur_pos)
                 if self.delay_after_change:
                     time.sleep(self.delay_after_change)

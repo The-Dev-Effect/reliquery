@@ -26,13 +26,13 @@ class SecurityGroup(object):
         self.owner_alias = None
 
     def __repr__(self):
-        return 'SecurityGroup(%s, %s)' % (self.name, self.owner_alias)
+        return "SecurityGroup(%s, %s)" % (self.name, self.owner_alias)
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'GroupName':
+        if name == "GroupName":
             self.name = value
-        elif name == 'OwnerAlias':
+        elif name == "OwnerAlias":
             self.owner_alias = value

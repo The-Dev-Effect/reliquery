@@ -46,22 +46,22 @@ import threading
 import time
 
 
-__all__ = ('monotonic',)
+__all__ = ("monotonic",)
 
 
 try:
     monotonic = time.monotonic
 except AttributeError:
     try:
-        if sys.platform == 'darwin':  # OS X, iOS
+        if sys.platform == "darwin":  # OS X, iOS
             # See Technical Q&A QA1398 of the Mac Developer Library:
             #  <https://developer.apple.com/library/mac/qa/qa1398/>
-            libc = ctypes.CDLL('/usr/lib/libc.dylib', use_errno=True)
+            libc = ctypes.CDLL("/usr/lib/libc.dylib", use_errno=True)
 
             class mach_timebase_info_data_t(ctypes.Structure):
                 """System timebase info. Defined in <mach/mach_time.h>."""
-                _fields_ = (('numer', ctypes.c_uint32),
-                            ('denom', ctypes.c_uint32))
+
+                _fields_ = (("numer", ctypes.c_uint32), ("denom", ctypes.c_uint32))
 
             mach_absolute_time = libc.mach_absolute_time
             mach_absolute_time.restype = ctypes.c_uint64
@@ -74,17 +74,17 @@ except AttributeError:
                 """Monotonic clock, cannot go backward."""
                 return mach_absolute_time() / ticks_per_second
 
-        elif sys.platform.startswith('win32') or sys.platform.startswith('cygwin'):
-            if sys.platform.startswith('cygwin'):
+        elif sys.platform.startswith("win32") or sys.platform.startswith("cygwin"):
+            if sys.platform.startswith("cygwin"):
                 # Note: cygwin implements clock_gettime (CLOCK_MONOTONIC = 4) since
                 # version 1.7.6. Using raw WinAPI for maximum version compatibility.
 
-                # Ugly hack using the wrong calling convention (in 32-bit mode) 
-                # because ctypes has no windll under cygwin (and it also seems that 
-                # the code letting you select stdcall in _ctypes doesn't exist under 
+                # Ugly hack using the wrong calling convention (in 32-bit mode)
+                # because ctypes has no windll under cygwin (and it also seems that
+                # the code letting you select stdcall in _ctypes doesn't exist under
                 # the preprocessor definitions relevant to cygwin).
                 # This is 'safe' because:
-                # 1. The ABI of GetTickCount and GetTickCount64 is identical for 
+                # 1. The ABI of GetTickCount and GetTickCount64 is identical for
                 #    both calling conventions because they both have no parameters.
                 # 2. libffi masks the problem because after making the call it doesn't
                 #    touch anything through esp and epilogue code restores a correct
@@ -92,11 +92,11 @@ except AttributeError:
                 try:
                     kernel32 = ctypes.cdll.kernel32
                 except OSError:  # 'No such file or directory'
-                    kernel32 = ctypes.cdll.LoadLibrary('kernel32.dll')
+                    kernel32 = ctypes.cdll.LoadLibrary("kernel32.dll")
             else:
                 kernel32 = ctypes.windll.kernel32
 
-            GetTickCount64 = getattr(kernel32, 'GetTickCount64', None)
+            GetTickCount64 = getattr(kernel32, "GetTickCount64", None)
             if GetTickCount64:
                 # Windows Vista / Windows Server 2008 or newer.
                 GetTickCount64.restype = ctypes.c_ulonglong
@@ -131,26 +131,28 @@ except AttributeError:
 
         else:
             try:
-                clock_gettime = ctypes.CDLL(ctypes.util.find_library('c'),
-                                            use_errno=True).clock_gettime
+                clock_gettime = ctypes.CDLL(
+                    ctypes.util.find_library("c"), use_errno=True
+                ).clock_gettime
             except Exception:
-                clock_gettime = ctypes.CDLL(ctypes.util.find_library('rt'),
-                                            use_errno=True).clock_gettime
+                clock_gettime = ctypes.CDLL(
+                    ctypes.util.find_library("rt"), use_errno=True
+                ).clock_gettime
 
             class timespec(ctypes.Structure):
                 """Time specification, as described in clock_gettime(3)."""
-                _fields_ = (('tv_sec', ctypes.c_long),
-                            ('tv_nsec', ctypes.c_long))
 
-            if sys.platform.startswith('linux'):
+                _fields_ = (("tv_sec", ctypes.c_long), ("tv_nsec", ctypes.c_long))
+
+            if sys.platform.startswith("linux"):
                 CLOCK_MONOTONIC = 1
-            elif sys.platform.startswith('freebsd'):
+            elif sys.platform.startswith("freebsd"):
                 CLOCK_MONOTONIC = 4
-            elif sys.platform.startswith('sunos5'):
+            elif sys.platform.startswith("sunos5"):
                 CLOCK_MONOTONIC = 4
-            elif 'bsd' in sys.platform:
+            elif "bsd" in sys.platform:
                 CLOCK_MONOTONIC = 3
-            elif sys.platform.startswith('aix'):
+            elif sys.platform.startswith("aix"):
                 CLOCK_MONOTONIC = ctypes.c_longlong(10)
 
             def monotonic():
@@ -163,7 +165,7 @@ except AttributeError:
 
         # Perform a sanity-check.
         if monotonic() - monotonic() > 0:
-            raise ValueError('monotonic() is not monotonic!')
+            raise ValueError("monotonic() is not monotonic!")
 
     except Exception as e:
-        raise RuntimeError('no suitable implementation for this system: ' + repr(e))
+        raise RuntimeError("no suitable implementation for this system: " + repr(e))

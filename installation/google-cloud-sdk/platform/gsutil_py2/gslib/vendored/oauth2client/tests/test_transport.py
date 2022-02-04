@@ -23,19 +23,17 @@ from tests import http_mock
 
 
 class TestMemoryCache(unittest.TestCase):
-
     def test_get_set_delete(self):
         cache = transport.MemoryCache()
-        self.assertIsNone(cache.get('foo'))
-        self.assertIsNone(cache.delete('foo'))
-        cache.set('foo', 'bar')
-        self.assertEqual('bar', cache.get('foo'))
-        cache.delete('foo')
-        self.assertIsNone(cache.get('foo'))
+        self.assertIsNone(cache.get("foo"))
+        self.assertIsNone(cache.delete("foo"))
+        cache.set("foo", "bar")
+        self.assertEqual("bar", cache.get("foo"))
+        cache.delete("foo")
+        self.assertIsNone(cache.get("foo"))
 
 
 class Test_get_cached_http(unittest.TestCase):
-
     def test_global(self):
         cached_http = transport.get_cached_http()
         self.assertIsInstance(cached_http, httplib2.Http)
@@ -43,41 +41,38 @@ class Test_get_cached_http(unittest.TestCase):
 
     def test_value(self):
         cache = object()
-        with mock.patch('oauth2client.transport._CACHED_HTTP', new=cache):
+        with mock.patch("oauth2client.transport._CACHED_HTTP", new=cache):
             result = transport.get_cached_http()
         self.assertIs(result, cache)
 
 
 class Test_get_http_object(unittest.TestCase):
-
-    @mock.patch.object(httplib2, 'Http', return_value=object())
+    @mock.patch.object(httplib2, "Http", return_value=object())
     def test_it(self, http_klass):
         result = transport.get_http_object()
         self.assertEqual(result, http_klass.return_value)
         http_klass.assert_called_once_with()
 
-    @mock.patch.object(httplib2, 'Http', return_value=object())
+    @mock.patch.object(httplib2, "Http", return_value=object())
     def test_with_args(self, http_klass):
-        result = transport.get_http_object(1, 2, foo='bar')
+        result = transport.get_http_object(1, 2, foo="bar")
         self.assertEqual(result, http_klass.return_value)
-        http_klass.assert_called_once_with(1, 2, foo='bar')
+        http_klass.assert_called_once_with(1, 2, foo="bar")
 
 
 class Test__initialize_headers(unittest.TestCase):
-
     def test_null(self):
         result = transport._initialize_headers(None)
         self.assertEqual(result, {})
 
     def test_copy(self):
-        headers = {'a': 1, 'b': 2}
+        headers = {"a": 1, "b": 2}
         result = transport._initialize_headers(headers)
         self.assertEqual(result, headers)
         self.assertIsNot(result, headers)
 
 
 class Test__apply_user_agent(unittest.TestCase):
-
     def test_null(self):
         headers = object()
         result = transport._apply_user_agent(headers, None)
@@ -85,51 +80,49 @@ class Test__apply_user_agent(unittest.TestCase):
 
     def test_new_agent(self):
         headers = {}
-        user_agent = 'foo'
+        user_agent = "foo"
         result = transport._apply_user_agent(headers, user_agent)
         self.assertIs(result, headers)
-        self.assertEqual(result, {'user-agent': user_agent})
+        self.assertEqual(result, {"user-agent": user_agent})
 
     def test_append(self):
-        orig_agent = 'bar'
-        headers = {'user-agent': orig_agent}
-        user_agent = 'baz'
+        orig_agent = "bar"
+        headers = {"user-agent": orig_agent}
+        user_agent = "baz"
         result = transport._apply_user_agent(headers, user_agent)
         self.assertIs(result, headers)
-        final_agent = user_agent + ' ' + orig_agent
-        self.assertEqual(result, {'user-agent': final_agent})
+        final_agent = user_agent + " " + orig_agent
+        self.assertEqual(result, {"user-agent": final_agent})
 
 
 class Test_clean_headers(unittest.TestCase):
-
     def test_no_modify(self):
-        headers = {b'key': b'val'}
+        headers = {b"key": b"val"}
         result = transport.clean_headers(headers)
         self.assertIsNot(result, headers)
         self.assertEqual(result, headers)
 
     def test_cast_unicode(self):
-        headers = {u'key': u'val'}
-        header_bytes = {b'key': b'val'}
+        headers = {u"key": u"val"}
+        header_bytes = {b"key": b"val"}
         result = transport.clean_headers(headers)
         self.assertIsNot(result, headers)
         self.assertEqual(result, header_bytes)
 
     def test_unicode_failure(self):
-        headers = {u'key': u'\u2603'}
+        headers = {u"key": u"\u2603"}
         with self.assertRaises(client.NonAsciiHeaderError):
             transport.clean_headers(headers)
 
     def test_cast_object(self):
-        headers = {b'key': True}
-        header_str = {b'key': b'True'}
+        headers = {b"key": True}
+        header_str = {b"key": b"True"}
         result = transport.clean_headers(headers)
         self.assertIsNot(result, headers)
         self.assertEqual(result, header_str)
 
 
 class Test_wrap_http_for_auth(unittest.TestCase):
-
     def test_wrap(self):
         credentials = object()
         http = mock.Mock()
@@ -142,19 +135,23 @@ class Test_wrap_http_for_auth(unittest.TestCase):
 
 class Test_request(unittest.TestCase):
 
-    uri = 'http://localhost'
-    method = 'POST'
-    body = 'abc'
+    uri = "http://localhost"
+    method = "POST"
+    body = "abc"
     redirections = 3
 
     def test_with_request_attr(self):
         mock_result = object()
-        headers = {'foo': 'bar'}
+        headers = {"foo": "bar"}
         http = http_mock.HttpMock(headers=headers, data=mock_result)
 
         response, content = transport.request(
-            http, self.uri, method=self.method, body=self.body,
-            redirections=self.redirections)
+            http,
+            self.uri,
+            method=self.method,
+            body=self.body,
+            redirections=self.redirections,
+        )
         self.assertEqual(response, headers)
         self.assertIs(content, mock_result)
         # Verify mocks.
@@ -169,9 +166,13 @@ class Test_request(unittest.TestCase):
         mock_result = object()
         http = http_mock.HttpMock(headers=headers, data=mock_result)
 
-        result = transport.request(http, self.uri, method=self.method,
-                                   body=self.body,
-                                   redirections=self.redirections)
+        result = transport.request(
+            http,
+            self.uri,
+            method=self.method,
+            body=self.body,
+            redirections=self.redirections,
+        )
         self.assertEqual(result, (headers, mock_result))
         # Verify mock.
         self.assertEqual(http.requests, 1)

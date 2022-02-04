@@ -70,11 +70,23 @@ class HealthCheck(object):
 
     XMLStringMatchPart = """<SearchString>%(string_match)s</SearchString>"""
 
-    XMLRequestIntervalPart = """<RequestInterval>%(request_interval)d</RequestInterval>"""
+    XMLRequestIntervalPart = (
+        """<RequestInterval>%(request_interval)d</RequestInterval>"""
+    )
 
     valid_request_intervals = (10, 30)
 
-    def __init__(self, ip_addr, port, hc_type, resource_path, fqdn=None, string_match=None, request_interval=30, failure_threshold=3):
+    def __init__(
+        self,
+        ip_addr,
+        port,
+        hc_type,
+        resource_path,
+        fqdn=None,
+        string_match=None,
+        request_interval=30,
+        failure_threshold=3,
+    ):
         """
         HealthCheck object
 
@@ -115,32 +127,36 @@ class HealthCheck(object):
             self.request_interval = request_interval
         else:
             raise AttributeError(
-                "Valid values for request_interval are: %s" %
-                ",".join(str(i) for i in self.valid_request_intervals))
+                "Valid values for request_interval are: %s"
+                % ",".join(str(i) for i in self.valid_request_intervals)
+            )
 
         if failure_threshold < 1 or failure_threshold > 10:
-            raise AttributeError(
-                'Valid values for failure_threshold are 1 - 10.')
+            raise AttributeError("Valid values for failure_threshold are 1 - 10.")
 
     def to_xml(self):
         params = {
-            'ip_addr_part': '',
-            'port': self.port,
-            'type': self.hc_type,
-            'resource_path': self.resource_path,
-            'fqdn_part': "",
-            'string_match_part': "",
-            'request_interval': (self.XMLRequestIntervalPart %
-                                 {'request_interval': self.request_interval}),
-            'failure_threshold': self.failure_threshold,
+            "ip_addr_part": "",
+            "port": self.port,
+            "type": self.hc_type,
+            "resource_path": self.resource_path,
+            "fqdn_part": "",
+            "string_match_part": "",
+            "request_interval": (
+                self.XMLRequestIntervalPart
+                % {"request_interval": self.request_interval}
+            ),
+            "failure_threshold": self.failure_threshold,
         }
         if self.fqdn is not None:
-            params['fqdn_part'] = self.XMLFQDNPart % {'fqdn': self.fqdn}
+            params["fqdn_part"] = self.XMLFQDNPart % {"fqdn": self.fqdn}
 
         if self.ip_addr:
-            params['ip_addr_part'] = self.XMLIpAddrPart % {'ip_addr': self.ip_addr}
+            params["ip_addr_part"] = self.XMLIpAddrPart % {"ip_addr": self.ip_addr}
 
         if self.string_match is not None:
-            params['string_match_part'] = self.XMLStringMatchPart % {'string_match': self.string_match}
+            params["string_match_part"] = self.XMLStringMatchPart % {
+                "string_match": self.string_match
+            }
 
         return self.POSTXMLBody % params

@@ -6,7 +6,7 @@ from boto.vpc import VPCConnection, VPC
 from boto.ec2.securitygroup import SecurityGroup
 
 
-DESCRIBE_VPCS = b'''<?xml version="1.0" encoding="UTF-8"?>
+DESCRIBE_VPCS = b"""<?xml version="1.0" encoding="UTF-8"?>
 <DescribeVpcsResponse xmlns="http://ec2.amazonaws.com/doc/2013-02-01/">
     <requestId>623040d1-b51c-40bc-8080-93486f38d03d</requestId>
     <vpcSet>
@@ -19,7 +19,7 @@ DESCRIBE_VPCS = b'''<?xml version="1.0" encoding="UTF-8"?>
             <isDefault>false</isDefault>
         </item>
     </vpcSet>
-</DescribeVpcsResponse>'''
+</DescribeVpcsResponse>"""
 
 
 class TestDescribeVPCs(AWSMockServiceTestCase):
@@ -37,7 +37,7 @@ class TestDescribeVPCs(AWSMockServiceTestCase):
 
         vpc = api_response[0]
         self.assertFalse(vpc.is_default)
-        self.assertEqual(vpc.instance_tenancy, 'default')
+        self.assertEqual(vpc.instance_tenancy, "default")
 
 
 class TestCreateVpc(AWSMockServiceTestCase):
@@ -61,20 +61,27 @@ class TestCreateVpc(AWSMockServiceTestCase):
 
     def test_create_vpc(self):
         self.set_http_response(status_code=200)
-        api_response = self.service_connection.create_vpc('10.0.0.0/16', 'default')
-        self.assert_request_parameters({
-            'Action': 'CreateVpc',
-            'InstanceTenancy': 'default',
-            'CidrBlock': '10.0.0.0/16'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp',
-                                  'Version'])
+        api_response = self.service_connection.create_vpc("10.0.0.0/16", "default")
+        self.assert_request_parameters(
+            {
+                "Action": "CreateVpc",
+                "InstanceTenancy": "default",
+                "CidrBlock": "10.0.0.0/16",
+            },
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
         self.assertIsInstance(api_response, VPC)
-        self.assertEquals(api_response.id, 'vpc-1a2b3c4d')
-        self.assertEquals(api_response.state, 'pending')
-        self.assertEquals(api_response.cidr_block, '10.0.0.0/16')
-        self.assertEquals(api_response.dhcp_options_id, 'dopt-1a2b3c4d2')
-        self.assertEquals(api_response.instance_tenancy, 'default')
+        self.assertEquals(api_response.id, "vpc-1a2b3c4d")
+        self.assertEquals(api_response.state, "pending")
+        self.assertEquals(api_response.cidr_block, "10.0.0.0/16")
+        self.assertEquals(api_response.dhcp_options_id, "dopt-1a2b3c4d2")
+        self.assertEquals(api_response.instance_tenancy, "default")
 
 
 class TestDeleteVpc(AWSMockServiceTestCase):
@@ -91,13 +98,17 @@ class TestDeleteVpc(AWSMockServiceTestCase):
 
     def test_delete_vpc(self):
         self.set_http_response(status_code=200)
-        api_response = self.service_connection.delete_vpc('vpc-1a2b3c4d')
-        self.assert_request_parameters({
-            'Action': 'DeleteVpc',
-            'VpcId': 'vpc-1a2b3c4d'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp',
-                                  'Version'])
+        api_response = self.service_connection.delete_vpc("vpc-1a2b3c4d")
+        self.assert_request_parameters(
+            {"Action": "DeleteVpc", "VpcId": "vpc-1a2b3c4d"},
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
         self.assertEquals(api_response, True)
 
 
@@ -116,27 +127,43 @@ class TestModifyVpcAttribute(AWSMockServiceTestCase):
     def test_modify_vpc_attribute_dns_support(self):
         self.set_http_response(status_code=200)
         api_response = self.service_connection.modify_vpc_attribute(
-            'vpc-1a2b3c4d', enable_dns_support=True)
-        self.assert_request_parameters({
-            'Action': 'ModifyVpcAttribute',
-            'VpcId': 'vpc-1a2b3c4d',
-            'EnableDnsSupport.Value': 'true'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp',
-                                  'Version'])
+            "vpc-1a2b3c4d", enable_dns_support=True
+        )
+        self.assert_request_parameters(
+            {
+                "Action": "ModifyVpcAttribute",
+                "VpcId": "vpc-1a2b3c4d",
+                "EnableDnsSupport.Value": "true",
+            },
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
         self.assertEquals(api_response, True)
 
     def test_modify_vpc_attribute_dns_hostnames(self):
         self.set_http_response(status_code=200)
         api_response = self.service_connection.modify_vpc_attribute(
-            'vpc-1a2b3c4d', enable_dns_hostnames=True)
-        self.assert_request_parameters({
-            'Action': 'ModifyVpcAttribute',
-            'VpcId': 'vpc-1a2b3c4d',
-            'EnableDnsHostnames.Value': 'true'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp',
-                                  'Version'])
+            "vpc-1a2b3c4d", enable_dns_hostnames=True
+        )
+        self.assert_request_parameters(
+            {
+                "Action": "ModifyVpcAttribute",
+                "VpcId": "vpc-1a2b3c4d",
+                "EnableDnsHostnames.Value": "true",
+            },
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
         self.assertEquals(api_response, True)
 
 
@@ -173,26 +200,34 @@ class TestGetAllClassicLinkVpc(AWSMockServiceTestCase):
         response = self.service_connection.get_all_classic_link_vpcs()
         self.assertEqual(len(response), 2)
         vpc = response[0]
-        self.assertEqual(vpc.id, 'vpc-6226ab07')
-        self.assertEqual(vpc.classic_link_enabled, 'false')
-        self.assertEqual(vpc.tags, {'Name': 'hello'})
+        self.assertEqual(vpc.id, "vpc-6226ab07")
+        self.assertEqual(vpc.classic_link_enabled, "false")
+        self.assertEqual(vpc.tags, {"Name": "hello"})
 
     def test_get_all_classic_link_vpcs_params(self):
         self.set_http_response(status_code=200)
         self.service_connection.get_all_classic_link_vpcs(
-            vpc_ids=['id1', 'id2'],
-            filters={'GroupId': 'sg-9b4343fe'},
+            vpc_ids=["id1", "id2"],
+            filters={"GroupId": "sg-9b4343fe"},
             dry_run=True,
         )
-        self.assert_request_parameters({
-            'Action': 'DescribeVpcClassicLink',
-            'VpcId.1': 'id1',
-            'VpcId.2': 'id2',
-            'Filter.1.Name': 'GroupId',
-            'Filter.1.Value.1': 'sg-9b4343fe',
-            'DryRun': 'true'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp', 'Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "DescribeVpcClassicLink",
+                "VpcId.1": "id1",
+                "VpcId.2": "id2",
+                "Filter.1.Name": "GroupId",
+                "Filter.1.Value.1": "sg-9b4343fe",
+                "DryRun": "true",
+            },
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
 
 
 class TestVpcClassicLink(AWSMockServiceTestCase):
@@ -201,7 +236,7 @@ class TestVpcClassicLink(AWSMockServiceTestCase):
     def setUp(self):
         super(TestVpcClassicLink, self).setUp()
         self.vpc = VPC(self.service_connection)
-        self.vpc_id = 'myid'
+        self.vpc_id = "myid"
         self.vpc.id = self.vpc_id
 
 
@@ -215,50 +250,62 @@ class TestAttachClassicLinkVpc(TestVpcClassicLink):
         """
 
     def test_attach_classic_link_instance_string_groups(self):
-        groups = ['sg-foo', 'sg-bar']
+        groups = ["sg-foo", "sg-bar"]
 
         self.set_http_response(status_code=200)
         response = self.vpc.attach_classic_instance(
-            instance_id='my_instance_id',
-            groups=groups,
-            dry_run=True
+            instance_id="my_instance_id", groups=groups, dry_run=True
         )
         self.assertTrue(response)
-        self.assert_request_parameters({
-            'Action': 'AttachClassicLinkVpc',
-            'VpcId': self.vpc_id,
-            'InstanceId': 'my_instance_id',
-            'SecurityGroupId.1': 'sg-foo',
-            'SecurityGroupId.2': 'sg-bar',
-            'DryRun': 'true'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp', 'Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "AttachClassicLinkVpc",
+                "VpcId": self.vpc_id,
+                "InstanceId": "my_instance_id",
+                "SecurityGroupId.1": "sg-foo",
+                "SecurityGroupId.2": "sg-bar",
+                "DryRun": "true",
+            },
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
 
     def test_attach_classic_link_instance_object_groups(self):
         sec_group_1 = SecurityGroup()
-        sec_group_1.id = 'sg-foo'
+        sec_group_1.id = "sg-foo"
 
         sec_group_2 = SecurityGroup()
-        sec_group_2.id = 'sg-bar'
+        sec_group_2.id = "sg-bar"
 
         groups = [sec_group_1, sec_group_2]
 
         self.set_http_response(status_code=200)
         response = self.vpc.attach_classic_instance(
-            instance_id='my_instance_id',
-            groups=groups,
-            dry_run=True
+            instance_id="my_instance_id", groups=groups, dry_run=True
         )
         self.assertTrue(response)
-        self.assert_request_parameters({
-            'Action': 'AttachClassicLinkVpc',
-            'VpcId': self.vpc_id,
-            'InstanceId': 'my_instance_id',
-            'SecurityGroupId.1': 'sg-foo',
-            'SecurityGroupId.2': 'sg-bar',
-            'DryRun': 'true'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp', 'Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "AttachClassicLinkVpc",
+                "VpcId": self.vpc_id,
+                "InstanceId": "my_instance_id",
+                "SecurityGroupId.1": "sg-foo",
+                "SecurityGroupId.2": "sg-bar",
+                "DryRun": "true",
+            },
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
 
 
 class TestDetachClassicLinkVpc(TestVpcClassicLink):
@@ -273,17 +320,24 @@ class TestDetachClassicLinkVpc(TestVpcClassicLink):
     def test_detach_classic_link_instance(self):
         self.set_http_response(status_code=200)
         response = self.vpc.detach_classic_instance(
-            instance_id='my_instance_id',
-            dry_run=True
+            instance_id="my_instance_id", dry_run=True
         )
         self.assertTrue(response)
-        self.assert_request_parameters({
-            'Action': 'DetachClassicLinkVpc',
-            'VpcId': self.vpc_id,
-            'InstanceId': 'my_instance_id',
-            'DryRun': 'true'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp', 'Version'])
+        self.assert_request_parameters(
+            {
+                "Action": "DetachClassicLinkVpc",
+                "VpcId": self.vpc_id,
+                "InstanceId": "my_instance_id",
+                "DryRun": "true",
+            },
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
 
 
 class TestEnableClassicLinkVpc(TestVpcClassicLink):
@@ -297,16 +351,18 @@ class TestEnableClassicLinkVpc(TestVpcClassicLink):
 
     def test_enable_classic_link(self):
         self.set_http_response(status_code=200)
-        response = self.vpc.enable_classic_link(
-            dry_run=True
-        )
+        response = self.vpc.enable_classic_link(dry_run=True)
         self.assertTrue(response)
-        self.assert_request_parameters({
-            'Action': 'EnableVpcClassicLink',
-            'VpcId': self.vpc_id,
-            'DryRun': 'true'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp', 'Version'])
+        self.assert_request_parameters(
+            {"Action": "EnableVpcClassicLink", "VpcId": self.vpc_id, "DryRun": "true"},
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
 
 
 class TestDisableClassicLinkVpc(TestVpcClassicLink):
@@ -320,16 +376,18 @@ class TestDisableClassicLinkVpc(TestVpcClassicLink):
 
     def test_enable_classic_link(self):
         self.set_http_response(status_code=200)
-        response = self.vpc.disable_classic_link(
-            dry_run=True
-        )
+        response = self.vpc.disable_classic_link(dry_run=True)
         self.assertTrue(response)
-        self.assert_request_parameters({
-            'Action': 'DisableVpcClassicLink',
-            'VpcId': self.vpc_id,
-            'DryRun': 'true'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp', 'Version'])
+        self.assert_request_parameters(
+            {"Action": "DisableVpcClassicLink", "VpcId": self.vpc_id, "DryRun": "true"},
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
+        )
 
 
 class TestUpdateClassicLinkVpc(TestVpcClassicLink):
@@ -350,18 +408,23 @@ class TestUpdateClassicLinkVpc(TestVpcClassicLink):
     def test_vpc_update_classic_link_enabled(self):
         self.vpc.classic_link_enabled = False
         self.set_http_response(status_code=200)
-        self.vpc.update_classic_link_enabled(
-            dry_run=True,
-            validate=True
+        self.vpc.update_classic_link_enabled(dry_run=True, validate=True)
+        self.assert_request_parameters(
+            {
+                "Action": "DescribeVpcClassicLink",
+                "VpcId.1": self.vpc_id,
+                "DryRun": "true",
+            },
+            ignore_params_values=[
+                "AWSAccessKeyId",
+                "SignatureMethod",
+                "SignatureVersion",
+                "Timestamp",
+                "Version",
+            ],
         )
-        self.assert_request_parameters({
-            'Action': 'DescribeVpcClassicLink',
-            'VpcId.1': self.vpc_id,
-            'DryRun': 'true'},
-            ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
-                                  'SignatureVersion', 'Timestamp', 'Version'])
-        self.assertEqual(self.vpc.classic_link_enabled, 'true')
+        self.assertEqual(self.vpc.classic_link_enabled, "true")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

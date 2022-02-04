@@ -32,10 +32,13 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.redshift.layer1 import RedshiftConnection
-    return get_regions('redshift', connection_cls=RedshiftConnection)
+
+    return get_regions("redshift", connection_cls=RedshiftConnection)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.redshift.layer1 import RedshiftConnection
-    return connect('redshift', region_name,
-                   connection_cls=RedshiftConnection, **kw_params)
+
+    return connect(
+        "redshift", region_name, connection_cls=RedshiftConnection, **kw_params
+    )

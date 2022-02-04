@@ -31,6 +31,7 @@ class ElasticTranscoderConnection(AWSAuthConnection):
     AWS Elastic Transcoder Service
     The AWS Elastic Transcoder Service.
     """
+
     APIVersion = "2012-09-25"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "elastictranscoder.us-east-1.amazonaws.com"
@@ -46,20 +47,20 @@ class ElasticTranscoderConnection(AWSAuthConnection):
         "ValidationException": exceptions.ValidationException,
     }
 
-
     def __init__(self, **kwargs):
-        region = kwargs.get('region')
+        region = kwargs.get("region")
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
         else:
-            del kwargs['region']
-        kwargs['host'] = region.endpoint
+            del kwargs["region"]
+        kwargs["host"] = region.endpoint
         super(ElasticTranscoderConnection, self).__init__(**kwargs)
         self.region = region
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
     def cancel_job(self, id=None):
         """
@@ -75,11 +76,18 @@ class ElasticTranscoderConnection(AWSAuthConnection):
             of `Submitted`, use the ListJobsByStatus API action.
 
         """
-        uri = '/2012-09-25/jobs/{0}'.format(id)
-        return self.make_request('DELETE', uri, expected_status=202)
+        uri = "/2012-09-25/jobs/{0}".format(id)
+        return self.make_request("DELETE", uri, expected_status=202)
 
-    def create_job(self, pipeline_id=None, input_name=None, output=None,
-                   outputs=None, output_key_prefix=None, playlists=None):
+    def create_job(
+        self,
+        pipeline_id=None,
+        input_name=None,
+        output=None,
+        outputs=None,
+        output_key_prefix=None,
+        playlists=None,
+    ):
         """
         When you create a job, Elastic Transcoder returns JSON data
         that includes the values that you specified plus information
@@ -124,26 +132,34 @@ class ElasticTranscoderConnection(AWSAuthConnection):
             number of master playlists in a job is 30.
 
         """
-        uri = '/2012-09-25/jobs'
+        uri = "/2012-09-25/jobs"
         params = {}
         if pipeline_id is not None:
-            params['PipelineId'] = pipeline_id
+            params["PipelineId"] = pipeline_id
         if input_name is not None:
-            params['Input'] = input_name
+            params["Input"] = input_name
         if output is not None:
-            params['Output'] = output
+            params["Output"] = output
         if outputs is not None:
-            params['Outputs'] = outputs
+            params["Outputs"] = outputs
         if output_key_prefix is not None:
-            params['OutputKeyPrefix'] = output_key_prefix
+            params["OutputKeyPrefix"] = output_key_prefix
         if playlists is not None:
-            params['Playlists'] = playlists
-        return self.make_request('POST', uri, expected_status=201,
-                                 data=json.dumps(params))
+            params["Playlists"] = playlists
+        return self.make_request(
+            "POST", uri, expected_status=201, data=json.dumps(params)
+        )
 
-    def create_pipeline(self, name=None, input_bucket=None,
-                        output_bucket=None, role=None, notifications=None,
-                        content_config=None, thumbnail_config=None):
+    def create_pipeline(
+        self,
+        name=None,
+        input_bucket=None,
+        output_bucket=None,
+        role=None,
+        notifications=None,
+        content_config=None,
+        thumbnail_config=None,
+    ):
         """
         The CreatePipeline operation creates a pipeline with settings
         that you specify.
@@ -338,27 +354,35 @@ class ElasticTranscoderConnection(AWSAuthConnection):
               the thumbnails that it stores in your Amazon S3 bucket.
 
         """
-        uri = '/2012-09-25/pipelines'
+        uri = "/2012-09-25/pipelines"
         params = {}
         if name is not None:
-            params['Name'] = name
+            params["Name"] = name
         if input_bucket is not None:
-            params['InputBucket'] = input_bucket
+            params["InputBucket"] = input_bucket
         if output_bucket is not None:
-            params['OutputBucket'] = output_bucket
+            params["OutputBucket"] = output_bucket
         if role is not None:
-            params['Role'] = role
+            params["Role"] = role
         if notifications is not None:
-            params['Notifications'] = notifications
+            params["Notifications"] = notifications
         if content_config is not None:
-            params['ContentConfig'] = content_config
+            params["ContentConfig"] = content_config
         if thumbnail_config is not None:
-            params['ThumbnailConfig'] = thumbnail_config
-        return self.make_request('POST', uri, expected_status=201,
-                                 data=json.dumps(params))
+            params["ThumbnailConfig"] = thumbnail_config
+        return self.make_request(
+            "POST", uri, expected_status=201, data=json.dumps(params)
+        )
 
-    def create_preset(self, name=None, description=None, container=None,
-                      video=None, audio=None, thumbnails=None):
+    def create_preset(
+        self,
+        name=None,
+        description=None,
+        container=None,
+        video=None,
+        audio=None,
+        thumbnails=None,
+    ):
         """
         The CreatePreset operation creates a preset with settings that
         you specify.
@@ -403,22 +427,23 @@ class ElasticTranscoderConnection(AWSAuthConnection):
             thumbnail parameters, if any.
 
         """
-        uri = '/2012-09-25/presets'
+        uri = "/2012-09-25/presets"
         params = {}
         if name is not None:
-            params['Name'] = name
+            params["Name"] = name
         if description is not None:
-            params['Description'] = description
+            params["Description"] = description
         if container is not None:
-            params['Container'] = container
+            params["Container"] = container
         if video is not None:
-            params['Video'] = video
+            params["Video"] = video
         if audio is not None:
-            params['Audio'] = audio
+            params["Audio"] = audio
         if thumbnails is not None:
-            params['Thumbnails'] = thumbnails
-        return self.make_request('POST', uri, expected_status=201,
-                                 data=json.dumps(params))
+            params["Thumbnails"] = thumbnails
+        return self.make_request(
+            "POST", uri, expected_status=201, data=json.dumps(params)
+        )
 
     def delete_pipeline(self, id=None):
         """
@@ -433,8 +458,8 @@ class ElasticTranscoderConnection(AWSAuthConnection):
         :param id: The identifier of the pipeline that you want to delete.
 
         """
-        uri = '/2012-09-25/pipelines/{0}'.format(id)
-        return self.make_request('DELETE', uri, expected_status=202)
+        uri = "/2012-09-25/pipelines/{0}".format(id)
+        return self.make_request("DELETE", uri, expected_status=202)
 
     def delete_preset(self, id=None):
         """
@@ -449,11 +474,10 @@ class ElasticTranscoderConnection(AWSAuthConnection):
             detailed information.
 
         """
-        uri = '/2012-09-25/presets/{0}'.format(id)
-        return self.make_request('DELETE', uri, expected_status=202)
+        uri = "/2012-09-25/presets/{0}".format(id)
+        return self.make_request("DELETE", uri, expected_status=202)
 
-    def list_jobs_by_pipeline(self, pipeline_id=None, ascending=None,
-                              page_token=None):
+    def list_jobs_by_pipeline(self, pipeline_id=None, ascending=None, page_token=None):
         """
         The ListJobsByPipeline operation gets a list of the jobs
         currently in a pipeline.
@@ -477,19 +501,17 @@ class ElasticTranscoderConnection(AWSAuthConnection):
             each successive page of results.
 
         """
-        uri = '/2012-09-25/jobsByPipeline/{0}'.format(pipeline_id)
+        uri = "/2012-09-25/jobsByPipeline/{0}".format(pipeline_id)
         params = {}
         if pipeline_id is not None:
-            params['PipelineId'] = pipeline_id
+            params["PipelineId"] = pipeline_id
         if ascending is not None:
-            params['Ascending'] = ascending
+            params["Ascending"] = ascending
         if page_token is not None:
-            params['PageToken'] = page_token
-        return self.make_request('GET', uri, expected_status=200,
-                                 params=params)
+            params["PageToken"] = page_token
+        return self.make_request("GET", uri, expected_status=200, params=params)
 
-    def list_jobs_by_status(self, status=None, ascending=None,
-                            page_token=None):
+    def list_jobs_by_status(self, status=None, ascending=None, page_token=None):
         """
         The ListJobsByStatus operation gets a list of jobs that have a
         specified status. The response body contains one element for
@@ -512,16 +534,15 @@ class ElasticTranscoderConnection(AWSAuthConnection):
             each successive page of results.
 
         """
-        uri = '/2012-09-25/jobsByStatus/{0}'.format(status)
+        uri = "/2012-09-25/jobsByStatus/{0}".format(status)
         params = {}
         if status is not None:
-            params['Status'] = status
+            params["Status"] = status
         if ascending is not None:
-            params['Ascending'] = ascending
+            params["Ascending"] = ascending
         if page_token is not None:
-            params['PageToken'] = page_token
-        return self.make_request('GET', uri, expected_status=200,
-                                 params=params)
+            params["PageToken"] = page_token
+        return self.make_request("GET", uri, expected_status=200, params=params)
 
     def list_pipelines(self, ascending=None, page_token=None):
         """
@@ -539,14 +560,13 @@ class ElasticTranscoderConnection(AWSAuthConnection):
             each successive page of results.
 
         """
-        uri = '/2012-09-25/pipelines'.format()
+        uri = "/2012-09-25/pipelines".format()
         params = {}
         if ascending is not None:
-            params['Ascending'] = ascending
+            params["Ascending"] = ascending
         if page_token is not None:
-            params['PageToken'] = page_token
-        return self.make_request('GET', uri, expected_status=200,
-                                 params=params)
+            params["PageToken"] = page_token
+        return self.make_request("GET", uri, expected_status=200, params=params)
 
     def list_presets(self, ascending=None, page_token=None):
         """
@@ -565,14 +585,13 @@ class ElasticTranscoderConnection(AWSAuthConnection):
             each successive page of results.
 
         """
-        uri = '/2012-09-25/presets'.format()
+        uri = "/2012-09-25/presets".format()
         params = {}
         if ascending is not None:
-            params['Ascending'] = ascending
+            params["Ascending"] = ascending
         if page_token is not None:
-            params['PageToken'] = page_token
-        return self.make_request('GET', uri, expected_status=200,
-                                 params=params)
+            params["PageToken"] = page_token
+        return self.make_request("GET", uri, expected_status=200, params=params)
 
     def read_job(self, id=None):
         """
@@ -584,8 +603,8 @@ class ElasticTranscoderConnection(AWSAuthConnection):
             information.
 
         """
-        uri = '/2012-09-25/jobs/{0}'.format(id)
-        return self.make_request('GET', uri, expected_status=200)
+        uri = "/2012-09-25/jobs/{0}".format(id)
+        return self.make_request("GET", uri, expected_status=200)
 
     def read_pipeline(self, id=None):
         """
@@ -596,8 +615,8 @@ class ElasticTranscoderConnection(AWSAuthConnection):
         :param id: The identifier of the pipeline to read.
 
         """
-        uri = '/2012-09-25/pipelines/{0}'.format(id)
-        return self.make_request('GET', uri, expected_status=200)
+        uri = "/2012-09-25/pipelines/{0}".format(id)
+        return self.make_request("GET", uri, expected_status=200)
 
     def read_preset(self, id=None):
         """
@@ -609,11 +628,10 @@ class ElasticTranscoderConnection(AWSAuthConnection):
             detailed information.
 
         """
-        uri = '/2012-09-25/presets/{0}'.format(id)
-        return self.make_request('GET', uri, expected_status=200)
+        uri = "/2012-09-25/presets/{0}".format(id)
+        return self.make_request("GET", uri, expected_status=200)
 
-    def test_role(self, role=None, input_bucket=None, output_bucket=None,
-                  topics=None):
+    def test_role(self, role=None, input_bucket=None, output_bucket=None, topics=None):
         """
         The TestRole operation tests the IAM role used to create the
         pipeline.
@@ -645,22 +663,30 @@ class ElasticTranscoderConnection(AWSAuthConnection):
             notification to.
 
         """
-        uri = '/2012-09-25/roleTests'
+        uri = "/2012-09-25/roleTests"
         params = {}
         if role is not None:
-            params['Role'] = role
+            params["Role"] = role
         if input_bucket is not None:
-            params['InputBucket'] = input_bucket
+            params["InputBucket"] = input_bucket
         if output_bucket is not None:
-            params['OutputBucket'] = output_bucket
+            params["OutputBucket"] = output_bucket
         if topics is not None:
-            params['Topics'] = topics
-        return self.make_request('POST', uri, expected_status=200,
-                                 data=json.dumps(params))
+            params["Topics"] = topics
+        return self.make_request(
+            "POST", uri, expected_status=200, data=json.dumps(params)
+        )
 
-    def update_pipeline(self, id, name=None, input_bucket=None, role=None,
-                        notifications=None, content_config=None,
-                        thumbnail_config=None):
+    def update_pipeline(
+        self,
+        id,
+        name=None,
+        input_bucket=None,
+        role=None,
+        notifications=None,
+        content_config=None,
+        thumbnail_config=None,
+    ):
         """
         Use the `UpdatePipeline` operation to update settings for a
         pipeline. When you change pipeline settings, your changes take
@@ -819,22 +845,23 @@ class ElasticTranscoderConnection(AWSAuthConnection):
               the thumbnails that it stores in your Amazon S3 bucket.
 
         """
-        uri = '/2012-09-25/pipelines/{0}'.format(id)
+        uri = "/2012-09-25/pipelines/{0}".format(id)
         params = {}
         if name is not None:
-            params['Name'] = name
+            params["Name"] = name
         if input_bucket is not None:
-            params['InputBucket'] = input_bucket
+            params["InputBucket"] = input_bucket
         if role is not None:
-            params['Role'] = role
+            params["Role"] = role
         if notifications is not None:
-            params['Notifications'] = notifications
+            params["Notifications"] = notifications
         if content_config is not None:
-            params['ContentConfig'] = content_config
+            params["ContentConfig"] = content_config
         if thumbnail_config is not None:
-            params['ThumbnailConfig'] = thumbnail_config
-        return self.make_request('PUT', uri, expected_status=200,
-                                 data=json.dumps(params))
+            params["ThumbnailConfig"] = thumbnail_config
+        return self.make_request(
+            "PUT", uri, expected_status=200, data=json.dumps(params)
+        )
 
     def update_pipeline_notifications(self, id=None, notifications=None):
         """
@@ -874,14 +901,15 @@ class ElasticTranscoderConnection(AWSAuthConnection):
               is the ARN that Amazon SNS returned when you created the topic.
 
         """
-        uri = '/2012-09-25/pipelines/{0}/notifications'.format(id)
+        uri = "/2012-09-25/pipelines/{0}/notifications".format(id)
         params = {}
         if id is not None:
-            params['Id'] = id
+            params["Id"] = id
         if notifications is not None:
-            params['Notifications'] = notifications
-        return self.make_request('POST', uri, expected_status=200,
-                                 data=json.dumps(params))
+            params["Notifications"] = notifications
+        return self.make_request(
+            "POST", uri, expected_status=200, data=json.dumps(params)
+        )
 
     def update_pipeline_status(self, id=None, status=None):
         """
@@ -908,25 +936,28 @@ class ElasticTranscoderConnection(AWSAuthConnection):
         + `Paused`: The pipeline is not currently processing jobs.
 
         """
-        uri = '/2012-09-25/pipelines/{0}/status'.format(id)
+        uri = "/2012-09-25/pipelines/{0}/status".format(id)
         params = {}
         if id is not None:
-            params['Id'] = id
+            params["Id"] = id
         if status is not None:
-            params['Status'] = status
-        return self.make_request('POST', uri, expected_status=200,
-                                 data=json.dumps(params))
+            params["Status"] = status
+        return self.make_request(
+            "POST", uri, expected_status=200, data=json.dumps(params)
+        )
 
-    def make_request(self, verb, resource, headers=None, data='',
-                     expected_status=None, params=None):
+    def make_request(
+        self, verb, resource, headers=None, data="", expected_status=None, params=None
+    ):
         if headers is None:
             headers = {}
         response = super(ElasticTranscoderConnection, self).make_request(
-            verb, resource, headers=headers, data=data, params=params)
-        body = json.loads(response.read().decode('utf-8'))
+            verb, resource, headers=headers, data=data, params=params
+        )
+        body = json.loads(response.read().decode("utf-8"))
         if response.status == expected_status:
             return body
         else:
-            error_type = response.getheader('x-amzn-ErrorType').split(':')[0]
+            error_type = response.getheader("x-amzn-ErrorType").split(":")[0]
             error_class = self._faults.get(error_type, self.ResponseError)
             raise error_class(response.status, response.reason, body)

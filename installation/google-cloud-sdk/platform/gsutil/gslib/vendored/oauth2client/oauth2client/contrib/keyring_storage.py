@@ -83,8 +83,7 @@ class Storage(client.Storage):
         Args:
             credentials: Credentials, the credentials to store.
         """
-        keyring.set_password(self._service_name, self._user_name,
-                             credentials.to_json())
+        keyring.set_password(self._service_name, self._user_name, credentials.to_json())
 
     def locked_delete(self):
         """Delete Credentials file.
@@ -92,4 +91,4 @@ class Storage(client.Storage):
         Args:
             credentials: Credentials, the credentials to store.
         """
-        keyring.set_password(self._service_name, self._user_name, '')
+        keyring.set_password(self._service_name, self._user_name, "")

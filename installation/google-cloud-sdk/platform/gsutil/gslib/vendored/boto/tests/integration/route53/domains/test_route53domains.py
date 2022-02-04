@@ -31,14 +31,13 @@ class TestRoute53Domains(unittest.TestCase):
 
     def test_check_domain_availability(self):
         response = self.route53domains.check_domain_availability(
-            domain_name='amazon.com',
-            idn_lang_code='eng'
+            domain_name="amazon.com", idn_lang_code="eng"
         )
-        self.assertEqual(response, {'Availability': 'UNAVAILABLE'})
+        self.assertEqual(response, {"Availability": "UNAVAILABLE"})
 
     def test_handle_invalid_input_error(self):
         with self.assertRaises(InvalidInput):
             # Note the invalid character in the domain name.
             self.route53domains.check_domain_availability(
-                domain_name='!amazon.com',
+                domain_name="!amazon.com",
             )

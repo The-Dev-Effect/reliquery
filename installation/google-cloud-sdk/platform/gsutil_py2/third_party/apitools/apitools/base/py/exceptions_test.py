@@ -20,8 +20,10 @@ from apitools.base.py import http_wrapper
 
 def _MakeResponse(status_code):
     return http_wrapper.Response(
-        info={'status': status_code}, content='{"field": "abc"}',
-        request_url='http://www.google.com')
+        info={"status": status_code},
+        content='{"field": "abc"}',
+        request_url="http://www.google.com",
+    )
 
 
 class HttpErrorFromResponseTest(unittest.TestCase):
@@ -48,8 +50,8 @@ class HttpErrorFromResponseTest(unittest.TestCase):
 
     def testExceptionMessageIncludesErrorDetails(self):
         err = exceptions.HttpError.FromResponse(_MakeResponse(403))
-        self.assertIn('403', repr(err))
-        self.assertIn('http://www.google.com', repr(err))
+        self.assertIn("403", repr(err))
+        self.assertIn("http://www.google.com", repr(err))
         self.assertIn('{"field": "abc"}', repr(err))
 
     def testNotFound(self):
@@ -70,5 +72,5 @@ class HttpErrorFromResponseTest(unittest.TestCase):
         self.assertEquals(err.status_code, 499)
 
     def testMalformedStatus(self):
-        err = exceptions.HttpError.FromResponse(_MakeResponse('BAD'))
+        err = exceptions.HttpError.FromResponse(_MakeResponse("BAD"))
         self.assertIsInstance(err, exceptions.HttpError)

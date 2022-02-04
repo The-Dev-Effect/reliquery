@@ -35,10 +35,12 @@ def run_speed_test(bitsize):
     duration = end - start
     dur_per_call = duration / iterations
 
-    print('%5i bit: %9.3f sec. (%i iterations over %.1f seconds)' %
-          (bitsize, dur_per_call, iterations, duration))
+    print(
+        "%5i bit: %9.3f sec. (%i iterations over %.1f seconds)"
+        % (bitsize, dur_per_call, iterations, duration)
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     for bitsize in (128, 256, 384, 512, 1024, 2048, 3072, 4096):
         run_speed_test(bitsize)

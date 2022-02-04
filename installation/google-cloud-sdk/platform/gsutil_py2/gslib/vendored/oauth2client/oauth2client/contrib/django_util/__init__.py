@@ -238,8 +238,8 @@ from oauth2client import transport
 from oauth2client.contrib import dictionary_storage
 from oauth2client.contrib.django_util import storage
 
-GOOGLE_OAUTH2_DEFAULT_SCOPES = ('email',)
-GOOGLE_OAUTH2_REQUEST_ATTRIBUTE = 'oauth'
+GOOGLE_OAUTH2_DEFAULT_SCOPES = ("email",)
+GOOGLE_OAUTH2_REQUEST_ATTRIBUTE = "oauth"
 
 
 def _load_client_secrets(filename):
@@ -256,9 +256,10 @@ def _load_client_secrets(filename):
 
     if client_type != clientsecrets.TYPE_WEB:
         raise ValueError(
-            'The flow specified in {} is not supported, only the WEB flow '
-            'type  is supported.'.format(client_type))
-    return client_info['client_id'], client_info['client_secret']
+            "The flow specified in {} is not supported, only the WEB flow "
+            "type  is supported.".format(client_type)
+        )
+    return client_info["client_id"], client_info["client_secret"]
 
 
 def _get_oauth2_client_id_and_secret(settings_instance):
@@ -271,22 +272,20 @@ def _get_oauth2_client_id_and_secret(settings_instance):
         A 2-tuple, the first item is the client id and the second
          item is the client secret.
     """
-    secret_json = getattr(settings_instance,
-                          'GOOGLE_OAUTH2_CLIENT_SECRETS_JSON', None)
+    secret_json = getattr(settings_instance, "GOOGLE_OAUTH2_CLIENT_SECRETS_JSON", None)
     if secret_json is not None:
         return _load_client_secrets(secret_json)
     else:
-        client_id = getattr(settings_instance, "GOOGLE_OAUTH2_CLIENT_ID",
-                            None)
-        client_secret = getattr(settings_instance,
-                                "GOOGLE_OAUTH2_CLIENT_SECRET", None)
+        client_id = getattr(settings_instance, "GOOGLE_OAUTH2_CLIENT_ID", None)
+        client_secret = getattr(settings_instance, "GOOGLE_OAUTH2_CLIENT_SECRET", None)
         if client_id is not None and client_secret is not None:
             return client_id, client_secret
         else:
             raise exceptions.ImproperlyConfigured(
                 "Must specify either GOOGLE_OAUTH2_CLIENT_SECRETS_JSON, or "
                 "both GOOGLE_OAUTH2_CLIENT_ID and "
-                "GOOGLE_OAUTH2_CLIENT_SECRET in settings.py")
+                "GOOGLE_OAUTH2_CLIENT_SECRET in settings.py"
+            )
 
 
 def _get_storage_model():
@@ -306,12 +305,15 @@ def _get_storage_model():
         field on the model. If Django ORM storage is not configured,
         this function returns None.
     """
-    storage_model_settings = getattr(django.conf.settings,
-                                     'GOOGLE_OAUTH2_STORAGE_MODEL', None)
+    storage_model_settings = getattr(
+        django.conf.settings, "GOOGLE_OAUTH2_STORAGE_MODEL", None
+    )
     if storage_model_settings is not None:
-        return (storage_model_settings['model'],
-                storage_model_settings['user_property'],
-                storage_model_settings['credentials_property'])
+        return (
+            storage_model_settings["model"],
+            storage_model_settings["user_property"],
+            storage_model_settings["credentials_property"],
+        )
     else:
         return None, None, None
 
@@ -333,42 +335,51 @@ class OAuth2Settings(object):
     """
 
     def __init__(self, settings_instance):
-        self.scopes = getattr(settings_instance, 'GOOGLE_OAUTH2_SCOPES',
-                              GOOGLE_OAUTH2_DEFAULT_SCOPES)
-        self.request_prefix = getattr(settings_instance,
-                                      'GOOGLE_OAUTH2_REQUEST_ATTRIBUTE',
-                                      GOOGLE_OAUTH2_REQUEST_ATTRIBUTE)
+        self.scopes = getattr(
+            settings_instance, "GOOGLE_OAUTH2_SCOPES", GOOGLE_OAUTH2_DEFAULT_SCOPES
+        )
+        self.request_prefix = getattr(
+            settings_instance,
+            "GOOGLE_OAUTH2_REQUEST_ATTRIBUTE",
+            GOOGLE_OAUTH2_REQUEST_ATTRIBUTE,
+        )
         info = _get_oauth2_client_id_and_secret(settings_instance)
         self.client_id, self.client_secret = info
 
         # Django 1.10 deprecated MIDDLEWARE_CLASSES in favor of MIDDLEWARE
-        middleware_settings = getattr(settings_instance, 'MIDDLEWARE', None)
+        middleware_settings = getattr(settings_instance, "MIDDLEWARE", None)
         if middleware_settings is None:
-            middleware_settings = getattr(
-                settings_instance, 'MIDDLEWARE_CLASSES', None)
+            middleware_settings = getattr(settings_instance, "MIDDLEWARE_CLASSES", None)
         if middleware_settings is None:
             raise exceptions.ImproperlyConfigured(
-                'Django settings has neither MIDDLEWARE nor MIDDLEWARE_CLASSES'
-                'configured')
+                "Django settings has neither MIDDLEWARE nor MIDDLEWARE_CLASSES"
+                "configured"
+            )
 
-        if ('django.contrib.sessions.middleware.SessionMiddleware' not in
-                middleware_settings):
+        if (
+            "django.contrib.sessions.middleware.SessionMiddleware"
+            not in middleware_settings
+        ):
             raise exceptions.ImproperlyConfigured(
-                'The Google OAuth2 Helper requires session middleware to '
-                'be installed. Edit your MIDDLEWARE_CLASSES or MIDDLEWARE '
-                'setting to include \'django.contrib.sessions.middleware.'
-                'SessionMiddleware\'.')
-        (self.storage_model, self.storage_model_user_property,
-         self.storage_model_credentials_property) = _get_storage_model()
+                "The Google OAuth2 Helper requires session middleware to "
+                "be installed. Edit your MIDDLEWARE_CLASSES or MIDDLEWARE "
+                "setting to include 'django.contrib.sessions.middleware."
+                "SessionMiddleware'."
+            )
+        (
+            self.storage_model,
+            self.storage_model_user_property,
+            self.storage_model_credentials_property,
+        ) = _get_storage_model()
 
 
 oauth2_settings = OAuth2Settings(django.conf.settings)
 
-_CREDENTIALS_KEY = 'google_oauth2_credentials'
+_CREDENTIALS_KEY = "google_oauth2_credentials"
 
 
 def get_storage(request):
-    """ Gets a Credentials storage object provided by the Django OAuth2 Helper
+    """Gets a Credentials storage object provided by the Django OAuth2 Helper
     object.
 
     Args:
@@ -382,17 +393,17 @@ def get_storage(request):
     credentials_property = oauth2_settings.storage_model_credentials_property
 
     if storage_model:
-        module_name, class_name = storage_model.rsplit('.', 1)
+        module_name, class_name = storage_model.rsplit(".", 1)
         module = importlib.import_module(module_name)
         storage_model_class = getattr(module, class_name)
-        return storage.DjangoORMStorage(storage_model_class,
-                                        user_property,
-                                        request.user,
-                                        credentials_property)
+        return storage.DjangoORMStorage(
+            storage_model_class, user_property, request.user, credentials_property
+        )
     else:
         # use session
         return dictionary_storage.DictionaryStorage(
-            request.session, key=_CREDENTIALS_KEY)
+            request.session, key=_CREDENTIALS_KEY
+        )
 
 
 def _redirect_with_params(url_name, *args, **kwargs):
@@ -416,8 +427,7 @@ def _redirect_with_params(url_name, *args, **kwargs):
 def _credentials_from_request(request):
     """Gets the authorized credentials for this flow, if they exist."""
     # ORM storage requires a logged in user
-    if (oauth2_settings.storage_model is None or
-            request.user.is_authenticated()):
+    if oauth2_settings.storage_model is None or request.user.is_authenticated():
         return get_storage(request).get()
     else:
         return None
@@ -446,26 +456,25 @@ class UserOAuth2(object):
 
     def get_authorize_redirect(self):
         """Creates a URl to start the OAuth2 authorization flow."""
-        get_params = {
-            'return_url': self.return_url,
-            'scopes': self._get_scopes()
-        }
+        get_params = {"return_url": self.return_url, "scopes": self._get_scopes()}
 
-        return _redirect_with_params('google_oauth:authorize', **get_params)
+        return _redirect_with_params("google_oauth:authorize", **get_params)
 
     def has_credentials(self):
         """Returns True if there are valid credentials for the current user
         and required scopes."""
         credentials = _credentials_from_request(self.request)
-        return (credentials and not credentials.invalid and
-                credentials.has_scopes(self._get_scopes()))
+        return (
+            credentials
+            and not credentials.invalid
+            and credentials.has_scopes(self._get_scopes())
+        )
 
     def _get_scopes(self):
         """Returns the scopes associated with this object, kept up to
-         date for incremental auth."""
+        date for incremental auth."""
         if _credentials_from_request(self.request):
-            return (self._scopes |
-                    _credentials_from_request(self.request).scopes)
+            return self._scopes | _credentials_from_request(self.request).scopes
         else:
             return self._scopes
 

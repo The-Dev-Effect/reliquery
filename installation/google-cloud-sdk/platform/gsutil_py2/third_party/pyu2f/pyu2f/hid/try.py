@@ -23,10 +23,10 @@ from pyu2f import hid
 
 
 def main():
-  devs = hid.Enumerate()
-  for dev in devs:
-    print(dev)
+    devs = hid.Enumerate()
+    for dev in devs:
+        print(dev)
 
 
-if __name__ == '__main__':
-  main()
+if __name__ == "__main__":
+    main()

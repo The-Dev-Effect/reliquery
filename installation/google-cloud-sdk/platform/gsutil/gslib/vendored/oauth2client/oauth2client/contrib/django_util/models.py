@@ -28,12 +28,12 @@ class CredentialsField(models.Field):
     """Django ORM field for storing OAuth2 Credentials."""
 
     def __init__(self, *args, **kwargs):
-        if 'null' not in kwargs:
-            kwargs['null'] = True
+        if "null" not in kwargs:
+            kwargs["null"] = True
         super(CredentialsField, self).__init__(*args, **kwargs)
 
     def get_internal_type(self):
-        return 'BinaryField'
+        return "BinaryField"
 
     def from_db_value(self, value, expression, connection, context):
         """Overrides ``models.Field`` method. This converts the value
@@ -51,10 +51,10 @@ class CredentialsField(models.Field):
         else:
             try:
                 return jsonpickle.decode(
-                    base64.b64decode(encoding.smart_bytes(value)).decode())
+                    base64.b64decode(encoding.smart_bytes(value)).decode()
+                )
             except ValueError:
-                return pickle.loads(
-                    base64.b64decode(encoding.smart_bytes(value)))
+                return pickle.loads(base64.b64decode(encoding.smart_bytes(value)))
 
     def get_prep_value(self, value):
         """Overrides ``models.Field`` method. This is used to convert
@@ -65,7 +65,8 @@ class CredentialsField(models.Field):
             return None
         else:
             return encoding.smart_text(
-                base64.b64encode(jsonpickle.encode(value).encode()))
+                base64.b64encode(jsonpickle.encode(value).encode())
+            )
 
     def value_to_string(self, obj):
         """Convert the field value from the provided model to a string.

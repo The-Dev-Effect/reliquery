@@ -76,6 +76,7 @@ class CloudWatchLogsConnection(AWSQueryConnection):
     + `AWS Ruby Developer Center`_
     + `AWS Windows and .NET Developer Center`_
     """
+
     APIVersion = "2014-03-28"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "logs.us-east-1.amazonaws.com"
@@ -96,19 +97,20 @@ class CloudWatchLogsConnection(AWSQueryConnection):
     }
 
     def __init__(self, **kwargs):
-        region = kwargs.pop('region', None)
+        region = kwargs.pop("region", None)
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
 
-        if 'host' not in kwargs or kwargs['host'] is None:
-            kwargs['host'] = region.endpoint
+        if "host" not in kwargs or kwargs["host"] is None:
+            kwargs["host"] = region.endpoint
 
         super(CloudWatchLogsConnection, self).__init__(**kwargs)
         self.region = region
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
     def create_log_group(self, log_group_name):
         """
@@ -134,9 +136,10 @@ class CloudWatchLogsConnection(AWSQueryConnection):
         :param log_group_name:
 
         """
-        params = {'logGroupName': log_group_name, }
-        return self.make_request(action='CreateLogGroup',
-                                 body=json.dumps(params))
+        params = {
+            "logGroupName": log_group_name,
+        }
+        return self.make_request(action="CreateLogGroup", body=json.dumps(params))
 
     def create_log_stream(self, log_group_name, log_stream_name):
         """
@@ -159,11 +162,10 @@ class CloudWatchLogsConnection(AWSQueryConnection):
 
         """
         params = {
-            'logGroupName': log_group_name,
-            'logStreamName': log_stream_name,
+            "logGroupName": log_group_name,
+            "logStreamName": log_stream_name,
         }
-        return self.make_request(action='CreateLogStream',
-                                 body=json.dumps(params))
+        return self.make_request(action="CreateLogStream", body=json.dumps(params))
 
     def delete_log_group(self, log_group_name):
         """
@@ -177,9 +179,10 @@ class CloudWatchLogsConnection(AWSQueryConnection):
         :param log_group_name:
 
         """
-        params = {'logGroupName': log_group_name, }
-        return self.make_request(action='DeleteLogGroup',
-                                 body=json.dumps(params))
+        params = {
+            "logGroupName": log_group_name,
+        }
+        return self.make_request(action="DeleteLogGroup", body=json.dumps(params))
 
     def delete_log_stream(self, log_group_name, log_stream_name):
         """
@@ -194,11 +197,10 @@ class CloudWatchLogsConnection(AWSQueryConnection):
 
         """
         params = {
-            'logGroupName': log_group_name,
-            'logStreamName': log_stream_name,
+            "logGroupName": log_group_name,
+            "logStreamName": log_stream_name,
         }
-        return self.make_request(action='DeleteLogStream',
-                                 body=json.dumps(params))
+        return self.make_request(action="DeleteLogStream", body=json.dumps(params))
 
     def delete_metric_filter(self, log_group_name, filter_name):
         """
@@ -213,26 +215,29 @@ class CloudWatchLogsConnection(AWSQueryConnection):
 
         """
         params = {
-            'logGroupName': log_group_name,
-            'filterName': filter_name,
+            "logGroupName": log_group_name,
+            "filterName": filter_name,
         }
-        return self.make_request(action='DeleteMetricFilter',
-                                 body=json.dumps(params))
+        return self.make_request(action="DeleteMetricFilter", body=json.dumps(params))
 
     def delete_retention_policy(self, log_group_name):
         """
-        
+
 
         :type log_group_name: string
         :param log_group_name:
 
         """
-        params = {'logGroupName': log_group_name, }
-        return self.make_request(action='DeleteRetentionPolicy',
-                                 body=json.dumps(params))
+        params = {
+            "logGroupName": log_group_name,
+        }
+        return self.make_request(
+            action="DeleteRetentionPolicy", body=json.dumps(params)
+        )
 
-    def describe_log_groups(self, log_group_name_prefix=None,
-                            next_token=None, limit=None):
+    def describe_log_groups(
+        self, log_group_name_prefix=None, next_token=None, limit=None
+    ):
         """
         Returns all the log groups that are associated with the AWS
         account making the request. The list returned in the response
@@ -259,17 +264,16 @@ class CloudWatchLogsConnection(AWSQueryConnection):
         """
         params = {}
         if log_group_name_prefix is not None:
-            params['logGroupNamePrefix'] = log_group_name_prefix
+            params["logGroupNamePrefix"] = log_group_name_prefix
         if next_token is not None:
-            params['nextToken'] = next_token
+            params["nextToken"] = next_token
         if limit is not None:
-            params['limit'] = limit
-        return self.make_request(action='DescribeLogGroups',
-                                 body=json.dumps(params))
+            params["limit"] = limit
+        return self.make_request(action="DescribeLogGroups", body=json.dumps(params))
 
-    def describe_log_streams(self, log_group_name,
-                             log_stream_name_prefix=None, next_token=None,
-                             limit=None):
+    def describe_log_streams(
+        self, log_group_name, log_stream_name_prefix=None, next_token=None, limit=None
+    ):
         """
         Returns all the log streams that are associated with the
         specified log group. The list returned in the response is
@@ -297,19 +301,20 @@ class CloudWatchLogsConnection(AWSQueryConnection):
             you don't specify a value, the request would return up to 50 items.
 
         """
-        params = {'logGroupName': log_group_name, }
+        params = {
+            "logGroupName": log_group_name,
+        }
         if log_stream_name_prefix is not None:
-            params['logStreamNamePrefix'] = log_stream_name_prefix
+            params["logStreamNamePrefix"] = log_stream_name_prefix
         if next_token is not None:
-            params['nextToken'] = next_token
+            params["nextToken"] = next_token
         if limit is not None:
-            params['limit'] = limit
-        return self.make_request(action='DescribeLogStreams',
-                                 body=json.dumps(params))
+            params["limit"] = limit
+        return self.make_request(action="DescribeLogStreams", body=json.dumps(params))
 
-    def describe_metric_filters(self, log_group_name,
-                                filter_name_prefix=None, next_token=None,
-                                limit=None):
+    def describe_metric_filters(
+        self, log_group_name, filter_name_prefix=None, next_token=None, limit=None
+    ):
         """
         Returns all the metrics filters associated with the specified
         log group. The list returned in the response is ASCII-sorted
@@ -337,19 +342,29 @@ class CloudWatchLogsConnection(AWSQueryConnection):
             you don't specify a value, the request would return up to 50 items.
 
         """
-        params = {'logGroupName': log_group_name, }
+        params = {
+            "logGroupName": log_group_name,
+        }
         if filter_name_prefix is not None:
-            params['filterNamePrefix'] = filter_name_prefix
+            params["filterNamePrefix"] = filter_name_prefix
         if next_token is not None:
-            params['nextToken'] = next_token
+            params["nextToken"] = next_token
         if limit is not None:
-            params['limit'] = limit
-        return self.make_request(action='DescribeMetricFilters',
-                                 body=json.dumps(params))
+            params["limit"] = limit
+        return self.make_request(
+            action="DescribeMetricFilters", body=json.dumps(params)
+        )
 
-    def get_log_events(self, log_group_name, log_stream_name,
-                       start_time=None, end_time=None, next_token=None,
-                       limit=None, start_from_head=None):
+    def get_log_events(
+        self,
+        log_group_name,
+        log_stream_name,
+        start_time=None,
+        end_time=None,
+        next_token=None,
+        limit=None,
+        start_from_head=None,
+    ):
         """
         Retrieves log events from the specified log stream. You can
         provide an optional time range to filter the results on the
@@ -395,24 +410,24 @@ class CloudWatchLogsConnection(AWSQueryConnection):
 
         """
         params = {
-            'logGroupName': log_group_name,
-            'logStreamName': log_stream_name,
+            "logGroupName": log_group_name,
+            "logStreamName": log_stream_name,
         }
         if start_time is not None:
-            params['startTime'] = start_time
+            params["startTime"] = start_time
         if end_time is not None:
-            params['endTime'] = end_time
+            params["endTime"] = end_time
         if next_token is not None:
-            params['nextToken'] = next_token
+            params["nextToken"] = next_token
         if limit is not None:
-            params['limit'] = limit
+            params["limit"] = limit
         if start_from_head is not None:
-            params['startFromHead'] = start_from_head
-        return self.make_request(action='GetLogEvents',
-                                 body=json.dumps(params))
+            params["startFromHead"] = start_from_head
+        return self.make_request(action="GetLogEvents", body=json.dumps(params))
 
-    def put_log_events(self, log_group_name, log_stream_name, log_events,
-                       sequence_token=None):
+    def put_log_events(
+        self, log_group_name, log_stream_name, log_events, sequence_token=None
+    ):
         """
         Uploads a batch of log events to the specified log stream.
 
@@ -449,17 +464,17 @@ class CloudWatchLogsConnection(AWSQueryConnection):
 
         """
         params = {
-            'logGroupName': log_group_name,
-            'logStreamName': log_stream_name,
-            'logEvents': log_events,
+            "logGroupName": log_group_name,
+            "logStreamName": log_stream_name,
+            "logEvents": log_events,
         }
         if sequence_token is not None:
-            params['sequenceToken'] = sequence_token
-        return self.make_request(action='PutLogEvents',
-                                 body=json.dumps(params))
+            params["sequenceToken"] = sequence_token
+        return self.make_request(action="PutLogEvents", body=json.dumps(params))
 
-    def put_metric_filter(self, log_group_name, filter_name, filter_pattern,
-                          metric_transformations):
+    def put_metric_filter(
+        self, log_group_name, filter_name, filter_pattern, metric_transformations
+    ):
         """
         Creates or updates a metric filter and associates it with the
         specified log group. Metric filters allow you to configure
@@ -480,17 +495,16 @@ class CloudWatchLogsConnection(AWSQueryConnection):
 
         """
         params = {
-            'logGroupName': log_group_name,
-            'filterName': filter_name,
-            'filterPattern': filter_pattern,
-            'metricTransformations': metric_transformations,
+            "logGroupName": log_group_name,
+            "filterName": filter_name,
+            "filterPattern": filter_pattern,
+            "metricTransformations": metric_transformations,
         }
-        return self.make_request(action='PutMetricFilter',
-                                 body=json.dumps(params))
+        return self.make_request(action="PutMetricFilter", body=json.dumps(params))
 
     def put_retention_policy(self, log_group_name, retention_in_days):
         """
-        
+
 
         :type log_group_name: string
         :param log_group_name:
@@ -502,11 +516,10 @@ class CloudWatchLogsConnection(AWSQueryConnection):
 
         """
         params = {
-            'logGroupName': log_group_name,
-            'retentionInDays': retention_in_days,
+            "logGroupName": log_group_name,
+            "retentionInDays": retention_in_days,
         }
-        return self.make_request(action='PutRetentionPolicy',
-                                 body=json.dumps(params))
+        return self.make_request(action="PutRetentionPolicy", body=json.dumps(params))
 
     def set_retention(self, log_group_name, retention_in_days):
         """
@@ -525,11 +538,10 @@ class CloudWatchLogsConnection(AWSQueryConnection):
 
         """
         params = {
-            'logGroupName': log_group_name,
-            'retentionInDays': retention_in_days,
+            "logGroupName": log_group_name,
+            "retentionInDays": retention_in_days,
         }
-        return self.make_request(action='SetRetention',
-                                 body=json.dumps(params))
+        return self.make_request(action="SetRetention", body=json.dumps(params))
 
     def test_metric_filter(self, filter_pattern, log_event_messages):
         """
@@ -545,32 +557,34 @@ class CloudWatchLogsConnection(AWSQueryConnection):
 
         """
         params = {
-            'filterPattern': filter_pattern,
-            'logEventMessages': log_event_messages,
+            "filterPattern": filter_pattern,
+            "logEventMessages": log_event_messages,
         }
-        return self.make_request(action='TestMetricFilter',
-                                 body=json.dumps(params))
+        return self.make_request(action="TestMetricFilter", body=json.dumps(params))
 
     def make_request(self, action, body):
         headers = {
-            'X-Amz-Target': '%s.%s' % (self.TargetPrefix, action),
-            'Host': self.region.endpoint,
-            'Content-Type': 'application/x-amz-json-1.1',
-            'Content-Length': str(len(body)),
+            "X-Amz-Target": "%s.%s" % (self.TargetPrefix, action),
+            "Host": self.region.endpoint,
+            "Content-Type": "application/x-amz-json-1.1",
+            "Content-Length": str(len(body)),
         }
         http_request = self.build_base_http_request(
-            method='POST', path='/', auth_path='/', params={},
-            headers=headers, data=body)
-        response = self._mexe(http_request, sender=None,
-                              override_num_retries=10)
-        response_body = response.read().decode('utf-8')
+            method="POST",
+            path="/",
+            auth_path="/",
+            params={},
+            headers=headers,
+            data=body,
+        )
+        response = self._mexe(http_request, sender=None, override_num_retries=10)
+        response_body = response.read().decode("utf-8")
         boto.log.debug(response_body)
         if response.status == 200:
             if response_body:
                 return json.loads(response_body)
         else:
             json_body = json.loads(response_body)
-            fault_name = json_body.get('__type', None)
+            fault_name = json_body.get("__type", None)
             exception_class = self._faults.get(fault_name, self.ResponseError)
-            raise exception_class(response.status, response.reason,
-                                  body=json_body)
+            raise exception_class(response.status, response.reason, body=json_body)

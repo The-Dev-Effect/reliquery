@@ -14,9 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class KeepAliveHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-    """Request handler that keeps the HTTP connection open, so that the test can inspect the resulting SSL connection object
-
-    """
+    """Request handler that keeps the HTTP connection open, so that the test can inspect the resulting SSL connection object"""
 
     def do_GET(self):
         self.send_response(200)

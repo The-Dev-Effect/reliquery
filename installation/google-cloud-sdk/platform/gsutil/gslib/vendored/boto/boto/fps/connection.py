@@ -28,9 +28,9 @@ from boto.fps.exception import ResponseErrorFactory
 from boto.fps.response import ResponseFactory
 import boto.fps.response
 
-__all__ = ['FPSConnection']
+__all__ = ["FPSConnection"]
 
-decorated_attrs = ('action', 'response')
+decorated_attrs = ("action", "response")
 
 
 def add_attrs_from(func, to):
@@ -44,80 +44,91 @@ def complex_amounts(*fields):
         def wrapper(self, *args, **kw):
             for field in filter(kw.has_key, fields):
                 amount = kw.pop(field)
-                kw[field + '.Value'] = getattr(amount, 'Value', str(amount))
-                kw[field + '.CurrencyCode'] = getattr(amount, 'CurrencyCode',
-                                                      self.currencycode)
+                kw[field + ".Value"] = getattr(amount, "Value", str(amount))
+                kw[field + ".CurrencyCode"] = getattr(
+                    amount, "CurrencyCode", self.currencycode
+                )
             return func(self, *args, **kw)
-        wrapper.__doc__ = "{0}\nComplex Amounts: {1}".format(func.__doc__,
-                                                 ', '.join(fields))
+
+        wrapper.__doc__ = "{0}\nComplex Amounts: {1}".format(
+            func.__doc__, ", ".join(fields)
+        )
         return add_attrs_from(func, to=wrapper)
+
     return decorator
 
 
 def requires(*groups):
-
     def decorator(func):
-
         def wrapper(*args, **kw):
             hasgroup = lambda x: len(x) == len(filter(kw.has_key, x))
             if 1 != len(filter(hasgroup, groups)):
-                message = ' OR '.join(['+'.join(g) for g in groups])
-                message = "{0} requires {1} argument(s)" \
-                          "".format(getattr(func, 'action', 'Method'), message)
+                message = " OR ".join(["+".join(g) for g in groups])
+                message = "{0} requires {1} argument(s)" "".format(
+                    getattr(func, "action", "Method"), message
+                )
                 raise KeyError(message)
             return func(*args, **kw)
-        message = ' OR '.join(['+'.join(g) for g in groups])
-        wrapper.__doc__ = "{0}\nRequired: {1}".format(func.__doc__,
-                                                           message)
+
+        message = " OR ".join(["+".join(g) for g in groups])
+        wrapper.__doc__ = "{0}\nRequired: {1}".format(func.__doc__, message)
         return add_attrs_from(func, to=wrapper)
+
     return decorator
 
 
 def needs_caller_reference(func):
-
     def wrapper(*args, **kw):
-        kw.setdefault('CallerReference', uuid.uuid4())
+        kw.setdefault("CallerReference", uuid.uuid4())
         return func(*args, **kw)
-    wrapper.__doc__ = "{0}\nUses CallerReference, defaults " \
-                      "to uuid.uuid4()".format(func.__doc__)
+
+    wrapper.__doc__ = "{0}\nUses CallerReference, defaults " "to uuid.uuid4()".format(
+        func.__doc__
+    )
     return add_attrs_from(func, to=wrapper)
 
 
 def api_action(*api):
-
     def decorator(func):
-        action = ''.join(api or map(str.capitalize, func.__name__.split('_')))
+        action = "".join(api or map(str.capitalize, func.__name__.split("_")))
         response = ResponseFactory(action)
-        if hasattr(boto.fps.response, action + 'Response'):
-            response = getattr(boto.fps.response, action + 'Response')
+        if hasattr(boto.fps.response, action + "Response"):
+            response = getattr(boto.fps.response, action + "Response")
 
         def wrapper(self, *args, **kw):
             return func(self, action, response, *args, **kw)
+
         wrapper.action, wrapper.response = action, response
-        wrapper.__doc__ = "FPS {0} API call\n{1}".format(action,
-                                                         func.__doc__)
+        wrapper.__doc__ = "FPS {0} API call\n{1}".format(action, func.__doc__)
         return wrapper
+
     return decorator
 
 
 class FPSConnection(AWSQueryConnection):
 
-    APIVersion = '2010-08-28'
+    APIVersion = "2010-08-28"
     ResponseError = ResponseErrorFactory
-    currencycode = 'USD'
+    currencycode = "USD"
 
     def __init__(self, *args, **kw):
-        self.currencycode = kw.pop('CurrencyCode', self.currencycode)
-        kw.setdefault('host', 'fps.sandbox.amazonaws.com')
+        self.currencycode = kw.pop("CurrencyCode", self.currencycode)
+        kw.setdefault("host", "fps.sandbox.amazonaws.com")
         super(FPSConnection, self).__init__(*args, **kw)
 
     def _required_auth_capability(self):
-        return ['fps']
+        return ["fps"]
 
     @needs_caller_reference
-    @complex_amounts('SettlementAmount')
-    @requires(['CreditInstrumentId', 'SettlementAmount.Value',
-               'SenderTokenId',      'SettlementAmount.CurrencyCode'])
+    @complex_amounts("SettlementAmount")
+    @requires(
+        [
+            "CreditInstrumentId",
+            "SettlementAmount.Value",
+            "SenderTokenId",
+            "SettlementAmount.CurrencyCode",
+        ]
+    )
     @api_action()
     def settle_debt(self, action, response, **kw):
         """
@@ -127,7 +138,7 @@ class FPSConnection(AWSQueryConnection):
         """
         return self.get_object(action, kw, response)
 
-    @requires(['TransactionId'])
+    @requires(["TransactionId"])
     @api_action()
     def get_transaction_status(self, action, response, **kw):
         """
@@ -135,7 +146,7 @@ class FPSConnection(AWSQueryConnection):
         """
         return self.get_object(action, kw, response)
 
-    @requires(['StartDate'])
+    @requires(["StartDate"])
     @api_action()
     def get_account_activity(self, action, response, **kw):
         """
@@ -143,7 +154,7 @@ class FPSConnection(AWSQueryConnection):
         """
         return self.get_object(action, kw, response)
 
-    @requires(['TransactionId'])
+    @requires(["TransactionId"])
     @api_action()
     def get_transaction(self, action, response, **kw):
         """
@@ -159,7 +170,7 @@ class FPSConnection(AWSQueryConnection):
         """
         return self.get_object(action, {}, response)
 
-    @requires(['PrepaidInstrumentId'])
+    @requires(["PrepaidInstrumentId"])
     @api_action()
     def get_prepaid_balance(self, action, response, **kw):
         """
@@ -183,7 +194,7 @@ class FPSConnection(AWSQueryConnection):
         return self.get_object(action, {}, response)
 
     @needs_caller_reference
-    @requires(['PaymentInstruction', 'TokenType'])
+    @requires(["PaymentInstruction", "TokenType"])
     @api_action()
     def install_payment_instruction(self, action, response, **kw):
         """
@@ -192,41 +203,51 @@ class FPSConnection(AWSQueryConnection):
         return self.get_object(action, kw, response)
 
     @needs_caller_reference
-    @requires(['returnURL', 'pipelineName'])
+    @requires(["returnURL", "pipelineName"])
     def cbui_url(self, **kw):
         """
         Generate a signed URL for the Co-Branded service API given arguments as
         payload.
         """
-        sandbox = 'sandbox' in self.host and 'payments-sandbox' or 'payments'
-        endpoint = 'authorize.{0}.amazon.com'.format(sandbox)
-        base = '/cobranded-ui/actions/start'
+        sandbox = "sandbox" in self.host and "payments-sandbox" or "payments"
+        endpoint = "authorize.{0}.amazon.com".format(sandbox)
+        base = "/cobranded-ui/actions/start"
 
-        validpipelines = ('SingleUse', 'MultiUse', 'Recurring', 'Recipient',
-                          'SetupPrepaid', 'SetupPostpaid', 'EditToken')
-        assert kw['pipelineName'] in validpipelines, "Invalid pipelineName"
-        kw.update({
-            'signatureMethod':  'HmacSHA256',
-            'signatureVersion': '2',
-        })
-        kw.setdefault('callerKey', self.aws_access_key_id)
+        validpipelines = (
+            "SingleUse",
+            "MultiUse",
+            "Recurring",
+            "Recipient",
+            "SetupPrepaid",
+            "SetupPostpaid",
+            "EditToken",
+        )
+        assert kw["pipelineName"] in validpipelines, "Invalid pipelineName"
+        kw.update(
+            {
+                "signatureMethod": "HmacSHA256",
+                "signatureVersion": "2",
+            }
+        )
+        kw.setdefault("callerKey", self.aws_access_key_id)
 
-        safestr = lambda x: x is not None and str(x) or ''
-        safequote = lambda x: urllib.quote(safestr(x), safe='~')
+        safestr = lambda x: x is not None and str(x) or ""
+        safequote = lambda x: urllib.quote(safestr(x), safe="~")
         payload = sorted([(k, safequote(v)) for k, v in kw.items()])
 
-        encoded = lambda p: '&'.join([k + '=' + v for k, v in p])
-        canonical = '\n'.join(['GET', endpoint, base, encoded(payload)])
+        encoded = lambda p: "&".join([k + "=" + v for k, v in p])
+        canonical = "\n".join(["GET", endpoint, base, encoded(payload)])
         signature = self._auth_handler.sign_string(canonical)
-        payload += [('signature', safequote(signature))]
+        payload += [("signature", safequote(signature))]
         payload.sort()
 
-        return 'https://{0}{1}?{2}'.format(endpoint, base, encoded(payload))
+        return "https://{0}{1}?{2}".format(endpoint, base, encoded(payload))
 
     @needs_caller_reference
-    @complex_amounts('TransactionAmount')
-    @requires(['SenderTokenId', 'TransactionAmount.Value',
-                                'TransactionAmount.CurrencyCode'])
+    @complex_amounts("TransactionAmount")
+    @requires(
+        ["SenderTokenId", "TransactionAmount.Value", "TransactionAmount.CurrencyCode"]
+    )
     @api_action()
     def reserve(self, action, response, **kw):
         """
@@ -237,9 +258,10 @@ class FPSConnection(AWSQueryConnection):
         return self.get_object(action, kw, response)
 
     @needs_caller_reference
-    @complex_amounts('TransactionAmount')
-    @requires(['SenderTokenId', 'TransactionAmount.Value',
-                                'TransactionAmount.CurrencyCode'])
+    @complex_amounts("TransactionAmount")
+    @requires(
+        ["SenderTokenId", "TransactionAmount.Value", "TransactionAmount.CurrencyCode"]
+    )
     @api_action()
     def pay(self, action, response, **kw):
         """
@@ -247,7 +269,7 @@ class FPSConnection(AWSQueryConnection):
         """
         return self.get_object(action, kw, response)
 
-    @requires(['TransactionId'])
+    @requires(["TransactionId"])
     @api_action()
     def cancel(self, action, response, **kw):
         """
@@ -255,9 +277,14 @@ class FPSConnection(AWSQueryConnection):
         """
         return self.get_object(action, kw, response)
 
-    @complex_amounts('TransactionAmount')
-    @requires(['ReserveTransactionId', 'TransactionAmount.Value',
-                                       'TransactionAmount.CurrencyCode'])
+    @complex_amounts("TransactionAmount")
+    @requires(
+        [
+            "ReserveTransactionId",
+            "TransactionAmount.Value",
+            "TransactionAmount.CurrencyCode",
+        ]
+    )
     @api_action()
     def settle(self, action, response, **kw):
         """
@@ -266,9 +293,15 @@ class FPSConnection(AWSQueryConnection):
         """
         return self.get_object(action, kw, response)
 
-    @complex_amounts('RefundAmount')
-    @requires(['TransactionId',   'RefundAmount.Value',
-               'CallerReference', 'RefundAmount.CurrencyCode'])
+    @complex_amounts("RefundAmount")
+    @requires(
+        [
+            "TransactionId",
+            "RefundAmount.Value",
+            "CallerReference",
+            "RefundAmount.CurrencyCode",
+        ]
+    )
     @api_action()
     def refund(self, action, response, **kw):
         """
@@ -276,7 +309,7 @@ class FPSConnection(AWSQueryConnection):
         """
         return self.get_object(action, kw, response)
 
-    @requires(['RecipientTokenId'])
+    @requires(["RecipientTokenId"])
     @api_action()
     def get_recipient_verification_status(self, action, response, **kw):
         """
@@ -284,7 +317,7 @@ class FPSConnection(AWSQueryConnection):
         """
         return self.get_object(action, kw, response)
 
-    @requires(['CallerReference'], ['TokenId'])
+    @requires(["CallerReference"], ["TokenId"])
     @api_action()
     def get_token_by_caller(self, action, response, **kw):
         """
@@ -293,7 +326,7 @@ class FPSConnection(AWSQueryConnection):
         """
         return self.get_object(action, kw, response)
 
-    @requires(['UrlEndPoint', 'HttpParameters'])
+    @requires(["UrlEndPoint", "HttpParameters"])
     @api_action()
     def verify_signature(self, action, response, **kw):
         """
@@ -308,7 +341,7 @@ class FPSConnection(AWSQueryConnection):
         """
         return self.get_object(action, kw, response)
 
-    @requires(['TokenId'])
+    @requires(["TokenId"])
     @api_action()
     def get_token_usage(self, action, response, **kw):
         """
@@ -316,7 +349,7 @@ class FPSConnection(AWSQueryConnection):
         """
         return self.get_object(action, kw, response)
 
-    @requires(['TokenId'])
+    @requires(["TokenId"])
     @api_action()
     def cancel_token(self, action, response, **kw):
         """
@@ -326,9 +359,15 @@ class FPSConnection(AWSQueryConnection):
         return self.get_object(action, kw, response)
 
     @needs_caller_reference
-    @complex_amounts('FundingAmount')
-    @requires(['PrepaidInstrumentId', 'FundingAmount.Value',
-               'SenderTokenId',       'FundingAmount.CurrencyCode'])
+    @complex_amounts("FundingAmount")
+    @requires(
+        [
+            "PrepaidInstrumentId",
+            "FundingAmount.Value",
+            "SenderTokenId",
+            "FundingAmount.CurrencyCode",
+        ]
+    )
     @api_action()
     def fund_prepaid(self, action, response, **kw):
         """
@@ -336,7 +375,7 @@ class FPSConnection(AWSQueryConnection):
         """
         return self.get_object(action, kw, response)
 
-    @requires(['CreditInstrumentId'])
+    @requires(["CreditInstrumentId"])
     @api_action()
     def get_debt_balance(self, action, response, **kw):
         """
@@ -345,9 +384,14 @@ class FPSConnection(AWSQueryConnection):
         return self.get_object(action, kw, response)
 
     @needs_caller_reference
-    @complex_amounts('AdjustmentAmount')
-    @requires(['CreditInstrumentId', 'AdjustmentAmount.Value',
-                                     'AdjustmentAmount.CurrencyCode'])
+    @complex_amounts("AdjustmentAmount")
+    @requires(
+        [
+            "CreditInstrumentId",
+            "AdjustmentAmount.Value",
+            "AdjustmentAmount.CurrencyCode",
+        ]
+    )
     @api_action()
     def write_off_debt(self, action, response, **kw):
         """
@@ -356,7 +400,7 @@ class FPSConnection(AWSQueryConnection):
         """
         return self.get_object(action, kw, response)
 
-    @requires(['SubscriptionId'])
+    @requires(["SubscriptionId"])
     @api_action()
     def get_transactions_for_subscription(self, action, response, **kw):
         """
@@ -364,7 +408,7 @@ class FPSConnection(AWSQueryConnection):
         """
         return self.get_object(action, kw, response)
 
-    @requires(['SubscriptionId'])
+    @requires(["SubscriptionId"])
     @api_action()
     def get_subscription_details(self, action, response, **kw):
         """
@@ -373,20 +417,18 @@ class FPSConnection(AWSQueryConnection):
         return self.get_object(action, kw, response)
 
     @needs_caller_reference
-    @complex_amounts('RefundAmount')
-    @requires(['SubscriptionId'])
+    @complex_amounts("RefundAmount")
+    @requires(["SubscriptionId"])
     @api_action()
     def cancel_subscription_and_refund(self, action, response, **kw):
         """
         Cancels a subscription.
         """
-        message = "If you specify a RefundAmount, " \
-                  "you must specify CallerReference."
-        assert not 'RefundAmount.Value' in kw \
-                or 'CallerReference' in kw, message
+        message = "If you specify a RefundAmount, " "you must specify CallerReference."
+        assert not "RefundAmount.Value" in kw or "CallerReference" in kw, message
         return self.get_object(action, kw, response)
 
-    @requires(['TokenId'])
+    @requires(["TokenId"])
     @api_action()
     def get_payment_instruction(self, action, response, **kw):
         """

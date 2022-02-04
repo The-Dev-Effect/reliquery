@@ -14,7 +14,7 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 # OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
 # ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+# SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
@@ -346,43 +346,45 @@ class TestEMRResponses(unittest.TestCase):
     def _assert_fields(self, response, **fields):
         for field, expected in fields.items():
             actual = getattr(response, field)
-            self.assertEquals(expected, actual,
-                              "Field %s: %r != %r" % (field, expected, actual))
+            self.assertEquals(
+                expected, actual, "Field %s: %r != %r" % (field, expected, actual)
+            )
 
     def test_JobFlows_example(self):
-        [jobflow] = self._parse_xml(JOB_FLOW_EXAMPLE,
-                                    [('member', emrobject.JobFlow)])
-        self._assert_fields(jobflow,
-                            creationdatetime='2009-01-28T21:49:16Z',
-                            startdatetime='2009-01-28T21:49:16Z',
-                            state='STARTING',
-                            instancecount='4',
-                            jobflowid='j-3UN6WX5RRO2AG',
-                            loguri='mybucket/subdir/',
-                            name='MyJobFlowName',
-                            availabilityzone='us-east-1a',
-                            slaveinstancetype='m1.small',
-                            masterinstancetype='m1.small',
-                            ec2keyname='myec2keyname',
-                            keepjobflowalivewhennosteps='true')
+        [jobflow] = self._parse_xml(JOB_FLOW_EXAMPLE, [("member", emrobject.JobFlow)])
+        self._assert_fields(
+            jobflow,
+            creationdatetime="2009-01-28T21:49:16Z",
+            startdatetime="2009-01-28T21:49:16Z",
+            state="STARTING",
+            instancecount="4",
+            jobflowid="j-3UN6WX5RRO2AG",
+            loguri="mybucket/subdir/",
+            name="MyJobFlowName",
+            availabilityzone="us-east-1a",
+            slaveinstancetype="m1.small",
+            masterinstancetype="m1.small",
+            ec2keyname="myec2keyname",
+            keepjobflowalivewhennosteps="true",
+        )
 
     def test_JobFlows_completed(self):
-        [jobflow] = self._parse_xml(JOB_FLOW_COMPLETED,
-                                    [('member', emrobject.JobFlow)])
-        self._assert_fields(jobflow,
-                            creationdatetime='2010-10-21T01:00:25Z',
-                            startdatetime='2010-10-21T01:03:59Z',
-                            enddatetime='2010-10-21T01:44:18Z',
-                            state='COMPLETED',
-                            instancecount='10',
-                            jobflowid='j-3H3Q13JPFLU22',
-                            loguri='s3n://example.emrtest.scripts/jobflow_logs/',
-                            name='RealJobFlowName',
-                            availabilityzone='us-east-1b',
-                            slaveinstancetype='m1.large',
-                            masterinstancetype='m1.large',
-                            ec2keyname='myubersecurekey',
-                            keepjobflowalivewhennosteps='false')
+        [jobflow] = self._parse_xml(JOB_FLOW_COMPLETED, [("member", emrobject.JobFlow)])
+        self._assert_fields(
+            jobflow,
+            creationdatetime="2010-10-21T01:00:25Z",
+            startdatetime="2010-10-21T01:03:59Z",
+            enddatetime="2010-10-21T01:44:18Z",
+            state="COMPLETED",
+            instancecount="10",
+            jobflowid="j-3H3Q13JPFLU22",
+            loguri="s3n://example.emrtest.scripts/jobflow_logs/",
+            name="RealJobFlowName",
+            availabilityzone="us-east-1b",
+            slaveinstancetype="m1.large",
+            masterinstancetype="m1.large",
+            ec2keyname="myubersecurekey",
+            keepjobflowalivewhennosteps="false",
+        )
         self.assertEquals(6, len(jobflow.steps))
         self.assertEquals(2, len(jobflow.instancegroups))
-

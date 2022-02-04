@@ -32,10 +32,16 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.configservice.layer1 import ConfigServiceConnection
-    return get_regions('configservice', connection_cls=ConfigServiceConnection)
+
+    return get_regions("configservice", connection_cls=ConfigServiceConnection)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.configservice.layer1 import ConfigServiceConnection
-    return connect('configservice', region_name,
-                   connection_cls=ConfigServiceConnection, **kw_params)
+
+    return connect(
+        "configservice",
+        region_name,
+        connection_cls=ConfigServiceConnection,
+        **kw_params
+    )

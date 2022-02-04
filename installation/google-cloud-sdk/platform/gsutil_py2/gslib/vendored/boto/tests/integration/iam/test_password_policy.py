@@ -26,6 +26,7 @@ import time
 
 from tests.compat import unittest
 
+
 class IAMAccountPasswordPolicy(unittest.TestCase):
     iam = True
 
@@ -45,15 +46,15 @@ class IAMAccountPasswordPolicy(unittest.TestCase):
         test_min_length = 88
         iam.update_account_password_policy(minimum_password_length=test_min_length)
         new_policy = iam.get_account_password_policy()
-        new_min_length = new_policy['get_account_password_policy_response']\
-                                        ['get_account_password_policy_result']['password_policy']\
-                                        ['minimum_password_length']
+        new_min_length = new_policy["get_account_password_policy_response"][
+            "get_account_password_policy_result"
+        ]["password_policy"]["minimum_password_length"]
 
         if test_min_length != int(new_min_length):
             raise Exception("Failed to update account password policy")
 
         # Delete the policy and check the correct deletion
-        test_policy = ''
+        test_policy = ""
         iam.delete_account_password_policy()
         try:
             test_policy = iam.get_account_password_policy()
@@ -67,14 +68,19 @@ class IAMAccountPasswordPolicy(unittest.TestCase):
 
         # Restore initial account password policy
         if initial_policy:
-            p = initial_policy['get_account_password_policy_response']\
-                    ['get_account_password_policy_result']['password_policy']
-            iam.update_account_password_policy(minimum_password_length=int(p['minimum_password_length']),
-                                                allow_users_to_change_password=bool(p['allow_users_to_change_password']),
-                                                hard_expiry=bool(p['hard_expiry']),
-                                                max_password_age=int(p['max_password_age']),
-                                                password_reuse_prevention=int(p['password_reuse_prevention']),
-                                                require_lowercase_characters=bool(p['require_lowercase_characters']),
-                                                require_numbers=bool(p['require_numbers']),
-                                                require_symbols=bool(p['require_symbols']),
-                                                require_uppercase_characters=bool(p['require_uppercase_characters']))
+            p = initial_policy["get_account_password_policy_response"][
+                "get_account_password_policy_result"
+            ]["password_policy"]
+            iam.update_account_password_policy(
+                minimum_password_length=int(p["minimum_password_length"]),
+                allow_users_to_change_password=bool(
+                    p["allow_users_to_change_password"]
+                ),
+                hard_expiry=bool(p["hard_expiry"]),
+                max_password_age=int(p["max_password_age"]),
+                password_reuse_prevention=int(p["password_reuse_prevention"]),
+                require_lowercase_characters=bool(p["require_lowercase_characters"]),
+                require_numbers=bool(p["require_numbers"]),
+                require_symbols=bool(p["require_symbols"]),
+                require_uppercase_characters=bool(p["require_uppercase_characters"]),
+            )

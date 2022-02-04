@@ -23,50 +23,55 @@ import boto
 from boto.pyami.scriptbase import ScriptBase
 import os, StringIO
 
-class CopyBot(ScriptBase):
 
+class CopyBot(ScriptBase):
     def __init__(self):
         super(CopyBot, self).__init__()
-        self.wdir = boto.config.get('Pyami', 'working_dir')
-        self.log_file = '%s.log' % self.instance_id
+        self.wdir = boto.config.get("Pyami", "working_dir")
+        self.log_file = "%s.log" % self.instance_id
         self.log_path = os.path.join(self.wdir, self.log_file)
         boto.set_file_logger(self.name, self.log_path)
-        self.src_name = boto.config.get(self.name, 'src_bucket')
-        self.dst_name = boto.config.get(self.name, 'dst_bucket')
-        self.replace = boto.config.getbool(self.name, 'replace_dst', True)
+        self.src_name = boto.config.get(self.name, "src_bucket")
+        self.dst_name = boto.config.get(self.name, "dst_bucket")
+        self.replace = boto.config.getbool(self.name, "replace_dst", True)
         s3 = boto.connect_s3()
         self.src = s3.lookup(self.src_name)
         if not self.src:
-            boto.log.error('Source bucket does not exist: %s' % self.src_name)
-        dest_access_key = boto.config.get(self.name, 'dest_aws_access_key_id', None)
+            boto.log.error("Source bucket does not exist: %s" % self.src_name)
+        dest_access_key = boto.config.get(self.name, "dest_aws_access_key_id", None)
         if dest_access_key:
-            dest_secret_key = boto.config.get(self.name, 'dest_aws_secret_access_key', None)
+            dest_secret_key = boto.config.get(
+                self.name, "dest_aws_secret_access_key", None
+            )
             s3 = boto.connect(dest_access_key, dest_secret_key)
         self.dst = s3.lookup(self.dst_name)
         if not self.dst:
             self.dst = s3.create_bucket(self.dst_name)
 
     def copy_bucket_acl(self):
-        if boto.config.get(self.name, 'copy_acls', True):
+        if boto.config.get(self.name, "copy_acls", True):
             acl = self.src.get_xml_acl()
             self.dst.set_xml_acl(acl)
 
     def copy_key_acl(self, src, dst):
-        if boto.config.get(self.name, 'copy_acls', True):
+        if boto.config.get(self.name, "copy_acls", True):
             acl = src.get_xml_acl()
             dst.set_xml_acl(acl)
 
     def copy_keys(self):
-        boto.log.info('src=%s' % self.src.name)
-        boto.log.info('dst=%s' % self.dst.name)
+        boto.log.info("src=%s" % self.src.name)
+        boto.log.info("dst=%s" % self.dst.name)
         try:
             for key in self.src:
                 if not self.replace:
                     exists = self.dst.lookup(key.name)
                     if exists:
-                        boto.log.info('key=%s already exists in %s, skipping' % (key.name, self.dst.name))
+                        boto.log.info(
+                            "key=%s already exists in %s, skipping"
+                            % (key.name, self.dst.name)
+                        )
                         continue
-                boto.log.info('copying %d bytes from key=%s' % (key.size, key.name))
+                boto.log.info("copying %d bytes from key=%s" % (key.size, key.name))
                 prefix, base = os.path.split(key.name)
                 path = os.path.join(self.wdir, base)
                 key.get_contents_to_filename(path)
@@ -75,7 +80,7 @@ class CopyBot(ScriptBase):
                 self.copy_key_acl(key, new_key)
                 os.unlink(path)
         except:
-            boto.log.exception('Error copying key: %s' % key.name)
+            boto.log.exception("Error copying key: %s" % key.name)
 
     def copy_log(self):
         key = self.dst.new_key(self.log_file)
@@ -84,13 +89,15 @@ class CopyBot(ScriptBase):
     def main(self):
         fp = StringIO.StringIO()
         boto.config.dump_safe(fp)
-        self.notify('%s (%s) Starting' % (self.name, self.instance_id), fp.getvalue())
+        self.notify("%s (%s) Starting" % (self.name, self.instance_id), fp.getvalue())
         if self.src and self.dst:
             self.copy_keys()
         if self.dst:
             self.copy_log()
-        self.notify('%s (%s) Stopping' % (self.name, self.instance_id),
-                    'Copy Operation Complete')
-        if boto.config.getbool(self.name, 'exit_on_completion', True):
+        self.notify(
+            "%s (%s) Stopping" % (self.name, self.instance_id),
+            "Copy Operation Complete",
+        )
+        if boto.config.getbool(self.name, "exit_on_completion", True):
             ec2 = boto.connect_ec2()
             ec2.terminate_instances([self.instance_id])

@@ -250,6 +250,8 @@ def test_connect_exception_type():
     # potentially changing the type of the error raised by connect()
     # https://github.com/httplib2/httplib2/pull/150
     http = httplib2.Http()
-    with mock.patch("httplib2.socket.socket.connect", side_effect=socket.timeout("foo")):
+    with mock.patch(
+        "httplib2.socket.socket.connect", side_effect=socket.timeout("foo")
+    ):
         with tests.assert_raises(socket.timeout):
             http.request(tests.DUMMY_URL)

@@ -111,8 +111,7 @@ class Storage(client.Storage):
     on a db model class.
     """
 
-    def __init__(self, session, model_class, key_name,
-                 key_value, property_name):
+    def __init__(self, session, model_class, key_name, key_value, property_name):
         """Constructor for Storage.
 
         Args:
@@ -145,7 +144,7 @@ class Storage(client.Storage):
 
         if entity:
             credential = getattr(entity, self.property_name)
-            if credential and hasattr(credential, 'set_store'):
+            if credential and hasattr(credential, "set_store"):
                 credential.set_store(self)
             return credential
         else:

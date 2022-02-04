@@ -33,10 +33,11 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.cloudsearch.layer1 import Layer1
-    return get_regions('cloudsearch',connection_cls=Layer1)
+
+    return get_regions("cloudsearch", connection_cls=Layer1)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.cloudsearch.layer1 import Layer1
-    return connect('cloudsearch', region_name, connection_cls=Layer1,
-                   **kw_params)
+
+    return connect("cloudsearch", region_name, connection_cls=Layer1, **kw_params)

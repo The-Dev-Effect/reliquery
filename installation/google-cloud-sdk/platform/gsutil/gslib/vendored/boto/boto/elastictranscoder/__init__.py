@@ -32,14 +32,16 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.elastictranscoder.layer1 import ElasticTranscoderConnection
-    return get_regions(
-        'elastictranscoder',
-        connection_cls=ElasticTranscoderConnection
-    )
+
+    return get_regions("elastictranscoder", connection_cls=ElasticTranscoderConnection)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.elastictranscoder.layer1 import ElasticTranscoderConnection
-    return connect('elastictranscoder', region_name,
-                   connection_cls=ElasticTranscoderConnection, **kw_params)
 
+    return connect(
+        "elastictranscoder",
+        region_name,
+        connection_cls=ElasticTranscoderConnection,
+        **kw_params
+    )

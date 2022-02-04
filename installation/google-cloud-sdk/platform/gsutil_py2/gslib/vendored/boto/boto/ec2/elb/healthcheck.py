@@ -28,8 +28,16 @@ class HealthCheck(object):
     :ref:`elb-configuring-a-health-check` for a walkthrough on configuring
     load balancer health checks.
     """
-    def __init__(self, access_point=None, interval=30, target=None,
-                 healthy_threshold=3, timeout=5, unhealthy_threshold=5):
+
+    def __init__(
+        self,
+        access_point=None,
+        interval=30,
+        target=None,
+        healthy_threshold=3,
+        timeout=5,
+        unhealthy_threshold=5,
+    ):
         """
         :ivar str access_point: The name of the load balancer this
             health check is associated with.
@@ -48,21 +56,21 @@ class HealthCheck(object):
         self.unhealthy_threshold = unhealthy_threshold
 
     def __repr__(self):
-        return 'HealthCheck:%s' % self.target
+        return "HealthCheck:%s" % self.target
 
     def startElement(self, name, attrs, connection):
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'Interval':
+        if name == "Interval":
             self.interval = int(value)
-        elif name == 'Target':
+        elif name == "Target":
             self.target = value
-        elif name == 'HealthyThreshold':
+        elif name == "HealthyThreshold":
             self.healthy_threshold = int(value)
-        elif name == 'Timeout':
+        elif name == "Timeout":
             self.timeout = int(value)
-        elif name == 'UnhealthyThreshold':
+        elif name == "UnhealthyThreshold":
             self.unhealthy_threshold = int(value)
         else:
             setattr(self, name, value)
@@ -80,8 +88,7 @@ class HealthCheck(object):
         if not self.access_point:
             return
 
-        new_hc = self.connection.configure_health_check(self.access_point,
-                                                        self)
+        new_hc = self.connection.configure_health_check(self.access_point, self)
         self.interval = new_hc.interval
         self.target = new_hc.target
         self.healthy_threshold = new_hc.healthy_threshold

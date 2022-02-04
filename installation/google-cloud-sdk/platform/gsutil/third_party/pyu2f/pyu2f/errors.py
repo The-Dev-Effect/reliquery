@@ -21,79 +21,80 @@ errors that clients should expect to handle.
 
 
 class NoDeviceFoundError(Exception):
-  pass
+    pass
 
 
 class U2FError(Exception):
-  OK = 0
-  OTHER_ERROR = 1
-  BAD_REQUEST = 2
-  CONFIGURATION_UNSUPPORTED = 3
-  DEVICE_INELIGIBLE = 4
-  TIMEOUT = 5
+    OK = 0
+    OTHER_ERROR = 1
+    BAD_REQUEST = 2
+    CONFIGURATION_UNSUPPORTED = 3
+    DEVICE_INELIGIBLE = 4
+    TIMEOUT = 5
 
-  def __init__(self, code, cause=None):
-    self.code = code
-    if cause:
-      self.cause = cause
-    super(U2FError, self).__init__("U2F Error code: %d (cause: %s)" %
-                                   (code, str(cause)))
+    def __init__(self, code, cause=None):
+        self.code = code
+        if cause:
+            self.cause = cause
+        super(U2FError, self).__init__(
+            "U2F Error code: %d (cause: %s)" % (code, str(cause))
+        )
 
 
 class HidError(Exception):
-  """Errors in the hid usb transport protocol."""
-  pass
+    """Errors in the hid usb transport protocol."""
+
+    pass
 
 
 class InvalidPacketError(HidError):
-  pass
+    pass
 
 
 class HardwareError(Exception):
-  """Errors in the security key hardware that are transport independent."""
-  pass
+    """Errors in the security key hardware that are transport independent."""
+
+    pass
 
 
 class InvalidRequestError(HardwareError):
-  pass
+    pass
 
 
 class ApduError(HardwareError):
-
-  def __init__(self, sw1, sw2):
-    self.sw1 = sw1
-    self.sw2 = sw2
-    super(ApduError, self).__init__("Device returned status: %d %d" %
-                                    (sw1, sw2))
+    def __init__(self, sw1, sw2):
+        self.sw1 = sw1
+        self.sw2 = sw2
+        super(ApduError, self).__init__("Device returned status: %d %d" % (sw1, sw2))
 
 
 class TUPRequiredError(HardwareError):
-  pass
+    pass
 
 
 class InvalidKeyHandleError(HardwareError):
-  pass
+    pass
 
 
 class UnsupportedVersionException(Exception):
-  pass
+    pass
 
 
 class InvalidCommandError(Exception):
-  pass
+    pass
 
 
 class InvalidResponseError(Exception):
-  pass
+    pass
 
 
 class InvalidModelError(Exception):
-  pass
+    pass
 
 
 class OsHidError(Exception):
-  pass
+    pass
 
 
 class PluginError(Exception):
-  pass
+    pass

@@ -24,6 +24,7 @@ Represents an DBSecurityGroup
 """
 from boto.ec2.securitygroup import SecurityGroup
 
+
 class DBSecurityGroup(object):
     """
     Represents an RDS database security group
@@ -43,8 +44,8 @@ class DBSecurityGroup(object):
     :ivar name: Name of the security group
     :ivar owner_id: ID of the owner of the security group. Can be 'None'
     """
-    def __init__(self, connection=None, owner_id=None,
-                 name=None, description=None):
+
+    def __init__(self, connection=None, owner_id=None, name=None, description=None):
         self.connection = connection
         self.owner_id = owner_id
         self.name = name
@@ -53,14 +54,14 @@ class DBSecurityGroup(object):
         self.ip_ranges = []
 
     def __repr__(self):
-        return 'DBSecurityGroup:%s' % self.name
+        return "DBSecurityGroup:%s" % self.name
 
     def startElement(self, name, attrs, connection):
-        if name == 'IPRange':
+        if name == "IPRange":
             cidr = IPRange(self)
             self.ip_ranges.append(cidr)
             return cidr
-        elif name == 'EC2SecurityGroup':
+        elif name == "EC2SecurityGroup":
             ec2_grp = EC2SecurityGroup(self)
             self.ec2_groups.append(ec2_grp)
             return ec2_grp
@@ -68,13 +69,13 @@ class DBSecurityGroup(object):
             return None
 
     def endElement(self, name, value, connection):
-        if name == 'OwnerId':
+        if name == "OwnerId":
             self.owner_id = value
-        elif name == 'DBSecurityGroupName':
+        elif name == "DBSecurityGroupName":
             self.name = value
-        elif name == 'DBSecurityGroupDescription':
+        elif name == "DBSecurityGroupDescription":
             self.description = value
-        elif name == 'IPRanges':
+        elif name == "IPRanges":
             pass
         else:
             setattr(self, name, value)
@@ -103,10 +104,9 @@ class DBSecurityGroup(object):
         else:
             group_name = None
             group_owner_id = None
-        return self.connection.authorize_dbsecurity_group(self.name,
-                                                          cidr_ip,
-                                                          group_name,
-                                                          group_owner_id)
+        return self.connection.authorize_dbsecurity_group(
+            self.name, cidr_ip, group_name, group_owner_id
+        )
 
     def revoke(self, cidr_ip=None, ec2_group=None):
         """
@@ -129,11 +129,12 @@ class DBSecurityGroup(object):
             return self.connection.revoke_dbsecurity_group(
                 self.name,
                 ec2_security_group_name=group_name,
-                ec2_security_group_owner_id=group_owner_id)
+                ec2_security_group_owner_id=group_owner_id,
+            )
 
         # Revoking by CIDR IP range
-        return self.connection.revoke_dbsecurity_group(
-            self.name, cidr_ip=cidr_ip)
+        return self.connection.revoke_dbsecurity_group(self.name, cidr_ip=cidr_ip)
+
 
 class IPRange(object):
     """
@@ -148,18 +149,19 @@ class IPRange(object):
         self.status = None
 
     def __repr__(self):
-        return 'IPRange:%s' % self.cidr_ip
+        return "IPRange:%s" % self.cidr_ip
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'CIDRIP':
+        if name == "CIDRIP":
             self.cidr_ip = value
-        elif name == 'Status':
+        elif name == "Status":
             self.status = value
         else:
             setattr(self, name, value)
+
 
 class EC2SecurityGroup(object):
     """
@@ -172,15 +174,15 @@ class EC2SecurityGroup(object):
         self.owner_id = None
 
     def __repr__(self):
-        return 'EC2SecurityGroup:%s' % self.name
+        return "EC2SecurityGroup:%s" % self.name
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'EC2SecurityGroupName':
+        if name == "EC2SecurityGroupName":
             self.name = value
-        elif name == 'EC2SecurityGroupOwnerId':
+        elif name == "EC2SecurityGroupOwnerId":
             self.owner_id = value
         else:
             setattr(self, name, value)

@@ -31,7 +31,6 @@ from tests.integration.gs.testcase import GSTestCase
 
 
 class GSVersioningTest(GSTestCase):
-
     def testVersioningToggle(self):
         b = self._MakeBucket()
         self.assertFalse(b.get_versioning_status())
@@ -143,10 +142,16 @@ class GSVersioningTest(GSTestCase):
         entries2g1 = acl2g1.entries.entry_list
         entries2g2 = acl2g2.entries.entry_list
         self.assertEqual(len(entries2g2), len(entries1g2))
-        public_read_entries1 = [e for e in entries2g1 if e.permission == "READ"
-                                and e.scope.type == acl.ALL_USERS]
-        public_read_entries2 = [e for e in entries2g2 if e.permission == "READ"
-                                and e.scope.type == acl.ALL_USERS]
+        public_read_entries1 = [
+            e
+            for e in entries2g1
+            if e.permission == "READ" and e.scope.type == acl.ALL_USERS
+        ]
+        public_read_entries2 = [
+            e
+            for e in entries2g2
+            if e.permission == "READ" and e.scope.type == acl.ALL_USERS
+        ]
         self.assertEqual(len(public_read_entries1), 1)
         self.assertEqual(len(public_read_entries2), 0)
 
@@ -174,9 +179,10 @@ class GSVersioningTest(GSTestCase):
         self.assertEqual(len(entries1g1), len(entries1g2))
 
         acl_xml = (
-            '<ACCESSControlList><EntrIes><Entry>'    +
-            '<Scope type="AllUsers"></Scope><Permission>READ</Permission>' +
-            '</Entry></EntrIes></ACCESSControlList>')
+            "<ACCESSControlList><EntrIes><Entry>"
+            + '<Scope type="AllUsers"></Scope><Permission>READ</Permission>'
+            + "</Entry></EntrIes></ACCESSControlList>"
+        )
         aclo = acl.ACL()
         h = handler.XmlHandler(aclo, b)
         sax.parseString(acl_xml, h)
@@ -188,10 +194,16 @@ class GSVersioningTest(GSTestCase):
         entries2g1 = acl2g1.entries.entry_list
         entries2g2 = acl2g2.entries.entry_list
         self.assertEqual(len(entries2g2), len(entries1g2))
-        public_read_entries1 = [e for e in entries2g1 if e.permission == "READ"
-                                and e.scope.type == acl.ALL_USERS]
-        public_read_entries2 = [e for e in entries2g2 if e.permission == "READ"
-                                and e.scope.type == acl.ALL_USERS]
+        public_read_entries1 = [
+            e
+            for e in entries2g1
+            if e.permission == "READ" and e.scope.type == acl.ALL_USERS
+        ]
+        public_read_entries2 = [
+            e
+            for e in entries2g2
+            if e.permission == "READ" and e.scope.type == acl.ALL_USERS
+        ]
         self.assertEqual(len(public_read_entries1), 1)
         self.assertEqual(len(public_read_entries2), 0)
 
@@ -225,10 +237,16 @@ class GSVersioningTest(GSTestCase):
         entries2g1 = acl2g1.entries.entry_list
         entries2g2 = acl2g2.entries.entry_list
         self.assertEqual(len(entries2g2), len(entries1g2))
-        public_read_entries1 = [e for e in entries2g1 if e.permission == "READ"
-                                and e.scope.type == acl.ALL_USERS]
-        public_read_entries2 = [e for e in entries2g2 if e.permission == "READ"
-                                and e.scope.type == acl.ALL_USERS]
+        public_read_entries1 = [
+            e
+            for e in entries2g1
+            if e.permission == "READ" and e.scope.type == acl.ALL_USERS
+        ]
+        public_read_entries2 = [
+            e
+            for e in entries2g2
+            if e.permission == "READ" and e.scope.type == acl.ALL_USERS
+        ]
         self.assertEqual(len(public_read_entries1), 1)
         self.assertEqual(len(public_read_entries2), 0)
 
@@ -257,11 +275,11 @@ class GSVersioningTest(GSTestCase):
         self.assertIsNone(k.generation)
         k.set_contents_from_string("test1")
         g1 = k.generation
-        self.assertRegexpMatches(g1, r'[0-9]+')
-        self.assertEqual(k.metageneration, '1')
+        self.assertRegexpMatches(g1, r"[0-9]+")
+        self.assertEqual(k.metageneration, "1")
         k.set_contents_from_string("test2")
         g2 = k.generation
         self.assertNotEqual(g1, g2)
-        self.assertRegexpMatches(g2, r'[0-9]+')
+        self.assertRegexpMatches(g2, r"[0-9]+")
         self.assertGreater(int(g2), int(g1))
-        self.assertEqual(k.metageneration, '1')
+        self.assertEqual(k.metageneration, "1")

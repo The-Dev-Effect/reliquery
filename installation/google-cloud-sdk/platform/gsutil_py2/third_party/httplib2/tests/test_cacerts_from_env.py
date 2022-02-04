@@ -24,7 +24,7 @@ def clean_env():
 @pytest.fixture()
 def ca_certs_tmpfile(clean_env):
     tmpfd, tmpfile = tempfile.mkstemp()
-    open(tmpfile, 'a').close()
+    open(tmpfile, "a").close()
     yield tmpfile
     os.remove(tmpfile)
 
@@ -47,7 +47,9 @@ def test_certs_file_from_environment(ca_certs_tmpfile):
     assert httplib2.certs.where() == CA_CERTS_BUILTIN
 
 
-@mock.patch("httplib2.certs.certifi_where", mock.MagicMock(return_value=CERTIFI_CERTS_FILE))
+@mock.patch(
+    "httplib2.certs.certifi_where", mock.MagicMock(return_value=CERTIFI_CERTS_FILE)
+)
 @mock.patch("httplib2.certs.certifi_available", True)
 @mock.patch("httplib2.certs.custom_ca_locater_available", False)
 def test_certs_file_from_certifi(clean_env):
@@ -56,7 +58,10 @@ def test_certs_file_from_certifi(clean_env):
 
 @mock.patch("httplib2.certs.certifi_available", False)
 @mock.patch("httplib2.certs.custom_ca_locater_available", True)
-@mock.patch("httplib2.certs.custom_ca_locater_where", mock.MagicMock(return_value=CUSTOM_CA_CERTS))
+@mock.patch(
+    "httplib2.certs.custom_ca_locater_where",
+    mock.MagicMock(return_value=CUSTOM_CA_CERTS),
+)
 def test_certs_file_from_custom_getter(clean_env):
     assert httplib2.certs.where() == CUSTOM_CA_CERTS
 

@@ -43,7 +43,7 @@ class Oauth2WithReauthCredentials(client.OAuth2Credentials):
 
         A Oauth2WithReauthCredentials has an extra rapt_token."""
 
-        self.rapt_token = kwargs.pop('rapt_token', None)
+        self.rapt_token = kwargs.pop("rapt_token", None)
         super(Oauth2WithReauthCredentials, self).__init__(*args, **kwargs)
 
     @classmethod
@@ -51,33 +51,41 @@ class Oauth2WithReauthCredentials(client.OAuth2Credentials):
         """Overrides."""
 
         data = json.loads(_helpers._from_bytes(json_data))
-        if ((data.get('token_expiry')
-             and not isinstance(data['token_expiry'], datetime.datetime))):
+        if data.get("token_expiry") and not isinstance(
+            data["token_expiry"], datetime.datetime
+        ):
             try:
-                data['token_expiry'] = datetime.datetime.strptime(
-                    data['token_expiry'], client.EXPIRY_FORMAT)
+                data["token_expiry"] = datetime.datetime.strptime(
+                    data["token_expiry"], client.EXPIRY_FORMAT
+                )
             except ValueError:
-                data['token_expiry'] = None
+                data["token_expiry"] = None
 
         kwargs = {}
-        for param in ('revoke_uri', 'id_token', 'id_token_jwt',
-                      'token_response', 'scopes', 'token_info_uri',
-                      'rapt_token'):
+        for param in (
+            "revoke_uri",
+            "id_token",
+            "id_token_jwt",
+            "token_response",
+            "scopes",
+            "token_info_uri",
+            "rapt_token",
+        ):
             value = data.get(param, None)
             if value is not None:
                 kwargs[param] = value
 
         retval = cls(
-          data['access_token'],
-          data['client_id'],
-          data['client_secret'],
-          data['refresh_token'],
-          data['token_expiry'],
-          data['token_uri'],
-          data['user_agent'],
-          **kwargs
+            data["access_token"],
+            data["client_id"],
+            data["client_secret"],
+            data["refresh_token"],
+            data["token_expiry"],
+            data["token_uri"],
+            data["user_agent"],
+            **kwargs
         )
-        retval.invalid = data['invalid']
+        retval.invalid = data["invalid"]
         return retval
 
     @classmethod
@@ -100,17 +108,18 @@ class Oauth2WithReauthCredentials(client.OAuth2Credentials):
         """
         headers = self._generate_refresh_request_headers()
 
-        _LOGGER.info('Refreshing access_token')
+        _LOGGER.info("Refreshing access_token")
 
         def http_request(uri, method, body, headers):
             response, content = transport.request(
-                http, uri, method=method,
-                body=body, headers=headers)
+                http, uri, method=method, body=body, headers=headers
+            )
             content = _helpers._from_bytes(content)
             return response, content
 
         try:
-            self._update(*reauth.refresh_access_token(
+            self._update(
+                *reauth.refresh_access_token(
                     http_request,
                     self.client_id,
                     self.client_secret,
@@ -118,30 +127,39 @@ class Oauth2WithReauthCredentials(client.OAuth2Credentials):
                     self.token_uri,
                     rapt=self.rapt_token,
                     scopes=list(self.scopes),
-                    headers=headers))
-        except (errors.ReauthAccessTokenRefreshError,
-                errors.HttpAccessTokenRefreshError) as e:
+                    headers=headers,
+                )
+            )
+        except (
+            errors.ReauthAccessTokenRefreshError,
+            errors.HttpAccessTokenRefreshError,
+        ) as e:
             self.invalid = True
             if self.store:
                 self.store.locked_put(self)
             raise client.HttpAccessTokenRefreshError(e, status=e.status)
 
-    def _update(self, rapt, content, access_token, refresh_token=None,
-                expires_in=None, id_token=None):
+    def _update(
+        self,
+        rapt,
+        content,
+        access_token,
+        refresh_token=None,
+        expires_in=None,
+        id_token=None,
+    ):
         if rapt:
             self.rapt_token = rapt
         self.token_response = content
         self.access_token = access_token
-        self.refresh_token = (
-            refresh_token if refresh_token else self.refresh_token)
+        self.refresh_token = refresh_token if refresh_token else self.refresh_token
         if expires_in:
             delta = datetime.timedelta(seconds=int(expires_in))
             self.token_expiry = delta + client._UTCNOW()
         else:
             self.token_expiry = None
         self.id_token_jwt = id_token
-        self.id_token = (
-            client._extract_id_token(id_token) if id_token else None)
+        self.id_token = client._extract_id_token(id_token) if id_token else None
 
         self.invalid = False
         if self.store:

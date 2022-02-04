@@ -27,10 +27,9 @@ from boto.ec2.tag import TagSet
 
 
 class EC2Object(object):
-
     def __init__(self, connection=None):
         self.connection = connection
-        if self.connection and hasattr(self.connection, 'region'):
+        if self.connection and hasattr(self.connection, "region"):
             self.region = connection.region
         else:
             self.region = None
@@ -58,12 +57,12 @@ class TaggedEC2Object(EC2Object):
         self.tags = TagSet()
 
     def startElement(self, name, attrs, connection):
-        if name == 'tagSet':
+        if name == "tagSet":
             return self.tags
         else:
             return None
 
-    def add_tag(self, key, value='', dry_run=False):
+    def add_tag(self, key, value="", dry_run=False):
         """
         Add a tag to this object.  Tags are stored by AWS and can be used
         to organize and filter resources.  Adding a tag involves a round-trip
@@ -91,11 +90,7 @@ class TaggedEC2Object(EC2Object):
                      corresponding value for that tag name should be an empty
                      string.
         """
-        status = self.connection.create_tags(
-            [self.id],
-            tags,
-            dry_run=dry_run
-        )
+        status = self.connection.create_tags([self.id], tags, dry_run=dry_run)
         if self.tags is None:
             self.tags = TagSet()
         self.tags.update(tags)
@@ -133,11 +128,7 @@ class TaggedEC2Object(EC2Object):
                      NOTE: There is an important distinction between a value of
                      '' and a value of None.
         """
-        status = self.connection.delete_tags(
-            [self.id],
-            tags,
-            dry_run=dry_run
-        )
+        status = self.connection.delete_tags([self.id], tags, dry_run=dry_run)
         for key, value in tags.items():
             if key in self.tags:
                 if value is None or value == self.tags[key]:

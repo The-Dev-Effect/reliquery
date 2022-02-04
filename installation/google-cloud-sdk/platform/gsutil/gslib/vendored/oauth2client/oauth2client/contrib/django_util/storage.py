@@ -57,7 +57,7 @@ class DjangoORMStorage(client.Storage):
         entities = self.model_class.objects.filter(**query)
         if len(entities) > 0:
             credential = getattr(entities[0], self.property_name)
-            if getattr(credential, 'set_store', None) is not None:
+            if getattr(credential, "set_store", None) is not None:
                 credential.set_store(self)
             return credential
         else:
@@ -70,7 +70,8 @@ class DjangoORMStorage(client.Storage):
             credentials: Credentials, the credentials to store.
         """
         entity, _ = self.model_class.objects.get_or_create(
-            **{self.key_name: self.key_value})
+            **{self.key_name: self.key_value}
+        )
 
         setattr(entity, self.property_name, credentials)
         entity.save()

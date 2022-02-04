@@ -8,18 +8,16 @@ from mock import sentinel, DEFAULT
 
 
 class SentinelTest(unittest.TestCase):
-
     def testSentinels(self):
-        self.assertEqual(sentinel.whatever, sentinel.whatever,
-                         'sentinel not stored')
-        self.assertNotEqual(sentinel.whatever, sentinel.whateverelse,
-                            'sentinel should be unique')
-
+        self.assertEqual(sentinel.whatever, sentinel.whatever, "sentinel not stored")
+        self.assertNotEqual(
+            sentinel.whatever, sentinel.whateverelse, "sentinel should be unique"
+        )
 
     def testSentinelName(self):
-        self.assertEqual(str(sentinel.whatever), 'sentinel.whatever',
-                         'sentinel name incorrect')
-
+        self.assertEqual(
+            str(sentinel.whatever), "sentinel.whatever", "sentinel name incorrect"
+        )
 
     def testDEFAULT(self):
         self.assertIs(DEFAULT, sentinel.DEFAULT)
@@ -29,5 +27,5 @@ class SentinelTest(unittest.TestCase):
         self.assertRaises(AttributeError, lambda: sentinel.__bases__)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

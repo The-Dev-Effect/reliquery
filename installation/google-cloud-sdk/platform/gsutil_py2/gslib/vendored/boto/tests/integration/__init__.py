@@ -41,7 +41,7 @@ class ServiceCertVerificationTest(object):
         for region in self.regions:
             special_access_required = False
 
-            for snippet in ('gov', 'cn-'):
+            for snippet in ("gov", "cn-"):
                 if snippet in region.name:
                     special_access_required = True
                     break

@@ -19,8 +19,11 @@ from pyasn1_modules import rfc2437
 from pyasn1_modules import rfc2459
 
 if len(sys.argv) != 1:
-    print("""Usage:
-$ cat rsakey.pem | %s""" % sys.argv[0])
+    print(
+        """Usage:
+$ cat rsakey.pem | %s"""
+        % sys.argv[0]
+    )
     sys.exit(-1)
 
 cnt = 0
@@ -28,8 +31,8 @@ cnt = 0
 while True:
     idx, substrate = pem.readPemBlocksFromFile(
         sys.stdin,
-        ('-----BEGIN RSA PRIVATE KEY-----', '-----END RSA PRIVATE KEY-----'),
-        ('-----BEGIN DSA PRIVATE KEY-----', '-----END DSA PRIVATE KEY-----')
+        ("-----BEGIN RSA PRIVATE KEY-----", "-----END RSA PRIVATE KEY-----"),
+        ("-----BEGIN DSA PRIVATE KEY-----", "-----END DSA PRIVATE KEY-----"),
     )
     if not substrate:
         break
@@ -44,12 +47,12 @@ while True:
     key, rest = decoder.decode(substrate, asn1Spec=asn1Spec)
 
     if rest:
-        substrate = substrate[:-len(rest)]
+        substrate = substrate[: -len(rest)]
 
     print(key.prettyPrint())
 
-    assert encoder.encode(key) == substrate, 'pkcs8 recode fails'
+    assert encoder.encode(key) == substrate, "pkcs8 recode fails"
 
     cnt += 1
 
-print('*** %s key(s) re/serialized' % cnt)
+print("*** %s key(s) re/serialized" % cnt)

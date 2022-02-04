@@ -35,7 +35,7 @@ from boto.compat import json
 # To get full debug output, uncomment the following line and set the
 # value of Debug to be 2
 #
-#boto.set_stream_logger('swf')
+# boto.set_stream_logger('swf')
 Debug = 0
 
 
@@ -44,48 +44,60 @@ class Layer1(AWSAuthConnection):
     Low-level interface to Simple WorkFlow Service.
     """
 
-    DefaultRegionName = 'us-east-1'
+    DefaultRegionName = "us-east-1"
     """The default region name for Simple Workflow."""
 
-    ServiceName = 'com.amazonaws.swf.service.model.SimpleWorkflowService'
+    ServiceName = "com.amazonaws.swf.service.model.SimpleWorkflowService"
     """The name of the Service"""
 
     # In some cases, the fault response __type value is mapped to
     # an exception class more specific than SWFResponseError.
     _fault_excp = {
-        'com.amazonaws.swf.base.model#DomainAlreadyExistsFault':
-            swf_exceptions.SWFDomainAlreadyExistsError,
-        'com.amazonaws.swf.base.model#LimitExceededFault':
-            swf_exceptions.SWFLimitExceededError,
-        'com.amazonaws.swf.base.model#OperationNotPermittedFault':
-            swf_exceptions.SWFOperationNotPermittedError,
-        'com.amazonaws.swf.base.model#TypeAlreadyExistsFault':
-            swf_exceptions.SWFTypeAlreadyExistsError,
-        'com.amazonaws.swf.base.model#WorkflowExecutionAlreadyStartedFault':
-            swf_exceptions.SWFWorkflowExecutionAlreadyStartedError,
+        "com.amazonaws.swf.base.model#DomainAlreadyExistsFault": swf_exceptions.SWFDomainAlreadyExistsError,
+        "com.amazonaws.swf.base.model#LimitExceededFault": swf_exceptions.SWFLimitExceededError,
+        "com.amazonaws.swf.base.model#OperationNotPermittedFault": swf_exceptions.SWFOperationNotPermittedError,
+        "com.amazonaws.swf.base.model#TypeAlreadyExistsFault": swf_exceptions.SWFTypeAlreadyExistsError,
+        "com.amazonaws.swf.base.model#WorkflowExecutionAlreadyStartedFault": swf_exceptions.SWFWorkflowExecutionAlreadyStartedError,
     }
 
     ResponseError = SWFResponseError
 
-    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None,
-                 is_secure=True, port=None, proxy=None, proxy_port=None,
-                 debug=0, session_token=None, region=None, profile_name=None):
+    def __init__(
+        self,
+        aws_access_key_id=None,
+        aws_secret_access_key=None,
+        is_secure=True,
+        port=None,
+        proxy=None,
+        proxy_port=None,
+        debug=0,
+        session_token=None,
+        region=None,
+        profile_name=None,
+    ):
         if not region:
-            region_name = boto.config.get('SWF', 'region',
-                                          self.DefaultRegionName)
+            region_name = boto.config.get("SWF", "region", self.DefaultRegionName)
             for reg in boto.swf.regions():
                 if reg.name == region_name:
                     region = reg
                     break
 
         self.region = region
-        super(Layer1, self).__init__(self.region.endpoint,
-                                   aws_access_key_id, aws_secret_access_key,
-                                   is_secure, port, proxy, proxy_port,
-                                   debug, session_token, profile_name=profile_name)
+        super(Layer1, self).__init__(
+            self.region.endpoint,
+            aws_access_key_id,
+            aws_secret_access_key,
+            is_secure,
+            port,
+            proxy,
+            proxy_port,
+            debug,
+            session_token,
+            profile_name=profile_name,
+        )
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
     @classmethod
     def _normalize_request_dict(cls, data):
@@ -117,20 +129,22 @@ class Layer1(AWSAuthConnection):
         json_input = json.dumps(data)
         return self.make_request(action, json_input, object_hook)
 
-    def make_request(self, action, body='', object_hook=None):
+    def make_request(self, action, body="", object_hook=None):
         """
         :raises: ``SWFResponseError`` if response status is not 200.
         """
-        headers = {'X-Amz-Target': '%s.%s' % (self.ServiceName, action),
-                   'Host': self.region.endpoint,
-                   'Content-Type': 'application/json; charset=UTF-8',
-                   'Content-Encoding': 'amz-1.0',
-                   'Content-Length': str(len(body))}
-        http_request = self.build_base_http_request('POST', '/', '/',
-                                                    {}, headers, body, None)
-        response = self._mexe(http_request, sender=None,
-                              override_num_retries=10)
-        response_body = response.read().decode('utf-8')
+        headers = {
+            "X-Amz-Target": "%s.%s" % (self.ServiceName, action),
+            "Host": self.region.endpoint,
+            "Content-Type": "application/json; charset=UTF-8",
+            "Content-Encoding": "amz-1.0",
+            "Content-Length": str(len(body)),
+        }
+        http_request = self.build_base_http_request(
+            "POST", "/", "/", {}, headers, body, None
+        )
+        response = self._mexe(http_request, sender=None, override_num_retries=10)
+        response_body = response.read().decode("utf-8")
         boto.log.debug(response_body)
         if response.status == 200:
             if response_body:
@@ -139,7 +153,7 @@ class Layer1(AWSAuthConnection):
                 return None
         else:
             json_body = json.loads(response_body)
-            fault_name = json_body.get('__type', None)
+            fault_name = json_body.get("__type", None)
             # Certain faults get mapped to more specific exception classes.
             excp_cls = self._fault_excp.get(fault_name, self.ResponseError)
             raise excp_cls(response.status, response.reason, body=json_body)
@@ -174,11 +188,14 @@ class Layer1(AWSAuthConnection):
 
         :raises: UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('PollForActivityTask', {
-            'domain': domain,
-            'taskList': {'name': task_list},
-            'identity': identity,
-        })
+        return self.json_request(
+            "PollForActivityTask",
+            {
+                "domain": domain,
+                "taskList": {"name": task_list},
+                "identity": identity,
+            },
+        )
 
     def respond_activity_task_completed(self, task_token, result=None):
         """
@@ -195,13 +212,15 @@ class Layer1(AWSAuthConnection):
 
         :raises: UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('RespondActivityTaskCompleted', {
-            'taskToken': task_token,
-            'result': result,
-        })
+        return self.json_request(
+            "RespondActivityTaskCompleted",
+            {
+                "taskToken": task_token,
+                "result": result,
+            },
+        )
 
-    def respond_activity_task_failed(self, task_token,
-                                     details=None, reason=None):
+    def respond_activity_task_failed(self, task_token, details=None, reason=None):
         """
         Used by workers to tell the service that the ActivityTask
         identified by the taskToken has failed with reason (if
@@ -218,11 +237,14 @@ class Layer1(AWSAuthConnection):
 
         :raises: UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('RespondActivityTaskFailed', {
-            'taskToken': task_token,
-            'details': details,
-            'reason': reason,
-        })
+        return self.json_request(
+            "RespondActivityTaskFailed",
+            {
+                "taskToken": task_token,
+                "details": details,
+                "reason": reason,
+            },
+        )
 
     def respond_activity_task_canceled(self, task_token, details=None):
         """
@@ -239,10 +261,13 @@ class Layer1(AWSAuthConnection):
 
         :raises: UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('RespondActivityTaskCanceled', {
-            'taskToken': task_token,
-            'details': details,
-        })
+        return self.json_request(
+            "RespondActivityTaskCanceled",
+            {
+                "taskToken": task_token,
+                "details": details,
+            },
+        )
 
     def record_activity_task_heartbeat(self, task_token, details=None):
         """
@@ -265,17 +290,25 @@ class Layer1(AWSAuthConnection):
 
         :raises: UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('RecordActivityTaskHeartbeat', {
-            'taskToken': task_token,
-            'details': details,
-        })
+        return self.json_request(
+            "RecordActivityTaskHeartbeat",
+            {
+                "taskToken": task_token,
+                "details": details,
+            },
+        )
 
     # Actions related to Deciders
 
-    def poll_for_decision_task(self, domain, task_list, identity=None,
-                               maximum_page_size=None,
-                               next_page_token=None,
-                               reverse_order=None):
+    def poll_for_decision_task(
+        self,
+        domain,
+        task_list,
+        identity=None,
+        maximum_page_size=None,
+        next_page_token=None,
+        reverse_order=None,
+    ):
         """
         Used by deciders to get a DecisionTask from the specified
         decision taskList. A decision task may be returned for any
@@ -316,18 +349,21 @@ class Layer1(AWSAuthConnection):
 
         :raises: UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('PollForDecisionTask', {
-            'domain': domain,
-            'taskList': {'name': task_list},
-            'identity': identity,
-            'maximumPageSize': maximum_page_size,
-            'nextPageToken': next_page_token,
-            'reverseOrder': reverse_order,
-        })
+        return self.json_request(
+            "PollForDecisionTask",
+            {
+                "domain": domain,
+                "taskList": {"name": task_list},
+                "identity": identity,
+                "maximumPageSize": maximum_page_size,
+                "nextPageToken": next_page_token,
+                "reverseOrder": reverse_order,
+            },
+        )
 
-    def respond_decision_task_completed(self, task_token,
-                                        decisions=None,
-                                        execution_context=None):
+    def respond_decision_task_completed(
+        self, task_token, decisions=None, execution_context=None
+    ):
         """
         Used by deciders to tell the service that the DecisionTask
         identified by the taskToken has successfully completed.
@@ -348,14 +384,16 @@ class Layer1(AWSAuthConnection):
 
         :raises: UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('RespondDecisionTaskCompleted', {
-            'taskToken': task_token,
-            'decisions': decisions,
-            'executionContext': execution_context,
-        })
+        return self.json_request(
+            "RespondDecisionTaskCompleted",
+            {
+                "taskToken": task_token,
+                "decisions": decisions,
+                "executionContext": execution_context,
+            },
+        )
 
-    def request_cancel_workflow_execution(self, domain, workflow_id,
-                                          run_id=None):
+    def request_cancel_workflow_execution(self, domain, workflow_id, run_id=None):
         """
         Records a WorkflowExecutionCancelRequested event in the
         currently running workflow execution identified by the given
@@ -377,18 +415,28 @@ class Layer1(AWSAuthConnection):
 
         :raises: UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('RequestCancelWorkflowExecution', {
-            'domain': domain,
-            'workflowId': workflow_id,
-            'runId': run_id,
-        })
+        return self.json_request(
+            "RequestCancelWorkflowExecution",
+            {
+                "domain": domain,
+                "workflowId": workflow_id,
+                "runId": run_id,
+            },
+        )
 
-    def start_workflow_execution(self, domain, workflow_id,
-                                 workflow_name, workflow_version,
-                                 task_list=None, child_policy=None,
-                                 execution_start_to_close_timeout=None,
-                                 input=None, tag_list=None,
-                                 task_start_to_close_timeout=None):
+    def start_workflow_execution(
+        self,
+        domain,
+        workflow_id,
+        workflow_name,
+        workflow_version,
+        task_list=None,
+        child_policy=None,
+        execution_start_to_close_timeout=None,
+        input=None,
+        tag_list=None,
+        task_start_to_close_timeout=None,
+    ):
         """
         Starts an execution of the workflow type in the specified
         domain using the provided workflowId and input data.
@@ -464,22 +512,24 @@ class Layer1(AWSAuthConnection):
             SWFWorkflowExecutionAlreadyStartedError, SWFLimitExceededError,
             SWFOperationNotPermittedError, DefaultUndefinedFault
         """
-        return self.json_request('StartWorkflowExecution', {
-            'domain': domain,
-            'workflowId': workflow_id,
-            'workflowType': {'name': workflow_name,
-                             'version': workflow_version},
-            'taskList': {'name': task_list},
-            'childPolicy': child_policy,
-            'executionStartToCloseTimeout': execution_start_to_close_timeout,
-            'input': input,
-            'tagList': tag_list,
-            'taskStartToCloseTimeout': task_start_to_close_timeout,
+        return self.json_request(
+            "StartWorkflowExecution",
+            {
+                "domain": domain,
+                "workflowId": workflow_id,
+                "workflowType": {"name": workflow_name, "version": workflow_version},
+                "taskList": {"name": task_list},
+                "childPolicy": child_policy,
+                "executionStartToCloseTimeout": execution_start_to_close_timeout,
+                "input": input,
+                "tagList": tag_list,
+                "taskStartToCloseTimeout": task_start_to_close_timeout,
+            },
+        )
 
-        })
-
-    def signal_workflow_execution(self, domain, signal_name, workflow_id,
-                                  input=None, run_id=None):
+    def signal_workflow_execution(
+        self, domain, signal_name, workflow_id, input=None, run_id=None
+    ):
         """
         Records a WorkflowExecutionSignaled event in the workflow
         execution history and creates a decision task for the workflow
@@ -508,17 +558,26 @@ class Layer1(AWSAuthConnection):
 
         :raises: UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('SignalWorkflowExecution', {
-            'domain': domain,
-            'signalName': signal_name,
-            'workflowId': workflow_id,
-            'input': input,
-            'runId': run_id,
-        })
+        return self.json_request(
+            "SignalWorkflowExecution",
+            {
+                "domain": domain,
+                "signalName": signal_name,
+                "workflowId": workflow_id,
+                "input": input,
+                "runId": run_id,
+            },
+        )
 
-    def terminate_workflow_execution(self, domain, workflow_id,
-                                     child_policy=None, details=None,
-                                     reason=None, run_id=None):
+    def terminate_workflow_execution(
+        self,
+        domain,
+        workflow_id,
+        child_policy=None,
+        details=None,
+        reason=None,
+        run_id=None,
+    ):
         """
         Records a WorkflowExecutionTerminated event and forces closure
         of the workflow execution identified by the given domain,
@@ -566,25 +625,34 @@ class Layer1(AWSAuthConnection):
 
         :raises: UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('TerminateWorkflowExecution', {
-            'domain': domain,
-            'workflowId': workflow_id,
-            'childPolicy': child_policy,
-            'details': details,
-            'reason': reason,
-            'runId': run_id,
-        })
+        return self.json_request(
+            "TerminateWorkflowExecution",
+            {
+                "domain": domain,
+                "workflowId": workflow_id,
+                "childPolicy": child_policy,
+                "details": details,
+                "reason": reason,
+                "runId": run_id,
+            },
+        )
 
-# Actions related to Administration
+    # Actions related to Administration
 
-## Activity Management
+    ## Activity Management
 
-    def register_activity_type(self, domain, name, version, task_list=None,
-                               default_task_heartbeat_timeout=None,
-                               default_task_schedule_to_close_timeout=None,
-                               default_task_schedule_to_start_timeout=None,
-                               default_task_start_to_close_timeout=None,
-                               description=None):
+    def register_activity_type(
+        self,
+        domain,
+        name,
+        version,
+        task_list=None,
+        default_task_heartbeat_timeout=None,
+        default_task_schedule_to_close_timeout=None,
+        default_task_schedule_to_start_timeout=None,
+        default_task_start_to_close_timeout=None,
+        description=None,
+    ):
         """
         Registers a new activity type along with its configuration
         settings in the specified domain.
@@ -646,23 +714,26 @@ class Layer1(AWSAuthConnection):
         :raises: SWFTypeAlreadyExistsError, SWFLimitExceededError,
             UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('RegisterActivityType', {
-            'domain': domain,
-            'name': name,
-            'version': version,
-            'defaultTaskList': {'name': task_list},
-            'defaultTaskHeartbeatTimeout': default_task_heartbeat_timeout,
-            'defaultTaskScheduleToCloseTimeout': default_task_schedule_to_close_timeout,
-            'defaultTaskScheduleToStartTimeout': default_task_schedule_to_start_timeout,
-            'defaultTaskStartToCloseTimeout': default_task_start_to_close_timeout,
-            'description': description,
-        })
+        return self.json_request(
+            "RegisterActivityType",
+            {
+                "domain": domain,
+                "name": name,
+                "version": version,
+                "defaultTaskList": {"name": task_list},
+                "defaultTaskHeartbeatTimeout": default_task_heartbeat_timeout,
+                "defaultTaskScheduleToCloseTimeout": default_task_schedule_to_close_timeout,
+                "defaultTaskScheduleToStartTimeout": default_task_schedule_to_start_timeout,
+                "defaultTaskStartToCloseTimeout": default_task_start_to_close_timeout,
+                "description": description,
+            },
+        )
 
     def deprecate_activity_type(self, domain, activity_name, activity_version):
         """
-        Deprecates the specified activity type. After an activity 
-        type has been deprecated, you cannot create new tasks of 
-        that activity type. Tasks of this type that were scheduled 
+        Deprecates the specified activity type. After an activity
+        type has been deprecated, you cannot create new tasks of
+        that activity type. Tasks of this type that were scheduled
         before the type was deprecated will continue to run.
 
         :type domain: string
@@ -678,20 +749,27 @@ class Layer1(AWSAuthConnection):
         :raises: UnknownResourceFault, TypeDeprecatedFault,
             SWFOperationNotPermittedError
         """
-        return self.json_request('DeprecateActivityType', {
-            'domain': domain,
-            'activityType': {'name': activity_name,
-                             'version': activity_version}
-        })
+        return self.json_request(
+            "DeprecateActivityType",
+            {
+                "domain": domain,
+                "activityType": {"name": activity_name, "version": activity_version},
+            },
+        )
 
-## Workflow Management
+    ## Workflow Management
 
-    def register_workflow_type(self, domain, name, version,
-                               task_list=None,
-                               default_child_policy=None,
-                               default_execution_start_to_close_timeout=None,
-                               default_task_start_to_close_timeout=None,
-                               description=None):
+    def register_workflow_type(
+        self,
+        domain,
+        name,
+        version,
+        task_list=None,
+        default_child_policy=None,
+        default_execution_start_to_close_timeout=None,
+        default_task_start_to_close_timeout=None,
+        description=None,
+    ):
         """
         Registers a new workflow type and its configuration settings
         in the specified domain.
@@ -756,16 +834,19 @@ class Layer1(AWSAuthConnection):
         :raises: SWFTypeAlreadyExistsError, SWFLimitExceededError,
             UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('RegisterWorkflowType', {
-            'domain': domain,
-            'name': name,
-            'version': version,
-            'defaultTaskList':  {'name': task_list},
-            'defaultChildPolicy': default_child_policy,
-            'defaultExecutionStartToCloseTimeout': default_execution_start_to_close_timeout,
-            'defaultTaskStartToCloseTimeout': default_task_start_to_close_timeout,
-            'description': description,
-        })
+        return self.json_request(
+            "RegisterWorkflowType",
+            {
+                "domain": domain,
+                "name": name,
+                "version": version,
+                "defaultTaskList": {"name": task_list},
+                "defaultChildPolicy": default_child_policy,
+                "defaultExecutionStartToCloseTimeout": default_execution_start_to_close_timeout,
+                "defaultTaskStartToCloseTimeout": default_task_start_to_close_timeout,
+                "description": description,
+            },
+        )
 
     def deprecate_workflow_type(self, domain, workflow_name, workflow_version):
         """
@@ -788,17 +869,19 @@ class Layer1(AWSAuthConnection):
         :raises: UnknownResourceFault, TypeDeprecatedFault,
             SWFOperationNotPermittedError
         """
-        return self.json_request('DeprecateWorkflowType', {
-            'domain': domain,
-            'workflowType': {'name': workflow_name,
-                             'version': workflow_version},
-        })
+        return self.json_request(
+            "DeprecateWorkflowType",
+            {
+                "domain": domain,
+                "workflowType": {"name": workflow_name, "version": workflow_version},
+            },
+        )
 
-## Domain Management
+    ## Domain Management
 
-    def register_domain(self, name,
-                        workflow_execution_retention_period_in_days,
-                        description=None):
+    def register_domain(
+        self, name, workflow_execution_retention_period_in_days, description=None
+    ):
         """
         Registers a new domain.
 
@@ -821,11 +904,14 @@ class Layer1(AWSAuthConnection):
         :raises: SWFDomainAlreadyExistsError, SWFLimitExceededError,
             SWFOperationNotPermittedError
         """
-        return self.json_request('RegisterDomain', {
-            'name': name,
-            'workflowExecutionRetentionPeriodInDays': workflow_execution_retention_period_in_days,
-            'description': description,
-        })
+        return self.json_request(
+            "RegisterDomain",
+            {
+                "name": name,
+                "workflowExecutionRetentionPeriodInDays": workflow_execution_retention_period_in_days,
+                "description": description,
+            },
+        )
 
     def deprecate_domain(self, name):
         """
@@ -843,16 +929,21 @@ class Layer1(AWSAuthConnection):
         :raises: UnknownResourceFault, DomainDeprecatedFault,
             SWFOperationNotPermittedError
         """
-        return self.json_request('DeprecateDomain', {'name': name})
+        return self.json_request("DeprecateDomain", {"name": name})
 
-# Visibility Actions
+    # Visibility Actions
 
-## Activity Visibility
+    ## Activity Visibility
 
-    def list_activity_types(self, domain, registration_status,
-                            name=None,
-                            maximum_page_size=None,
-                            next_page_token=None, reverse_order=None):
+    def list_activity_types(
+        self,
+        domain,
+        registration_status,
+        name=None,
+        maximum_page_size=None,
+        next_page_token=None,
+        reverse_order=None,
+    ):
         """
         Returns information about all activities registered in the
         specified domain that match the specified name and
@@ -898,14 +989,17 @@ class Layer1(AWSAuthConnection):
 
         :raises: SWFOperationNotPermittedError, UnknownResourceFault
         """
-        return self.json_request('ListActivityTypes', {
-            'domain': domain,
-            'name': name,
-            'registrationStatus': registration_status,
-            'maximumPageSize': maximum_page_size,
-            'nextPageToken': next_page_token,
-            'reverseOrder': reverse_order,
-        })
+        return self.json_request(
+            "ListActivityTypes",
+            {
+                "domain": domain,
+                "name": name,
+                "registrationStatus": registration_status,
+                "maximumPageSize": maximum_page_size,
+                "nextPageToken": next_page_token,
+                "reverseOrder": reverse_order,
+            },
+        )
 
     def describe_activity_type(self, domain, activity_name, activity_version):
         """
@@ -925,17 +1019,25 @@ class Layer1(AWSAuthConnection):
 
         :raises: UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('DescribeActivityType', {
-            'domain': domain,
-            'activityType': {'name': activity_name,
-                             'version': activity_version}
-        })
+        return self.json_request(
+            "DescribeActivityType",
+            {
+                "domain": domain,
+                "activityType": {"name": activity_name, "version": activity_version},
+            },
+        )
 
-## Workflow Visibility
+    ## Workflow Visibility
 
-    def list_workflow_types(self, domain, registration_status,
-                            maximum_page_size=None, name=None,
-                            next_page_token=None, reverse_order=None):
+    def list_workflow_types(
+        self,
+        domain,
+        registration_status,
+        maximum_page_size=None,
+        name=None,
+        next_page_token=None,
+        reverse_order=None,
+    ):
         """
         Returns information about workflow types in the specified
         domain. The results may be split into multiple pages that can
@@ -975,14 +1077,17 @@ class Layer1(AWSAuthConnection):
 
         :raises: SWFOperationNotPermittedError, UnknownResourceFault
         """
-        return self.json_request('ListWorkflowTypes', {
-            'domain': domain,
-            'name': name,
-            'registrationStatus': registration_status,
-            'maximumPageSize': maximum_page_size,
-            'nextPageToken': next_page_token,
-            'reverseOrder': reverse_order,
-        })
+        return self.json_request(
+            "ListWorkflowTypes",
+            {
+                "domain": domain,
+                "name": name,
+                "registrationStatus": registration_status,
+                "maximumPageSize": maximum_page_size,
+                "nextPageToken": next_page_token,
+                "reverseOrder": reverse_order,
+            },
+        )
 
     def describe_workflow_type(self, domain, workflow_name, workflow_version):
         """
@@ -1003,13 +1108,15 @@ class Layer1(AWSAuthConnection):
 
         :raises: UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('DescribeWorkflowType', {
-            'domain': domain,
-            'workflowType': {'name': workflow_name,
-                             'version': workflow_version}
-        })
+        return self.json_request(
+            "DescribeWorkflowType",
+            {
+                "domain": domain,
+                "workflowType": {"name": workflow_name, "version": workflow_version},
+            },
+        )
 
-## Workflow Execution Visibility
+    ## Workflow Execution Visibility
 
     def describe_workflow_execution(self, domain, run_id, workflow_id):
         """
@@ -1030,16 +1137,23 @@ class Layer1(AWSAuthConnection):
 
         :raises: UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('DescribeWorkflowExecution', {
-            'domain': domain,
-            'execution': {'runId': run_id,
-                          'workflowId': workflow_id},
-        })
+        return self.json_request(
+            "DescribeWorkflowExecution",
+            {
+                "domain": domain,
+                "execution": {"runId": run_id, "workflowId": workflow_id},
+            },
+        )
 
-    def get_workflow_execution_history(self, domain, run_id, workflow_id,
-                                       maximum_page_size=None,
-                                       next_page_token=None,
-                                       reverse_order=None):
+    def get_workflow_execution_history(
+        self,
+        domain,
+        run_id,
+        workflow_id,
+        maximum_page_size=None,
+        next_page_token=None,
+        reverse_order=None,
+    ):
         """
         Returns the history of the specified workflow execution. The
         results may be split into multiple pages. To retrieve
@@ -1079,20 +1193,27 @@ class Layer1(AWSAuthConnection):
 
         :raises: UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('GetWorkflowExecutionHistory', {
-            'domain': domain,
-            'execution': {'runId': run_id,
-                          'workflowId': workflow_id},
-            'maximumPageSize': maximum_page_size,
-            'nextPageToken': next_page_token,
-            'reverseOrder': reverse_order,
-        })
+        return self.json_request(
+            "GetWorkflowExecutionHistory",
+            {
+                "domain": domain,
+                "execution": {"runId": run_id, "workflowId": workflow_id},
+                "maximumPageSize": maximum_page_size,
+                "nextPageToken": next_page_token,
+                "reverseOrder": reverse_order,
+            },
+        )
 
-    def count_open_workflow_executions(self, domain, latest_date, oldest_date,
-                                       tag=None,
-                                       workflow_id=None,
-                                       workflow_name=None,
-                                       workflow_version=None):
+    def count_open_workflow_executions(
+        self,
+        domain,
+        latest_date,
+        oldest_date,
+        tag=None,
+        workflow_id=None,
+        workflow_name=None,
+        workflow_version=None,
+    ):
         """
         Returns the number of open workflow executions within the
         given domain that meet the specified filtering criteria.
@@ -1129,26 +1250,33 @@ class Layer1(AWSAuthConnection):
 
         :raises: UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('CountOpenWorkflowExecutions', {
-            'domain': domain,
-            'startTimeFilter': {'oldestDate': oldest_date,
-                                'latestDate': latest_date},
-            'typeFilter': {'name': workflow_name,
-                           'version': workflow_version},
-            'executionFilter': {'workflowId': workflow_id},
-            'tagFilter': {'tag': tag},
-        })
+        return self.json_request(
+            "CountOpenWorkflowExecutions",
+            {
+                "domain": domain,
+                "startTimeFilter": {
+                    "oldestDate": oldest_date,
+                    "latestDate": latest_date,
+                },
+                "typeFilter": {"name": workflow_name, "version": workflow_version},
+                "executionFilter": {"workflowId": workflow_id},
+                "tagFilter": {"tag": tag},
+            },
+        )
 
-    def list_open_workflow_executions(self, domain,
-                                      oldest_date,
-                                      latest_date=None,
-                                      tag=None,
-                                      workflow_id=None,
-                                      workflow_name=None,
-                                      workflow_version=None,
-                                      maximum_page_size=None,
-                                      next_page_token=None,
-                                      reverse_order=None):
+    def list_open_workflow_executions(
+        self,
+        domain,
+        oldest_date,
+        latest_date=None,
+        tag=None,
+        workflow_id=None,
+        workflow_name=None,
+        workflow_version=None,
+        maximum_page_size=None,
+        next_page_token=None,
+        reverse_order=None,
+    ):
         """
         Returns the list of open workflow executions within the
         given domain that meet the specified filtering criteria.
@@ -1205,29 +1333,36 @@ class Layer1(AWSAuthConnection):
         :raises: UnknownResourceFault, SWFOperationNotPermittedError
 
         """
-        return self.json_request('ListOpenWorkflowExecutions', {
-            'domain': domain,
-            'startTimeFilter': {'oldestDate': oldest_date,
-                                'latestDate': latest_date},
-            'tagFilter': {'tag': tag},
-            'typeFilter': {'name': workflow_name,
-                           'version': workflow_version},
-            'executionFilter': {'workflowId': workflow_id},
-            'maximumPageSize': maximum_page_size,
-            'nextPageToken': next_page_token,
-            'reverseOrder': reverse_order,
-        })
+        return self.json_request(
+            "ListOpenWorkflowExecutions",
+            {
+                "domain": domain,
+                "startTimeFilter": {
+                    "oldestDate": oldest_date,
+                    "latestDate": latest_date,
+                },
+                "tagFilter": {"tag": tag},
+                "typeFilter": {"name": workflow_name, "version": workflow_version},
+                "executionFilter": {"workflowId": workflow_id},
+                "maximumPageSize": maximum_page_size,
+                "nextPageToken": next_page_token,
+                "reverseOrder": reverse_order,
+            },
+        )
 
-    def count_closed_workflow_executions(self, domain,
-                                         start_latest_date=None,
-                                         start_oldest_date=None,
-                                         close_latest_date=None,
-                                         close_oldest_date=None,
-                                         close_status=None,
-                                         tag=None,
-                                         workflow_id=None,
-                                         workflow_name=None,
-                                         workflow_version=None):
+    def count_closed_workflow_executions(
+        self,
+        domain,
+        start_latest_date=None,
+        start_oldest_date=None,
+        close_latest_date=None,
+        close_oldest_date=None,
+        close_status=None,
+        tag=None,
+        workflow_id=None,
+        workflow_name=None,
+        workflow_version=None,
+    ):
         """
         Returns the number of closed workflow executions within the
         given domain that meet the specified filtering criteria.
@@ -1290,32 +1425,41 @@ class Layer1(AWSAuthConnection):
 
         :raises: UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('CountClosedWorkflowExecutions', {
-            'domain': domain,
-            'startTimeFilter': {'oldestDate': start_oldest_date,
-                                'latestDate': start_latest_date},
-            'closeTimeFilter': {'oldestDate': close_oldest_date,
-                                'latestDate': close_latest_date},
-            'closeStatusFilter': {'status': close_status},
-            'tagFilter': {'tag': tag},
-            'typeFilter': {'name': workflow_name,
-                           'version': workflow_version},
-            'executionFilter': {'workflowId': workflow_id}
-        })
+        return self.json_request(
+            "CountClosedWorkflowExecutions",
+            {
+                "domain": domain,
+                "startTimeFilter": {
+                    "oldestDate": start_oldest_date,
+                    "latestDate": start_latest_date,
+                },
+                "closeTimeFilter": {
+                    "oldestDate": close_oldest_date,
+                    "latestDate": close_latest_date,
+                },
+                "closeStatusFilter": {"status": close_status},
+                "tagFilter": {"tag": tag},
+                "typeFilter": {"name": workflow_name, "version": workflow_version},
+                "executionFilter": {"workflowId": workflow_id},
+            },
+        )
 
-    def list_closed_workflow_executions(self, domain,
-                                        start_latest_date=None,
-                                        start_oldest_date=None,
-                                        close_latest_date=None,
-                                        close_oldest_date=None,
-                                        close_status=None,
-                                        tag=None,
-                                        workflow_id=None,
-                                        workflow_name=None,
-                                        workflow_version=None,
-                                        maximum_page_size=None,
-                                        next_page_token=None,
-                                        reverse_order=None):
+    def list_closed_workflow_executions(
+        self,
+        domain,
+        start_latest_date=None,
+        start_oldest_date=None,
+        close_latest_date=None,
+        close_oldest_date=None,
+        close_status=None,
+        tag=None,
+        workflow_id=None,
+        workflow_name=None,
+        workflow_version=None,
+        maximum_page_size=None,
+        next_page_token=None,
+        reverse_order=None,
+    ):
         """
         Returns the number of closed workflow executions within the
         given domain that meet the specified filtering criteria.
@@ -1396,27 +1540,37 @@ class Layer1(AWSAuthConnection):
 
         :raises: UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('ListClosedWorkflowExecutions', {
-            'domain': domain,
-            'startTimeFilter': {'oldestDate': start_oldest_date,
-                                'latestDate': start_latest_date},
-            'closeTimeFilter': {'oldestDate': close_oldest_date,
-                                'latestDate': close_latest_date},
-            'executionFilter': {'workflowId': workflow_id},
-            'closeStatusFilter': {'status': close_status},
-            'tagFilter': {'tag': tag},
-            'typeFilter': {'name': workflow_name,
-                           'version': workflow_version},
-            'maximumPageSize': maximum_page_size,
-            'nextPageToken': next_page_token,
-            'reverseOrder': reverse_order,
-        })
+        return self.json_request(
+            "ListClosedWorkflowExecutions",
+            {
+                "domain": domain,
+                "startTimeFilter": {
+                    "oldestDate": start_oldest_date,
+                    "latestDate": start_latest_date,
+                },
+                "closeTimeFilter": {
+                    "oldestDate": close_oldest_date,
+                    "latestDate": close_latest_date,
+                },
+                "executionFilter": {"workflowId": workflow_id},
+                "closeStatusFilter": {"status": close_status},
+                "tagFilter": {"tag": tag},
+                "typeFilter": {"name": workflow_name, "version": workflow_version},
+                "maximumPageSize": maximum_page_size,
+                "nextPageToken": next_page_token,
+                "reverseOrder": reverse_order,
+            },
+        )
 
-## Domain Visibility
+    ## Domain Visibility
 
-    def list_domains(self, registration_status,
-                     maximum_page_size=None,
-                     next_page_token=None, reverse_order=None):
+    def list_domains(
+        self,
+        registration_status,
+        maximum_page_size=None,
+        next_page_token=None,
+        reverse_order=None,
+    ):
         """
         Returns the list of domains registered in the account. The
         results may be split into multiple pages. To retrieve
@@ -1449,12 +1603,15 @@ class Layer1(AWSAuthConnection):
 
         :raises: SWFOperationNotPermittedError
         """
-        return self.json_request('ListDomains', {
-            'registrationStatus': registration_status,
-            'maximumPageSize': maximum_page_size,
-            'nextPageToken': next_page_token,
-            'reverseOrder': reverse_order,
-        })
+        return self.json_request(
+            "ListDomains",
+            {
+                "registrationStatus": registration_status,
+                "maximumPageSize": maximum_page_size,
+                "nextPageToken": next_page_token,
+                "reverseOrder": reverse_order,
+            },
+        )
 
     def describe_domain(self, name):
         """
@@ -1466,9 +1623,9 @@ class Layer1(AWSAuthConnection):
 
         :raises: UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('DescribeDomain', {'name': name})
+        return self.json_request("DescribeDomain", {"name": name})
 
-## Task List Visibility
+    ## Task List Visibility
 
     def count_pending_decision_tasks(self, domain, task_list):
         """
@@ -1486,10 +1643,10 @@ class Layer1(AWSAuthConnection):
 
         :raises: UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('CountPendingDecisionTasks', {
-            'domain': domain,
-            'taskList': {'name': task_list}
-        })
+        return self.json_request(
+            "CountPendingDecisionTasks",
+            {"domain": domain, "taskList": {"name": task_list}},
+        )
 
     def count_pending_activity_tasks(self, domain, task_list):
         """
@@ -1507,7 +1664,7 @@ class Layer1(AWSAuthConnection):
 
         :raises: UnknownResourceFault, SWFOperationNotPermittedError
         """
-        return self.json_request('CountPendingActivityTasks', {
-            'domain': domain,
-            'taskList': {'name': task_list}
-        })
+        return self.json_request(
+            "CountPendingActivityTasks",
+            {"domain": domain, "taskList": {"name": task_list}},
+        )

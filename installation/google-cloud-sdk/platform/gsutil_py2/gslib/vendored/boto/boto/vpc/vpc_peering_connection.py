@@ -25,11 +25,12 @@ Represents a VPC Peering Connection.
 
 from boto.ec2.ec2object import TaggedEC2Object
 
+
 class VpcInfo(object):
     def __init__(self):
         """
         Information on peer Vpc.
-        
+
         :ivar id: The unique ID of peer Vpc.
         :ivar owner_id: Owner of peer Vpc.
         :ivar cidr_block: CIDR Block of peer Vpc.
@@ -40,20 +41,21 @@ class VpcInfo(object):
         self.cidr_block = None
 
     def __repr__(self):
-        return 'VpcInfo:%s' % self.vpc_id
+        return "VpcInfo:%s" % self.vpc_id
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'vpcId':
+        if name == "vpcId":
             self.vpc_id = value
-        elif name == 'ownerId':
+        elif name == "ownerId":
             self.owner_id = value
-        elif name == 'cidrBlock':
+        elif name == "cidrBlock":
             self.cidr_block = value
         else:
             setattr(self, name, value)
+
 
 class VpcPeeringConnectionStatus(object):
     """
@@ -71,28 +73,27 @@ class VpcPeeringConnectionStatus(object):
 
     :ivar message: A message that provides more information about the status of the VPC peering connection, if applicable.
     """
+
     def __init__(self, code=0, message=None):
         self.code = code
         self.message = message
 
     def __repr__(self):
-        return '%s(%d)' % (self.code, self.message)
+        return "%s(%d)" % (self.code, self.message)
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'code':
+        if name == "code":
             self.code = value
-        elif name == 'message':
+        elif name == "message":
             self.message = value
         else:
             setattr(self, name, value)
 
-    
 
 class VpcPeeringConnection(TaggedEC2Object):
-
     def __init__(self, connection=None):
         """
         Represents a VPC peering connection.
@@ -120,26 +121,26 @@ class VpcPeeringConnection(TaggedEC2Object):
         return self._status.message
 
     def __repr__(self):
-        return 'VpcPeeringConnection:%s' % self.id
+        return "VpcPeeringConnection:%s" % self.id
 
     def startElement(self, name, attrs, connection):
         retval = super(VpcPeeringConnection, self).startElement(name, attrs, connection)
         if retval is not None:
             return retval
-        
-        if name == 'requesterVpcInfo':
+
+        if name == "requesterVpcInfo":
             return self.requester_vpc_info
-        elif name == 'accepterVpcInfo':
+        elif name == "accepterVpcInfo":
             return self.accepter_vpc_info
-        elif name == 'status':
+        elif name == "status":
             return self._status
 
         return None
 
     def endElement(self, name, value, connection):
-        if name == 'vpcPeeringConnectionId':
+        if name == "vpcPeeringConnectionId":
             self.id = value
-        elif name == 'expirationTime':
+        elif name == "expirationTime":
             self.expiration_time = value
         else:
             setattr(self, name, value)
@@ -152,12 +153,11 @@ class VpcPeeringConnection(TaggedEC2Object):
 
     def update(self, validate=False, dry_run=False):
         vpc_peering_connection_list = self.connection.get_all_vpc_peering_connections(
-            [self.id],
-            dry_run=dry_run
+            [self.id], dry_run=dry_run
         )
         if len(vpc_peering_connection_list):
             updated_vpc_peering_connection = vpc_peering_connection_list[0]
             self._update(updated_vpc_peering_connection)
         elif validate:
-            raise ValueError('%s is not a valid VpcPeeringConnection ID' % (self.id,))
+            raise ValueError("%s is not a valid VpcPeeringConnection ID" % (self.id,))
         return self.status_code

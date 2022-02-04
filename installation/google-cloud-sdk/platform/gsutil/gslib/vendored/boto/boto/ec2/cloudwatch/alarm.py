@@ -36,7 +36,7 @@ class MetricAlarms(list):
         self.connection = connection
 
     def startElement(self, name, attrs, connection):
-        if name == 'member':
+        if name == "member":
             metric_alarm = MetricAlarm(connection)
             self.append(metric_alarm)
             return metric_alarm
@@ -47,24 +47,36 @@ class MetricAlarms(list):
 
 class MetricAlarm(object):
 
-    OK = 'OK'
-    ALARM = 'ALARM'
-    INSUFFICIENT_DATA = 'INSUFFICIENT_DATA'
+    OK = "OK"
+    ALARM = "ALARM"
+    INSUFFICIENT_DATA = "INSUFFICIENT_DATA"
 
     _cmp_map = {
-        '>=': 'GreaterThanOrEqualToThreshold',
-        '>':  'GreaterThanThreshold',
-        '<':  'LessThanThreshold',
-        '<=': 'LessThanOrEqualToThreshold',
+        ">=": "GreaterThanOrEqualToThreshold",
+        ">": "GreaterThanThreshold",
+        "<": "LessThanThreshold",
+        "<=": "LessThanOrEqualToThreshold",
     }
     _rev_cmp_map = dict((v, k) for (k, v) in six.iteritems(_cmp_map))
 
-    def __init__(self, connection=None, name=None, metric=None,
-                 namespace=None, statistic=None, comparison=None,
-                 threshold=None, period=None, evaluation_periods=None,
-                 unit=None, description='', dimensions=None,
-                 alarm_actions=None, insufficient_data_actions=None,
-                 ok_actions=None):
+    def __init__(
+        self,
+        connection=None,
+        name=None,
+        metric=None,
+        namespace=None,
+        statistic=None,
+        comparison=None,
+        threshold=None,
+        period=None,
+        evaluation_periods=None,
+        unit=None,
+        description="",
+        dimensions=None,
+        alarm_actions=None,
+        insufficient_data_actions=None,
+        ok_actions=None,
+    ):
         """
         Creates a new Alarm.
 
@@ -165,63 +177,66 @@ class MetricAlarm(object):
         self.ok_actions = ok_actions
 
     def __repr__(self):
-        return 'MetricAlarm:%s[%s(%s) %s %s]' % (self.name, self.metric,
-                                                 self.statistic,
-                                                 self.comparison,
-                                                 self.threshold)
+        return "MetricAlarm:%s[%s(%s) %s %s]" % (
+            self.name,
+            self.metric,
+            self.statistic,
+            self.comparison,
+            self.threshold,
+        )
 
     def startElement(self, name, attrs, connection):
-        if name == 'AlarmActions':
+        if name == "AlarmActions":
             self.alarm_actions = ListElement()
             return self.alarm_actions
-        elif name == 'InsufficientDataActions':
+        elif name == "InsufficientDataActions":
             self.insufficient_data_actions = ListElement()
             return self.insufficient_data_actions
-        elif name == 'OKActions':
+        elif name == "OKActions":
             self.ok_actions = ListElement()
             return self.ok_actions
-        elif name == 'Dimensions':
+        elif name == "Dimensions":
             self.dimensions = Dimension()
             return self.dimensions
         else:
             pass
 
     def endElement(self, name, value, connection):
-        if name == 'ActionsEnabled':
+        if name == "ActionsEnabled":
             self.actions_enabled = value
-        elif name == 'AlarmArn':
+        elif name == "AlarmArn":
             self.alarm_arn = value
-        elif name == 'AlarmConfigurationUpdatedTimestamp':
+        elif name == "AlarmConfigurationUpdatedTimestamp":
             self.last_updated = value
-        elif name == 'AlarmDescription':
+        elif name == "AlarmDescription":
             self.description = value
-        elif name == 'AlarmName':
+        elif name == "AlarmName":
             self.name = value
-        elif name == 'ComparisonOperator':
-            setattr(self, 'comparison', self._rev_cmp_map[value])
-        elif name == 'EvaluationPeriods':
+        elif name == "ComparisonOperator":
+            setattr(self, "comparison", self._rev_cmp_map[value])
+        elif name == "EvaluationPeriods":
             self.evaluation_periods = int(value)
-        elif name == 'MetricName':
+        elif name == "MetricName":
             self.metric = value
-        elif name == 'Namespace':
+        elif name == "Namespace":
             self.namespace = value
-        elif name == 'Period':
+        elif name == "Period":
             self.period = int(value)
-        elif name == 'StateReason':
+        elif name == "StateReason":
             self.state_reason = value
-        elif name == 'StateValue':
+        elif name == "StateValue":
             self.state_value = value
-        elif name == 'Statistic':
+        elif name == "Statistic":
             self.statistic = value
-        elif name == 'Threshold':
+        elif name == "Threshold":
             self.threshold = float(value)
-        elif name == 'Unit':
+        elif name == "Unit":
             self.unit = value
         else:
             setattr(self, name, value)
 
     def set_state(self, value, reason, data=None):
-        """ Temporarily sets the state of an alarm.
+        """Temporarily sets the state of an alarm.
 
         :type value: str
         :param value: OK | ALARM | INSUFFICIENT_DATA
@@ -243,12 +258,17 @@ class MetricAlarm(object):
     def disable_actions(self):
         return self.connection.disable_alarm_actions([self.name])
 
-    def describe_history(self, start_date=None, end_date=None, max_records=None,
-                         history_item_type=None, next_token=None):
-        return self.connection.describe_alarm_history(self.name, start_date,
-                                                      end_date, max_records,
-                                                      history_item_type,
-                                                      next_token)
+    def describe_history(
+        self,
+        start_date=None,
+        end_date=None,
+        max_records=None,
+        history_item_type=None,
+        next_token=None,
+    ):
+        return self.connection.describe_alarm_history(
+            self.name, start_date, end_date, max_records, history_item_type, next_token
+        )
 
     def add_alarm_action(self, action_arn=None):
         """
@@ -260,8 +280,8 @@ class MetricAlarm(object):
                            sent if the alarm goes to state ALARM.
         """
         if not action_arn:
-            return # Raise exception instead?
-        self.actions_enabled = 'true'
+            return  # Raise exception instead?
+        self.actions_enabled = "true"
         self.alarm_actions.append(action_arn)
 
     def add_insufficient_data_action(self, action_arn=None):
@@ -275,7 +295,7 @@ class MetricAlarm(object):
         """
         if not action_arn:
             return
-        self.actions_enabled = 'true'
+        self.actions_enabled = "true"
         self.insufficient_data_actions.append(action_arn)
 
     def add_ok_action(self, action_arn=None):
@@ -289,7 +309,7 @@ class MetricAlarm(object):
         """
         if not action_arn:
             return
-        self.actions_enabled = 'true'
+        self.actions_enabled = "true"
         self.ok_actions.append(action_arn)
 
     def delete(self):
@@ -301,23 +321,22 @@ class AlarmHistoryItem(object):
         self.connection = connection
 
     def __repr__(self):
-        return 'AlarmHistory:%s[%s at %s]' % (self.name, self.summary, self.timestamp)
+        return "AlarmHistory:%s[%s at %s]" % (self.name, self.summary, self.timestamp)
 
     def startElement(self, name, attrs, connection):
         pass
 
     def endElement(self, name, value, connection):
-        if name == 'AlarmName':
+        if name == "AlarmName":
             self.name = value
-        elif name == 'HistoryData':
+        elif name == "HistoryData":
             self.data = json.loads(value)
-        elif name == 'HistoryItemType':
+        elif name == "HistoryItemType":
             self.tem_type = value
-        elif name == 'HistorySummary':
+        elif name == "HistorySummary":
             self.summary = value
-        elif name == 'Timestamp':
+        elif name == "Timestamp":
             try:
-                self.timestamp = datetime.strptime(value,
-                                                   '%Y-%m-%dT%H:%M:%S.%fZ')
+                self.timestamp = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ")
             except ValueError:
-                self.timestamp = datetime.strptime(value, '%Y-%m-%dT%H:%M:%SZ')
+                self.timestamp = datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")

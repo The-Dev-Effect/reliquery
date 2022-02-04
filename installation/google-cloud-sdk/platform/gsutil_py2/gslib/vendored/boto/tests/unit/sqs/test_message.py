@@ -29,29 +29,29 @@ from boto.exception import SQSDecodeError
 
 from nose.plugins.attrib import attr
 
-class TestMHMessage(unittest.TestCase):
 
+class TestMHMessage(unittest.TestCase):
     @attr(sqs=True)
     def test_contains(self):
         msg = MHMessage()
-        msg.update({'hello': 'world'})
-        self.assertTrue('hello' in msg)
+        msg.update({"hello": "world"})
+        self.assertTrue("hello" in msg)
 
 
 class DecodeExceptionRaisingMessage(RawMessage):
-
     @attr(sqs=True)
     def decode(self, message):
-        raise SQSDecodeError('Sample decode error', self)
+        raise SQSDecodeError("Sample decode error", self)
+
 
 class TestEncodeMessage(unittest.TestCase):
-
     @attr(sqs=True)
     def test_message_id_available(self):
         import xml.sax
         from boto.resultset import ResultSet
         from boto.handler import XmlHandler
-        sample_value = 'abcdef'
+
+        sample_value = "abcdef"
         body = """<?xml version="1.0"?>
             <ReceiveMessageResponse>
               <ReceiveMessageResult>
@@ -61,11 +61,13 @@ class TestEncodeMessage(unittest.TestCase):
                   <MessageId>%s</MessageId>
                 </Message>
               </ReceiveMessageResult>
-            </ReceiveMessageResponse>""" % tuple([sample_value] * 3)
-        rs = ResultSet([('Message', DecodeExceptionRaisingMessage)])
+            </ReceiveMessageResponse>""" % tuple(
+            [sample_value] * 3
+        )
+        rs = ResultSet([("Message", DecodeExceptionRaisingMessage)])
         h = XmlHandler(rs, None)
         with self.assertRaises(SQSDecodeError) as context:
-            xml.sax.parseString(body.encode('utf-8'), h)
+            xml.sax.parseString(body.encode("utf-8"), h)
         message = context.exception.message
         self.assertEquals(message.id, sample_value)
         self.assertEquals(message.receipt_handle, sample_value)
@@ -73,44 +75,42 @@ class TestEncodeMessage(unittest.TestCase):
     @attr(sqs=True)
     def test_encode_bytes_message(self):
         message = Message()
-        body = b'\x00\x01\x02\x03\x04\x05'
+        body = b"\x00\x01\x02\x03\x04\x05"
         message.set_body(body)
-        self.assertEqual(message.get_body_encoded(), 'AAECAwQF')
+        self.assertEqual(message.get_body_encoded(), "AAECAwQF")
 
     @attr(sqs=True)
     def test_encode_string_message(self):
         message = Message()
-        body = 'hello world'
+        body = "hello world"
         message.set_body(body)
-        self.assertEqual(message.get_body_encoded(), 'aGVsbG8gd29ybGQ=')
+        self.assertEqual(message.get_body_encoded(), "aGVsbG8gd29ybGQ=")
 
 
 class TestBigMessage(unittest.TestCase):
-
     @attr(sqs=True)
     def test_s3url_parsing(self):
         msg = BigMessage()
         # Try just a bucket name
-        bucket, key = msg._get_bucket_key('s3://foo')
-        self.assertEquals(bucket, 'foo')
+        bucket, key = msg._get_bucket_key("s3://foo")
+        self.assertEquals(bucket, "foo")
         self.assertEquals(key, None)
         # Try just a bucket name with trailing "/"
-        bucket, key = msg._get_bucket_key('s3://foo/')
-        self.assertEquals(bucket, 'foo')
+        bucket, key = msg._get_bucket_key("s3://foo/")
+        self.assertEquals(bucket, "foo")
         self.assertEquals(key, None)
         # Try a bucket and a key
-        bucket, key = msg._get_bucket_key('s3://foo/bar')
-        self.assertEquals(bucket, 'foo')
-        self.assertEquals(key, 'bar')
+        bucket, key = msg._get_bucket_key("s3://foo/bar")
+        self.assertEquals(bucket, "foo")
+        self.assertEquals(key, "bar")
         # Try a bucket and a key with "/"
-        bucket, key = msg._get_bucket_key('s3://foo/bar/fie/baz')
-        self.assertEquals(bucket, 'foo')
-        self.assertEquals(key, 'bar/fie/baz')
+        bucket, key = msg._get_bucket_key("s3://foo/bar/fie/baz")
+        self.assertEquals(bucket, "foo")
+        self.assertEquals(key, "bar/fie/baz")
         # Try it with no s3:// prefix
         with self.assertRaises(SQSDecodeError) as context:
-            bucket, key = msg._get_bucket_key('foo/bar')
+            bucket, key = msg._get_bucket_key("foo/bar")
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

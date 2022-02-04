@@ -25,7 +25,6 @@ from apitools.base.py import exceptions
 
 
 class BufferedStreamTest(unittest.TestCase):
-
     def setUp(self):
         self.stream = six.StringIO(string.ascii_letters)
         self.value = self.stream.getvalue()
@@ -33,7 +32,7 @@ class BufferedStreamTest(unittest.TestCase):
 
     def testEmptyBuffer(self):
         bs = buffered_stream.BufferedStream(self.stream, 0, 0)
-        self.assertEqual('', bs.read(0))
+        self.assertEqual("", bs.read(0))
         self.assertEqual(0, bs.stream_end_position)
 
     def testOffsetStream(self):
@@ -48,16 +47,16 @@ class BufferedStreamTest(unittest.TestCase):
         self.assertEqual(False, bs.stream_exhausted)
         self.assertEqual(self.value[0:50], bs.read(50))
         self.assertEqual(False, bs.stream_exhausted)
-        self.assertEqual('', bs.read(0))
-        self.assertEqual('', bs.read(100))
+        self.assertEqual("", bs.read(0))
+        self.assertEqual("", bs.read(100))
 
     def testExhaustedStream(self):
         bs = buffered_stream.BufferedStream(self.stream, 0, 100)
         self.assertEqual(len(self.value), bs.stream_end_position)
         self.assertEqual(True, bs.stream_exhausted)
         self.assertEqual(self.value, bs.read(100))
-        self.assertEqual('', bs.read(0))
-        self.assertEqual('', bs.read(100))
+        self.assertEqual("", bs.read(0))
+        self.assertEqual("", bs.read(100))
 
     def testArbitraryLengthRead(self):
         bs = buffered_stream.BufferedStream(self.stream, 0, 20)

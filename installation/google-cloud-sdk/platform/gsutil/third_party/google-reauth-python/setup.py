@@ -17,47 +17,43 @@ import io
 import setuptools
 
 
-DEPENDENCIES = ['pyu2f']
+DEPENDENCIES = ["pyu2f"]
 
-OAUTH2CLIENT_EXTRA_DEPENDENCIES = [
-    'oauth2client>=2.0.0'
-]
+OAUTH2CLIENT_EXTRA_DEPENDENCIES = ["oauth2client>=2.0.0"]
 
-EXTRAS = {
-    'oauth2client': OAUTH2CLIENT_EXTRA_DEPENDENCIES
-}
+EXTRAS = {"oauth2client": OAUTH2CLIENT_EXTRA_DEPENDENCIES}
 
 
-with io.open('README.rst', 'r') as fh:
+with io.open("README.rst", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name='google-reauth',
-    version='0.1.0',
-    author='Google',
-    author_email='googleapis-publisher@google.com',
-    description='Google Reauth Library',
+    name="google-reauth",
+    version="0.1.0",
+    author="Google",
+    author_email="googleapis-publisher@google.com",
+    description="Google Reauth Library",
     long_description=long_description,
-    url='https://github.com/Google/google-reauth-python',
-    packages=setuptools.find_packages(exclude=('tests*', 'system_tests*')),
+    url="https://github.com/Google/google-reauth-python",
+    packages=setuptools.find_packages(exclude=("tests*", "system_tests*")),
     install_requires=DEPENDENCIES,
     extras_require=EXTRAS,
-    license='Apache 2.0',
-    keywords='google auth oauth client reauth',
+    license="Apache 2.0",
+    keywords="google auth oauth client reauth",
     classifiers=(
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Development Status :: 4 - Beta',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: Apache Software License',
-        'Operating System :: POSIX',
-        'Operating System :: Microsoft :: Windows',
-        'Operating System :: MacOS :: MacOS X',
-        'Operating System :: OS Independent',
-        'Topic :: Internet :: WWW/HTTP',
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: Apache Software License",
+        "Operating System :: POSIX",
+        "Operating System :: Microsoft :: Windows",
+        "Operating System :: MacOS :: MacOS X",
+        "Operating System :: OS Independent",
+        "Topic :: Internet :: WWW/HTTP",
     ),
 )

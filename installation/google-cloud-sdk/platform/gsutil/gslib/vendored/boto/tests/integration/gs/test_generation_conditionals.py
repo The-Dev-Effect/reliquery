@@ -40,7 +40,6 @@ VERSION_MISMATCH = "412"
 
 
 class GSGenerationConditionalsTest(GSTestCase):
-
     def testConditionalSetContentsFromFile(self):
         b = self._MakeBucket()
         k = b.new_key("foo")
@@ -56,7 +55,7 @@ class GSGenerationConditionalsTest(GSTestCase):
         s2 = "test2"
         fp = StringIO.StringIO(s2)
         with self.assertRaisesRegexp(GSResponseError, VERSION_MISMATCH):
-            k.set_contents_from_file(fp, if_generation=int(g1)+1)
+            k.set_contents_from_file(fp, if_generation=int(g1) + 1)
 
         fp = StringIO.StringIO(s2)
         k.set_contents_from_file(fp, if_generation=g1)
@@ -74,7 +73,7 @@ class GSGenerationConditionalsTest(GSTestCase):
 
         s2 = "test2"
         with self.assertRaisesRegexp(GSResponseError, VERSION_MISMATCH):
-            k.set_contents_from_string(s2, if_generation=int(g1)+1)
+            k.set_contents_from_string(s2, if_generation=int(g1) + 1)
 
         k.set_contents_from_string(s2, if_generation=g1)
         self.assertEqual(k.get_contents_as_string(), s2)
@@ -102,7 +101,7 @@ class GSGenerationConditionalsTest(GSTestCase):
             g1 = k.generation
 
             with self.assertRaisesRegexp(GSResponseError, VERSION_MISMATCH):
-                k.set_contents_from_filename(fname2, if_generation=int(g1)+1)
+                k.set_contents_from_filename(fname2, if_generation=int(g1) + 1)
 
             k.set_contents_from_filename(fname2, if_generation=g1)
             self.assertEqual(k.get_contents_as_string(), s2)
@@ -128,19 +127,30 @@ class GSGenerationConditionalsTest(GSTestCase):
         self.assertEqual(g2, g1)
         self.assertGreater(mg2, mg1)
 
-        with self.assertRaisesRegexp(ValueError, ("Received if_metageneration "
-                                                  "argument with no "
-                                                  "if_generation argument")):
-            b.set_acl("bucket-owner-full-control", key_name="foo",
-                      if_metageneration=123)
+        with self.assertRaisesRegexp(
+            ValueError,
+            (
+                "Received if_metageneration "
+                "argument with no "
+                "if_generation argument"
+            ),
+        ):
+            b.set_acl(
+                "bucket-owner-full-control", key_name="foo", if_metageneration=123
+            )
 
         with self.assertRaisesRegexp(GSResponseError, VERSION_MISMATCH):
-            b.set_acl("bucket-owner-full-control", key_name="foo",
-                      if_generation=int(g2) + 1)
+            b.set_acl(
+                "bucket-owner-full-control", key_name="foo", if_generation=int(g2) + 1
+            )
 
         with self.assertRaisesRegexp(GSResponseError, VERSION_MISMATCH):
-            b.set_acl("bucket-owner-full-control", key_name="foo",
-                      if_generation=g2, if_metageneration=int(mg2) + 1)
+            b.set_acl(
+                "bucket-owner-full-control",
+                key_name="foo",
+                if_generation=g2,
+                if_metageneration=int(mg2) + 1,
+            )
 
         b.set_acl("bucket-owner-full-control", key_name="foo", if_generation=g2)
 
@@ -150,8 +160,9 @@ class GSGenerationConditionalsTest(GSTestCase):
         self.assertEqual(g3, g2)
         self.assertGreater(mg3, mg2)
 
-        b.set_acl("public-read", key_name="foo", if_generation=g3,
-                  if_metageneration=mg3)
+        b.set_acl(
+            "public-read", key_name="foo", if_generation=g3, if_metageneration=mg3
+        )
 
     def testConditionalSetContentsFromStream(self):
         b = self._MakeBucket()
@@ -169,7 +180,7 @@ class GSGenerationConditionalsTest(GSTestCase):
         s2 = "test2"
         fp = StringIO.StringIO(s2)
         with self.assertRaisesRegexp(GSResponseError, VERSION_MISMATCH):
-            k.set_contents_from_stream(fp, if_generation=int(g1)+1)
+            k.set_contents_from_stream(fp, if_generation=int(g1) + 1)
 
         fp = StringIO.StringIO(s2)
         k.set_contents_from_stream(fp, if_generation=g1)
@@ -193,22 +204,32 @@ class GSGenerationConditionalsTest(GSTestCase):
         self.assertEqual(g2, g1)
         self.assertGreater(mg2, mg1)
 
-        with self.assertRaisesRegexp(ValueError, ("Received if_metageneration "
-                                                  "argument with no "
-                                                  "if_generation argument")):
-            b.set_canned_acl("bucket-owner-full-control", key_name="foo",
-                      if_metageneration=123)
+        with self.assertRaisesRegexp(
+            ValueError,
+            (
+                "Received if_metageneration "
+                "argument with no "
+                "if_generation argument"
+            ),
+        ):
+            b.set_canned_acl(
+                "bucket-owner-full-control", key_name="foo", if_metageneration=123
+            )
 
         with self.assertRaisesRegexp(GSResponseError, VERSION_MISMATCH):
-            b.set_canned_acl("bucket-owner-full-control", key_name="foo",
-                      if_generation=int(g2) + 1)
+            b.set_canned_acl(
+                "bucket-owner-full-control", key_name="foo", if_generation=int(g2) + 1
+            )
 
         with self.assertRaisesRegexp(GSResponseError, VERSION_MISMATCH):
-            b.set_canned_acl("bucket-owner-full-control", key_name="foo",
-                      if_generation=g2, if_metageneration=int(mg2) + 1)
+            b.set_canned_acl(
+                "bucket-owner-full-control",
+                key_name="foo",
+                if_generation=g2,
+                if_metageneration=int(mg2) + 1,
+            )
 
-        b.set_canned_acl("bucket-owner-full-control", key_name="foo",
-                         if_generation=g2)
+        b.set_canned_acl("bucket-owner-full-control", key_name="foo", if_generation=g2)
 
         k = b.get_key("foo")
         g3 = k.generation
@@ -216,8 +237,9 @@ class GSGenerationConditionalsTest(GSTestCase):
         self.assertEqual(g3, g2)
         self.assertGreater(mg3, mg2)
 
-        b.set_canned_acl("public-read", key_name="foo", if_generation=g3,
-                  if_metageneration=mg3)
+        b.set_canned_acl(
+            "public-read", key_name="foo", if_generation=g3, if_metageneration=mg3
+        )
 
     def testBucketConditionalSetXmlAcl(self):
         b = self._MakeVersionedBucket()
@@ -230,9 +252,10 @@ class GSGenerationConditionalsTest(GSTestCase):
         self.assertEqual(str(mg1), "1")
 
         acl_xml = (
-            '<ACCESSControlList><EntrIes><Entry>'    +
-            '<Scope type="AllUsers"></Scope><Permission>READ</Permission>' +
-            '</Entry></EntrIes></ACCESSControlList>')
+            "<ACCESSControlList><EntrIes><Entry>"
+            + '<Scope type="AllUsers"></Scope><Permission>READ</Permission>'
+            + "</Entry></EntrIes></ACCESSControlList>"
+        )
         acl = ACL()
         h = handler.XmlHandler(acl, b)
         sax.parseString(acl_xml, h)
@@ -247,17 +270,23 @@ class GSGenerationConditionalsTest(GSTestCase):
         self.assertEqual(g2, g1)
         self.assertGreater(mg2, mg1)
 
-        with self.assertRaisesRegexp(ValueError, ("Received if_metageneration "
-                                                  "argument with no "
-                                                  "if_generation argument")):
+        with self.assertRaisesRegexp(
+            ValueError,
+            (
+                "Received if_metageneration "
+                "argument with no "
+                "if_generation argument"
+            ),
+        ):
             b.set_xml_acl(acl, key_name="foo", if_metageneration=123)
 
         with self.assertRaisesRegexp(GSResponseError, VERSION_MISMATCH):
             b.set_xml_acl(acl, key_name="foo", if_generation=int(g2) + 1)
 
         with self.assertRaisesRegexp(GSResponseError, VERSION_MISMATCH):
-            b.set_xml_acl(acl, key_name="foo", if_generation=g2,
-                          if_metageneration=int(mg2) + 1)
+            b.set_xml_acl(
+                acl, key_name="foo", if_generation=g2, if_metageneration=int(mg2) + 1
+            )
 
         b.set_xml_acl(acl, key_name="foo", if_generation=g2)
 
@@ -267,8 +296,7 @@ class GSGenerationConditionalsTest(GSTestCase):
         self.assertEqual(g3, g2)
         self.assertGreater(mg3, mg2)
 
-        b.set_xml_acl(acl, key_name="foo", if_generation=g3,
-                      if_metageneration=mg3)
+        b.set_xml_acl(acl, key_name="foo", if_generation=g3, if_metageneration=mg3)
 
     def testObjectConditionalSetAcl(self):
         b = self._MakeVersionedBucket()
@@ -287,17 +315,25 @@ class GSGenerationConditionalsTest(GSTestCase):
         self.assertEqual(g2, g1)
         self.assertGreater(mg2, mg1)
 
-        with self.assertRaisesRegexp(ValueError, ("Received if_metageneration "
-                                                  "argument with no "
-                                                  "if_generation argument")):
+        with self.assertRaisesRegexp(
+            ValueError,
+            (
+                "Received if_metageneration "
+                "argument with no "
+                "if_generation argument"
+            ),
+        ):
             k.set_acl("bucket-owner-full-control", if_metageneration=123)
 
         with self.assertRaisesRegexp(GSResponseError, VERSION_MISMATCH):
             k.set_acl("bucket-owner-full-control", if_generation=int(g2) + 1)
 
         with self.assertRaisesRegexp(GSResponseError, VERSION_MISMATCH):
-            k.set_acl("bucket-owner-full-control", if_generation=g2,
-                      if_metageneration=int(mg2) + 1)
+            k.set_acl(
+                "bucket-owner-full-control",
+                if_generation=g2,
+                if_metageneration=int(mg2) + 1,
+            )
 
         k.set_acl("bucket-owner-full-control", if_generation=g2)
 
@@ -326,19 +362,25 @@ class GSGenerationConditionalsTest(GSTestCase):
         self.assertEqual(g2, g1)
         self.assertGreater(mg2, mg1)
 
-        with self.assertRaisesRegexp(ValueError, ("Received if_metageneration "
-                                                  "argument with no "
-                                                  "if_generation argument")):
-            k.set_canned_acl("bucket-owner-full-control",
-                             if_metageneration=123)
+        with self.assertRaisesRegexp(
+            ValueError,
+            (
+                "Received if_metageneration "
+                "argument with no "
+                "if_generation argument"
+            ),
+        ):
+            k.set_canned_acl("bucket-owner-full-control", if_metageneration=123)
 
         with self.assertRaisesRegexp(GSResponseError, VERSION_MISMATCH):
-            k.set_canned_acl("bucket-owner-full-control",
-                             if_generation=int(g2) + 1)
+            k.set_canned_acl("bucket-owner-full-control", if_generation=int(g2) + 1)
 
         with self.assertRaisesRegexp(GSResponseError, VERSION_MISMATCH):
-            k.set_canned_acl("bucket-owner-full-control", if_generation=g2,
-                      if_metageneration=int(mg2) + 1)
+            k.set_canned_acl(
+                "bucket-owner-full-control",
+                if_generation=g2,
+                if_metageneration=int(mg2) + 1,
+            )
 
         k.set_canned_acl("bucket-owner-full-control", if_generation=g2)
 
@@ -361,9 +403,10 @@ class GSGenerationConditionalsTest(GSTestCase):
         self.assertEqual(str(mg1), "1")
 
         acl_xml = (
-            '<ACCESSControlList><EntrIes><Entry>'    +
-            '<Scope type="AllUsers"></Scope><Permission>READ</Permission>' +
-            '</Entry></EntrIes></ACCESSControlList>')
+            "<ACCESSControlList><EntrIes><Entry>"
+            + '<Scope type="AllUsers"></Scope><Permission>READ</Permission>'
+            + "</Entry></EntrIes></ACCESSControlList>"
+        )
         acl = ACL()
         h = handler.XmlHandler(acl, b)
         sax.parseString(acl_xml, h)
@@ -378,9 +421,14 @@ class GSGenerationConditionalsTest(GSTestCase):
         self.assertEqual(g2, g1)
         self.assertGreater(mg2, mg1)
 
-        with self.assertRaisesRegexp(ValueError, ("Received if_metageneration "
-                                                  "argument with no "
-                                                  "if_generation argument")):
+        with self.assertRaisesRegexp(
+            ValueError,
+            (
+                "Received if_metageneration "
+                "argument with no "
+                "if_generation argument"
+            ),
+        ):
             k.set_xml_acl(acl, if_metageneration=123)
 
         with self.assertRaisesRegexp(GSResponseError, VERSION_MISMATCH):

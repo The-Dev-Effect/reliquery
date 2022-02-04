@@ -17,10 +17,11 @@
 from __future__ import absolute_import
 
 import six
+
 if six.PY3:
-  import builtins as builtin
+    import builtins as builtin
 else:
-  import __builtin__ as builtin
+    import __builtin__ as builtin
 
 import atexit
 from collections import OrderedDict
@@ -44,56 +45,57 @@ real_importer = builtin.__import__
 
 
 def get_sorted_initialization_times(items=10):
-  """Returns a sorted OrderedDict.
+    """Returns a sorted OrderedDict.
 
-  The keys are module names and the values are the corresponding times taken to
-  import.
+    The keys are module names and the values are the corresponding times taken to
+    import.
 
-  Args:
-    items: The number of items to return in the list.
+    Args:
+      items: The number of items to return in the list.
 
-  Returns:
-    An OrderedDict object, sorting initialization times in increasing order.
-  """
-  return OrderedDict(
-      sorted(INITIALIZATION_TIMES.items(), key=itemgetter(1),
-             reverse=True)[:items])
+    Returns:
+      An OrderedDict object, sorting initialization times in increasing order.
+    """
+    return OrderedDict(
+        sorted(INITIALIZATION_TIMES.items(), key=itemgetter(1), reverse=True)[:items]
+    )
 
 
 def print_sorted_initialization_times():
-  """Prints the most expensive imports in descending order."""
-  print('\n***Most expensive imports***')
-  for item in get_sorted_initialization_times().iteritems():
-    print(item)
+    """Prints the most expensive imports in descending order."""
+    print("\n***Most expensive imports***")
+    for item in get_sorted_initialization_times().iteritems():
+        print(item)
 
 
 def timed_importer(name, *args, **kwargs):
-  """Wrapper for the default Python import function.
+    """Wrapper for the default Python import function.
 
-  Args:
-    name: The name of the module.
-    *args: A list of arguments passed to import.
-    **kwargs: A dictionary of arguments to pass to import.
+    Args:
+      name: The name of the module.
+      *args: A list of arguments passed to import.
+      **kwargs: A dictionary of arguments to pass to import.
 
-  Returns:
-    The value provided by the default import function.
-  """
-  # TODO: Build an import tree to better understand which areas need more
-  # attention.
-  import_start_time = timeit.default_timer()
-  import_value = real_importer(name, *args, **kwargs)
-  import_end_time = timeit.default_timer()
-  INITIALIZATION_TIMES[name] = import_end_time - import_start_time
-  return import_value
+    Returns:
+      The value provided by the default import function.
+    """
+    # TODO: Build an import tree to better understand which areas need more
+    # attention.
+    import_start_time = timeit.default_timer()
+    import_value = real_importer(name, *args, **kwargs)
+    import_end_time = timeit.default_timer()
+    INITIALIZATION_TIMES[name] = import_end_time - import_start_time
+    return import_value
 
 
 builtin.__import__ = timed_importer
 
 
 def initialize():
-  """Initializes gsutil."""
-  sys.path.insert(0, os.path.abspath(os.path.join(sys.path[0], '..')))
-  import gsutil  # pylint: disable=g-import-not-at-top
-  atexit.register(print_sorted_initialization_times)
-  gsutil.MEASURING_TIME_ACTIVE = True
-  gsutil.RunMain()
+    """Initializes gsutil."""
+    sys.path.insert(0, os.path.abspath(os.path.join(sys.path[0], "..")))
+    import gsutil  # pylint: disable=g-import-not-at-top
+
+    atexit.register(print_sorted_initialization_times)
+    gsutil.MEASURING_TIME_ACTIVE = True
+    gsutil.RunMain()

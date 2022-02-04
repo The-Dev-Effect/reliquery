@@ -31,11 +31,11 @@ class TestKMS(unittest.TestCase):
 
     def test_list_keys(self):
         response = self.kms.list_keys()
-        self.assertIn('Keys', response)
+        self.assertIn("Keys", response)
 
     def test_handle_not_found_exception(self):
         with self.assertRaises(NotFoundException):
             # Describe some key that does not exists
             self.kms.describe_key(
-                key_id='nonexistant_key',
+                key_id="nonexistant_key",
             )

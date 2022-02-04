@@ -20,7 +20,7 @@ from django.contrib.sessions.backends.file import SessionStore
 from django.test.runner import DiscoverRunner
 
 django.setup()
-default_app_config = 'tests.contrib.django_util.apps.AppConfig'
+default_app_config = "tests.contrib.django_util.apps.AppConfig"
 
 
 class TestWithDjangoEnvironment(test.TestCase):

@@ -39,79 +39,79 @@ class OctetsTestCase(BaseTestCase):
             assert 12 == octets.oct2int(bytes([12]))[0]
 
         def test_str2octs(self):
-            assert bytes([1, 2, 3]) == octets.str2octs('\x01\x02\x03')
+            assert bytes([1, 2, 3]) == octets.str2octs("\x01\x02\x03")
 
         def test_str2octs_empty(self):
-            assert not octets.str2octs('')
+            assert not octets.str2octs("")
 
         def test_octs2str(self):
-            assert '\x01\x02\x03' == octets.octs2str(bytes([1, 2, 3]))
+            assert "\x01\x02\x03" == octets.octs2str(bytes([1, 2, 3]))
 
         def test_octs2str_empty(self):
             assert not octets.octs2str(bytes([]))
 
         def test_isOctetsType(self):
-            assert octets.isOctetsType('abc') == False
+            assert octets.isOctetsType("abc") == False
             assert octets.isOctetsType(123) == False
             assert octets.isOctetsType(bytes()) == True
 
         def test_isStringType(self):
-            assert octets.isStringType('abc') == True
+            assert octets.isStringType("abc") == True
             assert octets.isStringType(123) == False
             assert octets.isStringType(bytes()) == False
 
         def test_ensureString(self):
-            assert 'abc'.encode() == octets.ensureString('abc'.encode())
+            assert "abc".encode() == octets.ensureString("abc".encode())
             assert bytes([1, 2, 3]) == octets.ensureString([1, 2, 3])
 
     else:
 
         def test_ints2octs(self):
-            assert '\x01\x02\x03' == octets.ints2octs([1, 2, 3])
+            assert "\x01\x02\x03" == octets.ints2octs([1, 2, 3])
 
         def test_ints2octs_empty(self):
             assert not octets.ints2octs([])
 
         def test_int2oct(self):
-            assert '\x0c' == octets.int2oct(12)
+            assert "\x0c" == octets.int2oct(12)
 
         def test_octs2ints(self):
-            assert [1, 2, 3] == octets.octs2ints('\x01\x02\x03')
+            assert [1, 2, 3] == octets.octs2ints("\x01\x02\x03")
 
         def test_octs2ints_empty(self):
-            assert not octets.octs2ints('')
+            assert not octets.octs2ints("")
 
         def test_oct2int(self):
-            assert 12 == octets.oct2int('\x0c')
+            assert 12 == octets.oct2int("\x0c")
 
         def test_str2octs(self):
-            assert '\x01\x02\x03' == octets.str2octs('\x01\x02\x03')
+            assert "\x01\x02\x03" == octets.str2octs("\x01\x02\x03")
 
         def test_str2octs_empty(self):
-            assert not octets.str2octs('')
+            assert not octets.str2octs("")
 
         def test_octs2str(self):
-            assert '\x01\x02\x03' == octets.octs2str('\x01\x02\x03')
+            assert "\x01\x02\x03" == octets.octs2str("\x01\x02\x03")
 
         def test_octs2str_empty(self):
-            assert not octets.octs2str('')
+            assert not octets.octs2str("")
 
         def test_isOctetsType(self):
-            assert octets.isOctetsType('abc') == True
+            assert octets.isOctetsType("abc") == True
             assert octets.isOctetsType(123) == False
-            assert octets.isOctetsType(unicode('abc')) == False
+            assert octets.isOctetsType(unicode("abc")) == False
 
         def test_isStringType(self):
-            assert octets.isStringType('abc') == True
+            assert octets.isStringType("abc") == True
             assert octets.isStringType(123) == False
-            assert octets.isStringType(unicode('abc')) == True
+            assert octets.isStringType(unicode("abc")) == True
 
         def test_ensureString(self):
-            assert 'abc' == octets.ensureString('abc')
-            assert '123' == octets.ensureString(123)
+            assert "abc" == octets.ensureString("abc")
+            assert "123" == octets.ensureString(123)
 
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.TextTestRunner(verbosity=2).run(suite)

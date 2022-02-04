@@ -32,10 +32,13 @@ def regions():
     :return: A list of :class:`boto.regioninfo.RegionInfo`
     """
     from boto.support.layer1 import SupportConnection
-    return get_regions('support', connection_cls=SupportConnection)
+
+    return get_regions("support", connection_cls=SupportConnection)
 
 
 def connect_to_region(region_name, **kw_params):
     from boto.support.layer1 import SupportConnection
-    return connect('support', region_name,
-                   connection_cls=SupportConnection, **kw_params)
+
+    return connect(
+        "support", region_name, connection_cls=SupportConnection, **kw_params
+    )

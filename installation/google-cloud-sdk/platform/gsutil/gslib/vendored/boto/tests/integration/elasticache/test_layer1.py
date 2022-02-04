@@ -34,20 +34,23 @@ class TestElastiCacheConnection(unittest.TestCase):
         timeout = time.time() + 600
         while time.time() < timeout:
             response = self.elasticache.describe_cache_clusters(cluster_id)
-            status = (response['DescribeCacheClustersResponse']
-                              ['DescribeCacheClustersResult']
-                              ['CacheClusters'][0]['CacheClusterStatus'])
-            if status == 'available':
+            status = response["DescribeCacheClustersResponse"][
+                "DescribeCacheClustersResult"
+            ]["CacheClusters"][0]["CacheClusterStatus"]
+            if status == "available":
                 break
             time.sleep(5)
         else:
-            self.fail('Timeout waiting for cache cluster %r'
-                      'to become available.' % cluster_id)
+            self.fail(
+                "Timeout waiting for cache cluster %r"
+                "to become available." % cluster_id
+            )
 
     def test_create_delete_cache_cluster(self):
-        cluster_id = 'cluster-id2'
+        cluster_id = "cluster-id2"
         self.elasticache.create_cache_cluster(
-            cluster_id, 1, 'cache.t1.micro', 'memcached')
+            cluster_id, 1, "cache.t1.micro", "memcached"
+        )
         self.wait_until_cluster_available(cluster_id)
 
         self.elasticache.delete_cache_cluster(cluster_id)
@@ -59,9 +62,10 @@ class TestElastiCacheConnection(unittest.TestCase):
                 break
             time.sleep(5)
         else:
-            self.fail('Timeout waiting for cache cluster %s'
-                      'to be deleted.' % cluster_id)
+            self.fail(
+                "Timeout waiting for cache cluster %s" "to be deleted." % cluster_id
+            )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

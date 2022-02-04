@@ -42,6 +42,7 @@ class CloudSearchConnection(AWSQueryConnection):
     cloudsearch.us-east-1.amazonaws.com. For a current list of
     supported regions and endpoints, see `Regions and Endpoints`_.
     """
+
     APIVersion = "2013-01-01"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "cloudsearch.us-east-1.amazonaws.com"
@@ -57,22 +58,23 @@ class CloudSearchConnection(AWSQueryConnection):
     }
 
     def __init__(self, **kwargs):
-        region = kwargs.pop('region', None)
+        region = kwargs.pop("region", None)
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
 
-        if 'host' not in kwargs or kwargs['host'] is None:
-            kwargs['host'] = region.endpoint
+        if "host" not in kwargs or kwargs["host"] is None:
+            kwargs["host"] = region.endpoint
 
-        sign_request = kwargs.pop('sign_request', False)
+        sign_request = kwargs.pop("sign_request", False)
         self.sign_request = sign_request
 
         super(CloudSearchConnection, self).__init__(**kwargs)
         self.region = region
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
     def build_suggesters(self, domain_name):
         """
@@ -86,11 +88,12 @@ class CloudSearchConnection(AWSQueryConnection):
             - (hyphen).
 
         """
-        params = {'DomainName': domain_name, }
+        params = {
+            "DomainName": domain_name,
+        }
         return self._make_request(
-            action='BuildSuggesters',
-            verb='POST',
-            path='/', params=params)
+            action="BuildSuggesters", verb="POST", path="/", params=params
+        )
 
     def create_domain(self, domain_name):
         """
@@ -105,11 +108,12 @@ class CloudSearchConnection(AWSQueryConnection):
             and no more than 28 characters long.
 
         """
-        params = {'DomainName': domain_name, }
+        params = {
+            "DomainName": domain_name,
+        }
         return self._make_request(
-            action='CreateDomain',
-            verb='POST',
-            path='/', params=params)
+            action="CreateDomain", verb="POST", path="/", params=params
+        )
 
     def define_analysis_scheme(self, domain_name, analysis_scheme):
         """
@@ -133,13 +137,13 @@ class CloudSearchConnection(AWSQueryConnection):
             `StemmingDictionary`, and `AlgorithmicStemming`.
 
         """
-        params = {'DomainName': domain_name, }
-        self.build_complex_param(params, 'AnalysisScheme',
-                                 analysis_scheme)
+        params = {
+            "DomainName": domain_name,
+        }
+        self.build_complex_param(params, "AnalysisScheme", analysis_scheme)
         return self._make_request(
-            action='DefineAnalysisScheme',
-            verb='POST',
-            path='/', params=params)
+            action="DefineAnalysisScheme", verb="POST", path="/", params=params
+        )
 
     def define_expression(self, domain_name, expression):
         """
@@ -162,13 +166,13 @@ class CloudSearchConnection(AWSQueryConnection):
             expressions, or return computed information in the search results.
 
         """
-        params = {'DomainName': domain_name, }
-        self.build_complex_param(params, 'Expression',
-                                 expression)
+        params = {
+            "DomainName": domain_name,
+        }
+        self.build_complex_param(params, "Expression", expression)
         return self._make_request(
-            action='DefineExpression',
-            verb='POST',
-            path='/', params=params)
+            action="DefineExpression", verb="POST", path="/", params=params
+        )
 
     def define_index_field(self, domain_name, index_field):
         """
@@ -195,13 +199,13 @@ class CloudSearchConnection(AWSQueryConnection):
             configure.
 
         """
-        params = {'DomainName': domain_name, }
-        self.build_complex_param(params, 'IndexField',
-                                 index_field)
+        params = {
+            "DomainName": domain_name,
+        }
+        self.build_complex_param(params, "IndexField", index_field)
         return self._make_request(
-            action='DefineIndexField',
-            verb='POST',
-            path='/', params=params)
+            action="DefineIndexField", verb="POST", path="/", params=params
+        )
 
     def define_suggester(self, domain_name, suggester):
         """
@@ -227,13 +231,13 @@ class CloudSearchConnection(AWSQueryConnection):
             configured for a suggester: `FuzzyMatching`, `SortExpression`.
 
         """
-        params = {'DomainName': domain_name, }
-        self.build_complex_param(params, 'Suggester',
-                                 suggester)
+        params = {
+            "DomainName": domain_name,
+        }
+        self.build_complex_param(params, "Suggester", suggester)
         return self._make_request(
-            action='DefineSuggester',
-            verb='POST',
-            path='/', params=params)
+            action="DefineSuggester", verb="POST", path="/", params=params
+        )
 
     def delete_analysis_scheme(self, domain_name, analysis_scheme_name):
         """
@@ -254,13 +258,12 @@ class CloudSearchConnection(AWSQueryConnection):
 
         """
         params = {
-            'DomainName': domain_name,
-            'AnalysisSchemeName': analysis_scheme_name,
+            "DomainName": domain_name,
+            "AnalysisSchemeName": analysis_scheme_name,
         }
         return self._make_request(
-            action='DeleteAnalysisScheme',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteAnalysisScheme", verb="POST", path="/", params=params
+        )
 
     def delete_domain(self, domain_name):
         """
@@ -274,11 +277,12 @@ class CloudSearchConnection(AWSQueryConnection):
             delete.
 
         """
-        params = {'DomainName': domain_name, }
+        params = {
+            "DomainName": domain_name,
+        }
         return self._make_request(
-            action='DeleteDomain',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteDomain", verb="POST", path="/", params=params
+        )
 
     def delete_expression(self, domain_name, expression_name):
         """
@@ -298,13 +302,12 @@ class CloudSearchConnection(AWSQueryConnection):
 
         """
         params = {
-            'DomainName': domain_name,
-            'ExpressionName': expression_name,
+            "DomainName": domain_name,
+            "ExpressionName": expression_name,
         }
         return self._make_request(
-            action='DeleteExpression',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteExpression", verb="POST", path="/", params=params
+        )
 
     def delete_index_field(self, domain_name, index_field_name):
         """
@@ -325,13 +328,12 @@ class CloudSearchConnection(AWSQueryConnection):
 
         """
         params = {
-            'DomainName': domain_name,
-            'IndexFieldName': index_field_name,
+            "DomainName": domain_name,
+            "IndexFieldName": index_field_name,
         }
         return self._make_request(
-            action='DeleteIndexField',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteIndexField", verb="POST", path="/", params=params
+        )
 
     def delete_suggester(self, domain_name, suggester_name):
         """
@@ -351,16 +353,16 @@ class CloudSearchConnection(AWSQueryConnection):
 
         """
         params = {
-            'DomainName': domain_name,
-            'SuggesterName': suggester_name,
+            "DomainName": domain_name,
+            "SuggesterName": suggester_name,
         }
         return self._make_request(
-            action='DeleteSuggester',
-            verb='POST',
-            path='/', params=params)
+            action="DeleteSuggester", verb="POST", path="/", params=params
+        )
 
-    def describe_analysis_schemes(self, domain_name,
-                                  analysis_scheme_names=None, deployed=None):
+    def describe_analysis_schemes(
+        self, domain_name, analysis_scheme_names=None, deployed=None
+    ):
         """
         Gets the analysis schemes configured for a domain. An analysis
         scheme defines language-specific text processing options for a
@@ -384,18 +386,18 @@ class CloudSearchConnection(AWSQueryConnection):
             `False`.
 
         """
-        params = {'DomainName': domain_name, }
+        params = {
+            "DomainName": domain_name,
+        }
         if analysis_scheme_names is not None:
-            self.build_list_params(params,
-                                   analysis_scheme_names,
-                                   'AnalysisSchemeNames.member')
+            self.build_list_params(
+                params, analysis_scheme_names, "AnalysisSchemeNames.member"
+            )
         if deployed is not None:
-            params['Deployed'] = str(
-                deployed).lower()
+            params["Deployed"] = str(deployed).lower()
         return self._make_request(
-            action='DescribeAnalysisSchemes',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeAnalysisSchemes", verb="POST", path="/", params=params
+        )
 
     def describe_availability_options(self, domain_name, deployed=None):
         """
@@ -415,14 +417,14 @@ class CloudSearchConnection(AWSQueryConnection):
             `False`.
 
         """
-        params = {'DomainName': domain_name, }
+        params = {
+            "DomainName": domain_name,
+        }
         if deployed is not None:
-            params['Deployed'] = str(
-                deployed).lower()
+            params["Deployed"] = str(deployed).lower()
         return self._make_request(
-            action='DescribeAvailabilityOptions',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeAvailabilityOptions", verb="POST", path="/", params=params
+        )
 
     def describe_domains(self, domain_names=None):
         """
@@ -442,16 +444,12 @@ class CloudSearchConnection(AWSQueryConnection):
         """
         params = {}
         if domain_names is not None:
-            self.build_list_params(params,
-                                   domain_names,
-                                   'DomainNames.member')
+            self.build_list_params(params, domain_names, "DomainNames.member")
         return self._make_request(
-            action='DescribeDomains',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeDomains", verb="POST", path="/", params=params
+        )
 
-    def describe_expressions(self, domain_name, expression_names=None,
-                             deployed=None):
+    def describe_expressions(self, domain_name, expression_names=None, deployed=None):
         """
         Gets the expressions configured for the search domain. Can be
         limited to specific expressions by name. By default, shows all
@@ -475,21 +473,18 @@ class CloudSearchConnection(AWSQueryConnection):
             `False`.
 
         """
-        params = {'DomainName': domain_name, }
+        params = {
+            "DomainName": domain_name,
+        }
         if expression_names is not None:
-            self.build_list_params(params,
-                                   expression_names,
-                                   'ExpressionNames.member')
+            self.build_list_params(params, expression_names, "ExpressionNames.member")
         if deployed is not None:
-            params['Deployed'] = str(
-                deployed).lower()
+            params["Deployed"] = str(deployed).lower()
         return self._make_request(
-            action='DescribeExpressions',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeExpressions", verb="POST", path="/", params=params
+        )
 
-    def describe_index_fields(self, domain_name, field_names=None,
-                              deployed=None):
+    def describe_index_fields(self, domain_name, field_names=None, deployed=None):
         """
         Gets information about the index fields configured for the
         search domain. Can be limited to specific fields by name. By
@@ -513,18 +508,16 @@ class CloudSearchConnection(AWSQueryConnection):
             `False`.
 
         """
-        params = {'DomainName': domain_name, }
+        params = {
+            "DomainName": domain_name,
+        }
         if field_names is not None:
-            self.build_list_params(params,
-                                   field_names,
-                                   'FieldNames.member')
+            self.build_list_params(params, field_names, "FieldNames.member")
         if deployed is not None:
-            params['Deployed'] = str(
-                deployed).lower()
+            params["Deployed"] = str(deployed).lower()
         return self._make_request(
-            action='DescribeIndexFields',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeIndexFields", verb="POST", path="/", params=params
+        )
 
     def describe_scaling_parameters(self, domain_name):
         """
@@ -542,11 +535,12 @@ class CloudSearchConnection(AWSQueryConnection):
             - (hyphen).
 
         """
-        params = {'DomainName': domain_name, }
+        params = {
+            "DomainName": domain_name,
+        }
         return self._make_request(
-            action='DescribeScalingParameters',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeScalingParameters", verb="POST", path="/", params=params
+        )
 
     def describe_service_access_policies(self, domain_name, deployed=None):
         """
@@ -567,17 +561,16 @@ class CloudSearchConnection(AWSQueryConnection):
             `False`.
 
         """
-        params = {'DomainName': domain_name, }
+        params = {
+            "DomainName": domain_name,
+        }
         if deployed is not None:
-            params['Deployed'] = str(
-                deployed).lower()
+            params["Deployed"] = str(deployed).lower()
         return self._make_request(
-            action='DescribeServiceAccessPolicies',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeServiceAccessPolicies", verb="POST", path="/", params=params
+        )
 
-    def describe_suggesters(self, domain_name, suggester_names=None,
-                            deployed=None):
+    def describe_suggesters(self, domain_name, suggester_names=None, deployed=None):
         """
         Gets the suggesters configured for a domain. A suggester
         enables you to display possible matches before users finish
@@ -600,18 +593,16 @@ class CloudSearchConnection(AWSQueryConnection):
             `False`.
 
         """
-        params = {'DomainName': domain_name, }
+        params = {
+            "DomainName": domain_name,
+        }
         if suggester_names is not None:
-            self.build_list_params(params,
-                                   suggester_names,
-                                   'SuggesterNames.member')
+            self.build_list_params(params, suggester_names, "SuggesterNames.member")
         if deployed is not None:
-            params['Deployed'] = str(
-                deployed).lower()
+            params["Deployed"] = str(deployed).lower()
         return self._make_request(
-            action='DescribeSuggesters',
-            verb='POST',
-            path='/', params=params)
+            action="DescribeSuggesters", verb="POST", path="/", params=params
+        )
 
     def index_documents(self, domain_name):
         """
@@ -628,11 +619,12 @@ class CloudSearchConnection(AWSQueryConnection):
             - (hyphen).
 
         """
-        params = {'DomainName': domain_name, }
+        params = {
+            "DomainName": domain_name,
+        }
         return self._make_request(
-            action='IndexDocuments',
-            verb='POST',
-            path='/', params=params)
+            action="IndexDocuments", verb="POST", path="/", params=params
+        )
 
     def list_domain_names(self):
         """
@@ -640,9 +632,8 @@ class CloudSearchConnection(AWSQueryConnection):
         """
         params = {}
         return self._make_request(
-            action='ListDomainNames',
-            verb='POST',
-            path='/', params=params)
+            action="ListDomainNames", verb="POST", path="/", params=params
+        )
 
     def update_availability_options(self, domain_name, multi_az):
         """
@@ -669,11 +660,13 @@ class CloudSearchConnection(AWSQueryConnection):
             to `False`.
 
         """
-        params = {'DomainName': domain_name, 'MultiAZ': multi_az, }
+        params = {
+            "DomainName": domain_name,
+            "MultiAZ": multi_az,
+        }
         return self._make_request(
-            action='UpdateAvailabilityOptions',
-            verb='POST',
-            path='/', params=params)
+            action="UpdateAvailabilityOptions", verb="POST", path="/", params=params
+        )
 
     def update_scaling_parameters(self, domain_name, scaling_parameters):
         """
@@ -699,13 +692,13 @@ class CloudSearchConnection(AWSQueryConnection):
             of replicas of each index partition.
 
         """
-        params = {'DomainName': domain_name, }
-        self.build_complex_param(params, 'ScalingParameters',
-                                 scaling_parameters)
+        params = {
+            "DomainName": domain_name,
+        }
+        self.build_complex_param(params, "ScalingParameters", scaling_parameters)
         return self._make_request(
-            action='UpdateScalingParameters',
-            verb='POST',
-            path='/', params=params)
+            action="UpdateScalingParameters", verb="POST", path="/", params=params
+        )
 
     def update_service_access_policies(self, domain_name, access_policies):
         """
@@ -726,13 +719,12 @@ class CloudSearchConnection(AWSQueryConnection):
 
         """
         params = {
-            'DomainName': domain_name,
-            'AccessPolicies': access_policies,
+            "DomainName": domain_name,
+            "AccessPolicies": access_policies,
         }
         return self._make_request(
-            action='UpdateServiceAccessPolicies',
-            verb='POST',
-            path='/', params=params)
+            action="UpdateServiceAccessPolicies", verb="POST", path="/", params=params
+        )
 
     def build_complex_param(self, params, label, value):
         """Serialize a structure.
@@ -761,23 +753,23 @@ class CloudSearchConnection(AWSQueryConnection):
         for k, v in value.items():
             if isinstance(v, dict):
                 for k2, v2 in v.items():
-                    self.build_complex_param(params, label + '.' + k, v)
+                    self.build_complex_param(params, label + "." + k, v)
             elif isinstance(v, bool):
-                params['%s.%s' % (label, k)] = v and 'true' or 'false'
+                params["%s.%s" % (label, k)] = v and "true" or "false"
             else:
-                params['%s.%s' % (label, k)] = v
+                params["%s.%s" % (label, k)] = v
 
     def _make_request(self, action, verb, path, params):
-        params['ContentType'] = 'JSON'
-        response = self.make_request(action=action, verb='POST',
-                                     path='/', params=params)
-        body = response.read().decode('utf-8')
+        params["ContentType"] = "JSON"
+        response = self.make_request(
+            action=action, verb="POST", path="/", params=params
+        )
+        body = response.read().decode("utf-8")
         boto.log.debug(body)
         if response.status == 200:
             return json.loads(body)
         else:
             json_body = json.loads(body)
-            fault_name = json_body.get('Error', {}).get('Code', None)
+            fault_name = json_body.get("Error", {}).get("Code", None)
             exception_class = self._faults.get(fault_name, self.ResponseError)
-            raise exception_class(response.status, response.reason,
-                                  body=json_body)
+            raise exception_class(response.status, response.reason, body=json_body)

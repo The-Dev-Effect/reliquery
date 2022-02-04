@@ -21,6 +21,7 @@ class Item(object):
     Empty items, or items that have no data, are considered falsey.
 
     """
+
     def __init__(self, table, data=None, loaded=False):
         """
         Constructs an (unsaved) ``Item`` instance.
@@ -123,9 +124,9 @@ class Item(object):
         ``deletes``, containing the updated data.
         """
         alterations = {
-            'adds': {},
-            'changes': {},
-            'deletes': [],
+            "adds": {},
+            "changes": {},
+            "deletes": [],
         }
 
         orig_keys = set(self._orig_data.keys())
@@ -135,18 +136,18 @@ class Item(object):
         for key in orig_keys.intersection(data_keys):
             if self._data[key] != self._orig_data[key]:
                 if self._is_storable(self._data[key]):
-                    alterations['changes'][key] = self._data[key]
+                    alterations["changes"][key] = self._data[key]
                 else:
-                    alterations['deletes'].append(key)
+                    alterations["deletes"].append(key)
 
         # Run through additions.
         for key in data_keys.difference(orig_keys):
             if self._is_storable(self._data[key]):
-                alterations['adds'][key] = self._data[key]
+                alterations["adds"][key] = self._data[key]
 
         # Run through deletions.
         for key in orig_keys.difference(data_keys):
-            alterations['deletes'].append(key)
+            alterations["deletes"].append(key)
 
         return alterations
 
@@ -172,7 +173,7 @@ class Item(object):
 
         needs_save = False
 
-        for kind in ['adds', 'changes', 'deletes']:
+        for kind in ["adds", "changes", "deletes"]:
             if len(data[kind]):
                 needs_save = True
                 break
@@ -217,7 +218,7 @@ class Item(object):
         """
         self._data = {}
 
-        for field_name, field_value in data.get('Item', {}).items():
+        for field_name, field_value in data.get("Item", {}).items():
             self[field_name] = self._dynamizer.decode(field_value)
 
         self._loaded = True
@@ -266,7 +267,7 @@ class Item(object):
 
         for key in fields:
             expects[key] = {
-                'Exists': True,
+                "Exists": True,
             }
             value = None
 
@@ -289,16 +290,16 @@ class Item(object):
                 if key in self._data:
                     if not key in self._orig_data:
                         # New field.
-                        expects[key]['Exists'] = False
+                        expects[key]["Exists"] = False
                     else:
                         # Existing field modified.
                         value = orig_value
                 else:
-                   # Existing field deleted.
+                    # Existing field deleted.
                     value = orig_value
 
             if value is not None:
-                expects[key]['Value'] = self._dynamizer.encode(value)
+                expects[key]["Value"] = self._dynamizer.encode(value)
 
         return expects
 
@@ -344,23 +345,23 @@ class Item(object):
         fields = set()
         alterations = self._determine_alterations()
 
-        for key, value in alterations['adds'].items():
+        for key, value in alterations["adds"].items():
             final_data[key] = {
-                'Action': 'PUT',
-                'Value': self._dynamizer.encode(self._data[key])
+                "Action": "PUT",
+                "Value": self._dynamizer.encode(self._data[key]),
             }
             fields.add(key)
 
-        for key, value in alterations['changes'].items():
+        for key, value in alterations["changes"].items():
             final_data[key] = {
-                'Action': 'PUT',
-                'Value': self._dynamizer.encode(self._data[key])
+                "Action": "PUT",
+                "Value": self._dynamizer.encode(self._data[key]),
             }
             fields.add(key)
 
-        for key in alterations['deletes']:
+        for key in alterations["deletes"]:
             final_data[key] = {
-                'Action': 'DELETE',
+                "Action": "DELETE",
             }
             fields.add(key)
 

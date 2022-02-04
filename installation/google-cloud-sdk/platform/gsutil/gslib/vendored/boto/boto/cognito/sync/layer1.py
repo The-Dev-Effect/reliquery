@@ -45,6 +45,7 @@ class CognitoSyncConnection(AWSAuthConnection):
     to use the Cognito Sync service, you need to make API calls using
     credentials retrieved with `Amazon Cognito Identity service`_.
     """
+
     APIVersion = "2014-06-30"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "cognito-sync.us-east-1.amazonaws.com"
@@ -61,20 +62,20 @@ class CognitoSyncConnection(AWSAuthConnection):
         "NotAuthorizedException": exceptions.NotAuthorizedException,
     }
 
-
     def __init__(self, **kwargs):
-        region = kwargs.get('region')
+        region = kwargs.get("region")
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
         else:
-            del kwargs['region']
-        kwargs['host'] = region.endpoint
+            del kwargs["region"]
+        kwargs["host"] = region.endpoint
         super(CognitoSyncConnection, self).__init__(**kwargs)
         self.region = region
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
     def delete_dataset(self, identity_pool_id, identity_id, dataset_name):
         """
@@ -101,9 +102,10 @@ class CognitoSyncConnection(AWSAuthConnection):
 
         """
 
-        uri = '/identitypools/{0}/identities/{1}/datasets/{2}'.format(
-            identity_pool_id, identity_id, dataset_name)
-        return self.make_request('DELETE', uri, expected_status=200)
+        uri = "/identitypools/{0}/identities/{1}/datasets/{2}".format(
+            identity_pool_id, identity_id, dataset_name
+        )
+        return self.make_request("DELETE", uri, expected_status=200)
 
     def describe_dataset(self, identity_pool_id, identity_id, dataset_name):
         """
@@ -131,9 +133,10 @@ class CognitoSyncConnection(AWSAuthConnection):
 
         """
 
-        uri = '/identitypools/{0}/identities/{1}/datasets/{2}'.format(
-            identity_pool_id, identity_id, dataset_name)
-        return self.make_request('GET', uri, expected_status=200)
+        uri = "/identitypools/{0}/identities/{1}/datasets/{2}".format(
+            identity_pool_id, identity_id, dataset_name
+        )
+        return self.make_request("GET", uri, expected_status=200)
 
     def describe_identity_pool_usage(self, identity_pool_id):
         """
@@ -147,8 +150,8 @@ class CognitoSyncConnection(AWSAuthConnection):
 
         """
 
-        uri = '/identitypools/{0}'.format(identity_pool_id)
-        return self.make_request('GET', uri, expected_status=200)
+        uri = "/identitypools/{0}".format(identity_pool_id)
+        return self.make_request("GET", uri, expected_status=200)
 
     def describe_identity_usage(self, identity_pool_id, identity_id):
         """
@@ -167,9 +170,8 @@ class CognitoSyncConnection(AWSAuthConnection):
 
         """
 
-        uri = '/identitypools/{0}/identities/{1}'.format(
-            identity_pool_id, identity_id)
-        return self.make_request('GET', uri, expected_status=200)
+        uri = "/identitypools/{0}/identities/{1}".format(identity_pool_id, identity_id)
+        return self.make_request("GET", uri, expected_status=200)
 
     def get_identity_pool_configuration(self, identity_pool_id):
         """
@@ -183,11 +185,12 @@ class CognitoSyncConnection(AWSAuthConnection):
 
         """
 
-        uri = '/identitypools/{0}/configuration'.format(identity_pool_id)
-        return self.make_request('GET', uri, expected_status=200)
+        uri = "/identitypools/{0}/configuration".format(identity_pool_id)
+        return self.make_request("GET", uri, expected_status=200)
 
-    def list_datasets(self, identity_pool_id, identity_id, next_token=None,
-                      max_results=None):
+    def list_datasets(
+        self, identity_pool_id, identity_id, next_token=None, max_results=None
+    ):
         """
         Lists datasets for an identity. The credentials used to make
         this API call need to have access to the identity data. With
@@ -214,18 +217,24 @@ class CognitoSyncConnection(AWSAuthConnection):
 
         """
 
-        uri = '/identitypools/{0}/identities/{1}/datasets'.format(
-            identity_pool_id, identity_id)
+        uri = "/identitypools/{0}/identities/{1}/datasets".format(
+            identity_pool_id, identity_id
+        )
         params = {}
         headers = {}
         query_params = {}
         if next_token is not None:
-            query_params['nextToken'] = next_token
+            query_params["nextToken"] = next_token
         if max_results is not None:
-            query_params['maxResults'] = max_results
-        return self.make_request('GET', uri, expected_status=200,
-                                 data=json.dumps(params), headers=headers,
-                                 params=query_params)
+            query_params["maxResults"] = max_results
+        return self.make_request(
+            "GET",
+            uri,
+            expected_status=200,
+            data=json.dumps(params),
+            headers=headers,
+            params=query_params,
+        )
 
     def list_identity_pool_usage(self, next_token=None, max_results=None):
         """
@@ -240,21 +249,33 @@ class CognitoSyncConnection(AWSAuthConnection):
 
         """
 
-        uri = '/identitypools'
+        uri = "/identitypools"
         params = {}
         headers = {}
         query_params = {}
         if next_token is not None:
-            query_params['nextToken'] = next_token
+            query_params["nextToken"] = next_token
         if max_results is not None:
-            query_params['maxResults'] = max_results
-        return self.make_request('GET', uri, expected_status=200,
-                                 data=json.dumps(params), headers=headers,
-                                 params=query_params)
+            query_params["maxResults"] = max_results
+        return self.make_request(
+            "GET",
+            uri,
+            expected_status=200,
+            data=json.dumps(params),
+            headers=headers,
+            params=query_params,
+        )
 
-    def list_records(self, identity_pool_id, identity_id, dataset_name,
-                     last_sync_count=None, next_token=None, max_results=None,
-                     sync_session_token=None):
+    def list_records(
+        self,
+        identity_pool_id,
+        identity_id,
+        dataset_name,
+        last_sync_count=None,
+        next_token=None,
+        max_results=None,
+        sync_session_token=None,
+    ):
         """
         Gets paginated records, optionally changed after a particular
         sync count for a dataset and identity. The credentials used to
@@ -294,22 +315,28 @@ class CognitoSyncConnection(AWSAuthConnection):
 
         """
 
-        uri = '/identitypools/{0}/identities/{1}/datasets/{2}/records'.format(
-            identity_pool_id, identity_id, dataset_name)
+        uri = "/identitypools/{0}/identities/{1}/datasets/{2}/records".format(
+            identity_pool_id, identity_id, dataset_name
+        )
         params = {}
         headers = {}
         query_params = {}
         if last_sync_count is not None:
-            query_params['lastSyncCount'] = last_sync_count
+            query_params["lastSyncCount"] = last_sync_count
         if next_token is not None:
-            query_params['nextToken'] = next_token
+            query_params["nextToken"] = next_token
         if max_results is not None:
-            query_params['maxResults'] = max_results
+            query_params["maxResults"] = max_results
         if sync_session_token is not None:
-            query_params['syncSessionToken'] = sync_session_token
-        return self.make_request('GET', uri, expected_status=200,
-                                 data=json.dumps(params), headers=headers,
-                                 params=query_params)
+            query_params["syncSessionToken"] = sync_session_token
+        return self.make_request(
+            "GET",
+            uri,
+            expected_status=200,
+            data=json.dumps(params),
+            headers=headers,
+            params=query_params,
+        )
 
     def register_device(self, identity_pool_id, identity_id, platform, token):
         """
@@ -332,17 +359,25 @@ class CognitoSyncConnection(AWSAuthConnection):
 
         """
 
-        uri = '/identitypools/{0}/identity/{1}/device'.format(
-            identity_pool_id, identity_id)
-        params = {'Platform': platform, 'Token': token, }
+        uri = "/identitypools/{0}/identity/{1}/device".format(
+            identity_pool_id, identity_id
+        )
+        params = {
+            "Platform": platform,
+            "Token": token,
+        }
         headers = {}
         query_params = {}
-        return self.make_request('POST', uri, expected_status=200,
-                                 data=json.dumps(params), headers=headers,
-                                 params=query_params)
+        return self.make_request(
+            "POST",
+            uri,
+            expected_status=200,
+            data=json.dumps(params),
+            headers=headers,
+            params=query_params,
+        )
 
-    def set_identity_pool_configuration(self, identity_pool_id,
-                                        push_sync=None):
+    def set_identity_pool_configuration(self, identity_pool_id, push_sync=None):
         """
         Sets the necessary configuration for push sync.
 
@@ -357,18 +392,24 @@ class CognitoSyncConnection(AWSAuthConnection):
 
         """
 
-        uri = '/identitypools/{0}/configuration'.format(identity_pool_id)
+        uri = "/identitypools/{0}/configuration".format(identity_pool_id)
         params = {}
         headers = {}
         query_params = {}
         if push_sync is not None:
-            params['PushSync'] = push_sync
-        return self.make_request('POST', uri, expected_status=200,
-                                 data=json.dumps(params), headers=headers,
-                                 params=query_params)
+            params["PushSync"] = push_sync
+        return self.make_request(
+            "POST",
+            uri,
+            expected_status=200,
+            data=json.dumps(params),
+            headers=headers,
+            params=query_params,
+        )
 
-    def subscribe_to_dataset(self, identity_pool_id, identity_id,
-                             dataset_name, device_id):
+    def subscribe_to_dataset(
+        self, identity_pool_id, identity_id, dataset_name, device_id
+    ):
         """
         Subscribes to receive notifications when a dataset is modified
         by another device.
@@ -389,12 +430,14 @@ class CognitoSyncConnection(AWSAuthConnection):
 
         """
 
-        uri = '/identitypools/{0}/identities/{1}/datasets/{2}/subscriptions/{3}'.format(
-            identity_pool_id, identity_id, dataset_name, device_id)
-        return self.make_request('POST', uri, expected_status=200)
+        uri = "/identitypools/{0}/identities/{1}/datasets/{2}/subscriptions/{3}".format(
+            identity_pool_id, identity_id, dataset_name, device_id
+        )
+        return self.make_request("POST", uri, expected_status=200)
 
-    def unsubscribe_from_dataset(self, identity_pool_id, identity_id,
-                                 dataset_name, device_id):
+    def unsubscribe_from_dataset(
+        self, identity_pool_id, identity_id, dataset_name, device_id
+    ):
         """
         Unsubscribe from receiving notifications when a dataset is
         modified by another device.
@@ -415,13 +458,21 @@ class CognitoSyncConnection(AWSAuthConnection):
 
         """
 
-        uri = '/identitypools/{0}/identities/{1}/datasets/{2}/subscriptions/{3}'.format(
-            identity_pool_id, identity_id, dataset_name, device_id)
-        return self.make_request('DELETE', uri, expected_status=200)
+        uri = "/identitypools/{0}/identities/{1}/datasets/{2}/subscriptions/{3}".format(
+            identity_pool_id, identity_id, dataset_name, device_id
+        )
+        return self.make_request("DELETE", uri, expected_status=200)
 
-    def update_records(self, identity_pool_id, identity_id, dataset_name,
-                       sync_session_token, device_id=None,
-                       record_patches=None, client_context=None):
+    def update_records(
+        self,
+        identity_pool_id,
+        identity_id,
+        dataset_name,
+        sync_session_token,
+        device_id=None,
+        record_patches=None,
+        client_context=None,
+    ):
         """
         Posts updates to records and add and delete records for a
         dataset and user. The credentials used to make this API call
@@ -462,33 +513,43 @@ class CognitoSyncConnection(AWSAuthConnection):
 
         """
 
-        uri = '/identitypools/{0}/identities/{1}/datasets/{2}'.format(
-            identity_pool_id, identity_id, dataset_name)
-        params = {'SyncSessionToken': sync_session_token, }
+        uri = "/identitypools/{0}/identities/{1}/datasets/{2}".format(
+            identity_pool_id, identity_id, dataset_name
+        )
+        params = {
+            "SyncSessionToken": sync_session_token,
+        }
         headers = {}
         query_params = {}
         if device_id is not None:
-            params['DeviceId'] = device_id
+            params["DeviceId"] = device_id
         if record_patches is not None:
-            params['RecordPatches'] = record_patches
+            params["RecordPatches"] = record_patches
         if client_context is not None:
-            headers['x-amz-Client-Context'] = client_context
+            headers["x-amz-Client-Context"] = client_context
         if client_context is not None:
-            headers['x-amz-Client-Context'] = client_context
-        return self.make_request('POST', uri, expected_status=200,
-                                 data=json.dumps(params), headers=headers,
-                                 params=query_params)
+            headers["x-amz-Client-Context"] = client_context
+        return self.make_request(
+            "POST",
+            uri,
+            expected_status=200,
+            data=json.dumps(params),
+            headers=headers,
+            params=query_params,
+        )
 
-    def make_request(self, verb, resource, headers=None, data='',
-                     expected_status=None, params=None):
+    def make_request(
+        self, verb, resource, headers=None, data="", expected_status=None, params=None
+    ):
         if headers is None:
             headers = {}
         response = AWSAuthConnection.make_request(
-            self, verb, resource, headers=headers, data=data, params=params)
-        body = json.loads(response.read().decode('utf-8'))
+            self, verb, resource, headers=headers, data=data, params=params
+        )
+        body = json.loads(response.read().decode("utf-8"))
         if response.status == expected_status:
             return body
         else:
-            error_type = response.getheader('x-amzn-ErrorType').split(':')[0]
+            error_type = response.getheader("x-amzn-ErrorType").split(":")[0]
             error_class = self._faults.get(error_type, self.ResponseError)
             raise error_class(response.status, response.reason, body)

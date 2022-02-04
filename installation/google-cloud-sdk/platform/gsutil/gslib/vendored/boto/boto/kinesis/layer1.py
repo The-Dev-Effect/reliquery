@@ -37,6 +37,7 @@ class KinesisConnection(AWSQueryConnection):
     Amazon Kinesis is a managed service that scales elastically for
     real time processing of streaming big data.
     """
+
     APIVersion = "2013-12-02"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "kinesis.us-east-1.amazonaws.com"
@@ -51,22 +52,22 @@ class KinesisConnection(AWSQueryConnection):
         "ResourceInUseException": exceptions.ResourceInUseException,
         "ResourceNotFoundException": exceptions.ResourceNotFoundException,
         "InvalidArgumentException": exceptions.InvalidArgumentException,
-        "SubscriptionRequiredException": exceptions.SubscriptionRequiredException
+        "SubscriptionRequiredException": exceptions.SubscriptionRequiredException,
     }
 
-
     def __init__(self, **kwargs):
-        region = kwargs.pop('region', None)
+        region = kwargs.pop("region", None)
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
-        if 'host' not in kwargs:
-            kwargs['host'] = region.endpoint
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
+        if "host" not in kwargs:
+            kwargs["host"] = region.endpoint
         super(KinesisConnection, self).__init__(**kwargs)
         self.region = region
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
     def add_tags_to_stream(self, stream_name, tags):
         """
@@ -84,9 +85,11 @@ class KinesisConnection(AWSQueryConnection):
         :param tags: The set of key-value pairs to use to create the tags.
 
         """
-        params = {'StreamName': stream_name, 'Tags': tags, }
-        return self.make_request(action='AddTagsToStream',
-                                 body=json.dumps(params))
+        params = {
+            "StreamName": stream_name,
+            "Tags": tags,
+        }
+        return self.make_request(action="AddTagsToStream", body=json.dumps(params))
 
     def create_stream(self, stream_name, shard_count):
         """
@@ -156,11 +159,10 @@ class KinesisConnection(AWSQueryConnection):
 
         """
         params = {
-            'StreamName': stream_name,
-            'ShardCount': shard_count,
+            "StreamName": stream_name,
+            "ShardCount": shard_count,
         }
-        return self.make_request(action='CreateStream',
-                                 body=json.dumps(params))
+        return self.make_request(action="CreateStream", body=json.dumps(params))
 
     def delete_stream(self, stream_name):
         """
@@ -192,12 +194,12 @@ class KinesisConnection(AWSQueryConnection):
         :param stream_name: The name of the stream to delete.
 
         """
-        params = {'StreamName': stream_name, }
-        return self.make_request(action='DeleteStream',
-                                 body=json.dumps(params))
+        params = {
+            "StreamName": stream_name,
+        }
+        return self.make_request(action="DeleteStream", body=json.dumps(params))
 
-    def describe_stream(self, stream_name, limit=None,
-                        exclusive_start_shard_id=None):
+    def describe_stream(self, stream_name, limit=None, exclusive_start_shard_id=None):
         """
         Describes the specified stream.
 
@@ -238,13 +240,14 @@ class KinesisConnection(AWSQueryConnection):
             with.
 
         """
-        params = {'StreamName': stream_name, }
+        params = {
+            "StreamName": stream_name,
+        }
         if limit is not None:
-            params['Limit'] = limit
+            params["Limit"] = limit
         if exclusive_start_shard_id is not None:
-            params['ExclusiveStartShardId'] = exclusive_start_shard_id
-        return self.make_request(action='DescribeStream',
-                                 body=json.dumps(params))
+            params["ExclusiveStartShardId"] = exclusive_start_shard_id
+        return self.make_request(action="DescribeStream", body=json.dumps(params))
 
     def get_records(self, shard_iterator, limit=None, b64_decode=True):
         """
@@ -319,23 +322,26 @@ class KinesisConnection(AWSQueryConnection):
         :param b64_decode: Decode the Base64-encoded ``Data`` field of records.
 
         """
-        params = {'ShardIterator': shard_iterator, }
+        params = {
+            "ShardIterator": shard_iterator,
+        }
         if limit is not None:
-            params['Limit'] = limit
+            params["Limit"] = limit
 
-        response = self.make_request(action='GetRecords',
-                                     body=json.dumps(params))
+        response = self.make_request(action="GetRecords", body=json.dumps(params))
 
         # Base64 decode the data
         if b64_decode:
-            for record in response.get('Records', []):
-                record['Data'] = base64.b64decode(
-                    record['Data'].encode('utf-8')).decode('utf-8')
+            for record in response.get("Records", []):
+                record["Data"] = base64.b64decode(
+                    record["Data"].encode("utf-8")
+                ).decode("utf-8")
 
         return response
 
-    def get_shard_iterator(self, stream_name, shard_id, shard_iterator_type,
-                           starting_sequence_number=None):
+    def get_shard_iterator(
+        self, stream_name, shard_id, shard_iterator_type, starting_sequence_number=None
+    ):
         """
         Gets a shard iterator. A shard iterator expires five minutes
         after it is returned to the requester.
@@ -416,14 +422,13 @@ class KinesisConnection(AWSQueryConnection):
         """
 
         params = {
-            'StreamName': stream_name,
-            'ShardId': shard_id,
-            'ShardIteratorType': shard_iterator_type,
+            "StreamName": stream_name,
+            "ShardId": shard_id,
+            "ShardIteratorType": shard_iterator_type,
         }
         if starting_sequence_number is not None:
-            params['StartingSequenceNumber'] = starting_sequence_number
-        return self.make_request(action='GetShardIterator',
-                                 body=json.dumps(params))
+            params["StartingSequenceNumber"] = starting_sequence_number
+        return self.make_request(action="GetShardIterator", body=json.dumps(params))
 
     def list_streams(self, limit=None, exclusive_start_stream_name=None):
         """
@@ -458,14 +463,14 @@ class KinesisConnection(AWSQueryConnection):
         """
         params = {}
         if limit is not None:
-            params['Limit'] = limit
+            params["Limit"] = limit
         if exclusive_start_stream_name is not None:
-            params['ExclusiveStartStreamName'] = exclusive_start_stream_name
-        return self.make_request(action='ListStreams',
-                                 body=json.dumps(params))
+            params["ExclusiveStartStreamName"] = exclusive_start_stream_name
+        return self.make_request(action="ListStreams", body=json.dumps(params))
 
-    def list_tags_for_stream(self, stream_name, exclusive_start_tag_key=None,
-                             limit=None):
+    def list_tags_for_stream(
+        self, stream_name, exclusive_start_tag_key=None, limit=None
+    ):
         """
         Lists the tags for the specified Amazon Kinesis stream.
 
@@ -484,16 +489,16 @@ class KinesisConnection(AWSQueryConnection):
             `ExclusiveStartTagKey` to the last key in the response.
 
         """
-        params = {'StreamName': stream_name, }
+        params = {
+            "StreamName": stream_name,
+        }
         if exclusive_start_tag_key is not None:
-            params['ExclusiveStartTagKey'] = exclusive_start_tag_key
+            params["ExclusiveStartTagKey"] = exclusive_start_tag_key
         if limit is not None:
-            params['Limit'] = limit
-        return self.make_request(action='ListTagsForStream',
-                                 body=json.dumps(params))
+            params["Limit"] = limit
+        return self.make_request(action="ListTagsForStream", body=json.dumps(params))
 
-    def merge_shards(self, stream_name, shard_to_merge,
-                     adjacent_shard_to_merge):
+    def merge_shards(self, stream_name, shard_to_merge, adjacent_shard_to_merge):
         """
         Merges two adjacent shards in a stream and combines them into
         a single shard to reduce the stream's capacity to ingest and
@@ -553,18 +558,22 @@ class KinesisConnection(AWSQueryConnection):
 
         """
         params = {
-            'StreamName': stream_name,
-            'ShardToMerge': shard_to_merge,
-            'AdjacentShardToMerge': adjacent_shard_to_merge,
+            "StreamName": stream_name,
+            "ShardToMerge": shard_to_merge,
+            "AdjacentShardToMerge": adjacent_shard_to_merge,
         }
-        return self.make_request(action='MergeShards',
-                                 body=json.dumps(params))
+        return self.make_request(action="MergeShards", body=json.dumps(params))
 
-    def put_record(self, stream_name, data, partition_key,
-                   explicit_hash_key=None,
-                   sequence_number_for_ordering=None,
-                   exclusive_minimum_sequence_number=None,
-                   b64_encode=True):
+    def put_record(
+        self,
+        stream_name,
+        data,
+        partition_key,
+        explicit_hash_key=None,
+        sequence_number_for_ordering=None,
+        exclusive_minimum_sequence_number=None,
+        b64_encode=True,
+    ):
         """
         This operation puts a data record into an Amazon Kinesis
         stream from a producer. This operation must be called to send
@@ -648,20 +657,19 @@ class KinesisConnection(AWSQueryConnection):
 
         """
         params = {
-            'StreamName': stream_name,
-            'Data': data,
-            'PartitionKey': partition_key,
+            "StreamName": stream_name,
+            "Data": data,
+            "PartitionKey": partition_key,
         }
         if explicit_hash_key is not None:
-            params['ExplicitHashKey'] = explicit_hash_key
+            params["ExplicitHashKey"] = explicit_hash_key
         if sequence_number_for_ordering is not None:
-            params['SequenceNumberForOrdering'] = sequence_number_for_ordering
+            params["SequenceNumberForOrdering"] = sequence_number_for_ordering
         if b64_encode:
-            if not isinstance(params['Data'], six.binary_type):
-                params['Data'] = params['Data'].encode('utf-8')
-            params['Data'] = base64.b64encode(params['Data']).decode('utf-8')
-        return self.make_request(action='PutRecord',
-                                 body=json.dumps(params))
+            if not isinstance(params["Data"], six.binary_type):
+                params["Data"] = params["Data"].encode("utf-8")
+            params["Data"] = base64.b64encode(params["Data"]).decode("utf-8")
+        return self.make_request(action="PutRecord", body=json.dumps(params))
 
     def put_records(self, records, stream_name, b64_encode=True):
         """
@@ -740,16 +748,17 @@ class KinesisConnection(AWSQueryConnection):
             ``False`` if `data` is already encoded to prevent double encoding.
 
         """
-        params = {'Records': records, 'StreamName': stream_name, }
+        params = {
+            "Records": records,
+            "StreamName": stream_name,
+        }
         if b64_encode:
-            for i in range(len(params['Records'])):
-                data = params['Records'][i]['Data']
+            for i in range(len(params["Records"])):
+                data = params["Records"][i]["Data"]
                 if not isinstance(data, six.binary_type):
-                    data = data.encode('utf-8')
-                params['Records'][i]['Data'] = base64.b64encode(
-                    data).decode('utf-8')
-        return self.make_request(action='PutRecords',
-                                 body=json.dumps(params))
+                    data = data.encode("utf-8")
+                params["Records"][i]["Data"] = base64.b64encode(data).decode("utf-8")
+        return self.make_request(action="PutRecords", body=json.dumps(params))
 
     def remove_tags_from_stream(self, stream_name, tag_keys):
         """
@@ -765,9 +774,11 @@ class KinesisConnection(AWSQueryConnection):
             from the stream.
 
         """
-        params = {'StreamName': stream_name, 'TagKeys': tag_keys, }
-        return self.make_request(action='RemoveTagsFromStream',
-                                 body=json.dumps(params))
+        params = {
+            "StreamName": stream_name,
+            "TagKeys": tag_keys,
+        }
+        return self.make_request(action="RemoveTagsFromStream", body=json.dumps(params))
 
     def split_shard(self, stream_name, shard_to_split, new_starting_hash_key):
         """
@@ -845,26 +856,29 @@ class KinesisConnection(AWSQueryConnection):
 
         """
         params = {
-            'StreamName': stream_name,
-            'ShardToSplit': shard_to_split,
-            'NewStartingHashKey': new_starting_hash_key,
+            "StreamName": stream_name,
+            "ShardToSplit": shard_to_split,
+            "NewStartingHashKey": new_starting_hash_key,
         }
-        return self.make_request(action='SplitShard',
-                                 body=json.dumps(params))
+        return self.make_request(action="SplitShard", body=json.dumps(params))
 
     def make_request(self, action, body):
         headers = {
-            'X-Amz-Target': '%s.%s' % (self.TargetPrefix, action),
-            'Host': self.region.endpoint,
-            'Content-Type': 'application/x-amz-json-1.1',
-            'Content-Length': str(len(body)),
+            "X-Amz-Target": "%s.%s" % (self.TargetPrefix, action),
+            "Host": self.region.endpoint,
+            "Content-Type": "application/x-amz-json-1.1",
+            "Content-Length": str(len(body)),
         }
         http_request = self.build_base_http_request(
-            method='POST', path='/', auth_path='/', params={},
-            headers=headers, data=body)
-        response = self._mexe(http_request, sender=None,
-                              override_num_retries=10)
-        response_body = response.read().decode('utf-8')
+            method="POST",
+            path="/",
+            auth_path="/",
+            params={},
+            headers=headers,
+            data=body,
+        )
+        response = self._mexe(http_request, sender=None, override_num_retries=10)
+        response_body = response.read().decode("utf-8")
         boto.log.debug(response.getheaders())
         boto.log.debug(response_body)
         if response.status == 200:
@@ -872,8 +886,6 @@ class KinesisConnection(AWSQueryConnection):
                 return json.loads(response_body)
         else:
             json_body = json.loads(response_body)
-            fault_name = json_body.get('__type', None)
+            fault_name = json_body.get("__type", None)
             exception_class = self._faults.get(fault_name, self.ResponseError)
-            raise exception_class(response.status, response.reason,
-                                  body=json_body)
-
+            raise exception_class(response.status, response.reason, body=json_body)

@@ -32,10 +32,7 @@ def regions():
     :rtype: list
     :return: A list of :class:`boto.sdb.regioninfo.RegionInfo` instances
     """
-    return get_regions(
-        'sdb',
-        region_cls=SDBRegionInfo
-    )
+    return get_regions("sdb", region_cls=SDBRegionInfo)
 
 
 def connect_to_region(region_name, **kw_params):
@@ -50,4 +47,4 @@ def connect_to_region(region_name, **kw_params):
     :return: A connection to the given region, or None if an invalid region
              name is given
     """
-    return connect('sdb', region_name, region_cls=SDBRegionInfo, **kw_params)
+    return connect("sdb", region_name, region_cls=SDBRegionInfo, **kw_params)

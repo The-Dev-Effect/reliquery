@@ -54,6 +54,7 @@ class CloudTrailConnection(AWSQueryConnection):
     See the CloudTrail User Guide for information about the data that
     is included with each AWS API call listed in the log files.
     """
+
     APIVersion = "2013-11-01"
     DefaultRegionName = "us-east-1"
     DefaultRegionEndpoint = "cloudtrail.us-east-1.amazonaws.com"
@@ -81,26 +82,32 @@ class CloudTrailConnection(AWSQueryConnection):
         "InsufficientS3BucketPolicyException": exceptions.InsufficientS3BucketPolicyException,
     }
 
-
     def __init__(self, **kwargs):
-        region = kwargs.pop('region', None)
+        region = kwargs.pop("region", None)
         if not region:
-            region = RegionInfo(self, self.DefaultRegionName,
-                                self.DefaultRegionEndpoint)
+            region = RegionInfo(
+                self, self.DefaultRegionName, self.DefaultRegionEndpoint
+            )
 
-        if 'host' not in kwargs or kwargs['host'] is None:
-            kwargs['host'] = region.endpoint
+        if "host" not in kwargs or kwargs["host"] is None:
+            kwargs["host"] = region.endpoint
 
         super(CloudTrailConnection, self).__init__(**kwargs)
         self.region = region
 
     def _required_auth_capability(self):
-        return ['hmac-v4']
+        return ["hmac-v4"]
 
-    def create_trail(self, name, s3_bucket_name, s3_key_prefix=None,
-                     sns_topic_name=None, include_global_service_events=None,
-                     cloud_watch_logs_log_group_arn=None,
-                     cloud_watch_logs_role_arn=None):
+    def create_trail(
+        self,
+        name,
+        s3_bucket_name,
+        s3_key_prefix=None,
+        sns_topic_name=None,
+        include_global_service_events=None,
+        cloud_watch_logs_log_group_arn=None,
+        cloud_watch_logs_role_arn=None,
+    ):
         """
         From the command line, use `create-subscription`.
 
@@ -138,19 +145,21 @@ class CloudTrailConnection(AWSQueryConnection):
             Logs endpoint to assume to write to a users log group.
 
         """
-        params = {'Name': name, 'S3BucketName': s3_bucket_name, }
+        params = {
+            "Name": name,
+            "S3BucketName": s3_bucket_name,
+        }
         if s3_key_prefix is not None:
-            params['S3KeyPrefix'] = s3_key_prefix
+            params["S3KeyPrefix"] = s3_key_prefix
         if sns_topic_name is not None:
-            params['SnsTopicName'] = sns_topic_name
+            params["SnsTopicName"] = sns_topic_name
         if include_global_service_events is not None:
-            params['IncludeGlobalServiceEvents'] = include_global_service_events
+            params["IncludeGlobalServiceEvents"] = include_global_service_events
         if cloud_watch_logs_log_group_arn is not None:
-            params['CloudWatchLogsLogGroupArn'] = cloud_watch_logs_log_group_arn
+            params["CloudWatchLogsLogGroupArn"] = cloud_watch_logs_log_group_arn
         if cloud_watch_logs_role_arn is not None:
-            params['CloudWatchLogsRoleArn'] = cloud_watch_logs_role_arn
-        return self.make_request(action='CreateTrail',
-                                 body=json.dumps(params))
+            params["CloudWatchLogsRoleArn"] = cloud_watch_logs_role_arn
+        return self.make_request(action="CreateTrail", body=json.dumps(params))
 
     def delete_trail(self, name):
         """
@@ -160,9 +169,10 @@ class CloudTrailConnection(AWSQueryConnection):
         :param name: The name of a trail to be deleted.
 
         """
-        params = {'Name': name, }
-        return self.make_request(action='DeleteTrail',
-                                 body=json.dumps(params))
+        params = {
+            "Name": name,
+        }
+        return self.make_request(action="DeleteTrail", body=json.dumps(params))
 
     def describe_trails(self, trail_name_list=None):
         """
@@ -175,9 +185,8 @@ class CloudTrailConnection(AWSQueryConnection):
         """
         params = {}
         if trail_name_list is not None:
-            params['trailNameList'] = trail_name_list
-        return self.make_request(action='DescribeTrails',
-                                 body=json.dumps(params))
+            params["trailNameList"] = trail_name_list
+        return self.make_request(action="DescribeTrails", body=json.dumps(params))
 
     def get_trail_status(self, name):
         """
@@ -191,12 +200,19 @@ class CloudTrailConnection(AWSQueryConnection):
             current status.
 
         """
-        params = {'Name': name, }
-        return self.make_request(action='GetTrailStatus',
-                                 body=json.dumps(params))
+        params = {
+            "Name": name,
+        }
+        return self.make_request(action="GetTrailStatus", body=json.dumps(params))
 
-    def lookup_events(self, lookup_attributes=None, start_time=None,
-                      end_time=None, max_results=None, next_token=None):
+    def lookup_events(
+        self,
+        lookup_attributes=None,
+        start_time=None,
+        end_time=None,
+        max_results=None,
+        next_token=None,
+    ):
         """
         Looks up API activity events captured by CloudTrail that
         create, update, or delete resources in your account. Events
@@ -245,17 +261,16 @@ class CloudTrailConnection(AWSQueryConnection):
         """
         params = {}
         if lookup_attributes is not None:
-            params['LookupAttributes'] = lookup_attributes
+            params["LookupAttributes"] = lookup_attributes
         if start_time is not None:
-            params['StartTime'] = start_time
+            params["StartTime"] = start_time
         if end_time is not None:
-            params['EndTime'] = end_time
+            params["EndTime"] = end_time
         if max_results is not None:
-            params['MaxResults'] = max_results
+            params["MaxResults"] = max_results
         if next_token is not None:
-            params['NextToken'] = next_token
-        return self.make_request(action='LookupEvents',
-                                 body=json.dumps(params))
+            params["NextToken"] = next_token
+        return self.make_request(action="LookupEvents", body=json.dumps(params))
 
     def start_logging(self, name):
         """
@@ -267,9 +282,10 @@ class CloudTrailConnection(AWSQueryConnection):
             calls.
 
         """
-        params = {'Name': name, }
-        return self.make_request(action='StartLogging',
-                                 body=json.dumps(params))
+        params = {
+            "Name": name,
+        }
+        return self.make_request(action="StartLogging", body=json.dumps(params))
 
     def stop_logging(self, name):
         """
@@ -284,14 +300,21 @@ class CloudTrailConnection(AWSQueryConnection):
             to stop logging AWS API calls.
 
         """
-        params = {'Name': name, }
-        return self.make_request(action='StopLogging',
-                                 body=json.dumps(params))
+        params = {
+            "Name": name,
+        }
+        return self.make_request(action="StopLogging", body=json.dumps(params))
 
-    def update_trail(self, name, s3_bucket_name=None, s3_key_prefix=None,
-                     sns_topic_name=None, include_global_service_events=None,
-                     cloud_watch_logs_log_group_arn=None,
-                     cloud_watch_logs_role_arn=None):
+    def update_trail(
+        self,
+        name,
+        s3_bucket_name=None,
+        s3_key_prefix=None,
+        sns_topic_name=None,
+        include_global_service_events=None,
+        cloud_watch_logs_log_group_arn=None,
+        cloud_watch_logs_role_arn=None,
+    ):
         """
         From the command line, use `update-subscription`.
 
@@ -333,42 +356,46 @@ class CloudTrailConnection(AWSQueryConnection):
             Logs endpoint to assume to write to a users log group.
 
         """
-        params = {'Name': name, }
+        params = {
+            "Name": name,
+        }
         if s3_bucket_name is not None:
-            params['S3BucketName'] = s3_bucket_name
+            params["S3BucketName"] = s3_bucket_name
         if s3_key_prefix is not None:
-            params['S3KeyPrefix'] = s3_key_prefix
+            params["S3KeyPrefix"] = s3_key_prefix
         if sns_topic_name is not None:
-            params['SnsTopicName'] = sns_topic_name
+            params["SnsTopicName"] = sns_topic_name
         if include_global_service_events is not None:
-            params['IncludeGlobalServiceEvents'] = include_global_service_events
+            params["IncludeGlobalServiceEvents"] = include_global_service_events
         if cloud_watch_logs_log_group_arn is not None:
-            params['CloudWatchLogsLogGroupArn'] = cloud_watch_logs_log_group_arn
+            params["CloudWatchLogsLogGroupArn"] = cloud_watch_logs_log_group_arn
         if cloud_watch_logs_role_arn is not None:
-            params['CloudWatchLogsRoleArn'] = cloud_watch_logs_role_arn
-        return self.make_request(action='UpdateTrail',
-                                 body=json.dumps(params))
+            params["CloudWatchLogsRoleArn"] = cloud_watch_logs_role_arn
+        return self.make_request(action="UpdateTrail", body=json.dumps(params))
 
     def make_request(self, action, body):
         headers = {
-            'X-Amz-Target': '%s.%s' % (self.TargetPrefix, action),
-            'Host': self.region.endpoint,
-            'Content-Type': 'application/x-amz-json-1.1',
-            'Content-Length': str(len(body)),
+            "X-Amz-Target": "%s.%s" % (self.TargetPrefix, action),
+            "Host": self.region.endpoint,
+            "Content-Type": "application/x-amz-json-1.1",
+            "Content-Length": str(len(body)),
         }
         http_request = self.build_base_http_request(
-            method='POST', path='/', auth_path='/', params={},
-            headers=headers, data=body)
-        response = self._mexe(http_request, sender=None,
-                              override_num_retries=10)
-        response_body = response.read().decode('utf-8')
+            method="POST",
+            path="/",
+            auth_path="/",
+            params={},
+            headers=headers,
+            data=body,
+        )
+        response = self._mexe(http_request, sender=None, override_num_retries=10)
+        response_body = response.read().decode("utf-8")
         boto.log.debug(response_body)
         if response.status == 200:
             if response_body:
                 return json.loads(response_body)
         else:
             json_body = json.loads(response_body)
-            fault_name = json_body.get('__type', None)
+            fault_name = json_body.get("__type", None)
             exception_class = self._faults.get(fault_name, self.ResponseError)
-            raise exception_class(response.status, response.reason,
-                                  body=json_body)
+            raise exception_class(response.status, response.reason, body=json_body)
