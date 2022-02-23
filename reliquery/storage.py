@@ -9,6 +9,7 @@ import json
 import boto3
 from botocore import UNSIGNED
 from botocore.client import Config
+from orjson import JSONDecodeError
 
 
 from . import settings
@@ -637,7 +638,64 @@ class GoogleDriveStorage(Storage):
 
         return folder
 
-    def _check_path(self, curr_root, path):
+    def _list_items_in_folder(self, folder_id):
+        #List files in parent folder
+        results = (
+                self.service.files()
+                .list(
+                    q="parents in '{}'".format(folder_id),
+                    pageSize=100,
+                    fields="nextPageToken, files(id, name)",
+                )
+                .execute()
+            )
+        items = results.get("files", [])
+        return items
+
+    def _find_id_in_folder(self, parent_id, fileName):
+        #List files in parent folder
+        results = (
+                self.service.files()
+                .list(
+                    q="parents in '{}'".format(parent_id),
+                    pageSize=100,
+                    fields="nextPageToken, files(id, name)",
+                )
+                .execute()
+            )
+        items = results.get("files", [])
+        #Go through list and fidn file with the given fileName and return the id
+        for item in items:
+            if item.get('name') == fileName:
+                return item.get('id')
+            else:
+                raise StorageItemDoesNotExist
+
+    def _find_deepest_folder_id(self, root, path):
+        parents = [root]
+
+        for p in path:
+            # List files in curr_root
+            results = (
+                self.service.files()
+                .list(
+                    q="parents in '{}'".format(parents[-1]),
+                    pageSize=100,
+                    fields="nextPageToken, files(id, name)",
+                )
+                .execute()
+            )
+            items = results.get("files", [])
+            if len(items) > 0:
+                for item in items:
+                    if item["name"] == p:
+                        parents.append(item["id"])
+            else:
+                return ''
+
+        return parents[-1]
+
+    def _create_path(self, curr_root, path):
         parents = [curr_root]
 
         for p in path:
@@ -743,135 +801,165 @@ class GoogleDriveStorage(Storage):
 
     def put_file(self, path: StoragePath, file_path: str) -> None:
         curr_root = self.root_id
-        parents = self._check_path(curr_root, path[:-1])
+        parents = self._create_path(curr_root, path[:-1])
         self._create_file(path[-1], parents[-1], file_path)
 
     def put_binary_obj(self, path: StoragePath, buffer: BytesIO):
         curr_root = self.root_id
-        parents = self._check_path(curr_root, path[:-1])
+        parents = self._create_path(curr_root, path[:-1])
         self._create_binary_file(path[-1], parents[-1], buffer)
 
     def get_binary_obj(self, path: StoragePath) -> BytesIO:
-        page_token = None
-        while True:
-            # Call the Drive v3 API and display contents in drive
-            results = (
-                self.service.files()
-                .list(
-                    spaces="drive",
-                    fields="nextPageToken, files(id, name)",
-                    pageToken=page_token,
-                )
-                .execute()
-            )
+        parents = self._create_path(self.root_id, path[:-1])
+        file_id = self._find_id_in_folder(parents[-1], path[-1])
 
-            for file in results.get("files", []):
-                if file.get("name") == path[-1]:
-                    file_id = file.get("id")
-            page_token = results.get("nextPageToken", None)
-            if page_token is None:
-                break
+        request = self.service.files().get_media(fileId=file_id).execute()
+        buffer = io.BytesIO(request)
+        return buffer
 
-        request = self.service.files().get_media(fileId=file_id)
-        fh = io.BytesIO()
-        downloader = MediaIoBaseDownload(fh, request)
+    def put_text(self, path: StoragePath, text: str, encoding = "utf-8") -> None:
+        #Implementation with uploading BytesIO
+        parents = self._create_path(self.root_id, path[:-1])
+        self._create_binary_file(path[-1], parents[-1], io.BytesIO(bytes(text,encoding)))
 
-        return fh
+        #Implementation with writing to a file then uploading that file
+        # curr_root = self.root_id
+        # parents = self._create_path(curr_root, path[:-1])
 
-    def put_text(self, path: StoragePath, text: str) -> None:
-        curr_root = self.root_id
-        parents = self._check_path(curr_root, path[:-1])
+        # with open(path[-1], "w") as f:
+        #     f.write(text)
 
-        with open(path[-1], "w") as f:
-            f.write(text)
+        # self._create_file(path[-1], parents[-1], path[-1])
 
-        self._create_file(path[-1], parents[-1], path[-1])
-
-    def get_text(self, path: StoragePath) -> str:
+    def get_text(self, path: StoragePath,encoding: str = "utf-8") -> str:
+        parents = self._create_path(self.root_id, path[:-1])
         file_id = ""
-        curr_root = self.root_id
-        parents = self._check_path(curr_root, path[:-1])
-        results = (
-            self.service.files()
-            .list(
-                q="parents in '{}'".format(parents[-1]),
-                pageSize=100,
-                fields="nextPageToken, files(id, name)",
-            )
-            .execute()
-        )
-        items = results.get("files", [])
-        for item in items:
-            if item.get("name") == path[-1]:
-                file_id = item.get("id")
-                break
-            else:
-                return "File not found"
-
         try:
-            content = self.service.files().get_media(fileId=file_id).execute()
-            return content
-        except HttpError as error:
-            print(f"An error occurred: {error}")
+            file_id = self._find_id_in_folder(parents[-1], path[-1])
+        except StorageItemDoesNotExist:
+            raise StorageItemDoesNotExist
+        
+        if file_id != None:
+            return self.service.files().get_media(fileId=file_id).execute().decode(encoding)
+        else:
+            raise StorageItemDoesNotExist
 
     def list_keys(self, path: StoragePath) -> List[str]:
-        raise NotImplementedError
+        # Go to the deepest part of the path and save the id of that folder
+        curr_root = self.root_id
+        parents = self._create_path(curr_root, path)
+        key_list = []
+        #List all the files in that folder 
+        items = self._list_items_in_folder(parents[-1])
+        #Return a list of all the file names in that folder
+        for item in items:
+            key_list.append(item.get('name'))
+
+        return key_list
+
+    def list_key_paths(self, path: StoragePath) -> List[str]:
+        paths = []
+        subs = self.list_keys(path)
+        if subs:
+            for sub in subs:
+                copy = path.copy()
+                copy.append(sub)
+                sub_path = self._join_path(copy)
+                # is a file or folder
+                parent = self._find_deepest_folder_id(self.root_id, sub_path[:-1])
+                items = self._list_items_in_folder(parent)
+
+                for item in items:
+                    if item.get('name') == sub_path[-1]:
+                        file_id = item.get('id')
+                        type = self.service.files().get(fileId = file_id,
+                                            fields = 'mimeType').execute()
+
+                        if type['mimeType'] == 'application/vnd.google-apps.folder':
+                            paths.extend(self.list_key_paths(copy))
+                    else:
+                        paths.append(sub_path)
+
+        return paths
 
     def put_metadata(self, path: StoragePath, metadata: Dict):
-        parents = []
         # get the folder id of the relic
-        results = (
-            self.service.files()
-            .list(
-                q="parents in '{}'".format(self.root_id),
-                pageSize=100,
-                fields="nextPageToken, files(id, name)",
-            )
-            .execute()
-        )
-        items = results.get("files", [])
-        for item in items:
-            if item["name"] == path[0]:
-                curr_root = item["id"]
-                parents.append(curr_root)
-
-        results = (
-            self.service.files()
-            .list(
-                q="parents in '{}'".format(curr_root),
-                pageSize=100,
-                fields="nextPageToken, files(id, name)",
-            )
-            .execute()
-        )
-        items = results.get("files", [])
-        for item in items:
-            if item["name"] == path[1]:
-                curr_root = item["id"]
-                parents.append(curr_root)
+        folder_id_list = self._create_path(self.root_id, path[:-3])
+        
 
         path_list = path[2:]
-        parents = self._check_path(curr_root, path_list[:-1])
+        parents = self._create_path(folder_id_list[-1], path_list[:-1])
 
         metadata_bytes = json.dumps(metadata).encode("utf-8")
         buffer = io.BytesIO(metadata_bytes)
         self._create_binary_file(path[-1], parents[-1], buffer)
 
-    def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
-        raise NotImplementedError
+    def get_metadata(self, path: StoragePath, root_key: str, encoding: str = "utf-8") -> Dict:
+        data = {root_key: {k: [] for k in DATA_TYPES}}
+
+        def dict_from_path(path: StoragePath, dirname: str):
+            dirpath = path.copy()
+            dirpath.append(dirname)
+            entries = self.list_keys(dirpath)
+
+            for i in entries:
+                entry_path = dirpath.copy()
+                entry_path.append(i)
+
+                file_id = ""
+                curr_root = self.root_id
+                parents = self._create_path(curr_root, entry_path[:-1])
+                try:
+                    file_id = self._find_id_in_folder(parents[-1], entry_path[-1])
+                except StorageItemDoesNotExist:
+                    return []
+
+                data[root_key][dirname].append(
+                    json.loads(self.service.files().get_media(fileId=file_id).execute().decode(encoding))
+                )
+
+        for d in data[root_key]:
+            dict_from_path(path, d)
+
+        return data
 
     def put_tags(self, path: StoragePath, tags: Dict) -> None:
         self.put_text(path, json.dumps(tags))
 
     def get_tags(self, path: StoragePath) -> Dict:
-        raise NotImplementedError
+        try:
+            tags = self.get_text(path)
+        except StorageItemDoesNotExist:
+            return {}
 
-    def get_all_relic_tags(self) -> List[Dict]:
-        raise NotImplementedError
+        return json.loads(tags)
+
+    # def get_all_relic_tags(self) -> List[Dict]:
+    #     tag_keys = [
+    #         key for key in self.list_key_paths([""]) if "tags" in key.split("/")
+    #     ]
+    #     tags = []
+    #     for key in tag_keys:
+    #         tags.extend(self.get_tags(key.split("/")))
+
+        return tags
 
     def get_all_relic_data(self) -> List[Dict]:
-        raise NotImplementedError
-
+        relic_types = [path.split("/")[1] for path in self.list_key_paths([])]
+        relic_data = []
+        
+        for relic_type in relic_types:
+            names = {path.split("/")[2] for path in self.list_key_paths([relic_type])}
+            if names:
+                for name in names:
+                    relic_data.append(
+                        {
+                            "relic_name": name,
+                            "relic_type": relic_type,
+                            "storage_name": self.name,
+                        }
+                    )
+        return relic_data
 
 def get_storage_by_name(name: str, root: str = os.path.expanduser("~")) -> Storage:
     reliquery_dir = os.path.join(root, "reliquery")
