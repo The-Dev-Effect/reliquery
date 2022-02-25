@@ -8,5 +8,4 @@ pandas
 nbconvert
 nbformat 
 dropbox
-io
 PIL
