@@ -11,6 +11,7 @@ install_requires = [
     "nbconvert",
     "nbformat",
     "dropbox",
+    "Pillow",
 ]
 
 setup(
