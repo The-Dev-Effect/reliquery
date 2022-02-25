@@ -11,7 +11,8 @@ install_requires = [
     "nbconvert",
     "nbformat",
     "dropbox",
-    "io"
+    "io",
+    "PIL",
 ]
 
 setup(
