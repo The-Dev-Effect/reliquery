@@ -19,7 +19,6 @@ from .storage import (
 )
 
 from PIL import Image
-import io
 
 
 StoragePath = List[str]
@@ -250,14 +249,13 @@ class Relic:
         self.assert_valid_id(name)
         return self.storage.get_binary_obj([self.relic_type, self.name, "images", name])
 
-    def display_image(self, name: str) -> Image:
+    def get_pil_image(self, name: str) -> Image:
         self.assert_valid_id(name)
         img_data = self.storage.get_binary_obj(
             [self.relic_type, self.name, "images", name]
         )
-        img_bytes = img_data.read()
-        image = Image.open(io.BytesIO(img_bytes))
-        image.show()
+        image = Image.open((img_data))
+        return image
 
     def save_image_to_path(self, name: str, path: str) -> None:
         self.assert_valid_id(name)
