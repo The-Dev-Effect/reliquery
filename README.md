@@ -75,10 +75,20 @@ Add images by passing images as bytes:
 with open("image.png", "rb") as f:
     r.add_image("image-0.png", f.read())
 ```
-Get and display images:
-```pyton
+List images:
+```python
 print(r_demo.list_images())
 display(Image(r_demo.get_image("reliquery").read()))
+```
+
+Get images:
+```python
+r_demo.get_image("reliquery")
+```
+
+Display PIL image:
+```python
+r_demo.get_pil_image("reliquery")
 ```
 
 ### JSON supported<a name="json"></a>
@@ -206,7 +216,8 @@ s3_signed
 * false = uses the anonymous IAM role
 
 ## Dropbox Storage<a name="dropbox"></a>
-To use Dropbox with reliquery, the following must be added to the config file
+To use Dropbox with reliquery, the following must be added to the config file in reliquery
+```json
 "Dropbox":{
         "storage": {
             "type": "Dropbox",
@@ -216,7 +227,17 @@ To use Dropbox with reliquery, the following must be added to the config file
             }
         }
     }
-The access token is obtained by creating an app in the Dropbox App Console and giving it file read and write permissions.
+```
+The access token is obtained by creating an app in the Dropbox App Console and setting the following permissions:
+* accoung_info.read
+* files.metadata.write
+* files.metadata.read
+* files.content.write
+* files.content.read
+* file_requests.write
+* file_requests.read
+Dropbox App Console([https://www.dropbox.com/developers/apps/create](https://www.dropbox.com/developers/apps/create?_tk=pilot_lp&_ad=ctabtn1&_camp=create))
+
 
 ## License<a name="lic"></a>
 
