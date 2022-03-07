@@ -9,7 +9,6 @@ import json
 import boto3
 from botocore import UNSIGNED
 from botocore.client import Config
-from orjson import JSONDecodeError
 
 
 from . import settings
@@ -17,14 +16,11 @@ from . import settings
 import dropbox
 from dropbox.exceptions import ApiError
 
-from google.auth.transport.requests import Request
 from google.oauth2 import service_account
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from apiclient.http import MediaFileUpload
 from apiclient.http import MediaIoBaseUpload
-from googleapiclient.http import MediaIoBaseDownload
 
 StoragePath = List[str]
 
@@ -560,7 +556,7 @@ class GoogleDriveStorage(Storage):
                 prefix_found = True
                 break
 
-        if prefix_found == False:
+        if prefix_found is False:
             folder_metadata = {
                 "name": prefix,
                 "mimeType": "application/vnd.google-apps.folder",
@@ -701,7 +697,8 @@ class GoogleDriveStorage(Storage):
 
             # Check if results were found
             if len(items) > 0:
-                # Check if this path name already exists and change curr_root to it if so
+                # Check if this path name already exists
+                # and change curr_root to it if so
                 p_found = False
                 for item in items:
                     if item["name"] == p:
@@ -709,8 +706,9 @@ class GoogleDriveStorage(Storage):
                         curr_root = item["id"]
                         p_found = True
 
-                # If all items were checked and the path name did not exist -> Create the path as a folder
-                if p_found == False:
+                # If all items were checked and the path name did not exist
+                # -> Create the path as a folder
+                if p_found is False:
                     folder = self._create_folder(p, parents[-1])
                     curr_root = folder.get("id")
                     parents.append(folder.get("id"))
@@ -932,7 +930,7 @@ class GoogleDriveStorage(Storage):
             del tags_file["id"]
 
             # Send request to API
-            updated_file = (
+            (
                 self.service.files()
                 .update(fileId=tags_file_id, body=tags_file, media_body=media_body)
                 .execute()
@@ -947,7 +945,7 @@ class GoogleDriveStorage(Storage):
         except StorageItemDoesNotExist:
             return {}
 
-        if tags != "" and tags != None:
+        if tags != "" and tags is not None:
             return json.loads(tags)
         else:
             return {}
