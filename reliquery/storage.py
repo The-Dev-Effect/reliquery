@@ -26,7 +26,6 @@ from apiclient.http import MediaFileUpload
 from apiclient.http import MediaIoBaseUpload
 from googleapiclient.http import MediaIoBaseDownload
 
-
 StoragePath = List[str]
 
 DATA_TYPES = [
@@ -638,40 +637,27 @@ class GoogleDriveStorage(Storage):
         return folder
 
     def _list_items_in_folder(self, folder_id):
-        #List files in parent folder
+        # List files in parent folder
         results = (
-                self.service.files()
-                .list(
-                    q="parents in '{}'".format(folder_id),
-                    pageSize=100,
-                    fields="nextPageToken, files(id, name)",
-                )
-                .execute()
+            self.service.files()
+            .list(
+                q="parents in '{}'".format(folder_id),
+                pageSize=100,
+                fields="nextPageToken, files(id, name)",
             )
+            .execute()
+        )
         items = results.get("files", [])
         return items
 
-    def _find_id_in_folder(self, parent_id, fileName):
-        #List files in parent folder
-        try:
-            results = (
-                    self.service.files()
-                    .list(
-                        q="parents in '{}'".format(parent_id),
-                        pageSize=100,
-                        fields="nextPageToken, files(id, name)",
-                    )
-                    .execute()
-                )
-        except:
-            raise StorageItemDoesNotExist
-        items = results.get("files", [])
-        #Go through list and find file with the given fileName and return the id
+    def _find_id_in_folder(self, folder_id, fileName):
+        items = self._list_items_in_folder(folder_id)
+        # Go through list and find file with the given fileName and return the id
         for item in items:
-            if item.get('name') == fileName:
-                return item.get('id')
-            else:
-                raise StorageItemDoesNotExist
+            i = item.get("name")
+            if i == fileName:
+                return item.get("id")
+        return ""
 
     def _find_deepest_folder_id(self, root, path):
         parents = [root]
@@ -693,7 +679,7 @@ class GoogleDriveStorage(Storage):
                     if item["name"] == p:
                         parents.append(item["id"])
             else:
-                return ''
+                return ""
 
         return parents[-1]
 
@@ -770,7 +756,6 @@ class GoogleDriveStorage(Storage):
             .execute()
         )
 
-
     def _create_file(self, file_name, parent_id, file_path):
         file_metadata = {"name": file_name, "parents": parent_id}
         media = MediaFileUpload(file_path)
@@ -821,37 +806,35 @@ class GoogleDriveStorage(Storage):
         buffer = io.BytesIO(request)
         return buffer
 
-    def put_text(self, path: StoragePath, text: str, encoding = "utf-8") -> None:
-        #Implementation with uploading BytesIO
+    def put_text(self, path: StoragePath, text: str, encoding="utf-8") -> None:
+        # Implementation with uploading BytesIO
         parents = self._create_path(self.root_id, path[:-1])
-        self._create_binary_file(path[-1], parents[-1], io.BytesIO(bytes(text,encoding)))
+        self._create_binary_file(
+            path[-1], parents[-1], io.BytesIO(bytes(text, encoding))
+        )
 
+    def get_text(self, path: StoragePath, encoding: str = "utf-8") -> str:
+        folder_id = self._find_deepest_folder_id(self.root_id, path[:-1])
+        file_id = self._find_id_in_folder(folder_id, path[-1])
 
-    def get_text(self, path: StoragePath,encoding: str = "utf-8") -> str:
-        parents = self._create_path(self.root_id, path[:-1])
-        file_id = ""
-        try:
-            file_id = self._find_id_in_folder(parents[-1], path[-1])
-        except StorageItemDoesNotExist:
-            raise StorageItemDoesNotExist
-        
-        if file_id != None:
-            return self.service.files().get_media(fileId=file_id).execute().decode(encoding)
-        else:
-            raise StorageItemDoesNotExist
-
+        if file_id != "":
+            return (
+                self.service.files()
+                .get_media(fileId=file_id)
+                .execute()
+                .decode(encoding)
+            )
 
     def list_keys(self, path: StoragePath) -> List[str]:
         # Go to the deepest part of the path and save the id of that folder
         curr_root = self.root_id
         parents = self._create_path(curr_root, path)
         key_list = []
-        #List all the files in that folder 
+        # List all the files in that folder
         items = self._list_items_in_folder(parents[-1])
-        #Return a list of all the file names in that folder
+        # Return a list of all the file names in that folder
         for item in items:
-            key_list.append(item.get('name'))
-
+            key_list.append(item.get("name"))
         return key_list
 
     def list_key_paths(self, path: StoragePath) -> List[str]:
@@ -867,22 +850,23 @@ class GoogleDriveStorage(Storage):
                 items = self._list_items_in_folder(parent)
 
                 for item in items:
-                    if item.get('name') == sub_path[-1]:
-                        file_id = item.get('id')
-                        type = self.service.files().get(fileId = file_id,
-                                            fields = 'mimeType').execute()
+                    if item.get("name") == sub_path[-1]:
+                        file_id = item.get("id")
+                        type = (
+                            self.service.files()
+                            .get(fileId=file_id, fields="mimeType")
+                            .execute()
+                        )
 
-                        if type['mimeType'] == 'application/vnd.google-apps.folder':
+                        if type["mimeType"] == "application/vnd.google-apps.folder":
                             paths.extend(self.list_key_paths(copy))
                     else:
                         paths.append(sub_path)
-
         return paths
 
     def put_metadata(self, path: StoragePath, metadata: Dict):
         # get the folder id of the relic
         folder_id_list = self._create_path(self.root_id, path[:-3])
-        
 
         path_list = path[2:]
         parents = self._create_path(folder_id_list[-1], path_list[:-1])
@@ -891,7 +875,9 @@ class GoogleDriveStorage(Storage):
         buffer = io.BytesIO(metadata_bytes)
         self._create_binary_file(path[-1], parents[-1], buffer)
 
-    def get_metadata(self, path: StoragePath, root_key: str, encoding: str = "utf-8") -> Dict:
+    def get_metadata(
+        self, path: StoragePath, root_key: str, encoding: str = "utf-8"
+    ) -> Dict:
         data = {root_key: {k: [] for k in DATA_TYPES}}
 
         def dict_from_path(path: StoragePath, dirname: str):
@@ -912,7 +898,12 @@ class GoogleDriveStorage(Storage):
                     return []
 
                 data[root_key][dirname].append(
-                    json.loads(self.service.files().get_media(fileId=file_id).execute().decode(encoding))
+                    json.loads(
+                        self.service.files()
+                        .get_media(fileId=file_id)
+                        .execute()
+                        .decode(encoding)
+                    )
                 )
 
         for d in data[root_key]:
@@ -920,33 +911,35 @@ class GoogleDriveStorage(Storage):
 
         return data
 
-    def put_tags(self, path: StoragePath, tags: Dict, encoding = "utf-8") -> None:
-        #self.put_text(path, json.dumps(tags))
-        folder_id = self._create_path(self.root_id, path[-1:])
+    def put_tags(self, path: StoragePath, tags: Dict, encoding="utf-8") -> None:
+        id_path = self._create_path(self.root_id, path[:-1])
         try:
-            tag_file_id = self._find_id_in_folder(folder_id, "tags")
+            tags_file_id = self._find_id_in_folder(id_path[-1], "tags")
         except StorageItemDoesNotExist:
-            self._create_path(self.root_id, path[-1:])
-            blank_buffer = io.BytesIO(bytes("",encoding))
-            self._create_binary_file("tags", folder_id, blank_buffer)
-            tag_file_id = self._find_id_in_folder(folder_id, "tags")
+            self.put_text(path, json.dumps(tags))
 
+        if tags_file_id != "":
 
-        curr_tags = self.get_text(path)
-        print("curr_tags", curr_tags)
-        new_tags = curr_tags + json.dumps(tags)
+            # Retrive the tags file from the API
+            tags_file = self.service.files().get(fileId=tags_file_id).execute()
 
-        tags_file = self.service.files().get(fileId = tag_file_id).execute()
+            # Files new content
+            buffer = io.BytesIO(bytes(json.dumps(tags), encoding))
+            media_body = MediaIoBaseUpload(buffer, mimetype="application/octet-stream")
 
-        #Tag file new content
-        media = MediaIoBaseUpload(io.BytesIO(bytes(new_tags,encoding)), mimetype="application/octet-stream")
+            # Delete not writable items
+            del tags_file["kind"]
+            del tags_file["id"]
 
-        updated_tags_file = (
-            self.service.files()
-            .update(body=tags_file, media_body=media)
-            .execute()
-        )
+            # Send request to API
+            updated_file = (
+                self.service.files()
+                .update(fileId=tags_file_id, body=tags_file, media_body=media_body)
+                .execute()
+            )
 
+        else:
+            self.put_text(path, json.dumps(tags))
 
     def get_tags(self, path: StoragePath) -> Dict:
         try:
@@ -954,28 +947,15 @@ class GoogleDriveStorage(Storage):
         except StorageItemDoesNotExist:
             return {}
 
-        return json.loads(tags)
-
-        # try:
-        #     tags = self.get_text(path)
-        # except StorageItemDoesNotExist:
-        #     return {}
-        # return json.loads(tags)
-
-    # def get_all_relic_tags(self) -> List[Dict]:
-    #     tag_keys = [
-    #         key for key in self.list_key_paths([""]) if "tags" in key.split("/")
-    #     ]
-    #     tags = []
-    #     for key in tag_keys:
-    #         tags.extend(self.get_tags(key.split("/")))
-
-        return tags
+        if tags != "" and tags != None:
+            return json.loads(tags)
+        else:
+            return {}
 
     def get_all_relic_data(self) -> List[Dict]:
         relic_types = [path.split("/")[1] for path in self.list_key_paths([])]
         relic_data = []
-        
+
         for relic_type in relic_types:
             names = {path.split("/")[2] for path in self.list_key_paths([relic_type])}
             if names:
@@ -988,6 +968,7 @@ class GoogleDriveStorage(Storage):
                         }
                     )
         return relic_data
+
 
 def get_storage_by_name(name: str, root: str = os.path.expanduser("~")) -> Storage:
     reliquery_dir = os.path.join(root, "reliquery")
