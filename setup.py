@@ -12,6 +12,9 @@ install_requires = [
     "nbformat",
     "dropbox",
     "Pillow >= 8.4.0",
+    "google-api-python-client",
+    "google-auth-httplib2",
+    "google-auth-oauthlib",
 ]
 
 setup(
