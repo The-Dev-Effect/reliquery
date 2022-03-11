@@ -18,7 +18,6 @@ from dropbox.exceptions import ApiError
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 from apiclient.http import MediaFileUpload
 from apiclient.http import MediaIoBaseUpload
 
@@ -614,10 +613,10 @@ class GoogleDriveStorage(Storage):
         return items
 
     def _find_id_in_folder(self, folder_id, fileName):
-        try:
-            items = self._list_items_in_folder(folder_id)
-        except HttpError:
-            raise StorageItemDoesNotExist
+        # try:
+        items = self._list_items_in_folder(folder_id)
+        # except HttpError:
+        #     raise StorageItemDoesNotExist
         # Go through list and find file with the given fileName and return the id
         for item in items:
             i = item.get("name")
@@ -692,16 +691,12 @@ class GoogleDriveStorage(Storage):
         return parents
 
     def _check_file_exists(self, folder_id, file_name):
-        try:
-            items = self._list_items_in_folder(folder_id)
-        except HttpError:
-            raise StorageItemDoesNotExist
-        # Go through list and find file with the given fileName and return the id
+        items = self._list_items_in_folder(folder_id)
         for item in items:
             i = item.get("name")
             if i == file_name:
                 return item.get("id")
-        return ""
+        return None
 
     def _update_binary_file(self, file_id, content):
         # Retrive the tags file from the API
@@ -806,7 +801,7 @@ class GoogleDriveStorage(Storage):
         curr_root = self.root_id
         parents = self._create_path(curr_root, path[:-1])
         file_id = self._check_file_exists(parents[-1], path[-1])
-        if file_id == "":
+        if file_id is None:
             self._create_file(path[-1], parents[-1], file_path)
         else:
             self._update_file(file_id, file_path)
@@ -815,7 +810,7 @@ class GoogleDriveStorage(Storage):
         curr_root = self.root_id
         parents = self._create_path(curr_root, path[:-1])
         file_id = self._check_file_exists(parents[-1], path[-1])
-        if file_id == "":
+        if file_id is None:
             self._create_binary_file(path[-1], parents[-1], buffer)
         else:
             self._update_binary_file(file_id, buffer)
@@ -833,7 +828,7 @@ class GoogleDriveStorage(Storage):
         parents = self._create_path(self.root_id, path[:-1])
         file_id = self._check_file_exists(parents[-1], path[-1])
         content = io.BytesIO(bytes(text, encoding))
-        if file_id == "":
+        if file_id is None:
             self._create_binary_file(path[-1], parents[-1], content)
         else:
             self._update_binary_file(file_id, content)
@@ -898,8 +893,9 @@ class GoogleDriveStorage(Storage):
 
         metadata_bytes = json.dumps(metadata).encode("utf-8")
         buffer = io.BytesIO(metadata_bytes)
+
         file_id = self._check_file_exists(parents[-1], path[-1])
-        if file_id == "":
+        if file_id is None:
             self._create_binary_file(path[-1], parents[-1], buffer)
         else:
             self._update_binary_file(file_id, buffer)
@@ -941,15 +937,8 @@ class GoogleDriveStorage(Storage):
         return data
 
     def put_tags(self, path: StoragePath, tags: Dict, encoding="utf-8") -> None:
-        id_path = self._create_path(self.root_id, path[:-1])
-        tags_file_id = self._check_file_exists(id_path[-1], "tags")
-
-        if tags_file_id != "":
-            buffer = io.BytesIO(bytes(json.dumps(tags), encoding))
-            self._update_binary_file(tags_file_id, buffer)
-
-        else:
-            self.put_text(path, json.dumps(tags))
+        self._create_path(self.root_id, path[:-1])
+        self.put_text(path, json.dumps(tags))
 
     def get_tags(self, path: StoragePath) -> Dict:
         try:
@@ -957,10 +946,7 @@ class GoogleDriveStorage(Storage):
         except StorageItemDoesNotExist:
             return {}
 
-        if tags != "" and tags is not None:
-            return json.loads(tags)
-        else:
-            return {}
+        return json.loads(tags)
 
     def get_all_relic_data(self) -> List[Dict]:
         relic_types = [path.split("/")[1] for path in self.list_key_paths([])]
