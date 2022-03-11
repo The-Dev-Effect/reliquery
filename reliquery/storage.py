@@ -613,11 +613,7 @@ class GoogleDriveStorage(Storage):
         return items
 
     def _find_id_in_folder(self, folder_id, fileName):
-        # try:
         items = self._list_items_in_folder(folder_id)
-        # except HttpError:
-        #     raise StorageItemDoesNotExist
-        # Go through list and find file with the given fileName and return the id
         for item in items:
             i = item.get("name")
             if i == fileName:
