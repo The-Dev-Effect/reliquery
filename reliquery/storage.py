@@ -533,8 +533,8 @@ class GoogleDriveStorage(Storage):
             )
         try:
             self.service = build("drive", "v3", credentials=creds)
-        except HttpError as error:
-            print(f"An error occurred: {error}")
+        except IOError:
+            raise StorageItemDoesNotExist
 
         # Check for prefix folder
         results = (
@@ -552,46 +552,14 @@ class GoogleDriveStorage(Storage):
         prefix_found = False
         for item in items:
             if item["name"] == prefix:
-                self.root_id = item["id"]
+                self.root_id = item['id']
                 prefix_found = True
                 break
 
         if prefix_found is False:
-            folder_metadata = {
-                "name": prefix,
-                "mimeType": "application/vnd.google-apps.folder",
-            }
-            # Create the folder with the previous metadata
-            folder = (
-                self.service.files().create(body=folder_metadata, fields="id").execute()
-            )
-            # Get folder id for the folder just created
-            folder_id = "{}".format(folder.get("id"))
+            ids = self._create_path(self.shared_folder_id, [prefix])
+            self.root_id = ids[-1]
 
-            # Retrieve existing parents of the folder
-            folder = (
-                self.service.files()
-                .get(fileId="{}".format(folder_id), fields="parents")
-                .execute()
-            )
-            previous_parents = ",".join(folder.get("parents"))
-
-            # Remove the previous parents and replace with the parent we want
-            folder = (
-                self.service.files()
-                .update(
-                    fileId=folder_id,
-                    addParents=self.shared_folder_id,
-                    removeParents=previous_parents,
-                    fields="id, parents",
-                )
-                .execute()
-            )
-
-            folder = (
-                self.service.files().create(body=folder_metadata, fields="id").execute()
-            )
-            self.root_id = folder.get("id")
 
     def _join_path(self, path: StoragePath) -> str:
         return "/".join([self.prefix] + path)
@@ -647,13 +615,16 @@ class GoogleDriveStorage(Storage):
         return items
 
     def _find_id_in_folder(self, folder_id, fileName):
-        items = self._list_items_in_folder(folder_id)
-        # Go through list and find file with the given fileName and return the id
+        try:
+            items = self._list_items_in_folder(folder_id)
+        except HttpError:
+            raise StorageItemDoesNotExist
+        #Go through list and find file with the given fileName and return the id
         for item in items:
             i = item.get("name")
             if i == fileName:
                 return item.get("id")
-        return ""
+        raise StorageItemDoesNotExist
 
     def _find_deepest_folder_id(self, root, path):
         parents = [root]
@@ -716,7 +687,6 @@ class GoogleDriveStorage(Storage):
             # When no results are found/items list is empty
             else:
                 folder = self._create_folder(p, parents[-1])
-
                 curr_root = folder.get("id")
                 parents.append(folder.get("id"))
 
