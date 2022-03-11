@@ -692,6 +692,54 @@ class GoogleDriveStorage(Storage):
 
         return parents
 
+    def _check_file_exists(self, folder_id , file_name):
+        try:
+            items = self._list_items_in_folder(folder_id)
+        except HttpError:
+            raise StorageItemDoesNotExist
+        #Go through list and find file with the given fileName and return the id
+        for item in items:
+            i = item.get("name")
+            if i == file_name:
+                return item.get('id')
+        return ''
+
+
+    def _update_binary_file(self,file_id, content):
+        # Retrive the tags file from the API
+        file = self.service.files().get(fileId=file_id).execute()
+
+        # Files new content
+        media_body = MediaIoBaseUpload(content, mimetype="application/octet-stream")
+
+        # Delete not writable items
+        del file["kind"]
+        del file["id"]
+
+        # Send request to API
+        (
+            self.service.files()
+            .update(fileId=file_id, body=file, media_body=media_body)
+            .execute()
+        )
+
+    def _update_file(self, file_id, file_path):
+        # Retrive the tags file from the API
+        file = self.service.files().get(fileId=file_id).execute()
+
+        # Files new content
+        media_body =MediaFileUpload(file_path)
+        # Delete not writable items
+        del file["kind"]
+        del file["id"]
+
+        # Send request to API
+        (
+            self.service.files()
+            .update(fileId=file_id, body=file, media_body=media_body)
+            .execute()
+        )
+
     def _create_binary_file(self, file_name, parent_id, buffer):
         file_metadata = {"name": file_name, "parents": parent_id}
         media = MediaIoBaseUpload(buffer, mimetype="application/octet-stream")
@@ -759,12 +807,20 @@ class GoogleDriveStorage(Storage):
     def put_file(self, path: StoragePath, file_path: str) -> None:
         curr_root = self.root_id
         parents = self._create_path(curr_root, path[:-1])
-        self._create_file(path[-1], parents[-1], file_path)
+        file_id = self._check_file_exists(parents[-1], path[-1])
+        if file_id == '':
+            self._create_file(path[-1], parents[-1], file_path)
+        else:
+            self._update_file(file_id, file_path)
 
     def put_binary_obj(self, path: StoragePath, buffer: BytesIO):
         curr_root = self.root_id
         parents = self._create_path(curr_root, path[:-1])
-        self._create_binary_file(path[-1], parents[-1], buffer)
+        file_id = self._check_file_exists(parents[-1], path[-1])
+        if file_id == '':
+            self._create_binary_file(path[-1], parents[-1], buffer)
+        else:
+            self._update_binary_file(file_id, buffer)
 
     def get_binary_obj(self, path: StoragePath) -> BytesIO:
         parents = self._create_path(self.root_id, path[:-1])
@@ -777,9 +833,14 @@ class GoogleDriveStorage(Storage):
     def put_text(self, path: StoragePath, text: str, encoding="utf-8") -> None:
         # Implementation with uploading BytesIO
         parents = self._create_path(self.root_id, path[:-1])
-        self._create_binary_file(
-            path[-1], parents[-1], io.BytesIO(bytes(text, encoding))
-        )
+        file_id = self._check_file_exists(parents[-1], path[-1])
+        content = io.BytesIO(bytes(text, encoding))
+        if file_id == '':
+            self._create_binary_file(
+                path[-1], parents[-1], content
+            )
+        else:
+            self._update_binary_file(file_id, content)
 
     def get_text(self, path: StoragePath, encoding: str = "utf-8") -> str:
         folder_id = self._find_deepest_folder_id(self.root_id, path[:-1])
@@ -841,7 +902,11 @@ class GoogleDriveStorage(Storage):
 
         metadata_bytes = json.dumps(metadata).encode("utf-8")
         buffer = io.BytesIO(metadata_bytes)
-        self._create_binary_file(path[-1], parents[-1], buffer)
+        file_id = self._check_file_exists(parents[-1], path[-1])
+        if file_id == '':
+            self._create_binary_file(path[-1], parents[-1], buffer)
+        else:
+            self._update_binary_file(file_id, buffer)
 
     def get_metadata(
         self, path: StoragePath, root_key: str, encoding: str = "utf-8"
@@ -881,31 +946,12 @@ class GoogleDriveStorage(Storage):
 
     def put_tags(self, path: StoragePath, tags: Dict, encoding="utf-8") -> None:
         id_path = self._create_path(self.root_id, path[:-1])
-        try:
-            tags_file_id = self._find_id_in_folder(id_path[-1], "tags")
-        except StorageItemDoesNotExist:
-            self.put_text(path, json.dumps(tags))
+        tags_file_id = self._check_file_exists(id_path[-1], "tags")
 
         if tags_file_id != "":
-
-            # Retrive the tags file from the API
-            tags_file = self.service.files().get(fileId=tags_file_id).execute()
-
-            # Files new content
             buffer = io.BytesIO(bytes(json.dumps(tags), encoding))
-            media_body = MediaIoBaseUpload(buffer, mimetype="application/octet-stream")
-
-            # Delete not writable items
-            del tags_file["kind"]
-            del tags_file["id"]
-
-            # Send request to API
-            (
-                self.service.files()
-                .update(fileId=tags_file_id, body=tags_file, media_body=media_body)
-                .execute()
-            )
-
+            self._update_binary_file(tags_file_id, buffer)
+            
         else:
             self.put_text(path, json.dumps(tags))
 
