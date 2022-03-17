@@ -20,6 +20,8 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from apiclient.http import MediaFileUpload
 from apiclient.http import MediaIoBaseUpload
+from google.cloud import storage
+from google.cloud.exceptions import NotFound
 
 StoragePath = List[str]
 
@@ -962,6 +964,167 @@ class GoogleDriveStorage(Storage):
         return relic_data
 
 
+class GoogleCloudStorage(Storage):
+    def __init__(
+        self,
+        prefix: str,
+        name: str,
+        token_file: str,
+    ):
+        self.prefix = prefix
+        self.name = name
+        self.token_file = token_file
+
+        self.storage_client = storage.Client.from_service_account_json(self.token_file)
+        #List buckets
+        buckets_list = list(self.storage_client.list_buckets())
+        prefix_bucket = False
+        for bucket in buckets_list:
+            if bucket.id == prefix:
+                self.bucket_id = bucket.id
+                prefix_bucket = True
+        #create prefix bucket if not found 
+        if prefix_bucket is False:
+            bucket = self.storage_client.create_bucket(prefix)
+            self.bucket_id = bucket.id
+
+
+    def _join_path(self, path: StoragePath) -> str:
+        return "/".join(path)
+
+
+    def put_file(self, path: StoragePath, file_path: str) -> None:
+        path = self._join_path(path)
+        bucket = self.storage_client.bucket(self.bucket_id)
+        blob = bucket.blob(path)
+        blob.upload_from_filename(file_path)
+
+
+    def put_binary_obj(self, path: StoragePath, buffer: BytesIO):
+        path = self._join_path(path)
+
+        buffer_bytes = buffer.read()
+
+        bucket = self.storage_client.bucket(self.bucket_id)
+        blob = bucket.blob(path)
+        blob.upload_from_string(buffer_bytes)
+
+
+    def get_binary_obj(self, path: StoragePath) -> BytesIO:
+        path = self._join_path(path)
+        bucket = self.storage_client.bucket(self.bucket_id)
+        blob = bucket.blob(path)
+        return blob.download_as_bytes()
+
+
+    def put_text(self, path: StoragePath, text: str) -> None:
+        path = self._join_path(path)
+
+        bucket = self.storage_client.bucket(self.bucket_id)
+        blob = bucket.blob(path)
+        blob.upload_from_string(text)
+
+
+    def get_text(self, path: StoragePath) -> str:
+        path = self._join_path(path)
+        bucket = self.storage_client.bucket(self.bucket_id)
+        blob = bucket.blob(path)
+        try:
+            return blob.download_as_text()
+        except NotFound:
+            raise StorageItemDoesNotExist
+
+
+    def list_keys(self, path: StoragePath) -> List[str]:
+        key_list =[]
+        bucket = self.storage_client.get_bucket(self.bucket_id)
+        # List all the files in that folder with the given prefix
+        items = self.storage_client.list_blobs(bucket,prefix=path)
+        # Return a list of all the file names in that folder
+        for item in items:
+            key_list.append(item.id.split('/')[-2])
+        return key_list
+        
+
+    def list_key_paths(self, path: StoragePath) -> List[str]:
+        paths = []
+        subs = self.list_keys(path)
+        if subs:
+            for sub in subs:
+                copy = path.copy()
+                copy.append(sub)
+                sub_path = self._join_path(copy)
+
+                # is a file or folder
+                if '/' in str(sub_path):
+                    paths.extend(self.list_key_paths(copy))
+                elif '/' not in str(sub_path):
+                    paths.append(sub_path)
+        return paths
+
+
+    def put_metadata(self, path: StoragePath, metadata: Dict):
+        metadata_bytes = json.dumps(metadata).encode("utf-8")
+        path = self._join_path(path)
+
+        bucket = self.storage_client.bucket(self.bucket_id)
+        blob = bucket.blob(path)
+        blob.upload_from_string(metadata_bytes)
+
+
+    def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
+        data = {root_key: {k: [] for k in DATA_TYPES}}
+
+        def dict_from_path(path: StoragePath, dirname: str):
+            dirpath = path.copy()
+            dirpath.append(dirname)
+            entries = self.list_keys(dirpath)
+
+            for i in entries:
+                entry_path = dirpath.copy()
+                entry_path.append(i)
+                bucket = self.storage_client.bucket(self.bucket_id)
+                blob = bucket.blob(self._join_path(entry_path))
+                data[root_key][dirname].append(
+                    json.loads(blob.download_as_text())
+                )
+
+        for d in data[root_key]:
+            dict_from_path(path, d)
+
+        return data
+
+    def put_tags(self, path: StoragePath, tags: Dict) -> None:
+        self.put_text(path, json.dumps(tags))
+
+    def get_tags(self, path: StoragePath) -> Dict:
+        try:
+            tags = self.get_text(path)
+        except StorageItemDoesNotExist:
+            return {}
+
+        return json.loads(tags)
+
+    def get_all_relic_data(self) -> List[Dict]:
+        relic_types = [path.split("/") for path in self.list_key_paths([''])]
+        print(relic_types)
+        relic_data = []
+
+        for relic_type in relic_types:
+            names = {path.split("/")[2] for path in self.list_key_paths([relic_type])}
+            if names:
+                for name in names:
+                    relic_data.append(
+                        {
+                            "relic_name": name,
+                            "relic_type": relic_type,
+                            "storage_name": self.name,
+                        }
+                    )
+        return relic_data
+
+
+
 def get_storage_by_name(name: str, root: str = os.path.expanduser("~")) -> Storage:
     reliquery_dir = os.path.join(root, "reliquery")
     config = settings.get_config(reliquery_dir)
@@ -999,6 +1162,9 @@ def get_storage(name: str, root: str, config: Dict) -> Storage:
 
     elif config["storage"]["type"] == "GoogleDrive":
         return GoogleDriveStorage(**config["storage"]["args"], name=name)
+
+    elif config["storage"]["type"] == "GoogleCloud":
+        return GoogleCloudStorage(**config["storage"]["args"], name=name)
 
     else:
         raise ValueError(f"No storage found by name : {name}")
