@@ -254,7 +254,7 @@ class Relic:
         img_data = self.storage.get_binary_obj(
             [self.relic_type, self.name, "images", name]
         )
-        image = Image.open((img_data))
+        image = Image.open(img_data)
         return image
 
     def save_image_to_path(self, name: str, path: str) -> None:

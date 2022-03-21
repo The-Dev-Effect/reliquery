@@ -1014,7 +1014,9 @@ class GoogleCloudStorage(Storage):
         path = self._join_path(path)
         bucket = self.storage_client.bucket(self.bucket_id)
         blob = bucket.blob(path)
-        return blob.download_as_bytes()
+        bytes = blob.download_as_string()
+        bytesio = BytesIO(bytes)
+        return bytesio
 
 
     def put_text(self, path: StoragePath, text: str) -> None:
@@ -1056,9 +1058,9 @@ class GoogleCloudStorage(Storage):
                 sub_path = self._join_path(copy)
 
                 # is a file or folder
-                if '/' in str(sub_path):
+                if str(sub_path)[-1] == '/':
                     paths.extend(self.list_key_paths(copy))
-                elif '/' not in str(sub_path):
+                elif str(sub_path)[-1] != '/':
                     paths.append(sub_path)
         return paths
 
@@ -1107,7 +1109,6 @@ class GoogleCloudStorage(Storage):
 
     def get_all_relic_data(self) -> List[Dict]:
         relic_types = [path.split("/") for path in self.list_key_paths([''])]
-        print(relic_types)
         relic_data = []
 
         for relic_type in relic_types:
