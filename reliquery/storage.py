@@ -1041,7 +1041,7 @@ class GoogleCloudStorage(Storage):
         key_list =[]
         bucket = self.storage_client.get_bucket(self.bucket_id)
         # List all the files in that folder with the given prefix
-        items = self.storage_client.list_blobs(bucket,prefix=path)
+        items = self.storage_client.list_blobs(bucket,prefix=self._join_path(path))
         # Return a list of all the file names in that folder
         for item in items:
             key_list.append(item.id.split('/')[-2])
@@ -1081,7 +1081,7 @@ class GoogleCloudStorage(Storage):
             dirpath = path.copy()
             dirpath.append(dirname)
             entries = self.list_keys(dirpath)
-
+            
             for i in entries:
                 entry_path = dirpath.copy()
                 entry_path.append(i)
