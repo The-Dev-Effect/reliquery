@@ -8,7 +8,7 @@ install_requires = [
     "flake8",
     "sphinx",
     "pandas",
-    "nbconvert == 6.3.0",
+    "nbconvert",
     "nbformat",
     "dropbox",
     "Pillow >= 8.4.0",
