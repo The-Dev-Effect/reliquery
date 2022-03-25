@@ -1108,16 +1108,18 @@ class GoogleCloudStorage(Storage):
         return json.loads(tags)
 
     def get_all_relic_data(self) -> List[Dict]:
-        relic_types = [path.split("/") for path in self.list_key_paths([''])]
+        bucket = self.storage_client.get_bucket(self.bucket_id)
+        relic_types = {path.id.split('/')[1] for path in self.storage_client.list_blobs(bucket)}
         relic_data = []
 
         for relic_type in relic_types:
-            names = {path.split("/")[2] for path in self.list_key_paths([relic_type])}
-            if names:
-                for name in names:
+            prefix = self._join_path([self.prefix, relic_type])
+            names = {path.id for path in self.storage_client.list_blobs(bucket)}
+            for name in names:
+                if prefix in name:
                     relic_data.append(
                         {
-                            "relic_name": name,
+                            "relic_name": name.split('/')[2],
                             "relic_type": relic_type,
                             "storage_name": self.name,
                         }
