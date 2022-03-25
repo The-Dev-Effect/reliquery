@@ -976,29 +976,26 @@ class GoogleCloudStorage(Storage):
         self.token_file = token_file
 
         self.storage_client = storage.Client.from_service_account_json(self.token_file)
-        #List buckets
+        # List buckets
         buckets_list = list(self.storage_client.list_buckets())
         prefix_bucket = False
         for bucket in buckets_list:
             if bucket.id == prefix:
                 self.bucket_id = bucket.id
                 prefix_bucket = True
-        #create prefix bucket if not found 
+        # create prefix bucket if not found
         if prefix_bucket is False:
             bucket = self.storage_client.create_bucket(prefix)
             self.bucket_id = bucket.id
 
-
     def _join_path(self, path: StoragePath) -> str:
         return "/".join(path)
-
 
     def put_file(self, path: StoragePath, file_path: str) -> None:
         path = self._join_path(path)
         bucket = self.storage_client.bucket(self.bucket_id)
         blob = bucket.blob(path)
         blob.upload_from_filename(file_path)
-
 
     def put_binary_obj(self, path: StoragePath, buffer: BytesIO):
         path = self._join_path(path)
@@ -1009,7 +1006,6 @@ class GoogleCloudStorage(Storage):
         blob = bucket.blob(path)
         blob.upload_from_string(buffer_bytes)
 
-
     def get_binary_obj(self, path: StoragePath) -> BytesIO:
         path = self._join_path(path)
         bucket = self.storage_client.bucket(self.bucket_id)
@@ -1018,14 +1014,12 @@ class GoogleCloudStorage(Storage):
         bytesio = BytesIO(bytes)
         return bytesio
 
-
     def put_text(self, path: StoragePath, text: str) -> None:
         path = self._join_path(path)
 
         bucket = self.storage_client.bucket(self.bucket_id)
         blob = bucket.blob(path)
         blob.upload_from_string(text)
-
 
     def get_text(self, path: StoragePath) -> str:
         path = self._join_path(path)
@@ -1036,17 +1030,15 @@ class GoogleCloudStorage(Storage):
         except NotFound:
             raise StorageItemDoesNotExist
 
-
     def list_keys(self, path: StoragePath) -> List[str]:
-        key_list =[]
+        key_list = []
         bucket = self.storage_client.get_bucket(self.bucket_id)
         # List all the files in that folder with the given prefix
-        items = self.storage_client.list_blobs(bucket,prefix=self._join_path(path))
+        items = self.storage_client.list_blobs(bucket, prefix=self._join_path(path))
         # Return a list of all the file names in that folder
         for item in items:
-            key_list.append(item.id.split('/')[-2])
+            key_list.append(item.id.split("/")[-2])
         return key_list
-        
 
     def list_key_paths(self, path: StoragePath) -> List[str]:
         paths = []
@@ -1058,12 +1050,11 @@ class GoogleCloudStorage(Storage):
                 sub_path = self._join_path(copy)
 
                 # is a file or folder
-                if str(sub_path)[-1] == '/':
+                if str(sub_path)[-1] == "/":
                     paths.extend(self.list_key_paths(copy))
-                elif str(sub_path)[-1] != '/':
+                elif str(sub_path)[-1] != "/":
                     paths.append(sub_path)
         return paths
-
 
     def put_metadata(self, path: StoragePath, metadata: Dict):
         metadata_bytes = json.dumps(metadata).encode("utf-8")
@@ -1073,7 +1064,6 @@ class GoogleCloudStorage(Storage):
         blob = bucket.blob(path)
         blob.upload_from_string(metadata_bytes)
 
-
     def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
         data = {root_key: {k: [] for k in DATA_TYPES}}
 
@@ -1081,15 +1071,13 @@ class GoogleCloudStorage(Storage):
             dirpath = path.copy()
             dirpath.append(dirname)
             entries = self.list_keys(dirpath)
-            
+
             for i in entries:
                 entry_path = dirpath.copy()
                 entry_path.append(i)
                 bucket = self.storage_client.bucket(self.bucket_id)
                 blob = bucket.blob(self._join_path(entry_path))
-                data[root_key][dirname].append(
-                    json.loads(blob.download_as_text())
-                )
+                data[root_key][dirname].append(json.loads(blob.download_as_text()))
 
         for d in data[root_key]:
             dict_from_path(path, d)
@@ -1109,7 +1097,9 @@ class GoogleCloudStorage(Storage):
 
     def get_all_relic_data(self) -> List[Dict]:
         bucket = self.storage_client.get_bucket(self.bucket_id)
-        relic_types = {path.id.split('/')[1] for path in self.storage_client.list_blobs(bucket)}
+        relic_types = {
+            path.id.split("/")[1] for path in self.storage_client.list_blobs(bucket)
+        }
         relic_data = []
 
         for relic_type in relic_types:
@@ -1119,13 +1109,12 @@ class GoogleCloudStorage(Storage):
                 if prefix in name:
                     relic_data.append(
                         {
-                            "relic_name": name.split('/')[2],
+                            "relic_name": name.split("/")[2],
                             "relic_type": relic_type,
                             "storage_name": self.name,
                         }
                     )
         return relic_data
-
 
 
 def get_storage_by_name(name: str, root: str = os.path.expanduser("~")) -> Storage:
