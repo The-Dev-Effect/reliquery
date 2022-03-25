@@ -5,7 +5,7 @@ uvicorn
 boto3
 flake8
 pandas
-nbconvert
+nbconvert == 6.3.0
 nbformat 
 dropbox
 Pillow
