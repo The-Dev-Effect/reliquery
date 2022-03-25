@@ -5,7 +5,7 @@ uvicorn
 boto3
 flake8
 pandas
-nbconvert == 6.3.0
+nbconvert ==6.3.0
 nbformat 
 dropbox
 Pillow
@@ -13,3 +13,4 @@ google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
 google-cloud-storage
+jinja2 == 3.0.3
