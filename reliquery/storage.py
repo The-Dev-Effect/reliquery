@@ -40,6 +40,9 @@ DATA_TYPES = [
 class StorageItemDoesNotExist(Exception):
     pass
 
+class BucketDoesNotExist(Exception):
+    pass
+
 
 class Storage:
     def put_file(self, path: StoragePath, file_path: str) -> None:
@@ -970,26 +973,26 @@ class GoogleCloudStorage(Storage):
         prefix: str,
         name: str,
         token_file: str,
+        root: str
     ):
         self.prefix = prefix
         self.name = name
         self.token_file = token_file
+        self.root = root
 
         self.storage_client = storage.Client.from_service_account_json(self.token_file)
-        # List buckets
+        # Check for root bucket
         buckets_list = list(self.storage_client.list_buckets())
-        prefix_bucket = False
+        root_bucket = False
         for bucket in buckets_list:
-            if bucket.id == prefix:
+            if bucket.id == root:
                 self.bucket_id = bucket.id
-                prefix_bucket = True
-        # create prefix bucket if not found
-        if prefix_bucket is False:
-            bucket = self.storage_client.create_bucket(prefix)
-            self.bucket_id = bucket.id
+                root_bucket = True
+        if root_bucket == False:
+            raise BucketDoesNotExist
 
     def _join_path(self, path: StoragePath) -> str:
-        return "/".join(path)
+        return "/".join([self.prefix] + path)
 
     def put_file(self, path: StoragePath, file_path: str) -> None:
         path = self._join_path(path)
@@ -1052,7 +1055,7 @@ class GoogleCloudStorage(Storage):
                 # is a file or folder
                 if str(sub_path)[-1] == "/":
                     paths.extend(self.list_key_paths(copy))
-                elif str(sub_path)[-1] != "/":
+                else:
                     paths.append(sub_path)
         return paths
 
