@@ -40,6 +40,7 @@ DATA_TYPES = [
 class StorageItemDoesNotExist(Exception):
     pass
 
+
 class BucketDoesNotExist(Exception):
     pass
 
@@ -968,13 +969,7 @@ class GoogleDriveStorage(Storage):
 
 
 class GoogleCloudStorage(Storage):
-    def __init__(
-        self,
-        prefix: str,
-        name: str,
-        token_file: str,
-        root: str
-    ):
+    def __init__(self, prefix: str, name: str, token_file: str, root: str):
         self.prefix = prefix
         self.name = name
         self.token_file = token_file
@@ -988,7 +983,7 @@ class GoogleCloudStorage(Storage):
             if bucket.id == root:
                 self.bucket_id = bucket.id
                 root_bucket = True
-        if root_bucket == False:
+        if root_bucket is False:
             raise BucketDoesNotExist
 
     def _join_path(self, path: StoragePath) -> str:
