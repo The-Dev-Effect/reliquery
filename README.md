@@ -20,7 +20,9 @@ An anti-format storage tool aimed towards supporting scientists. Giving them the
 12. [File Storage](#file)
 13. [S3 Storage](#s3)
 14. [Dropbox](#dropbox)
-15. [License](#lic)
+15. [Google Drive](#googledrive)
+16. [Google Cloud](#googlecloud)
+17. [License](#lic)
 
 ## For production<a name="prod"></a>
 latest version 0.2.6
@@ -238,6 +240,40 @@ The access token is obtained by creating an app in the Dropbox App Console and s
 * file_requests.read
 Dropbox App Console([https://www.dropbox.com/developers/apps/create](https://www.dropbox.com/developers/apps/create?_tk=pilot_lp&_ad=ctabtn1&_camp=create))
 
+## Google Drive Storage<a name="googledrive"></a>
+To use Google Drive with reliquery, the following must be added to the config file in reliquery
+```json
+"GoogleDrive":{
+        "storage": {
+            "type": "GoogleDrive",
+            "args": {
+                "token_file": "TOKEN_FILE_PATH",
+                "prefix": "relics",
+                "SCOPES": ["https://www.googleapis.com/auth/drive"],
+                "shared_folder_id": "SHARED_FOLDER_ID"
+            }
+        }
+    }
+```
+To obatain a token file, you must create a key from a service account in the Google Cloud Platform and download it as a json file. You then need to share a folder with the service account and obtain the folder id which is the last part of the URL when you are in the folder.
+Google Cloud Platform([https://console.cloud.google.com/iam-admin/serviceaccounts](https://console.cloud.google.com/iam-admin/serviceaccounts))
+
+## Google Cloud Storage<a name="googlecloud"></a>
+To use Google Cloud with reliquery, the following must be added to the config file in reliquery
+```json
+"GoogleCloud":{
+        "storage": {
+            "type": "GoogleCloud",
+            "args": {
+                "token_file": "TOKEN_FILE_PATH",
+                "prefix": "relics",
+                "root": "reliquery"
+            }
+        }
+    }
+```
+To obatain a token file, you must create a key from a service account in the Google Cloud Platform and download it as a json file. 
+Google Cloud Platform([https://console.cloud.google.com/iam-admin/serviceaccounts](https://console.cloud.google.com/iam-admin/serviceaccounts))
 
 ## License<a name="lic"></a>
 
