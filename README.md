@@ -255,7 +255,7 @@ To use Google Drive with reliquery, the following must be added to the config fi
         }
     }
 ```
-To obatain a token file, you must create a key from a service account in the Google Cloud Platform and download it as a json file. You then need to share a folder with the service account and obtain the folder id which is the last part of the URL when you are in the folder.
+To obtain a token file, you must create a key from a service account in the Google Cloud Platform and download it as a json file. You then need to share a folder with the service account and obtain the folder id which is the last part of the URL when you are in the folder.
 Google Cloud Platform([https://console.cloud.google.com/iam-admin/serviceaccounts](https://console.cloud.google.com/iam-admin/serviceaccounts))
 
 ## Google Cloud Storage<a name="googlecloud"></a>
@@ -272,7 +272,7 @@ To use Google Cloud with reliquery, the following must be added to the config fi
         }
     }
 ```
-To obatain a token file, you must create a key from a service account in the Google Cloud Platform and download it as a json file. 
+To obtain a token file, you must create a key from a service account in the Google Cloud Platform and download it as a json file. 
 Google Cloud Platform([https://console.cloud.google.com/iam-admin/serviceaccounts](https://console.cloud.google.com/iam-admin/serviceaccounts))
 
 ## License<a name="lic"></a>
