@@ -2,14 +2,14 @@ from setuptools import setup
 
 install_requires = [
     "numpy >= 1.16",
-    "black>=21.4b",
+    "black >= 21.4b",
     "pytest",
     "flake8",
     "sphinx",
     "pandas",
     "nbconvert",
     "nbformat",
-    "Pillow >= 8.4.0",
+    "Pillow >= 8.4.0"
 ]
 
 setup(
@@ -23,10 +23,13 @@ setup(
     packages=["reliquery"],
     tests_require=["pytest"],
     install_requires=install_requires,
-    extra_require = {
+    extras_require = {
         'S3' : ["boto3 >= 1.17"],
         'Dropbox' : ["dropbox"],
-        'GoogleDrive' : ["google-api-python-client","google-auth-httplib2","google-auth-oauthlib"],
-        'GoogleCloud' : ["google-cloud-storage"]
+        'Google': ["google-api-python-client",
+        "google-cloud-storage",
+        "google-auth-httplib2",
+        "google-auth-oauthlib"]
     }
 )
+
