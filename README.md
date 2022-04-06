@@ -213,11 +213,19 @@ In the quick example that will be:
 <br />
 
 ## S3 Storage<a name="s3"></a>
+To use S3 with reliquery the following must be installed
+```python
+pip install reliquery[S3]
+```
 s3_signed
 * true = uses current aws_cli configuration
 * false = uses the anonymous IAM role
 
 ## Dropbox Storage<a name="dropbox"></a>
+To use Dropbox with reliquery the following must be installed
+```python
+pip install reliquery[Dropbox]
+```
 To use Dropbox with reliquery, the following must be added to the config file in reliquery
 ```json
 "Dropbox":{
@@ -241,6 +249,10 @@ The access token is obtained by creating an app in the Dropbox App Console and s
 Dropbox App Console([https://www.dropbox.com/developers/apps/create](https://www.dropbox.com/developers/apps/create?_tk=pilot_lp&_ad=ctabtn1&_camp=create))
 
 ## Google Drive Storage<a name="googledrive"></a>
+To use Google Drive with reliquery the following must be installed
+```python
+pip install reliquery[Google]
+```
 To use Google Drive with reliquery, the following must be added to the config file in reliquery
 ```json
 "GoogleDrive":{
@@ -259,6 +271,10 @@ To obtain a token file, you must create a key from a service account in the Goog
 Google Cloud Platform([https://console.cloud.google.com/iam-admin/serviceaccounts](https://console.cloud.google.com/iam-admin/serviceaccounts))
 
 ## Google Cloud Storage<a name="googlecloud"></a>
+To use Google Cloud with reliquery the following must be installed
+```python
+pip install reliquery[Google]
+```
 To use Google Cloud with reliquery, the following must be added to the config file in reliquery
 ```json
 "GoogleCloud":{
