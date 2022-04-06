@@ -646,15 +646,12 @@ class GoogleDriveStorage(Storage):
 
     def _find_deepest_folder_id(self, root, path):
         parents = [root]
-        next = 1
         for p in path:
             items = self._list_items_in_folder(parents[-1])
             if len(items) > 0:
                 for item in items:
-                    if next < len(path):
-                        if item["name"] == path[next]:
-                            parents.append(item["id"])
-                            next += 1
+                    if item["name"] == p:
+                        parents.append(item["id"])
             else:
                 raise StorageItemDoesNotExist
 
@@ -846,9 +843,7 @@ class GoogleDriveStorage(Storage):
             self._update_binary_file(file_id, content)
 
     def get_text(self, path: StoragePath, encoding: str = "utf-8") -> str:
-        folder_id = self._find_deepest_folder_id(
-            self.root_id, [self.prefix] + path[:-1]
-        )
+        folder_id = self._find_deepest_folder_id(self.root_id, path[:-1])
         file_id = self._find_id_in_folder(folder_id, path[-1])
 
         if file_id != "":
