@@ -1,3 +1,4 @@
+# from ast import Mod
 import logging
 import os
 import io
@@ -6,22 +7,31 @@ from typing import Any, List, Dict
 from shutil import copyfile
 import json
 
-import boto3
-from botocore import UNSIGNED
-from botocore.client import Config
-
-
 from . import settings
 
-import dropbox
-from dropbox.exceptions import ApiError
+try:
+    import boto3
+    from botocore import UNSIGNED
+    from botocore.client import Config
+except ModuleNotFoundError:
+    print("No S3")
 
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-from apiclient.http import MediaFileUpload
-from apiclient.http import MediaIoBaseUpload
-from google.cloud import storage
-from google.cloud.exceptions import NotFound
+try:
+    import dropbox
+    from dropbox.exceptions import ApiError
+except ModuleNotFoundError:
+    print("No Dropbox")
+
+try:
+    from google.oauth2 import service_account
+    from googleapiclient.discovery import build
+    from google.cloud import storage
+    from google.cloud.exceptions import NotFound
+    from apiclient.http import MediaFileUpload
+    from apiclient.http import MediaIoBaseUpload
+except ModuleNotFoundError:
+    print("No Google Cloud or Google Drive")
+
 
 StoragePath = List[str]
 
