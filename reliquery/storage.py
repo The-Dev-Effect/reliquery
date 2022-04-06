@@ -1154,13 +1154,12 @@ def get_all_available_storages(root: str = os.path.expanduser("~")) -> List[Stor
 
 def get_storage(name: str, root: str, config: Dict) -> Storage:
     if config["storage"]["type"] == "S3":
-        if s3_supported is True:
-            return S3Storage(
-                **config["storage"]["args"],
-                name=name,
-            )
-        else:
+        if not s3_supported:
             raise MissingDepsException("Please pip install reliquery[S3]")
+        return S3Storage(
+            **config["storage"]["args"],
+            name=name,
+        )
 
     elif config["storage"]["type"] == "File":
         if "root" in config["storage"]["args"]:
@@ -1169,22 +1168,19 @@ def get_storage(name: str, root: str, config: Dict) -> Storage:
             return FileStorage(**config["storage"]["args"], root=root, name=name)
 
     elif config["storage"]["type"] == "Dropbox":
-        if dropbox_supported is True:
-            return DropboxStorage(**config["storage"]["args"], name=name)
-        else:
+        if not dropbox_supported:
             raise MissingDepsException("Please pip install reliquery[Dropbox]")
+        return DropboxStorage(**config["storage"]["args"], name=name)
 
     elif config["storage"]["type"] == "GoogleDrive":
-        if google_supported is True:
-            return GoogleDriveStorage(**config["storage"]["args"], name=name)
-        else:
+        if not google_supported:
             raise MissingDepsException("Please pip install reliquery[Google]")
+        return GoogleDriveStorage(**config["storage"]["args"], name=name)
 
     elif config["storage"]["type"] == "GoogleCloud":
-        if google_supported is True:
-            return GoogleCloudStorage(**config["storage"]["args"], name=name)
-        else:
+        if not google_supported:
             raise MissingDepsException("Please pip install reliquery[Google]")
+        return GoogleCloudStorage(**config["storage"]["args"], name=name)
 
     else:
         raise ValueError(f"No storage found by name : {name}")
