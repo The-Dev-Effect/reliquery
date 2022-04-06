@@ -9,18 +9,22 @@ import json
 
 from . import settings
 
+dropbox_supported = True
+s3_supported = True
+google_supported = True
+
 try:
     import boto3
     from botocore import UNSIGNED
     from botocore.client import Config
 except ModuleNotFoundError:
-    print("No S3")
+    s3_supported = False
 
 try:
     import dropbox
     from dropbox.exceptions import ApiError
 except ModuleNotFoundError:
-    print("No Dropbox")
+    dropbox_supported = False
 
 try:
     from google.oauth2 import service_account
@@ -30,7 +34,7 @@ try:
     from apiclient.http import MediaFileUpload
     from apiclient.http import MediaIoBaseUpload
 except ModuleNotFoundError:
-    print("No Google Cloud or Google Drive")
+    google_supported = False
 
 
 StoragePath = List[str]
@@ -52,6 +56,10 @@ class StorageItemDoesNotExist(Exception):
 
 
 class BucketDoesNotExist(Exception):
+    pass
+
+
+class MissingDepsException(Exception):
     pass
 
 
@@ -1146,10 +1154,13 @@ def get_all_available_storages(root: str = os.path.expanduser("~")) -> List[Stor
 
 def get_storage(name: str, root: str, config: Dict) -> Storage:
     if config["storage"]["type"] == "S3":
-        return S3Storage(
-            **config["storage"]["args"],
-            name=name,
-        )
+        if s3_supported is True:
+            return S3Storage(
+                **config["storage"]["args"],
+                name=name,
+            )
+        else:
+            raise MissingDepsException("Please pip install reliquery[S3]")
 
     elif config["storage"]["type"] == "File":
         if "root" in config["storage"]["args"]:
@@ -1158,13 +1169,22 @@ def get_storage(name: str, root: str, config: Dict) -> Storage:
             return FileStorage(**config["storage"]["args"], root=root, name=name)
 
     elif config["storage"]["type"] == "Dropbox":
-        return DropboxStorage(**config["storage"]["args"], name=name)
+        if dropbox_supported is True:
+            return DropboxStorage(**config["storage"]["args"], name=name)
+        else:
+            raise MissingDepsException("Please pip install reliquery[Dropbox]")
 
     elif config["storage"]["type"] == "GoogleDrive":
-        return GoogleDriveStorage(**config["storage"]["args"], name=name)
+        if google_supported is True:
+            return GoogleDriveStorage(**config["storage"]["args"], name=name)
+        else:
+            raise MissingDepsException("Please pip install reliquery[Google]")
 
     elif config["storage"]["type"] == "GoogleCloud":
-        return GoogleCloudStorage(**config["storage"]["args"], name=name)
+        if google_supported is True:
+            return GoogleCloudStorage(**config["storage"]["args"], name=name)
+        else:
+            raise MissingDepsException("Please pip install reliquery[Google]")
 
     else:
         raise ValueError(f"No storage found by name : {name}")
