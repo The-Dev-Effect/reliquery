@@ -2,7 +2,8 @@ import json
 import os
 
 import pytest
-from unittest import mock
+from unittest import expectedFailure, mock
+from unittest.mock import Mock
 
 from reliquery.storage import (
     S3Storage,
@@ -10,6 +11,7 @@ from reliquery.storage import (
     FileStorage,
     get_all_available_storages,
     DropboxStorage,
+    GoogleDriveStorage,
 )
 
 raw_config = """
@@ -224,3 +226,62 @@ def test_different_storage_types_given_env_config(mockholder, tmpdir):
             assert stor.name == "s3"
         elif isinstance(stor, DropboxStorage):
             assert stor.name == "dropbox"
+
+
+# GoogleDrive
+def GetMockedGoogle(root):
+    list = Mock()
+
+    list.execute.return_value = {"files": [{"name": root, "id": 1}]}
+
+    files = Mock()
+    files.list.return_value = list
+
+    service = Mock()
+    service.files.return_value = files
+
+    return GoogleDriveStorage(
+        "relics",
+        "test1",
+        "/Users/jacqueline/Downloads/token.json",
+        ["https://www.googleapis.com/auth/drive"],
+        "1apx2fBZ-IF7QeBZentqfLY8hZe1OsHyN",
+        service=service,
+    )
+
+
+@mock.patch("reliquery.storage.GoogleDriveStorage._list_items_in_folder")
+def test_google(_list_items_in_folder):
+    google = GetMockedGoogle("relics")
+    _list_items_in_folder.side_effect = [
+        [{"name": "relics", "id": 1}, {"name": "junk", "id": 0}],
+        [{"name": "test", "id": 2}, {"name": "junk", "id": 0}],
+        [{"name": "google_test", "id": 3}, {"name": "junk", "id": 0}],
+    ]
+    id = google._find_deepest_folder_id("reliquery", ["relics", "test", "google_test"])
+    assert id == 3
+
+
+@mock.patch("reliquery.storage.GoogleDriveStorage._list_items_in_folder")
+def test_google2(_list_items_in_folder):
+    google = GetMockedGoogle("relics")
+    _list_items_in_folder.side_effect = [
+        [{"name": "test", "id": 1}],
+        [{"name": "google_test", "id": 2}],
+    ]
+    deepest_id = google._find_deepest_folder_id("relics", ["test", "google_test"])
+    assert deepest_id == 2
+
+
+@mock.patch("reliquery.storage.GoogleDriveStorage._list_items_in_folder")
+def test_google3(_list_items_in_folder):
+    google = GetMockedGoogle("relics")
+    _list_items_in_folder.side_effect = [
+        [{"name": "test", "id": 1}],
+        [{"name": "google_test", "id": 2}],
+        [{"name": "images", "id": 3}],
+    ]
+    deepest_id = google._find_deepest_folder_id(
+        "relics", ["test", "google_test", "images"]
+    )
+    assert deepest_id == 3
