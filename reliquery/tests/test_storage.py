@@ -2,7 +2,7 @@ import json
 import os
 
 import pytest
-from unittest import expectedFailure, mock
+from unittest import mock
 from unittest.mock import Mock
 
 from reliquery.storage import (
