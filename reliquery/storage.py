@@ -542,6 +542,7 @@ class GoogleDriveStorage(Storage):
         token_file: str,
         SCOPES: list,
         shared_folder_id: str,
+        service=None,
     ):
         self.prefix = prefix
         self.name = name
@@ -549,15 +550,18 @@ class GoogleDriveStorage(Storage):
         self.SCOPES = SCOPES
         self.shared_folder_id = shared_folder_id
 
-        creds = None
-        if os.path.exists(token_file):
-            creds = service_account.Credentials.from_service_account_file(
-                token_file, scopes=SCOPES
-            )
-        try:
-            self.service = build("drive", "v3", credentials=creds)
-        except IOError:
-            raise StorageItemDoesNotExist
+        if service is None:
+            creds = None
+            if os.path.exists(token_file):
+                creds = service_account.Credentials.from_service_account_file(
+                    token_file, scopes=SCOPES
+                )
+            try:
+                self.service = build("drive", "v3", credentials=creds)
+            except IOError:
+                raise StorageItemDoesNotExist
+        else:
+            self.service = service
 
         # Check for prefix folder
         results = (
