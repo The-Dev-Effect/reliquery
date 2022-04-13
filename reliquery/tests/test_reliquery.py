@@ -1,3 +1,6 @@
+import os
+import pytest
+from reliquery.relic import Relic
 from ..storage import FileStorage
 from .. import Reliquery
 from .test_util import init_reliquery_test_data
@@ -29,3 +32,44 @@ def test_query_relics_by_tag(tmp_path):
     assert rq.name == "test1"
     assert rq.relic_type == "test"
     assert rq.get_text("rq1") == "first relic"
+
+
+def test_remove_relic_given_relic(tmp_path):
+    relic_path = tmp_path.joinpath("three")
+    storages = init_reliquery_test_data(tmp_path)
+
+    # test storage & relic
+    storage = FileStorage(tmp_path.joinpath("three"), "stor3")
+    storages.append(storage)
+    relic = Relic(name="test3", relic_type="test", storage=storage)
+
+    rel = Reliquery(storages=storages)
+    assert len(rel.get_relic_names()) == 3
+    assert os.listdir(os.path.join(relic_path, "test", "test3"))
+
+    rel.remove_relic(relic)
+
+    assert len(rel.get_relic_names()) == 2
+    with pytest.raises(FileNotFoundError):
+        os.listdir(os.path.join(relic_path, "test", "test3"))
+
+
+def test_relic_removed_after_syncing_reliquery(tmp_path):
+    storages = init_reliquery_test_data(tmp_path)
+
+    # test storage & relic
+    storage = FileStorage(tmp_path.joinpath("three"), "stor3")
+    storages.append(storage)
+    relic = Relic(name="test3", relic_type="test", storage=storage)
+
+    rel = Reliquery(storages=storages)
+    rel2 = Reliquery(storages=storages)
+    assert len(rel.get_relic_names()) == 3
+    assert len(rel2.get_relic_names()) == 3
+
+    rel.remove_relic(relic)
+    assert len(rel.get_relic_names()) == 2
+    assert len(rel2.get_relic_names()) == 3
+
+    rel2.sync_reliquery()
+    assert len(rel2.get_relic_names()) == 2

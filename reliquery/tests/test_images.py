@@ -1,6 +1,6 @@
 from .. import Relic
 import pytest
-from ..storage import FileStorage
+from ..storage import FileStorage, StorageItemDoesNotExist
 import os
 from io import BytesIO
 
@@ -53,3 +53,17 @@ def test_get_image_given_name(test_storage):
 
     assert len(stream.read()) > 0
     assert stream.name.split("/")[-1] == "img_test.png"
+
+
+def test_remove_image_given_name(test_storage):
+    rq = Relic(name="test", relic_type="test", storage=test_storage)
+    test_img = os.path.join(os.path.dirname(__file__), "ideal-engineer.png")
+
+    with open(test_img, "rb") as f:
+        rq.add_image("img_test.png", f.read())
+    assert len(rq.list_images()) == 1
+
+    rq.remove_image("img_test.png")
+    assert len(rq.list_images()) == 0
+    with pytest.raises(StorageItemDoesNotExist):
+        rq.get_image("img_test.png")

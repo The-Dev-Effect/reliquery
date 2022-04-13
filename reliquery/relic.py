@@ -23,14 +23,8 @@ from PIL import Image
 
 StoragePath = List[str]
 
-dt_format = "%m/%d/%Y %H:%M:%S"
-
 
 class InvalidRelicId(Exception):
-    pass
-
-
-class EmptyTagDict(Exception):
     pass
 
 
@@ -56,14 +50,18 @@ class Relic:
 
         else:
             self.storage = storage
+            self.storage_name = storage.name
 
         if check_exists:
             self._ensure_exists()
 
-        self.metadata_db = MetadataDB()
-        self.data = self.metadata_db.sync_relic_data(
-            RelicData(self.name, self.relic_type, self.storage_name)
-        )
+        """
+        since querying relics is not currently supproted there is
+        no need to create database object to persist relic data.
+        """
+        # self.metadata_db = MetadataDB()
+        # self.data = self.metadata_db.sync_relic_data(
+        #     RelicData(self.name, self.relic_type, self.storage_name)
 
     @classmethod
     def assert_valid_id(cls, id: str):
@@ -96,9 +94,7 @@ class Relic:
         return True
 
     def _relic_data(self):
-        return self.metadata_db.get_relic_data_by_name(
-            self.name, self.relic_type, self.storage_name
-        )
+        return RelicData(self.name, self.relic_type, self.storage_name)
 
     def add_array(self, name: str, array: np.ndarray):
 
@@ -109,7 +105,7 @@ class Relic:
         metadata = Metadata(
             name=name,
             data_type="arrays",
-            relic=self.data,
+            relic=self._relic_data(),
             size=size,
             shape=shape,
         )
@@ -134,11 +130,16 @@ class Relic:
     def list_arrays(self) -> List[np.ndarray]:
         return self.storage.list_keys([self.relic_type, self.name, "arrays"])
 
+    def remove_array(self, name: str) -> None:
+        self.assert_valid_id(name)
+
+        self.storage.remove_obj([self.relic_type, self.name, "arrays", name])
+
     def add_html_from_path(self, name: str, html_path: str) -> None:
 
         self.assert_valid_id(name)
 
-        metadata = Metadata(name=name, data_type="html", relic=self.data)
+        metadata = Metadata(name=name, data_type="html", relic=self._relic_data())
 
         self.storage.put_file([self.relic_type, self.name, "html", name], html_path)
         self._add_metadata(metadata)
@@ -147,7 +148,7 @@ class Relic:
     def add_html_string(self, name: str, html_str: str):
         self.assert_valid_id(name)
 
-        metadata = Metadata(name=name, data_type="html", relic=self.data)
+        metadata = Metadata(name=name, data_type="html", relic=self._relic_data())
 
         self.storage.put_text([self.relic_type, self.name, "html", name], html_str)
 
@@ -164,6 +165,11 @@ class Relic:
         ) as f:
             return f.read().decode("utf-8")
 
+    def remove_html(self, name: str) -> None:
+        self.assert_valid_id(name)
+
+        self.storage.remove_obj([self.relic_type, self.name, "html", name])
+
     def add_text(self, name: str, text: str) -> None:
 
         self.assert_valid_id(name)
@@ -172,7 +178,7 @@ class Relic:
         metadata = Metadata(
             name=name,
             data_type="text",
-            relic=self.data,
+            relic=self._relic_data(),
             size=size,
             shape=len(text),
         )
@@ -187,6 +193,11 @@ class Relic:
         self.assert_valid_id(name)
 
         return self.storage.get_text([self.relic_type, self.name, "text", name])
+
+    def remove_text(self, name: str) -> None:
+        self.assert_valid_id(name)
+
+        self.storage.remove_obj([self.relic_type, self.name, "text", name])
 
     def _add_metadata(self, metadata: Metadata) -> None:
         self.assert_valid_id(metadata.name)
@@ -219,7 +230,7 @@ class Relic:
         metadata = Metadata(
             name=name,
             data_type="images",
-            relic=self.data,
+            relic=self._relic_data(),
             size=size,
         )
 
@@ -269,6 +280,11 @@ class Relic:
     def list_images(self) -> List[str]:
         return self.storage.list_keys([self.relic_type, self.name, "images"])
 
+    def remove_image(self, name: str) -> None:
+        self.assert_valid_id(name)
+
+        self.storage.remove_obj([self.relic_type, self.name, "images", name])
+
     def add_json(self, name: str, json_data: Dict) -> None:
         self.assert_valid_id(name)
 
@@ -293,6 +309,11 @@ class Relic:
         json_text = self.storage.get_text([self.relic_type, self.name, "json", name])
         my_json = json.loads(json_text)
         return my_json
+
+    def remove_json(self, name: str) -> None:
+        self.assert_valid_id(name)
+
+        self.storage.remove_obj([self.relic_type, self.name, "json", name])
 
     def add_pandasdf(self, name: str, pandas_data: pd.DataFrame) -> None:
         """
@@ -329,6 +350,11 @@ class Relic:
         pandas_dataframe = pd.read_json(pandas_json)
         return pandas_dataframe
 
+    def remove_pandasdf(self, name: str) -> None:
+        self.assert_valid_id(name)
+
+        self.storage.remove_obj([self.relic_type, self.name, "pandasdf", name])
+
     def add_files_from_path(self, name: str, path: str) -> None:
         self.assert_valid_id(name)
         # TODO: Make use of stream like capabilities instead of full read()s
@@ -363,6 +389,11 @@ class Relic:
         self.assert_valid_id(name)
 
         return self.storage.get_binary_obj([self.relic_type, self.name, "files", name])
+
+    def remove_file(self, name: str) -> None:
+        self.assert_valid_id(name)
+
+        self.storage.remove_obj([self.relic_type, self.name, "files", name])
 
     def add_notebook_from_path(self, name: str, path: str) -> None:
         self.assert_valid_id(name)
@@ -415,6 +446,13 @@ class Relic:
         return self.storage.get_text(
             [self.relic_type, self.name, "notebooks-html", name]
         )
+
+    def remove_notebook(self, name: str) -> None:
+        self.assert_valid_id(name)
+
+        self.storage.remove_obj([self.relic_type, self.name, "notebooks", name])
+
+        self.storage.remove_obj([self.relic_type, self.name, "notebooks-html", name])
 
 
 class Reliquery:
@@ -470,11 +508,14 @@ class Reliquery:
         This is done on the initial creation of a Reliquery object and prior
         to any queries over Relics.
         """
+        list_ids = []
+
         for stor in self.storages:
             relic_datas = [
                 self.metadata_db.sync_relic_data(RelicData.parse_dict(data))
                 for data in stor.get_all_relic_data()
             ]
+            list_ids.extend([i.id for i in relic_datas])
 
             if relic_datas:
                 for relic_data in relic_datas:
@@ -486,6 +527,8 @@ class Reliquery:
                             relic_data,
                         )
                     )
+
+        self.metadata_db.remove_old_relic_data(list_ids)
 
     def get_relic_types_by_storage(self, storage: str) -> List[str]:
         return self.metadata_db.get_relic_types_by_storage(storage)
@@ -506,3 +549,9 @@ class Reliquery:
 
     def sync_reliquery(self) -> None:
         self._sync_relics()
+
+    def remove_relic(self, relic: Relic) -> int:
+        relic.storage.remove_relic([relic.relic_type, relic.name])
+        return self.metadata_db.delete_relic(
+            relic.name, relic.relic_type, relic.storage_name
+        )

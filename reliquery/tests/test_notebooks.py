@@ -1,6 +1,6 @@
 import pytest
 from .. import Relic
-from reliquery.storage import FileStorage
+from reliquery.storage import FileStorage, StorageItemDoesNotExist
 import os
 
 
@@ -53,3 +53,20 @@ def test_get_notebook_html(test_storage):
     assert (
         rq.get_notebook_html("TestNotebook.ipynb").lower().startswith("<!doctype html>")
     )
+
+
+def test_remove_notebook_given_name(test_storage):
+    rq = Relic(name="test", relic_type="test", storage=test_storage)
+
+    test_notebook = os.path.join(os.path.dirname(__file__), "notebook_test.ipynb")
+    rq.add_notebook_from_path("TestNotebook", test_notebook)
+    assert len(rq.list_notebooks()) == 1
+
+    rq.remove_notebook("TestNotebook")
+
+    assert len(rq.list_notebooks()) == 0
+    with pytest.raises(StorageItemDoesNotExist):
+        rq.get_notebook("TestNotebook")
+
+    with pytest.raises(StorageItemDoesNotExist):
+        rq.get_notebook_html("TestNotebook")
