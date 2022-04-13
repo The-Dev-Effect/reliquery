@@ -263,7 +263,7 @@ def test_google(_list_items_in_folder):
 
 
 @mock.patch("reliquery.storage.GoogleDriveStorage._list_items_in_folder")
-def test_google2(_list_items_in_folder):
+def test_find_deepest_folder_with_list_items_in_folder(_list_items_in_folder):
     google = GetMockedGoogle("relics")
     _list_items_in_folder.side_effect = [
         [{"name": "test", "id": 1}],
@@ -271,17 +271,3 @@ def test_google2(_list_items_in_folder):
     ]
     deepest_id = google._find_deepest_folder_id("relics", ["test", "google_test"])
     assert deepest_id == 2
-
-
-@mock.patch("reliquery.storage.GoogleDriveStorage._list_items_in_folder")
-def test_google3(_list_items_in_folder):
-    google = GetMockedGoogle("relics")
-    _list_items_in_folder.side_effect = [
-        [{"name": "test", "id": 1}],
-        [{"name": "google_test", "id": 2}],
-        [{"name": "images", "id": 3}],
-    ]
-    deepest_id = google._find_deepest_folder_id(
-        "relics", ["test", "google_test", "images"]
-    )
-    assert deepest_id == 3
