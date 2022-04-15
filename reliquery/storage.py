@@ -590,6 +590,19 @@ class DropboxStorage(Storage):
                     )
             return relic_data
 
+    def remove_obj(self, path: StoragePath) -> None:
+        path = self._join_path(path)
+        try:
+            self.dbx.files_delete_v2(path)
+        except dropbox.files.DeleteError:
+            raise StorageItemDoesNotExist
+
+    def remove_relic(self, path: StoragePath) -> None:
+        try:
+            self.dbx.files_delete_v2(self._join_path(path))
+        except dropbox.files.DeleteError:
+            raise StorageItemDoesNotExist
+
 
 class GoogleDriveStorage(Storage):
     def __init__(
@@ -1202,7 +1215,7 @@ class GoogleCloudStorage(Storage):
             path_list.append(item.id.split("/")[1:-1])
 
         for del_path in path_list:
-            blob = bucket.blob('/'.join(del_path))
+            blob = bucket.blob("/".join(del_path))
             blob.delete()
 
 

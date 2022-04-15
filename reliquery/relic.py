@@ -285,6 +285,9 @@ class Relic:
         self.assert_valid_id(name)
 
         self.storage.remove_obj([self.relic_type, self.name, "images", name])
+        self.storage.remove_obj(
+            [self.relic_type, self.name, "metadata", "images", name]
+        )
 
     def add_json(self, name: str, json_data: Dict) -> None:
         self.assert_valid_id(name)
