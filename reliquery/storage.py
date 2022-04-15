@@ -672,7 +672,7 @@ class GoogleDriveStorage(Storage):
             self.service.files().create(body=folder1_metadata, fields="id").execute()
         )
         # Get folder id for the folder just created
-        folder1_id = "{}".format(folder1.get("id"))
+        folder1_id = folder1.get("id")
 
         # Retrieve existing parents of the folder
         folder = (
@@ -682,7 +682,6 @@ class GoogleDriveStorage(Storage):
         )
         previous_parents = ",".join(folder.get("parents"))
 
-        # Remove the previous parents and replace with the parent we want
         folder = (
             self.service.files()
             .update(
@@ -716,6 +715,7 @@ class GoogleDriveStorage(Storage):
             i = item.get("name")
             if i == fileName:
                 return item.get("id")
+
         raise StorageItemDoesNotExist
 
     def _find_deepest_folder_id(self, root, path):
@@ -1047,6 +1047,21 @@ class GoogleDriveStorage(Storage):
                         }
                     )
         return relic_data
+
+    def remove_obj(self, path: StoragePath) -> None:
+        folder_id = self._find_deepest_folder_id(self.root_id, path[:-1])
+        file_id = self._find_id_in_folder(folder_id, path[-1])
+        try:
+            self.service.files().delete(fileId=file_id).execute()
+        except NotFound:
+            raise StorageItemDoesNotExist
+
+    def remove_relic(self, path: StoragePath) -> None:
+        del_fold = self._find_deepest_folder_id(self.root_id, path[:2])
+        try:
+            self.service.files().delete(fileId=del_fold).execute()
+        except NotFound:
+            raise StorageItemDoesNotExist
 
 
 class GoogleCloudStorage(Storage):
