@@ -134,6 +134,9 @@ class Relic:
         self.assert_valid_id(name)
 
         self.storage.remove_obj([self.relic_type, self.name, "arrays", name])
+        self.storage.remove_obj(
+            [self.relic_type, self.name, "metadata", "arrays", name]
+        )
 
     def add_html_from_path(self, name: str, html_path: str) -> None:
 
@@ -169,6 +172,9 @@ class Relic:
         self.assert_valid_id(name)
 
         self.storage.remove_obj([self.relic_type, self.name, "html", name])
+        self.storage.remove_obj(
+            [self.relic_type, self.name, "metadata", "html", name]
+        )
 
     def add_text(self, name: str, text: str) -> None:
 
@@ -318,6 +324,9 @@ class Relic:
         self.assert_valid_id(name)
 
         self.storage.remove_obj([self.relic_type, self.name, "json", name])
+        self.storage.remove_obj(
+            [self.relic_type, self.name, "metadata", "json", name]
+        )
 
     def add_pandasdf(self, name: str, pandas_data: pd.DataFrame) -> None:
         """
@@ -358,6 +367,9 @@ class Relic:
         self.assert_valid_id(name)
 
         self.storage.remove_obj([self.relic_type, self.name, "pandasdf", name])
+        self.storage.remove_obj(
+            [self.relic_type, self.name, "metadata", "pandasdf", name]
+        )
 
     def add_files_from_path(self, name: str, path: str) -> None:
         self.assert_valid_id(name)
@@ -398,6 +410,9 @@ class Relic:
         self.assert_valid_id(name)
 
         self.storage.remove_obj([self.relic_type, self.name, "files", name])
+        self.storage.remove_obj(
+            [self.relic_type, self.name, "metadata", "files", name]
+        )
 
     def add_notebook_from_path(self, name: str, path: str) -> None:
         self.assert_valid_id(name)
@@ -457,6 +472,9 @@ class Relic:
         self.storage.remove_obj([self.relic_type, self.name, "notebooks", name])
 
         self.storage.remove_obj([self.relic_type, self.name, "notebooks-html", name])
+        self.storage.remove_obj(
+            [self.relic_type, self.name, "metadata", "notebooks-html", name]
+        )
 
 
 class Reliquery:
