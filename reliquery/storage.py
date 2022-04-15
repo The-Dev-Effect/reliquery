@@ -3,6 +3,7 @@ import logging
 import os
 import io
 from io import BytesIO, BufferedIOBase
+from posixpath import split
 import shutil
 from typing import Any, List, Dict
 from shutil import copyfile
@@ -433,6 +434,34 @@ class S3Storage(Storage):
                         }
                     )
             return relic_data
+
+    def remove_obj(self, path: StoragePath) -> None:
+        try:
+            self.s3.delete_object(Bucket=self.s3_bucket, Key=self._join_path(path))
+        except self.s3.exceptions.NoSuchKey:
+            raise StorageItemDoesNotExist
+
+        if "notebooks-html" not in path:
+            metadata_path = path.copy()
+            metadata_path.insert(2, "metadata")
+            try:
+                self.s3.delete_object(
+                    Bucket=self.s3_bucket, Key=self._join_path(metadata_path)
+                )
+            except self.s3.exceptions.NoSuchKey:
+                raise StorageItemDoesNotExist
+
+    def remove_relic(self, path: StoragePath) -> None:
+        name = path[1]
+        _type = path[0]
+        for i in self.list_key_paths([""]):
+            split_key = i.split("/")
+
+            if _type in split_key and name in split_key:
+                if split_key.index(_type) == 0 and split_key.index(name) == 1:
+                    self.s3.delete_object(
+                        Bucket=self.s3_bucket, Key=self._join_path(split_key)
+                    )
 
 
 class DropboxStorage(Storage):
@@ -1154,32 +1183,27 @@ class GoogleCloudStorage(Storage):
         return relic_data
 
     def remove_obj(self, path: StoragePath) -> None:
+        path = self._join_path(path)
+
+        bucket = self.storage_client.bucket(self.bucket_id)
+        blob = bucket.blob(path)
         try:
-            self.s3.delete_object(Bucket=self.s3_bucket, Key=self._join_path(path))
-        except self.s3.exceptions.NoSuchKey:
+            blob.delete()
+        except NotFound:
             raise StorageItemDoesNotExist
 
-        if "notebooks-html" not in path:
-            metadata_path = path.copy()
-            metadata_path.insert(2, "metadata")
-            try:
-                self.s3.delete_object(
-                    Bucket=self.s3_bucket, Key=self._join_path(metadata_path)
-                )
-            except self.s3.exceptions.NoSuchKey:
-                raise StorageItemDoesNotExist
-
     def remove_relic(self, path: StoragePath) -> None:
-        name = path[1]
-        _type = path[0]
-        for i in self.list_key_paths([""]):
-            split_key = i.split("/")
+        path_list = []
+        bucket = self.storage_client.bucket(self.bucket_id)
+        # List all the items in that folder with the given path
+        items = self.storage_client.list_blobs(bucket, prefix=self._join_path(path))
+        # Return a list of all the file paths in that folder
+        for item in items:
+            path_list.append(item.id.split("/")[1:-1])
 
-            if _type in split_key and name in split_key:
-                if split_key.index(_type) == 0 and split_key.index(name) == 1:
-                    self.s3.delete_object(
-                        Bucket=self.s3_bucket, Key=self._join_path(split_key)
-                    )
+        for del_path in path_list:
+            blob = bucket.blob('/'.join(del_path))
+            blob.delete()
 
 
 def get_storage_by_name(name: str, root: str = os.path.expanduser("~")) -> Storage:
