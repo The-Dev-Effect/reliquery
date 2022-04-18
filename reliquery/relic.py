@@ -466,9 +466,6 @@ class Relic:
         self.storage.remove_obj([self.relic_type, self.name, "notebooks", name])
 
         self.storage.remove_obj([self.relic_type, self.name, "notebooks-html", name])
-        self.storage.remove_obj(
-            [self.relic_type, self.name, "metadata", "notebooks-html", name]
-        )
 
 
 class Reliquery:

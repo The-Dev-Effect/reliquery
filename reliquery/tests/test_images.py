@@ -58,9 +58,8 @@ def test_get_image_given_name(test_storage):
 def test_remove_image_given_name(test_storage):
     rq = Relic(name="test", relic_type="test", storage=test_storage)
     test_img = os.path.join(os.path.dirname(__file__), "ideal-engineer.png")
+    rq.add_image_from_path("img_test.png", test_img)
 
-    with open(test_img, "rb") as f:
-        rq.add_image("img_test.png", f.read())
     assert len(rq.list_images()) == 1
 
     rq.remove_image("img_test.png")
