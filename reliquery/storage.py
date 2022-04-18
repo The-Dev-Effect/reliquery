@@ -3,7 +3,6 @@ import logging
 import os
 import io
 from io import BytesIO, BufferedIOBase
-from posixpath import split
 import shutil
 from typing import Any, List, Dict
 from shutil import copyfile
@@ -246,16 +245,11 @@ class FileStorage(Storage):
         except FileNotFoundError:
             raise StorageItemDoesNotExist
 
-        if "notebooks-html" not in path:
-            metadata_path = path.copy()
-            metadata_path.insert(2, "metadata")
-            try:
-                os.remove(self._join_path(metadata_path))
-            except FileNotFoundError:
-                raise StorageItemDoesNotExist
-
     def remove_relic(self, path: StoragePath) -> None:
-        shutil.rmtree(self._join_path((path)))
+        try:
+            shutil.rmtree(self._join_path((path)))
+        except FileNotFoundError:
+            raise StorageItemDoesNotExist
 
 
 S3Client = Any

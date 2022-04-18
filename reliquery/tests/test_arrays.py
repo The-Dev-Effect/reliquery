@@ -51,6 +51,7 @@ def test_remove_array_by_name(test_storage):
     assert len(relic.list_arrays()) == 1
 
     relic.remove_array("arr")
+    print(len(relic.list_arrays()))
     assert len(relic.list_arrays()) == 0
     with pytest.raises(StorageItemDoesNotExist):
         relic.get_array("arr")
