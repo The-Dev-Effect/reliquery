@@ -56,7 +56,7 @@ class Relic:
             self._ensure_exists()
 
         """
-        since querying relics is not currently supproted there is
+        since querying relics is not currently supported there is
         no need to create database object to persist relic data.
         """
         # self.metadata_db = MetadataDB()
@@ -462,9 +462,7 @@ class Relic:
 
     def remove_notebook(self, name: str) -> None:
         self.assert_valid_id(name)
-
         self.storage.remove_obj([self.relic_type, self.name, "notebooks", name])
-
         self.storage.remove_obj([self.relic_type, self.name, "notebooks-html", name])
 
 
