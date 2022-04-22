@@ -528,11 +528,11 @@ class Reliquery:
                 self.metadata_db.sync_relic_data(RelicData.parse_dict(data))
                 for data in stor.get_all_relic_data()
             ]
+            print("relic_datas", relic_datas)
             list_ids.extend([i.id for i in relic_datas])
 
             if relic_datas:
                 for relic_data in relic_datas:
-                    print("relic_data", relic_data)
                     self.metadata_db.sync_tags(
                         RelicTag.parse_dict(
                             stor.get_tags(
