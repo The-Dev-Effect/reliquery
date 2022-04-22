@@ -1196,9 +1196,10 @@ class GoogleCloudStorage(Storage):
             for name in names:
                 if prefix in name:
                     if 'metadata' in name:
+                        name = name.split("/")[3]
                         relic_data.append(
                             {
-                                "relic_name": name.split("/")[2],
+                                "relic_name": name,
                                 "relic_type": relic_type,
                                 "storage_name": self.name,
                             }
