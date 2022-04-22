@@ -1,4 +1,5 @@
 import logging
+from os import listdir
 from reliquery.metadata import Metadata, MetadataDB, RelicData, RelicTag
 from typing import List, Dict
 from sys import getsizeof
@@ -522,6 +523,7 @@ class Reliquery:
         list_ids = []
 
         for stor in self.storages:
+            print("stor", stor)
             relic_datas = [
                 self.metadata_db.sync_relic_data(RelicData.parse_dict(data))
                 for data in stor.get_all_relic_data()
@@ -530,6 +532,7 @@ class Reliquery:
 
             if relic_datas:
                 for relic_data in relic_datas:
+                    print("relic_data", relic_data)
                     self.metadata_db.sync_tags(
                         RelicTag.parse_dict(
                             stor.get_tags(
@@ -538,8 +541,8 @@ class Reliquery:
                             relic_data,
                         )
                     )
-
         self.metadata_db.remove_old_relic_data(list_ids)
+        print("list ids", list_ids)
 
     def get_relic_types_by_storage(self, storage: str) -> List[str]:
         return self.metadata_db.get_relic_types_by_storage(storage)
