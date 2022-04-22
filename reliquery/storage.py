@@ -582,7 +582,7 @@ class DropboxStorage(Storage):
                             "storage_name": self.name,
                         }
                     )
-            return relic_data
+        return relic_data
 
     def remove_obj(self, path: StoragePath) -> None:
         path = self._join_path(path)
