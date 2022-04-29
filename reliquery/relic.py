@@ -126,9 +126,7 @@ class Relic:
         self.assert_valid_id(name)
 
         self.storage.remove_obj([self.relic_type, self.name, "arrays", name])
-        self.storage.remove_obj(
-            [self.relic_type, self.name, "metadata", "arrays", name]
-        )
+        self._remove_metadata("arrays", name)
 
     def add_html_from_path(self, name: str, html_path: str) -> None:
 
@@ -164,7 +162,7 @@ class Relic:
         self.assert_valid_id(name)
 
         self.storage.remove_obj([self.relic_type, self.name, "html", name])
-        self.storage.remove_obj([self.relic_type, self.name, "metadata", "html", name])
+        self._remove_metadata("html", name)
 
     def add_text(self, name: str, text: str) -> None:
 
@@ -194,7 +192,7 @@ class Relic:
         self.assert_valid_id(name)
 
         self.storage.remove_obj([self.relic_type, self.name, "text", name])
-        self.storage.remove_obj([self.relic_type, self.name, "metadata", "text", name])
+        self._remove_metadata(self, "text", name)
 
     def _add_metadata(self, metadata: Metadata) -> None:
         self.assert_valid_id(metadata.name)
@@ -202,6 +200,13 @@ class Relic:
         self.storage.put_metadata(
             [self.relic_type, self.name, "metadata", metadata.data_type, metadata.name],
             metadata.get_dict(),
+        )
+
+    def _remove_metadata(self, data_type, name) -> None:
+        self.assert_valid_id(self.name)
+
+        self.storage.remove_metadata(
+            [self.relic_type, self.name, "metadata", f"{data_type}", f"{name}"]
         )
 
     def describe(self) -> Dict:
@@ -281,9 +286,7 @@ class Relic:
         self.assert_valid_id(name)
 
         self.storage.remove_obj([self.relic_type, self.name, "images", name])
-        self.storage.remove_obj(
-            [self.relic_type, self.name, "metadata", "images", name]
-        )
+        self._remove_metadata("images", name)
 
     def add_json(self, name: str, json_data: Dict) -> None:
         self.assert_valid_id(name)
@@ -314,7 +317,7 @@ class Relic:
         self.assert_valid_id(name)
 
         self.storage.remove_obj([self.relic_type, self.name, "json", name])
-        self.storage.remove_obj([self.relic_type, self.name, "metadata", "json", name])
+        self._remove_metadata("json", name)
 
     def add_pandasdf(self, name: str, pandas_data: pd.DataFrame) -> None:
         """
@@ -355,9 +358,7 @@ class Relic:
         self.assert_valid_id(name)
 
         self.storage.remove_obj([self.relic_type, self.name, "pandasdf", name])
-        self.storage.remove_obj(
-            [self.relic_type, self.name, "metadata", "pandasdf", name]
-        )
+        self._remove_metadata("pandasdf", name)
 
     def add_files_from_path(self, name: str, path: str) -> None:
         self.assert_valid_id(name)
@@ -398,7 +399,7 @@ class Relic:
         self.assert_valid_id(name)
 
         self.storage.remove_obj([self.relic_type, self.name, "files", name])
-        self.storage.remove_obj([self.relic_type, self.name, "metadata", "files", name])
+        self._remove_metadata("files", name)
 
     def add_notebook_from_path(self, name: str, path: str) -> None:
         self.assert_valid_id(name)
@@ -456,6 +457,7 @@ class Relic:
         self.assert_valid_id(name)
         self.storage.remove_obj([self.relic_type, self.name, "notebooks", name])
         self.storage.remove_obj([self.relic_type, self.name, "notebooks-html", name])
+        self._remove_metadata("notebooks", name)
 
 
 class Reliquery:
@@ -514,12 +516,10 @@ class Reliquery:
         list_ids = []
 
         for stor in self.storages:
-            print("stor", stor)
             relic_datas = [
                 self.metadata_db.sync_relic_data(RelicData.parse_dict(data))
                 for data in stor.get_all_relic_data()
             ]
-            print("relic_datas", relic_datas)
             list_ids.extend([i.id for i in relic_datas])
 
             if relic_datas:
@@ -533,7 +533,6 @@ class Reliquery:
                         )
                     )
         self.metadata_db.remove_old_relic_data(list_ids)
-        print("list ids", list_ids)
 
     def get_relic_types_by_storage(self, storage: str) -> List[str]:
         return self.metadata_db.get_relic_types_by_storage(storage)
