@@ -86,6 +86,9 @@ class Storage:
     def put_metadata(self, path: StoragePath, metadata: Dict):
         raise NotImplementedError
 
+    def remove_metadata(self, path: StoragePath):
+        raise NotImplementedError
+
     def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
         raise NotImplementedError
 
@@ -163,6 +166,14 @@ class FileStorage(Storage):
 
         with open(self._join_path(path), "w") as f:
             return f.write(json.dumps(metadata))
+
+    def remove_metadata(self, path: StoragePath, metadata: Dict):
+        self._ensure_path(path)
+
+        try:
+            os.remove(self._join_path(path))
+        except FileNotFoundError:
+            raise StorageItemDoesNotExist
 
     def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
         data = {root_key: {k: [] for k in DATA_TYPES}}
@@ -339,6 +350,12 @@ class S3Storage(Storage):
             Key=self._join_path(path), Bucket=self.s3_bucket, Body=json.dumps(metadata)
         )
 
+    def remove_metadata(self, path: StoragePath):
+        try:
+            self.s3.delete_object(Bucket=self.s3_bucket, Key=self._join_path(path))
+        except self.s3.exceptions.NoSuchKey:
+            raise StorageItemDoesNotExist
+
     def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
         data = {root_key: {k: [] for k in DATA_TYPES}}
 
@@ -501,6 +518,12 @@ class DropboxStorage(Storage):
             self._join_path(path),
             mode=dropbox.files.WriteMode.overwrite,
         )
+
+    def remove_metadata(self, path: StoragePath):
+        try:
+            self.dbx.files_delete_v2(self._join_path(path))
+        except dropbox.files.DeleteError:
+            raise StorageItemDoesNotExist
 
     def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
         data = {root_key: {k: [] for k in DATA_TYPES}}
@@ -967,6 +990,14 @@ class GoogleDriveStorage(Storage):
         else:
             self._update_binary_file(file_id, buffer)
 
+    def remove_metadata(self, path: StoragePath):
+        folder_id = self._find_deepest_folder_id(self.root_id, path[:-1])
+        file_id = self._find_id_in_folder(folder_id, path[-1])
+        try:
+            self.service.files().delete(fileId=file_id).execute()
+        except NotFound:
+            raise StorageItemDoesNotExist
+
     def get_metadata(
         self, path: StoragePath, root_key: str, encoding: str = "utf-8"
     ) -> Dict:
@@ -1141,6 +1172,16 @@ class GoogleCloudStorage(Storage):
         bucket = self.storage_client.bucket(self.bucket_id)
         blob = bucket.blob(path)
         blob.upload_from_string(metadata_bytes)
+
+    def remove_metadata(self, path: StoragePath):
+        path = self._join_path(path)
+
+        bucket = self.storage_client.bucket(self.bucket_id)
+        blob = bucket.blob(path)
+        try:
+            blob.delete()
+        except NotFound:
+            raise StorageItemDoesNotExist
 
     def get_metadata(self, path: StoragePath, root_key: str) -> Dict:
         data = {root_key: {k: [] for k in DATA_TYPES}}
