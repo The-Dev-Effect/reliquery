@@ -435,16 +435,6 @@ class S3Storage(Storage):
         except self.s3.exceptions.NoSuchKey:
             raise StorageItemDoesNotExist
 
-        if "notebooks-html" not in path:
-            metadata_path = path.copy()
-            metadata_path.insert(2, "metadata")
-            try:
-                self.s3.delete_object(
-                    Bucket=self.s3_bucket, Key=self._join_path(metadata_path)
-                )
-            except self.s3.exceptions.NoSuchKey:
-                raise StorageItemDoesNotExist
-
     def remove_relic(self, path: StoragePath) -> None:
         name = path[1]
         _type = path[0]
@@ -1195,7 +1185,7 @@ class GoogleCloudStorage(Storage):
             names = {path.id for path in self.storage_client.list_blobs(bucket)}
             for name in names:
                 if prefix in name:
-                    if 'metadata' in name:
+                    if "metadata" in name:
                         name = name.split("/")[3]
                         relic_data.append(
                             {
