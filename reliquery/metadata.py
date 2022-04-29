@@ -531,7 +531,6 @@ class MetadataDB:
             for i in cur.execute("SELECT id FROM relics;").fetchall()
             if i[0] not in list_ids
         ]
-        print(f"stale_ids: {stale_ids}")
         if stale_ids:
             return self.delete_relics_by_ids(stale_ids)
 

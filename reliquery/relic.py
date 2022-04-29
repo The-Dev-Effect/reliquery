@@ -1,5 +1,4 @@
 import logging
-from os import listdir
 from reliquery.metadata import Metadata, MetadataDB, RelicData, RelicTag
 from typing import List, Dict
 from sys import getsizeof
@@ -55,14 +54,6 @@ class Relic:
 
         if check_exists:
             self._ensure_exists()
-
-        """
-        since querying relics is not currently supported there is
-        no need to create database object to persist relic data.
-        """
-        # self.metadata_db = MetadataDB()
-        # self.data = self.metadata_db.sync_relic_data(
-        #     RelicData(self.name, self.relic_type, self.storage_name)
 
     @classmethod
     def assert_valid_id(cls, id: str):
