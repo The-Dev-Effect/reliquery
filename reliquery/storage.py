@@ -167,7 +167,7 @@ class FileStorage(Storage):
         with open(self._join_path(path), "w") as f:
             return f.write(json.dumps(metadata))
 
-    def remove_metadata(self, path: StoragePath, metadata: Dict):
+    def remove_metadata(self, path: StoragePath):
         self._ensure_path(path)
 
         try:
