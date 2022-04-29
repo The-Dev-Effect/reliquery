@@ -192,7 +192,7 @@ class Relic:
         self.assert_valid_id(name)
 
         self.storage.remove_obj([self.relic_type, self.name, "text", name])
-        self._remove_metadata(self, "text", name)
+        self._remove_metadata("text", name)
 
     def _add_metadata(self, metadata: Metadata) -> None:
         self.assert_valid_id(metadata.name)
