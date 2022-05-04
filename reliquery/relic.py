@@ -1,5 +1,4 @@
 import logging
-from tkinter import N
 from reliquery.metadata import Metadata, MetadataDB, RelicData, RelicTag
 from typing import List, Dict
 from sys import getsizeof
@@ -460,6 +459,22 @@ class Relic:
         self.storage.remove_obj([self.relic_type, self.name, "notebooks-html", name])
         self._remove_metadata("notebooks", name)
 
+    def add_video(self, name: str, video_bytes: BytesIO):
+        self.assert_valid_id(name)
+
+        size = video_bytes.getbuffer().nbytes
+        metadata = Metadata(
+            name=name,
+            data_type="videos",
+            relic=self._relic_data(),
+            size=size,
+        )
+
+        self.storage.put_binary_obj(
+            [self.relic_type, self.name, "video", name], video_bytes
+        )
+        self._add_metadata(metadata)
+
     def add_video_from_path(self, name: str, video_path: str):
         self.assert_valid_id(name)
         with open(video_path, "rb") as input_file:
@@ -476,7 +491,7 @@ class Relic:
             )
             self._add_metadata(metadata)
 
-    def get_video(self, name: str, ext:str) -> BytesIO:
+    def get_video(self, name: str, ext: str) -> BytesIO:
         self.assert_valid_id(name)
         return self.storage.get_binary_obj([self.relic_type, self.name, "videos", name])
 
