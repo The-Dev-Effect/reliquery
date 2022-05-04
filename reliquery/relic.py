@@ -1,4 +1,5 @@
 import logging
+from tkinter import N
 from reliquery.metadata import Metadata, MetadataDB, RelicData, RelicTag
 from typing import List, Dict
 from sys import getsizeof
@@ -458,6 +459,43 @@ class Relic:
         self.storage.remove_obj([self.relic_type, self.name, "notebooks", name])
         self.storage.remove_obj([self.relic_type, self.name, "notebooks-html", name])
         self._remove_metadata("notebooks", name)
+
+    def add_video_from_path(self, name: str, video_path: str):
+        self.assert_valid_id(name)
+        with open(video_path, "rb") as input_file:
+            buffer = BytesIO(input_file.read())
+            fileSize = buffer.getbuffer().nbytes
+            metadata = Metadata(
+                name=name,
+                data_type="videos",
+                relic=self._relic_data(),
+                size=fileSize,
+            )
+            self.storage.put_binary_obj(
+                [self.relic_type, self.name, "videos", name], buffer
+            )
+            self._add_metadata(metadata)
+
+    def get_video(self, name: str, ext:str) -> BytesIO:
+        self.assert_valid_id(name)
+        return self.storage.get_binary_obj([self.relic_type, self.name, "videos", name])
+
+    def save_video_to_path(self, name: str, path: str) -> None:
+        self.assert_valid_id(name)
+        buffer = self.storage.get_binary_obj(
+            [self.relic_type, self.name, "videos", name]
+        )
+        content = buffer.read()
+        with open(path, "wb") as new_file:
+            new_file.write(content)
+
+    def list_videos(self) -> List[str]:
+        return self.storage.list_keys([self.relic_type, self.name, "videos"])
+
+    def remove_video(self, name: str) -> None:
+        self.assert_valid_id(name)
+        self.storage.remove_obj([self.relic_type, self.name, "videos", name])
+        self._remove_metadata("videos", name)
 
 
 class Reliquery:
