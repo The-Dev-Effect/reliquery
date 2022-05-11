@@ -491,7 +491,7 @@ class Relic:
             )
             self._add_metadata(metadata)
 
-    def get_video(self, name: str, ext: str) -> BytesIO:
+    def get_video(self, name: str) -> BytesIO:
         self.assert_valid_id(name)
         return self.storage.get_binary_obj([self.relic_type, self.name, "videos", name])
 
