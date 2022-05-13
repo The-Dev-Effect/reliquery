@@ -501,9 +501,13 @@ class Relic:
 
     def display_video(self, name: str):
         self.assert_valid_id(name)
-        video_bytes = self.storage.get_binary_obj([self.relic_type, self.name, "videos", name]).getvalue()
+        video_bytes = self.storage.get_binary_obj(
+            [self.relic_type, self.name, "videos", name]
+        ).getvalue()
 
-        return Video(video_bytes, embed=True, width=300, height=200,mimetype='video/mp4')
+        return Video(
+            video_bytes, embed=True, width=300, height=200, mimetype="video/mp4"
+        )
 
     def save_video_to_path(self, name: str, path: str) -> None:
         self.assert_valid_id(name)
