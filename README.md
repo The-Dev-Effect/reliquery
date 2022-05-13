@@ -14,15 +14,16 @@ An anti-format storage tool aimed towards supporting scientists. Giving them the
 6. [JSON](#json)
 7. [Pandas DataFrame](#pd)
 8. [Files](#files)
-9. [Jupyter Notebooks](#notebooks)
-10. [Query Relics](#query)
-11. [Config](#config)
-12. [File Storage](#file)
-13. [S3 Storage](#s3)
-14. [Dropbox](#dropbox)
-15. [Google Drive](#googledrive)
-16. [Google Cloud](#googlecloud)
-17. [License](#lic)
+9. [Videos](#videos)
+10. [Jupyter Notebooks](#notebooks)
+11. [Query Relics](#query)
+12. [Config](#config)
+13. [File Storage](#file)
+14. [S3 Storage](#s3)
+15. [Dropbox](#dropbox)
+16. [Google Drive](#googledrive)
+17. [Google Cloud](#googlecloud)
+18. [License](#lic)
 
 ## For production<a name="prod"></a>
 latest version 0.2.6
@@ -141,6 +142,26 @@ r.get_file("TestFileName")
 
 Save file 
 r.save_files_to_path("TestFile", path_to_save)
+```
+
+### Videos <a name="videos"></a>
+```python
+#Example
+Add video
+with open("VideoPath", "rb") as f:
+    r.add_video("TestVideoName", f.read())
+
+Add video given path
+r.add_video_from_path("TestVideoName", test_videos_path)
+
+List videos
+r.list_videos()
+
+Get video
+r.get_video("TestVideoName")
+
+Save video
+r.save_video_to_path("TestVideo", path_to_save)
 ```
 
 ### Jupyter Notebooks<a name="notebooks"></a>
