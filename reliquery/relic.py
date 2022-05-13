@@ -1,12 +1,9 @@
 import logging
-
-from charset_normalizer import from_bytes
 from reliquery.metadata import Metadata, MetadataDB, RelicData, RelicTag
 from typing import List, Dict
 from sys import getsizeof
 from io import BytesIO
-from IPython.display import Video, HTML
-from base64 import b64encode
+from IPython.display import Video
 
 import numpy as np
 import json
