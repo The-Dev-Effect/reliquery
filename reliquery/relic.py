@@ -1,8 +1,12 @@
 import logging
+
+from charset_normalizer import from_bytes
 from reliquery.metadata import Metadata, MetadataDB, RelicData, RelicTag
 from typing import List, Dict
 from sys import getsizeof
 from io import BytesIO
+from IPython.display import Video, HTML
+from base64 import b64encode
 
 import numpy as np
 import json
@@ -494,6 +498,12 @@ class Relic:
     def get_video(self, name: str) -> BytesIO:
         self.assert_valid_id(name)
         return self.storage.get_binary_obj([self.relic_type, self.name, "videos", name])
+
+    def display_video(self, name: str):
+        self.assert_valid_id(name)
+        video_bytes = self.storage.get_binary_obj([self.relic_type, self.name, "videos", name]).getvalue()
+
+        return Video(video_bytes, embed=True, width=300, height=200,mimetype='video/mp4')
 
     def save_video_to_path(self, name: str, path: str) -> None:
         self.assert_valid_id(name)
