@@ -49,6 +49,7 @@ DATA_TYPES = [
     "pandasdf",
     "files",
     "notebooks",
+    "videos",
 ]
 
 
