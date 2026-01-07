@@ -11,6 +11,7 @@ An anti-format storage tool aimed towards supporting scientists. Giving them the
 3. [Example](#quick)
 4. [HTML](#html)
 5. [Images](#img)
+6. [Audio](#audio)
 6. [JSON](#json)
 7. [Pandas DataFrame](#pd)
 8. [Files](#files)
@@ -91,6 +92,23 @@ r_demo.get_image("reliquery")
 Display PIL image:
 ```python
 r_demo.get_pil_image("reliquery")
+```
+### Audio supported<a name="audio"></a>
+Audio can be save using file like objects
+```python
+r_demo.add_audio(name="audio.wav", BytesIO(audio_bytes))
+```
+List Audio:
+```python
+r_demo.list_audio()
+```
+Get Audio:
+```python
+r_demo.get_audio(name="audio.wav")
+```
+Remove Audio:
+```python
+r_demo.remove_audio(name="audio.wav")
 ```
 
 ### JSON supported<a name="json"></a>

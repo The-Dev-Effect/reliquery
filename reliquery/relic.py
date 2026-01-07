@@ -459,6 +459,30 @@ class Relic:
         self.storage.remove_obj([self.relic_type, self.name, "notebooks-html", name])
         self._remove_metadata("notebooks", name)
 
+    def add_audio(self, name: str, audio_obj: BytesIO) -> None:
+        size = audio_obj.getbuffer().nbytes
+        metadata = Metadata(
+            name=name,
+            data_type="audio",
+            relic=self._relic_data(),
+            size=size,
+        )
+
+        self.storage.put_binary_obj(
+            [self.relic_type, self.name, "audio", name], audio_obj
+        )
+        self._add_metadata(metadata)
+
+    def list_audio(self) -> List[str]:
+        return self.storage.list_keys([self.relic_type, self.name, "audio"])
+
+    def get_audio(self, name: str) -> BytesIO:
+        return self.storage.get_binary_obj([self.relic_type, self.name, "audio", name])
+
+    def remove_audio(self, name: str) -> None:
+        self.storage.remove_obj([self.relic_type, self.name, "audio", name])
+        self._remove_metadata("audio", name)
+
 
 class Reliquery:
     """
