@@ -20,7 +20,6 @@ from .storage import (
 
 from PIL import Image
 
-
 StoragePath = List[str]
 
 
@@ -422,7 +421,7 @@ class Relic:
             exporter = nbconvert.HTMLExporter()
             exporter.template_name = "classic"
             note = nbformat.reads(fileString, as_version=4)
-            (body, resources) = exporter.from_notebook_node(note)
+            body, resources = exporter.from_notebook_node(note)
 
             self.storage.put_text(
                 [self.relic_type, self.name, "notebooks-html", name], body
