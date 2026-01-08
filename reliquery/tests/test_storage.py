@@ -207,9 +207,9 @@ def test_availible_storages_returns_default_storage(tmpdir):
 
     assert len(storage) == 2
     for stor in storage:
-        if type(stor) == FileStorage:
+        if type(stor) is FileStorage:
             assert stor.name == "default"
-        elif type(stor) == S3Storage:
+        elif type(stor) is S3Storage:
             assert stor.name == "demo"
 
 
