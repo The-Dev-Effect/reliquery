@@ -38,6 +38,10 @@ pip install reliquery
 cd reliquery
 pip install -e .
 ```
+you may need to install dependencies for S3 and Dropbox storage. Test will fail without those installed. To do this you can run a local pip install like so:
+```python
+pip install -e ".[S3,Dropbox]" 
+```
 ### Quick Example Usage<a name="quick"></a>
 ```python
 from reliquery import Relic
