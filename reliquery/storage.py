@@ -1265,7 +1265,7 @@ class GoogleCloudStorage(Storage):
 def get_storage_by_name(name: str, root: str = os.path.expanduser("~")) -> Storage:
     reliquery_dir = os.path.join(root, "reliquery")
     config = settings.get_config(reliquery_dir)
-
+    print(f"CONFIG:::\n\t{config}")
     return get_storage(name, reliquery_dir, config[name])
 
 
