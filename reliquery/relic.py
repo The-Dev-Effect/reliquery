@@ -39,13 +39,20 @@ class Relic:
         storage: Storage = None,
         storage_name: str = "default",
         check_exists: bool = True,
+        reliquery_config_root: str = None,
     ):
         self.name = name
         self.relic_type = relic_type
         self.storage_name = storage_name
 
         if storage is None:
-            self.storage = get_storage_by_name(self.storage_name)
+            self.storage = (
+                get_storage_by_name(self.storage_name)
+                if reliquery_config_root is None
+                else get_storage_by_name(
+                    name=self.storage_name, root=reliquery_config_root
+                )
+            )
 
         else:
             self.storage = storage

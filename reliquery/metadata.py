@@ -674,12 +674,10 @@ class MetadataDB:
 
     def get_all_relic_names(self) -> List[Dict]:
         cur = self.conn.cursor()
-        cur.execute(
-            """
+        cur.execute("""
             SELECT relic_name, relic_type, storage_name
             FROM relics
-            """
-        )
+            """)
 
         return [
             {"storage": relic[2], "type": relic[1], "name": relic[0]}
@@ -688,12 +686,10 @@ class MetadataDB:
 
     def get_unique_relic_types_and_storages(self) -> List[Dict]:
         cur = self.conn.cursor()
-        cur.execute(
-            """
+        cur.execute("""
             SELECT DISTINCT relic_type, storage_name
             FROM relics
-            """
-        )
+            """)
 
         return [{"storage": relic[1], "type": relic[0]} for relic in cur.fetchall()]
 
