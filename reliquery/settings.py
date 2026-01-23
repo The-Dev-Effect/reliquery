@@ -3,8 +3,6 @@ import json
 
 
 def get_config(reliquery_dir):
-    print(f"RELIQUERY PATH:::{reliquery_dir}")
-    print(f"USER ROOT:::{os.path.expanduse("~")}")
     # First we check the environment for the config
     if "RELIQUERY_CONFIG" in os.environ:
         return json.loads(os.environ["RELIQUERY_CONFIG"])
