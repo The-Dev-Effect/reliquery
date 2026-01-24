@@ -9,7 +9,9 @@ def get_config(reliquery_dir):
 
     # Otherwise, fallback on a file.
     config_path = os.path.join(reliquery_dir, "config")
-
+    print(f"config path: \n\t{config_path}\nexists:\n\t{os.path.exists(config_path)}")
+    print(F"Check hardcoded path is avaiable(/home/ubuntu/reliquery/config):\n\t{os.path.exists("/home/ubuntu/reliquery/config")} ")
+    print(F"Check hardcoded path is avaiable(/home/ubuntu/reliquery/reliquery/config):\n\t{os.path.exists("/home/ubuntu/reliquery/reliquery/config")} ")
     if os.path.exists(config_path):
         with open(config_path, mode="r") as config_file:
             config = json.load(config_file)
