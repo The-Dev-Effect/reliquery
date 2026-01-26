@@ -314,7 +314,6 @@ class S3Storage(Storage):
         )
 
     def get_text(self, path: StoragePath, encoding: str = "utf-8") -> str:
-        print(path)
         try:
             obj = self.s3.get_object(Key=self._join_path(path), Bucket=self.s3_bucket)
         except self.s3.exceptions.NoSuchKey:
